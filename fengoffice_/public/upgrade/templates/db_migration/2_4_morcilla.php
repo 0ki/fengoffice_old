@@ -11,7 +11,8 @@ ON DUPLICATE KEY UPDATE name=name;
 
 INSERT INTO `<?php echo $table_prefix ?>object_types` (`name`,`handler_class`,`table_name`,`type`,`icon`,`plugin_id`) VALUES
  ('template_task', 'TemplateTasks', 'template_tasks', 'content_object', 'task', null),
- ('template_milestone', 'TemplateMilestones', 'template_milestones', 'content_object', 'milestone', null);
+ ('template_milestone', 'TemplateMilestones', 'template_milestones', 'content_object', 'milestone', null)
+ON DUPLICATE KEY UPDATE name=name;
 
 INSERT INTO `<?php echo $table_prefix ?>contact_config_options` (`category_name`, `name`, `default_value`, `config_handler_class`, `is_system`, `option_order`, `dev_comment`) VALUES 
 	('general', 'timeReportDate', '4', 'IntegerConfigHandler', 1, 0, ''),
@@ -21,7 +22,8 @@ INSERT INTO `<?php echo $table_prefix ?>contact_config_options` (`category_name`
 	('general', 'timeReportTimeslotType', '2', 'IntegerConfigHandler', 1, 0, ''),
 	('general', 'timeReportGroupBy', '0,0,0', 'StringConfigHandler', 1, 0, ''),
 	('general', 'timeReportAltGroupBy', '0,0,0', 'StringConfigHandler', 1, 0, ''),
-	('general', 'timeReportShowBilling', '0', 'BoolConfigHandler', 1, 0, '');
+	('general', 'timeReportShowBilling', '0', 'BoolConfigHandler', 1, 0, '')
+ON DUPLICATE KEY UPDATE name=name;
 
 ALTER TABLE `<?php echo $table_prefix ?>project_tasks` ADD `from_template_object_id` int(10) unsigned DEFAULT '0' AFTER from_template_id;
 ALTER TABLE `<?php echo $table_prefix ?>project_milestones` ADD `from_template_object_id` int(10) unsigned DEFAULT '0' AFTER from_template_id;
@@ -92,7 +94,8 @@ INSERT INTO `<?php echo $table_prefix ?>template_milestones`(`template_id`, `ses
  SELECT <?php echo $table_prefix ?>template_objects.template_id,'0' AS `session_id` ,<?php echo $table_prefix ?>project_milestones.`object_id`, `description`, `due_date`, `is_urgent`, `completed_on`, `completed_by_id`, `is_template`, `from_template_id`, `from_template_object_id`
  FROM `<?php echo $table_prefix ?>template_objects` 
  INNER JOIN `<?php echo $table_prefix ?>project_milestones` 
- ON <?php echo $table_prefix ?>template_objects.object_id = <?php echo $table_prefix ?>project_milestones.object_id AND <?php echo $table_prefix ?>project_milestones.is_template=1;
+ ON <?php echo $table_prefix ?>template_objects.object_id = <?php echo $table_prefix ?>project_milestones.object_id AND <?php echo $table_prefix ?>project_milestones.is_template=1
+ON DUPLICATE KEY UPDATE <?php echo $table_prefix ?>template_milestones.template_id=<?php echo $table_prefix ?>template_milestones.template_id;
 
 DELETE FROM `<?php echo $table_prefix ?>project_milestones` WHERE `is_template` = 1;
 

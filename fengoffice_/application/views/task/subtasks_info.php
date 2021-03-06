@@ -148,7 +148,7 @@ if($showOpenSubtasksDiv) { ?>
 		<input type="hidden" id="addTaskMilestoneId<?php echo $task_list->getId() ?>" name="task[milestone_id]" value="<?php echo $task_list->getMilestoneId() ?>"/>
 		<input type="hidden" id="addTaskPriority<?php echo $task_list->getId() ?>" name="task[priority]" value="<?php echo $task_list->getPriority() ?>"/>
 		<input type="hidden" id="addTaskInputType<?php echo $task_list->getId() ?>" name="task[inputtype]" value="taskview"/>
-		<input type="hidden" id="addTaskInputType<?php echo $task_list->getId() ?>" name="template_task" value= "1"/>
+		<input type="hidden" id="addTaskInputType<?php echo $task_list->getId() ?>" name="template_task" value= "<?php echo $template_task ?>"/>
         <?php echo submit_button(lang('add sub task'), 's', array('id' => 'addTaskSubmit' . $task_list->getId(), 'fromTaskView' => 'true')) ?> <?php echo lang('or') ?> <a href="#" onclick="App.modules.addTaskForm.hideAddTaskForm(<?php echo $task_list->getId() ?>); return false;"><?php echo lang('cancel') ?></a>
       </form>
     </div>

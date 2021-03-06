@@ -475,7 +475,7 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
                 ?>
 		<?php echo label_tag(lang('description'), $genid . 'taskListFormDescription') ?>
                 <div id="<?php echo $genid ?>ckcontainer" style="height: 100%">
-                    <textarea cols="80" id="<?php echo $genid ?>ckeditor" name="task[text]" rows="10"><?php echo clean($ckEditorContent) ?></textarea>
+                    <textarea tabIndex=110 cols="80" id="<?php echo $genid ?>ckeditor" name="task[text]" rows="10"><?php echo clean($ckEditorContent) ?></textarea>
                 </div>
                 <script>
                     var h = document.getElementById("<?php echo $genid ?>ckcontainer").offsetHeight;
@@ -558,11 +558,11 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
 			<div id="<?php echo $genid ?>assignto_container_div"></div>
 			
 		</td><td style="padding-left:10px"><div  id="<?php echo $genid ?>taskFormSendNotificationDiv" style="display:none">
-			<?php echo checkbox_field('task[send_notification]', array_var($task_data, 'send_notification'), array('id' => $genid . 'taskFormSendNotification')) ?>
+			<?php echo checkbox_field('task[send_notification]', array_var($task_data, 'send_notification'), array('id' => $genid . 'taskFormSendNotification', 'tabindex' => '150')) ?>
 			<label for="<?php echo $genid ?>taskFormSendNotification" class="checkbox"><?php echo lang('send task assigned to notification') ?></label>
 		</div>
 		<?php if (!$task->isNew()) { ?>
-			<?php echo checkbox_field('task[apply_assignee_subtasks]', array_var($task_data, 'apply_assignee_subtasks'), array('id' => $genid . 'taskFormApplyAssignee')) ?>
+			<?php echo checkbox_field('task[apply_assignee_subtasks]', array_var($task_data, 'apply_assignee_subtasks'), array('id' => $genid . 'taskFormApplyAssignee', 'tabindex' => '155')) ?>
 			<label for="<?php echo $genid ?>taskFormApplyAssignee" class="checkbox"><?php echo lang('apply assignee to subtasks') ?></label>
 		<?php } ?>
 		</td></tr></table>

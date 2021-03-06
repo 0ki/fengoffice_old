@@ -1048,7 +1048,7 @@ class ContactController extends ApplicationController {
 					$user['username'] = str_replace(" ","",strtolower($contact_data['name'])) ;
 				}
 				
-				$this->createUserFromContactForm($user, $contact->getId(), $contact_data['email'],isset($_POST['notify-user']));
+				$user_data = $this->createUserFromContactForm($user, $contact->getId(), $contact_data['email'],isset($_POST['notify-user']));
 
 				if(isset($_POST['notify-user'])){
 					set_user_config_option("sendEmailNotification", 1,logged_user()->getId());
@@ -1057,6 +1057,9 @@ class ContactController extends ApplicationController {
 				}
 								
 				DB::commit();
+				
+				// Send notification
+				send_notification($user_data, $contact->getId());
 				
 				if (isset($contact_data['new_contact_from_mail_div_id'])) {
 					$combo_val = trim($contact->getFirstName() . ' ' . $contact->getSurname() . ' <' . $contact->getEmailAddress('personal') . '>');
@@ -3136,11 +3139,11 @@ class ContactController extends ApplicationController {
 			$valid =  Contacts::validateUser($contactId);
 			create_user($userData, '');
 		}
+		return $userData;
 		
 	}
 
 	/**
-	 * @author Ignacio Vazquez <elpepe.uy at gmail dot com>
 	 * Handle quick add submit
 	 */
 	function quick_add() {
@@ -3237,13 +3240,15 @@ class ContactController extends ApplicationController {
 			// User settings
 			$user = array_var(array_var($_POST, 'contact'),'user');
 			$user['username'] = str_replace(" ","",strtolower($name)) ;
-			$this->createUserFromContactForm($user, $contact->getId(), $email);
+			$user_data = $this->createUserFromContactForm($user, $contact->getId(), $email);
 			
 			// Reload contact again due to 'createUserFromContactForm' changes
 			Hook::fire("after_contact_quick_add", Contacts::instance()->findById($contact->getId()), $ret);
 			
 			DB::commit();
 			
+			// Send notification
+			send_notification($user_data, $contact->getId());
 		}catch (Exception $e){
 			DB::rollback();
 			flash_error($e->getMessage());

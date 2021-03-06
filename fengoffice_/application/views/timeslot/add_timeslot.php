@@ -65,7 +65,7 @@
 					echo ">$i</option>\n";
 				}
 			?>
-			</select> <span class="bold">:</span> <select name="timeslot[start_minute]" size="1">
+			</select> <span class="bold">:</span> <select name="timeslot[start_minute]" size="1" tabindex="40">
 			<?php
 			$minute = $start_time->getMinute();
 			for($i = 0; $i < 60; $i++) {
@@ -117,7 +117,7 @@
 				$minutes = (($totalSeconds - $seconds) / 60) % 60;
 				$hours = (($totalSeconds - $seconds - ($minutes * 60)) / 3600);
 				
-			?><input type="text" style="width:40px;margin-right:3px" name="timeslot[subtract_hours]" value="<?php echo($hours); ?>"/><?php echo lang('hours') ?>,&nbsp;
+			?><input type="text" style="width:40px;margin-right:3px" name="timeslot[subtract_hours]" value="<?php echo($hours); ?>" tabindex="60"/><?php echo lang('hours') ?>,&nbsp;
 			</span><select name="timeslot[subtract_minutes]" size="1" tabindex="70">
 			<?php
 			for($i = 0; $i < 60; $i++) {

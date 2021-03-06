@@ -27,7 +27,7 @@ function mail_delete_member($member){
 function mail_on_page_load(){
 	//check if have outbox mails
 	$usu = logged_user();
-	$conditions = array("conditions" => array("`state` >= 200 AND (`state`%2 = 0) AND `trashed_on`=0 AND `created_by_id` =".$usu->getId()));
+	$conditions = array("conditions" => array("`state` >= 200 AND (`state`%2 = 0) AND `archived_on`=0 AND `trashed_on`=0 AND `created_by_id` =".$usu->getId()));
 	$outbox_mails = MailContents::findAll($conditions);
 	if ($outbox_mails!= null){
 		if (count($outbox_mails)>=1){

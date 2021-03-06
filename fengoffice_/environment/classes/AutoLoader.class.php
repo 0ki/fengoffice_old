@@ -12,7 +12,7 @@
 		/**
 		* mod settings for the index file
 		*/
-		const INDEX_FILE_MOD = 0775;
+		const INDEX_FILE_MOD = 0777;
 		
 		/**
 		* Name of the $GLOBALS var where we'll store class names

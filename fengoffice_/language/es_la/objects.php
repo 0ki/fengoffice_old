@@ -126,6 +126,8 @@
 	'the weblink' => 'el enlace web',
 	'the timeslot' => 'el tiempo de trabajo',
 	'the object' => 'el objeto',
+	'the customer_folder' => 'la carpeta',
+	'the project_folder' => 'la carpeta',
     
 	'activity add' => '{1} agregó {0} {2}',
 	'activity edit' => '{1} editó {0} {2}',

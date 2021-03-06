@@ -113,7 +113,9 @@
 			
 			if ($object instanceof ProjectTask || $object instanceof TemplateTask) {
 				tpl_assign('genid', $genid);
-				$this->includeTemplate(get_template_path('subtasks_info', 'task'));
+				$object instanceof TemplateTask ? tpl_assign('template_task', 1) : tpl_assign('template_task', 0);
+				
+				$this->includeTemplate(get_template_path('subtasks_info', 'task'));				
 				//$this->includeTemplate(get_template_path('work_performed', 'task'));
 			}
 			

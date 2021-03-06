@@ -918,11 +918,15 @@ class ObjectController extends ApplicationController {
 
 			}else if (array_var($_GET, 'action') == 'empty_trash_can') {
 
-				$result = Objects::getObjectsFromContext(active_context(), 'trashed_on', 'desc', true);
+				$result = ContentDataObjects::listing(array(
+					"select_columns" => array('id'),
+					"raw_data" => true,
+					"trashed" => true,
+				));
 				$objects = $result->objects;
 
 				$real_deleted_ids = array();
-				list($succ, $err) = $this->do_delete_objects($objects, true, $real_deleted_ids);
+				list($succ, $err) = $this->do_delete_objects($objects, true, $real_deleted_ids, true);
 				if ($err > 0) {
 					flash_error(lang('error delete objects', $err));
 				}
@@ -1131,12 +1135,12 @@ class ObjectController extends ApplicationController {
 		redirect_to($obj->getObjectUrl(),true);
 	}
 
-	function do_delete_objects($objects, $permanent = false, &$deleted_object_ids) {
+	function do_delete_objects($objects, $permanent = false, &$deleted_object_ids, $raw_data=false) {
 		$err = 0; // count errors
 		$succ = 0; // count files deleted
 		foreach ($objects as $object) {
 			try {
-				$obj = Objects::findObject($object->getId());
+				$obj = Objects::findObject($raw_data ? $object['id'] : $object->getId());
 				// do not delete users from here
 				if ($obj instanceof Contact && $obj->isUser()) continue;
 				
@@ -1475,7 +1479,7 @@ class ObjectController extends ApplicationController {
 		$object_id = get_id('object_id');
 		$dont_reload = array_var($_GET, 'dont_reload');
 		$object = Objects::findObject($object_id);
-		if ($object instanceof ContentDataObject && $object->canDelete(logged_user()) && (!$object instanceof Contact || !$object->isUser())) {
+		if (($object instanceof ContentDataObject && $object->canDelete(logged_user()) && (!$object instanceof Contact || !$object->isUser())) || $object instanceof TemplateTask) {
 			try {
 				$errorMessage = null;
 				DB::beginWork();

@@ -231,7 +231,7 @@ og.MessageManager = function() {
 			id: 'cp_' + cps[i].id,
 			header: cps[i].name,
 			dataIndex: 'cp_' + cps[i].id,
-			sortable: false,
+			sortable: true,
 			renderer: og.clean
 		});
 	}

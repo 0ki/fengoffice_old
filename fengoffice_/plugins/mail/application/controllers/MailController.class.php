@@ -489,7 +489,7 @@ class MailController extends ApplicationController {
 				$linked_users = array();
 				
 				//create contacts from recipients of email
-				if (user_config_option('create_contacts_from_email_recipients') && can_manage_contacts(logged_user())) {
+				if (user_config_option('create_contacts_from_email_recipients') || can_manage_contacts(logged_user())) {
 					foreach ($to as $to_user) {
 						$linked_user = Contacts::getByEmail($to_user[1]);
 						if (!$linked_user instanceof Contact) {
@@ -652,7 +652,7 @@ class MailController extends ApplicationController {
 					$mail->subscribeUser($user);
 				}
 				
-				ApplicationLogs::createLog($mail,  ApplicationLogs::ACTION_ADD);
+				ApplicationLogs::createLog($mail,  ApplicationLogs::ACTION_ADD,false,true);
 				
 				/*if (user_config_option('create_contacts_from_email_recipients') && can_manage_contacts(logged_user())) {
 					// automatically create contacts
@@ -1985,7 +1985,7 @@ class MailController extends ApplicationController {
 		}
 		
 		if ($mailAccount->getIsImap()) {
-			try {
+			/*try {
 				$real_folders = MailUtilities::getImapFolders($mailAccount);
 				DB::beginWork();
 				foreach ($real_folders as $folder_name) {
@@ -2002,7 +2002,7 @@ class MailController extends ApplicationController {
 			} catch (Exception $e) {
 				DB::rollback();
 				flash_error($e->getMessage());
-			}
+			}*/
 			 
 			$imap_folders = MailAccountImapFolders::getMailAccountImapFolders($mailAccount->getId());
 			tpl_assign('imap_folders', $imap_folders);

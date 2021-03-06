@@ -29,8 +29,10 @@ if($current_member instanceof Member){
             } else {
             	if ($activity instanceof Member){
             		$crumbOptions = "";
-            	}else{
+            	} else if ($activity instanceof ContentDataObject) {
 					$crumbOptions = json_encode($activity->getMembersToDisplayPath());
+            	} else {
+            		continue;
             	}
 			}
             $crumbJs = " og.getCrumbHtml($crumbOptions) ";

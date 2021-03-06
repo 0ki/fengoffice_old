@@ -181,7 +181,7 @@ Hook::register("fengoffice");
 
 function fengoffice_reminder_email($reminder, &$ret) {
 	$object = $reminder->getObject();
-	if (!$object instanceof ContentDataObject) return;
+	if (!$object instanceof ContentDataObject || $object->isTrashed() || $object->isArchived()) return;
 	$date = $object->getColumnValue($reminder->getContext());
 	$valid = true;
 	Hook::fire('validate_reminder_email', $reminder, $valid);

@@ -62,7 +62,7 @@ class AccessController extends ApplicationController {
 		if(!is_array($login_data)) {
 			$login_data = array();
 			foreach($_GET as $k => $v) {
-				if(str_starts_with($k, 'ref_')) $login_data[$k] = $v;
+				if(str_starts_with($k, 'ref_')) $login_data[htmlspecialchars($k)] = htmlspecialchars($v);
 			} // foreach
 		} // if
 

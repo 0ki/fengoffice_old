@@ -217,4 +217,7 @@
 	'attach from fengoffice' => 'Anexar a partir do Feng Office',
 	'subscribed notification weblink' => 'Subscrever para o link da Web: {0}',
 	'subscribed notification weblink desc' => '{1} subscreveu você ao link da web:',
+	'mails_in_outbox reminder' => 'E-Mails não enviados',
+	'mails_in_outbox reminder desc' => 'Existem {0} e-mails que não foram enviados ainda. Por favor, acesse sua caixa de saída para mais informações',
+		
 ); ?>

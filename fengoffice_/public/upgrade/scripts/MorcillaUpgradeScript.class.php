@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Morcilla upgrade script will upgrade FengOffice 2.3.2.1 to FengOffice 2.4
+ * Morcilla upgrade script will upgrade FengOffice 2.3.2.1 to FengOffice 2.4.0.6
  *
  * @package ScriptUpgrader.scripts
  * @version 1.0
@@ -40,7 +40,7 @@ class MorcillaUpgradeScript extends ScriptUpgraderScript {
 	function __construct(Output $output) {
 		parent::__construct($output);
 		$this->setVersionFrom('2.3.2.1');
-		$this->setVersionTo('2.4');
+		$this->setVersionTo('2.4.0.6');
 	} // __construct
 
 	function getCheckIsWritable() {
@@ -125,23 +125,42 @@ class MorcillaUpgradeScript extends ScriptUpgraderScript {
 						('general', 'timeReportTimeslotType', '2', 'IntegerConfigHandler', 1, 0, ''),
 						('general', 'timeReportGroupBy', '0,0,0', 'StringConfigHandler', 1, 0, ''),
 						('general', 'timeReportAltGroupBy', '0,0,0', 'StringConfigHandler', 1, 0, ''),
-						('general', 'timeReportShowBilling', '0', 'BoolConfigHandler', 1, 0, '');
-					
-					ALTER TABLE `".$t_prefix."contact_addresses` MODIFY COLUMN `street` TEXT CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL;
-					ALTER TABLE `".$t_prefix."system_permissions` ADD COLUMN `can_manage_contacts` BOOLEAN NOT NULL DEFAULT 0;
-					
+						('general', 'timeReportShowBilling', '0', 'BoolConfigHandler', 1, 0, '')
+					ON DUPLICATE KEY UPDATE name=name;
+				";
+				if (!$this->checkColumnExists($t_prefix . "project_tasks", "from_template_object_id", $this->database_connection)) {
+					$upgrade_script .= "
+						ALTER TABLE `".$t_prefix."contact_addresses` MODIFY COLUMN `street` TEXT CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL;
+					";
+				}
+				if (!$this->checkColumnExists($t_prefix . "project_tasks", "from_template_object_id", $this->database_connection)) {
+					$upgrade_script .= "
+						ALTER TABLE `".$t_prefix."system_permissions` ADD COLUMN `can_manage_contacts` BOOLEAN NOT NULL DEFAULT 0;
+					";
+				}
+				$upgrade_script .= "
 					INSERT INTO `".$t_prefix."contact_config_options` (`category_name`, `name`, `default_value`, `config_handler_class`, `is_system`, `option_order`, `dev_comment`) VALUES 
 						('listing preferences', 'breadcrumb_member_count', '5', 'IntegerConfigHandler', '0', '5', NULL)
 					ON DUPLICATE KEY UPDATE name=name;
 					
 					INSERT INTO `".$t_prefix."object_types` (`name`,`handler_class`,`table_name`,`type`,`icon`,`plugin_id`) VALUES
  						('template_task', 'TemplateTasks', 'template_tasks', 'content_object', 'task', null),
-						('template_milestone', 'TemplateMilestones', 'template_milestones', 'content_object', 'milestone', null);
-					
-					ALTER TABLE `".$t_prefix."project_tasks` ADD `from_template_object_id` int(10) unsigned DEFAULT '0' AFTER from_template_id;
-					ALTER TABLE `".$t_prefix."project_milestones` ADD `from_template_object_id` int(10) unsigned DEFAULT '0' AFTER from_template_id;
-					/* from template object id queda en 0 para todos los objetos instanciados de templates ya que no se puede obtener */
-					
+						('template_milestone', 'TemplateMilestones', 'template_milestones', 'content_object', 'milestone', null)
+					ON DUPLICATE KEY UPDATE name=name;
+				";
+				if (!$this->checkColumnExists($t_prefix . "project_tasks", "from_template_object_id", $this->database_connection)) {
+					$upgrade_script .= "
+						ALTER TABLE `".$t_prefix."project_tasks` ADD `from_template_object_id` int(10) unsigned DEFAULT '0' AFTER from_template_id;
+						/* from template object id queda en 0 para todos los objetos instanciados de templates ya que no se puede obtener */
+					";
+				}
+				if (!$this->checkColumnExists($t_prefix . "project_milestones", "from_template_object_id", $this->database_connection)) {
+					$upgrade_script .= "
+						ALTER TABLE `".$t_prefix."project_milestones` ADD `from_template_object_id` int(10) unsigned DEFAULT '0' AFTER from_template_id;
+						/* from template object id queda en 0 para todos los objetos instanciados de templates ya que no se puede obtener */
+					";
+				}
+				$upgrade_script .= "
 					CREATE TABLE IF NOT EXISTS `".$t_prefix."template_tasks` (
 					  `template_id` int(10) unsigned DEFAULT NULL,
 					  `session_id` int(10) DEFAULT NULL,
@@ -210,7 +229,8 @@ class MorcillaUpgradeScript extends ScriptUpgraderScript {
 					FROM `".$t_prefix."template_objects` 
 					INNER JOIN `".$t_prefix."project_milestones` 
 					ON ".$t_prefix."template_objects.object_id = ".$t_prefix."project_milestones.object_id
-					AND ".$t_prefix."project_milestones.is_template =1;
+					AND ".$t_prefix."project_milestones.is_template =1
+					ON DUPLICATE KEY UPDATE ".$t_prefix."template_milestones.template_id=".$t_prefix."template_milestones.template_id;
 					
 					/* delete from project milestones, milestones that are template milestones */
 					DELETE FROM `".$t_prefix."project_milestones` WHERE `is_template` = 1;
@@ -274,7 +294,7 @@ class MorcillaUpgradeScript extends ScriptUpgraderScript {
 					SELECT tt.template_id, tt.object_id
 					FROM `".$t_prefix."template_tasks` AS tt
 					WHERE NOT EXISTS (SELECT * FROM `".$t_prefix."template_objects` AS to1 WHERE tt.object_id = to1.object_id);
-					UPDATE `fo_template_objects` t1, `fo_template_objects` t2
+					UPDATE `".$t_prefix."template_objects` t1, `".$t_prefix."template_objects` t2
 					SET t1.created_by_id = t2.created_by_id, t1.created_on = t2.created_on
 					WHERE t1.template_id = t2.template_id AND t2.created_by_id IS NOT NULL;
 					

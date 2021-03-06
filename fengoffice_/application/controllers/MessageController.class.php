@@ -56,6 +56,15 @@ class MessageController extends ApplicationController {
 				flash_error($actionMessage["errorMessage"]);
 			}
 		} 
+		
+		//if order by custom prop
+		if (strpos($order, 'p_') == 1 ){
+			$cpId = substr($order, 3);
+			$order = 'customProp';
+		}
+		$join_params = array();
+		$select_columns = array('*');
+		$extra_conditions = "";
 
 		switch ($order){
 			case 'updatedOn':
@@ -66,6 +75,16 @@ class MessageController extends ApplicationController {
 				break;
 			case 'name':
 				$order = '`name`';
+				break;
+			case 'customProp':
+				$order = 'IF(ISNULL(jt.value),1,0),jt.value';
+				$join_params['join_type'] = "LEFT ";
+				$join_params['table'] = "fo_custom_property_values";
+				$join_params['jt_field'] = "object_id";
+				$join_params['e_field'] = "object_id";
+				$join_params['on_extra'] = "AND custom_property_id = ".$cpId;
+				$extra_conditions.= " AND ( custom_property_id = ".$cpId. " OR custom_property_id IS NULL)";
+				$select_columns = array("DISTINCT o.*", "e.*");
 				break;
 			default:
 				$order = '`updated_on`';  
@@ -85,6 +104,9 @@ class MessageController extends ApplicationController {
 			"order_dir" => $order_dir,
 			"start" => $start,
 			"limit" => $limit,
+				"extra_conditions" => $extra_conditions,
+				"join_params"=> $join_params,
+				"select_columns"=> $select_columns
 		));
 		$messages = $res->objects ; 
 		

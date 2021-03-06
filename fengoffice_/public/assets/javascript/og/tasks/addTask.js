@@ -190,7 +190,7 @@ ogTasks.drawTaskForm = function(container_id, data){
 	  
 	// <ASSIGN_TO COMBO>
 	html += "<table><tr><td><div id='ogTasksPanelATAssigned' style='padding-top:5px;'><table><tr><td style='width:130px; vertical-align:middle;'><b>" + lang('assigned to') + ":&nbsp;</b></td><td><span id='ogTasksPanelATAssignedCont'></span></td></tr></table>";
-	html += '<div  id="ogTasksPanelATNotifyDiv"><label for="ogTasksPanelATNotify"><input style="width:14px;" type="checkbox" name="task[notify]" id="ogTasksPanelATNotify" ' + (chkIsChecked? 'checked':'') + '/>&nbsp;' + lang('send notification') + '</label></div>';
+	html += '<div  id="ogTasksPanelATNotifyDiv"><label for="ogTasksPanelATNotify"><input style="width:14px;" type="checkbox" tabindex="1250" name="task[notify]" id="ogTasksPanelATNotify" ' + (chkIsChecked? 'checked':'') + '/>&nbsp;' + lang('send notification') + '</label></div>';
 	//if (data.isEdit && data.subtasksCount>0) html += '<label for="ogTasksPanelApplyAssignee"><input style="width:14px;" type="checkbox" name="task[apply_assignee_subtasks]" id="ogTasksPanelApplyAssignee" />&nbsp;' + lang('apply assignee to subtasks') + '</label>';
 	html += '</div><td></tr></table>'; 
 	// </ASSIGN_TO COMBO>
@@ -210,8 +210,8 @@ ogTasks.drawTaskForm = function(container_id, data){
 		var minutes = totalTime % 60;
 		var hours = (totalTime - minutes) / 60;
 		html += "<div id='ogTasksPanelATTime' style='padding-top:5px;'><table><tr><td style='width:130px; vertical-align:middle;'><b>" + lang('estimated time') + ":</b></td><td>";
-		html += "<input type='text' id='ogTasksPanelATHours' style='width:25px' tabIndex=1250  name='task[time_estimate_hours]' value='" + hours + "'/>&nbsp;" + lang('hours') + "</td>";
-		html += "<td>&nbsp;<select name='task[time_estimate_minutes]' id='ogTasksPanelATMinutes' size='1' tabindex='1250'>";
+		html += "<input type='text' id='ogTasksPanelATHours' style='width:25px' tabIndex=1450  name='task[time_estimate_hours]' value='" + hours + "'/>&nbsp;" + lang('hours') + "</td>";
+		html += "<td>&nbsp;<select name='task[time_estimate_minutes]' id='ogTasksPanelATMinutes' size='1' tabindex='1450'>";
 		var minuteOptions = new Array(0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55);
 		for (var i = 0; i < 12; i++) {
 			html += "<option value=\"" + minuteOptions[i] + "\"";
@@ -385,7 +385,7 @@ ogTasks.drawTaskForm = function(container_id, data){
 			id: 'ogTasksPanelATStartTimeCmp',
 			width: 80,
                         format: og.config.time_format_use_24_duetime,
-			tabIndex: 1420,
+			tabIndex: 1320,
 			emptyText: 'hh:mm',
 			value: starttime
 		});

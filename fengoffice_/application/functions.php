@@ -877,17 +877,18 @@ function create_user($user_data, $permissionsString) {
 		}
 		$sp->setPermissionGroupId($permission_group->getId());
 
-		$sp->setCanManageSecurity(array_var($user_data, 'can_manage_security'));
-		$sp->setCanManageConfiguration(array_var($user_data, 'can_manage_configuration'));
-		$sp->setCanManageTemplates(array_var($user_data, 'can_manage_templates'));
-		$sp->setCanManageTime(array_var($user_data, 'can_manage_time'));
-		$sp->setCanAddMailAccounts(array_var($user_data, 'can_add_mail_accounts'));
-		$sp->setCanManageDimensions(array_var($user_data, 'can_manage_dimensions'));
-		$sp->setCanManageDimensionMembers(array_var($user_data, 'can_manage_dimension_members'));
-		$sp->setCanManageTasks(array_var($user_data, 'can_manage_tasks'));
-		$sp->setCanTasksAssignee(array_var($user_data, 'can_task_assignee'));
-		$sp->setCanManageBilling(array_var($user_data, 'can_manage_billing'));
-		$sp->setCanViewBilling(array_var($user_data, 'can_view_billing'));
+		if (isset($user_data['can_manage_security'])) $sp->setCanManageSecurity(array_var($user_data, 'can_manage_security'));
+		if (isset($user_data['can_manage_configuration'])) $sp->setCanManageConfiguration(array_var($user_data, 'can_manage_configuration'));
+		if (isset($user_data['can_manage_templates'])) $sp->setCanManageTemplates(array_var($user_data, 'can_manage_templates'));
+		if (isset($user_data['can_manage_time'])) $sp->setCanManageTime(array_var($user_data, 'can_manage_time'));
+		if (isset($user_data['can_add_mail_accounts'])) $sp->setCanAddMailAccounts(array_var($user_data, 'can_add_mail_accounts'));
+		if (isset($user_data['can_manage_dimensions'])) $sp->setCanManageDimensions(array_var($user_data, 'can_manage_dimensions'));
+		if (isset($user_data['can_manage_dimension_members'])) $sp->setCanManageDimensionMembers(array_var($user_data, 'can_manage_dimension_members'));
+		if (isset($user_data['can_manage_tasks'])) $sp->setCanManageTasks(array_var($user_data, 'can_manage_tasks'));
+		if (isset($user_data['can_task_assignee'])) $sp->setCanTasksAssignee(array_var($user_data, 'can_task_assignee'));
+		if (isset($user_data['can_manage_billing'])) $sp->setCanManageBilling(array_var($user_data, 'can_manage_billing'));
+		if (isset($user_data['can_view_billing'])) $sp->setCanViewBilling(array_var($user_data, 'can_view_billing'));
+		if (isset($user_data['can_see_assigned_to_other_tasks'])) $sp->setColumnValue('can_see_assigned_to_other_tasks', array_var($user_data, 'can_see_assigned_to_other_tasks'));
 		
 		Hook::fire('add_user_permissions', $sp, $other_permissions);
 		if (!is_null($other_permissions) && is_array($other_permissions)) {
@@ -1036,10 +1037,16 @@ function create_user($user_data, $permissionsString) {
 		$contact->addToSharingTable();
 	}
 	
+	return $contact;
+}
+
+// Warning don't use this function inside a mysql transaction, use it after comit.
+function send_notification($user_data, $contact_id){
+	$contact = Contacts::findById($contact_id);//$contact->getId()
+	$password = '';
 	// Send notification
 	try {
 		if (array_var($user_data, 'send_email_notification') && $contact->getEmailAddress()) {
-                    
 			if (array_var($user_data, 'password_generator', 'link') == 'link') {
 				// Generate link password
 				$user = Contacts::getByEmail(array_var($user_data, 'email'));
@@ -1047,16 +1054,15 @@ function create_user($user_data, $permissionsString) {
 				$timestamp = time() + 60*60*24;
 				set_user_config_option('reset_password', $token . ";" . $timestamp, $user->getId());
 				Notifier::newUserAccountLinkPassword($contact, $password, $token);
-
 			} else {
+				$password = array_var($user_data, 'password');
 				Notifier::newUserAccount($contact, $password);
 			}
-			
+				
 		}
 	} catch(Exception $e) {
 		Logger::log($e->getTraceAsString());
 	} // try
-	return $contact;
 }
 
 function utf8_safe($text) {

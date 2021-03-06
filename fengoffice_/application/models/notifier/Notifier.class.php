@@ -520,29 +520,30 @@ class Notifier {
 		$locale = logged_user() instanceof Contact ? logged_user()->getLocale() : DEFAULT_LOCALIZATION;
 		Localization::instance()->loadSettings($locale, ROOT . '/language');
 	} // newUserAccount
-        
-        static function newUserAccountLinkPassword(Contact $user, $raw_password, $token = null) {
+
+	static function newUserAccountLinkPassword(Contact $user, $raw_password, $token = null) {
 		tpl_assign('new_account', $user);
 		tpl_assign('raw_password', $raw_password);
-                tpl_assign('type_notifier',"link_pass");
-                
-                //generate password                
-                $new_password = $user->resetPassword(true);
-		tpl_assign('token',$token);                
+		tpl_assign('type_notifier',"link_pass");
+
+		//generate password
+		$new_password = $user->resetPassword(true);
+		tpl_assign('token',$token);
 
 		$sender = $user->getCreatedBy() instanceof Contact ? $user->getCreatedBy() : owner_company()->getCreatedBy();
-		
+
 		$locale = $user->getLocale();
 		Localization::instance()->loadSettings($locale, ROOT . '/language');
 		$toemail = $user->getEmailAddress();
-		if (!$toemail) continue;
-		self::queueEmail(
-			array(self::prepareEmailAddress($toemail, $user->getObjectName())),
-			self::prepareEmailAddress($sender->getEmailAddress(), $sender->getObjectName()),
-			lang('your account created'),
-			tpl_fetch(get_template_path('new_account', 'notifier'))
-		); // send
-		
+		if ($toemail) {
+			self::queueEmail(
+				array(self::prepareEmailAddress($toemail, $user->getObjectName())),
+				self::prepareEmailAddress($sender->getEmailAddress(), $sender->getObjectName()),
+				lang('your account created'),
+				tpl_fetch(get_template_path('new_account', 'notifier'))
+			); // send
+		}
+
 		$locale = logged_user() instanceof Contact ? logged_user()->getLocale() : DEFAULT_LOCALIZATION;
 		Localization::instance()->loadSettings($locale, ROOT . '/language');
 	} // newUserAccount

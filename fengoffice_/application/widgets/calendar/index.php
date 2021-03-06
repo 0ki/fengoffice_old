@@ -45,7 +45,7 @@ if ($calendar_panel instanceof TabPanel && $calendar_panel->getEnabled()) {
 	
 	$date_start = new DateTimeValue(mktime(0, 0, 0, $currentmonth, $startday, $currentyear)); 
 	$date_end = new DateTimeValue(mktime(0, 0, 0, $currentmonth, $endday, $currentyear)); 
-	//$milestones = ProjectMilestones::getRangeMilestonesByUser($date_start, $date_end, $user_filter, $tags, active_project());
+
 	$tmp_tasks = ProjectTasks::instance()->getRangeTasksByUser($date_start, $date_end, $user_filter );
 	$birthdays = Contacts::instance()->getRangeContactsByBirthday($date_start, $date_end);
 	
@@ -74,7 +74,7 @@ if ($calendar_panel instanceof TabPanel && $calendar_panel->getEnabled()) {
 	$year = date("Y");
 	// Loop to render the calendar
 	
-	$can_add_event = !active_project() || ProjectEvent::canAdd(logged_user(),active_project());	
+	$can_add_event = ProjectEvent::canAdd(logged_user(), active_context());
 	$output .= "<tr>";
 	
 	if(!user_config_option("start_monday")) {
@@ -183,7 +183,7 @@ if ($calendar_panel instanceof TabPanel && $calendar_panel->getEnabled()) {
 			//if($day_of_month >= 1){
 				$output .= "<a class='internalLink' href=\"$p\" onclick=\"og.disableEventPropagation(event);\"  style='color:#5B5B5B' >$w</a>";				
 				// only display this link if the user has permission to add an event
-				if(!active_project() || ProjectEvent::canAdd(logged_user(),active_project())){
+				if(ProjectEvent::canAdd(logged_user(),active_context())){
 					// if single digit, add a zero
 					$dom = $day_of_month;
 					if($dom < 10) $dom = "0".$dom;
@@ -195,7 +195,6 @@ if ($calendar_panel instanceof TabPanel && $calendar_panel->getEnabled()) {
 			$output .= "</div>";
 			// This loop writes the events for the day in the cell
 			if (is_numeric($w)){
-				//$result = ProjectEvents::getDayProjectEvents($dtv, $tags, active_project(), logged_user()->getId(), ' 0 1 3');
 				$result = ProjectEvents::getDayProjectEvents($dtv,active_context(), logged_user()->getId(),' 0 1 3'); 
 				if(!$result)
 					$result = array();

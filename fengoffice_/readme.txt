@@ -1,5 +1,5 @@
 
-	About Feng Office 2.4
+	About Feng Office 2.4.0.6
 	================================
 	
 	Feng Office is a Collaboration Platform and Project Management System.
@@ -102,6 +102,44 @@
 	Changelog
 	=========
 	
+	Since 2.4.0.5
+	----------------
+	bugfix: Don't send notification when add mail.
+	
+	
+	Since 2.4.0.4
+	----------------
+	bugfix: Deprecated functions usage.
+	bugfix: Emtpy trash can was using a deprecated function with performance issues.
+	bugfix: Missing parameters in function invocation.
+	
+	
+	Since 2.4.0.3
+	----------------
+	bugfix: can't delete template task, permission denied.
+	
+	
+	Since 2.4.0.2
+	----------------
+	bugfix: langs customer_folder and project_folder.
+	bugfix: can't add contacts from mail.
+	bugfix: on activity widget move action don't display.
+	bugfix: when create user, notifications break mysql transaction.
+	
+	
+	Since 2.4.0.1
+	----------------
+	
+	bugfix: cron process to emtpy trash can does not delete members asociated to contacts.
+	
+	
+	Since 2.4.0
+	----------------
+	
+	bugfix: tab order fix in quick add task; 
+	bugfix: issue when create a subtask from task view;
+	
+	
 	Since 2.4-rc
 	----------------
 	
@@ -120,7 +158,7 @@
 	bugfix: don't display group-mailer button if user doesn't have an email account.
 	bugfix: allow mail rules for all incoming messages, useful for autoreplies.
 	bugfix: the invitations of the events created on google calendar will have the same special ID of the event.
-	
+		
 	
 	Since 2.4-beta
 	----------------

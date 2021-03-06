@@ -169,7 +169,9 @@ $use_owner_company_logo = owner_company()->hasLogo();
 			<div class="clear"></div>
 			<?php echo render_user_box(logged_user())?>
 		</div>
-		<?php Hook::fire('render_page_header', null, $ret); 
+		<?php Hook::fire('render_page_header', null, $ret);
+			  $ignored = null; 
+			  Hook::fire('demo_header', null, $ignored);
 			  Hook::fire('on_page_load', 'mail', $ret);
 		?>
         <script>
@@ -274,8 +276,8 @@ $use_owner_company_logo = owner_company()->hasLogo();
                     });
                     
                     $("#searchButton").click(function () {
-						if($("#search_for").val() != ""){
-                        	$("#searchButtonReal").click();                            
+						if($("#search_for_in").val() != ""){
+							$("#searchButtonReal").click();                            
                         }                  
                     });
                     

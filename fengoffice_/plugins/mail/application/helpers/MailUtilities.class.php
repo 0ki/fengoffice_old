@@ -401,7 +401,7 @@ class MailUtilities {
 						// remove html comments
 						$body = preg_replace('/<!--.*-->/i', '', $body);
 					}
-					$body = utf8_safe($body);
+			//		$body = utf8_safe($body);
 					if ($alt['Type'] == 'html') {
 						$mail->setBodyHtml($body);
 					} else if ($alt['Type'] == 'text') {

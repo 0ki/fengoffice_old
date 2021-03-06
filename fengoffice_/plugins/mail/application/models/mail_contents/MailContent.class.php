@@ -551,7 +551,7 @@ class MailContent extends BaseMailContent {
     		} // foreach
     	} // if
 
-    	$rows = DB::executeAll("select column_name from fo_searchable_objects where rel_object_id=".$this->getObjectId());
+    	$rows = DB::executeAll("select column_name from ".TABLE_PREFIX."searchable_objects where rel_object_id=".$this->getObjectId());
     	
     	if ($wasNew){
     		SearchableObjects::dropContentByObjectColumn($this, 'uid');
@@ -564,7 +564,7 @@ class MailContent extends BaseMailContent {
 
     		$searchable_object->save();
     	}
-    	$rows = DB::executeAll("select column_name from fo_searchable_objects where rel_object_id=".$this->getObjectId());
+    	$rows = DB::executeAll("select column_name from ".TABLE_PREFIX."searchable_objects where rel_object_id=".$this->getObjectId());
     	
     }
 	

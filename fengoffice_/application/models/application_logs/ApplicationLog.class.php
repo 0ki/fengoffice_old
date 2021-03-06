@@ -412,6 +412,7 @@ class ApplicationLog extends BaseApplicationLog {
 			case ApplicationLogs::ACTION_LOGIN :
 			case ApplicationLogs::ACTION_LOGOUT :
 				return lang('activity ' . $this->getAction(), $userName);
+			case ApplicationLogs::ACTION_MOVE :
 			case ApplicationLogs::ACTION_COPY :				
 				$to_str = "";
 				$to_str_member = "";

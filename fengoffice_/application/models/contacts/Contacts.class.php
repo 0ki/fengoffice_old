@@ -399,10 +399,10 @@ class Contacts extends BaseContacts {
 		
 		if(is_array($errors) && count($errors)) {
 			throw new DAOValidationError(self::instance(), $errors);
-		} 
+		}
 	}
-        
-        function getUserDisplayName($user_id) {
+
+	function getUserDisplayName($user_id) {
 		$user = Contacts::findById($user_id);
 		if ($user) {
 			return $user->getDisplayName();

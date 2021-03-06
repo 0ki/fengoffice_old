@@ -5,7 +5,7 @@ class Trash {
 		Env::useHelper("permissions");
 		$days = config_option("days_on_trash");
 		$count = 0;
-		if ($days > 0) {
+		if ($days >= 0) {
 			$date = DateTimeValueLib::now()->add("d", -$days);
 			
 			$mail_join = "";
@@ -39,6 +39,8 @@ class Trash {
 					Logger::log("Error delting object in purge_trash: " . $e->getMessage(), Logger::ERROR);
 				}
 			}
+			$ignored = null;
+			Hook::fire('after_object_delete_permanently', $objects, $ignored);
 		}
 		return $count;
 	}
