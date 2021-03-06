@@ -812,5 +812,7 @@ addLangs({
 	'access member' : 'Acceder a {0}',
 	'stay at' : 'Quedarse en {0}',
 	'general view': 'Vista general',
-	'save as' : 'Guardar como {0}'
+	'save as' : 'Guardar como {0}',
+	
+	'viewing all information' : 'Viendo toda la Infomación'
 });

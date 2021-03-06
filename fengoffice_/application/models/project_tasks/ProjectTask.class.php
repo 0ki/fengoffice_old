@@ -358,7 +358,7 @@ class ProjectTask extends BaseProjectTask {
 	 *
 	 * @access public
 	 * @param void
-	 * @return null
+	 * @return $log_info
 	 */
 	function completeTask($options) {
 		if (!$this->canChangeStatus(logged_user())) {
@@ -418,7 +418,7 @@ class ProjectTask extends BaseProjectTask {
 		}
 		$this->setPercentCompleted(100);
 		$this->save();
-		ApplicationLogs::createLog($this, ApplicationLogs::ACTION_CLOSE, false, false, true, substr($log_info,0,-1));
+		return $log_info;
 	} // completeTask
 
 	/**
@@ -426,7 +426,7 @@ class ProjectTask extends BaseProjectTask {
 	 *
 	 * @access public
 	 * @param void
-	 * @return null
+	 * @return $log_info
 	 */
 	function openTask() {
 		if (!$this->canChangeStatus(logged_user())) {
@@ -468,7 +468,8 @@ class ProjectTask extends BaseProjectTask {
 			$open_tasks = $task_list->getOpenSubTasks();
 			if(!empty($open_tasks)) $task_list->open();
 		} // if*/
-		ApplicationLogs::createLog($this, ApplicationLogs::ACTION_OPEN, false, false, true, substr($log_info,0,-1));
+		
+		return $log_info;
 	} // openTask
 
 	function getRemainingDays(){

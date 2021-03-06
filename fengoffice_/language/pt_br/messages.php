@@ -660,4 +660,5 @@
 	'contact email is required to create user' => 'A fim de criar um usuário, o contato deve ter um endereço de e-mail. Edite o contato e volte a tentar',
 	'success delete member' => '{0} foi excluído',
 	'disable' => 'Desabilitado',
+	'log read contact' => 'Visualizada \'{0}\'',
 ); ?>

@@ -606,4 +606,8 @@
 	'remove all filters' => 'Remover todos os filtros',
 	'plugins' => 'Plugins',
 	'located under' => 'Localizado sob',
+	'add contact here' => 'Adicionar Pessoa Aqui',
+	'user date bold' => '<a class="internalLink" href="{0}" title="View {3}\'s profile">{1}</a>, <b>Em</b> {2}',
+	'user date today at bold' => '<a class="internalLink" href="{0}" title="View {3}\'s profile">{1}</a>, <b>hoje as</b> {2}',
+	'pending' => 'Pendente',
 ); ?>

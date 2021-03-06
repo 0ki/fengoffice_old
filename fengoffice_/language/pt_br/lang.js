@@ -793,5 +793,7 @@ addLangs({
 	'access member': 'Acesso {0}',
 	'stay at': 'Permaneça em {0}',
 	'general view': 'Visãop geral',
-	'save as': 'Salvar como {0}'
+	'save as': 'Salvar como {0}',
+	'to date': 'Até',
+	'from date': 'De'
 });

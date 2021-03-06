@@ -175,4 +175,5 @@
 	'recent activities to show lines' => '行数',
 	'views and downloads' => '表示とダウンロードの回数を表示',
 	'confirm delete permanently sync' => '同期したデータを本当に削除しますか?',
+	'save with a new name' => '新しい名前で保存',
 ); ?>

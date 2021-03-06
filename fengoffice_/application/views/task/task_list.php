@@ -35,7 +35,7 @@ $description = "";
 		if($task_list->getTypeContent() == "text"){
 			echo escape_html_whitespace(convert_to_links(clean($task_list->getText())));
 		}else{
-			echo purify_html(nl2br($task_list->getText()));
+			echo convert_to_links(purify_html(nl2br($task_list->getText())));
 		}
 	?></div>
   

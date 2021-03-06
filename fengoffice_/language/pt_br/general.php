@@ -306,4 +306,13 @@
 	'Guest Customer' => 'Cliente Convidado',
 	'Guest' => 'Convidado',
 	'Non-Exec Director' => 'Diretor não Executivo',
+	'by time' => 'antes',
+	'at' => 'em',
+	'Non registered person (add one from scratch)' => 'Pessoa não registrada (adicionar uma a partir do zero)',
+	'Registered Person' => 'Pessoa Registrada',
+	'View and edit all details' => 'Exibir e editar todos os detalhes',
+	'view all_people' => 'Ver tudo',
+	'add people to' => 'Adicionar pessoas para',
+	'add people' => 'Adicionar pessoas',
+	'permissions for unclassified objects' => 'Permissões para objetos sem classificação',
 ); ?>

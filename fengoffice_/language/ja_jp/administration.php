@@ -294,4 +294,13 @@
 	'config option desc show_tab_icons' => 'このオプションはそれぞれのタブにアイコンを表示します。',
 	'user ws config category name listing preferences' => 'リストのオプション',
 	'config option name automatic_crpm_status_calculation' => '顧客とプロジェクトの自動状態',
+	'config category name documents' => 'ファイル',
+	'config category desc documents' => 'ファイルの構成を管理します。',
+	'user config option name sendEmailNotification' => '電子メールで通知を送信',
+	'user config option desc sendEmailNotification' => 'これを設定すると、作成したユーザーに通知の電子メールを送信します。',
+	'owned by' => '所有者',
+	'config option name can_assign_tasks_to_companies' => 'タスクを会社に割り当て可能',
+	'config option desc can_assign_tasks_to_companies' => 'これを有効にすると、タスクを追加や変更するときに「割り当て先」の選択肢を表示します。',
+	'config option name use_object_properties' => 'オブジェクトの属性を使用',
+	'config option desc use_object_properties' => 'このオプションを有効にすると、それぞれのオブジェクトに独自の属性(キーと値)を設定できます。',
 ); ?>

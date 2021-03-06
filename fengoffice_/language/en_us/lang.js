@@ -913,6 +913,8 @@ addLangs({
 	'access member' : 'Access {0}',
 	'stay at' : 'Stay at {0}',
 	'general view': 'General view',
-	'save as' : 'Save as {0}'
+	'save as' : 'Save as {0}',
+	
+	'viewing all information' : 'Viewing all Information'
 	
 });

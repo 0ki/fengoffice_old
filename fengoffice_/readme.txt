@@ -1,5 +1,5 @@
 
-	About Feng Office 2.5-rc
+	About Feng Office 2.5
 	================================
 	
 	Feng Office is a Collaboration Platform and Project Management System.
@@ -101,6 +101,16 @@
 	
 	Changelog
 	=========
+	
+	Since 2.5-rc
+	----------------
+	
+	bugfix: general search form submitted by enter key doesn't work in Google Chrome
+	bugfix: links are now saved as such when using WYSIWYG
+	bugfix: primary-breadcrumb show exact context
+	bugfix: mysql transaction problem when sending emails without using a cronjob
+	bugfix: when making a new installation, users were not shown by default
+	
 	
 	Since 2.5-beta
 	----------------

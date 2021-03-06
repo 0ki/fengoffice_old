@@ -288,6 +288,17 @@ $use_owner_company_logo = owner_company()->hasLogo();
                     	$("#searchButton").prop("disabled",true);
                     	$("#search_for_in").prop("disabled",true);
                     });
+
+                  	//if enter key press on chrome submit the form
+                    if (navigator.userAgent.toLowerCase().indexOf('chrome')>-1){
+                    	$('#form_search').keypress(function(e){
+	                        if(e.which == 13){
+	                            if($("#search_for_in").val() != ""){
+	                            	$("#searchButtonReal").click();                            
+	                            }        
+	                        }
+	                    });
+                    }
                 }
             );
         </script>

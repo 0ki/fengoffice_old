@@ -595,7 +595,7 @@ class MailController extends ApplicationController {
 				set_user_config_option('last_mail_format', array_var($mail_data, 'format', 'plain'), logged_user()->getId());
 				$body = utf8_safe($body);
 				if (array_var($mail_data,'format') == 'html') {
-					$body = preg_replace("/<body*[^>]*>/i",'<body>', $body);
+					$body = convert_to_links(preg_replace("/<body*[^>]*>/i",'<body>', $body));
 					$mail->setBodyHtml($body);
 					$mail->setBodyPlain(utf8_safe(html_to_text($body)));
 				} else {

@@ -283,4 +283,7 @@ Assunto:   {0}
 	'open subtasks' => 'Subtarefas pendentes',
 	'field workspace color' => 'Cor da Área de Trabalho',
 	'linked weblink tab' => 'Links Web',
+	'assigned by' => 'Designada por',
+	'to start' => 'Iniciar',
+	'work performed' => 'Performance do trabalho',
 ); ?>

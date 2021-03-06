@@ -253,4 +253,7 @@
 	'field ProjectTasks percent_completed' => 'Percentual executado',
 	'field ProjectTasks original_task_id' => 'Id original de tarefa',
 	'field Contacts comments' => 'Notas',
+	'is_user' => 'É usuário',
+	'field Objects is_user' => 'É usuário',
+	'field Contacts is_user' => 'É usuário',
 ); ?>

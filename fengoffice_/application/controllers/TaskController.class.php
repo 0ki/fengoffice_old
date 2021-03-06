@@ -148,7 +148,7 @@ class TaskController extends ApplicationController {
 //					$timeslot->save();
 //				}
 
-				ApplicationLogs::createLog($task, ApplicationLogs::ACTION_ADD);
+				
 				$assignee = $task->getAssignedToContact();
 				if ($assignee instanceof Contact) {
 					$task->subscribeUser($assignee);
@@ -201,7 +201,7 @@ class TaskController extends ApplicationController {
 				$task->subscribeUser(logged_user());
                                 
 				DB::commit();
-
+				ApplicationLogs::createLog($task, ApplicationLogs::ACTION_ADD);
 				// notify asignee
 				if(array_var($task_data, 'notify') == 'true') {
 					try {
@@ -522,6 +522,9 @@ class TaskController extends ApplicationController {
 		$tasksToReturn = array();
 		$subt_info = array();
 		$showSuccessMessage = true;
+		
+		
+		$application_logs = array();
 		try{
 			DB::beginWork();
 			foreach($ids as $id){
@@ -529,8 +532,8 @@ class TaskController extends ApplicationController {
 				switch ($action){
 					case 'complete':
 						if ($task->canEdit(logged_user())){
-							$task->completeTask($options);
-
+							$log_info = $task->completeTask($options);
+							$application_logs[] = array($task,ApplicationLogs::ACTION_CLOSE,false, false, true, substr($log_info,0,-1));
 							// if task is repetitive, generate a complete instance of this task and modify repeat values
 							if ($task->isRepetitive()) {
 								$complete_last_task = false;
@@ -569,8 +572,7 @@ class TaskController extends ApplicationController {
 						if ($task->canDelete(logged_user())){
 							$tasksToReturn[] = array('id' => $task->getId());
 							$task->trash();
-							ApplicationLogs::createLog($task, ApplicationLogs::ACTION_TRASH);
-
+							$application_logs[] = array($task, ApplicationLogs::ACTION_TRASH);
 							if($options == "news" || $options == "all"){
 								$tasksToReturn_related = $this->repetitive_tasks_related($task,"delete",$options);
 								foreach ($tasksToReturn_related as $tasksToReturn_rel){
@@ -583,8 +585,7 @@ class TaskController extends ApplicationController {
 						if ($task->canEdit(logged_user())){
 							$tasksToReturn[] = $task->getArrayInfo();
 							$task->archive();
-							ApplicationLogs::createLog($task, ApplicationLogs::ACTION_ARCHIVE);
-
+							$application_logs[] = array($task, ApplicationLogs::ACTION_ARCHIVE);
 							if($options == "news" || $options == "all"){
 								$tasksToReturn_related = $this->repetitive_tasks_related($task,"archive",$options);;
 								foreach ($tasksToReturn_related as $tasksToReturn_rel){
@@ -596,8 +597,7 @@ class TaskController extends ApplicationController {
 					case 'start_work':
 						if ($task->canEdit(logged_user())){
 							$timeslot = $task->addTimeslot(logged_user());
-							ApplicationLogs::createLog($timeslot, ApplicationLogs::ACTION_OPEN,false,true);
-
+							$application_logs[] = array($timeslot, ApplicationLogs::ACTION_OPEN,false,true);
 							$tasksToReturn[] = $task->getArrayInfo();
 							$showSuccessMessage = false;
 						}
@@ -605,8 +605,7 @@ class TaskController extends ApplicationController {
 					case 'close_work':
 						if ($task->canEdit(logged_user())){
 							$timeslot = $task->closeTimeslots(logged_user(),array_var($_POST, 'options'));
-							ApplicationLogs::createLog($timeslot, ApplicationLogs::ACTION_CLOSE,false,true);
-
+							$application_logs[] = array($timeslot, ApplicationLogs::ACTION_CLOSE,false,true);
 							$tasksToReturn[] = $task->getArrayInfo();
 							$showSuccessMessage = false;
 						}
@@ -636,12 +635,19 @@ class TaskController extends ApplicationController {
 						$showSuccessMessage = false;
 						break;
 					default:
-						DB::rollback();
+						//DB::rollback();
 						flash_error(lang('invalid action'));
 						return;
 				} // end switch
 			} // end foreach
 			DB::commit();
+						
+			foreach ($application_logs as $log){				
+				if(count($log) >= 2 && $log[0] instanceof ApplicationDataObject){
+					call_user_func_array( 'ApplicationLogs::createLog', $log );	
+				}			
+			}			
+			
 			if (count($tasksToReturn) < $count_tasks) {
 				flash_error(lang('tasks updated') . '. ' . lang('some tasks could not be updated due to permission restrictions'));
 			} else if ($showSuccessMessage) {
@@ -2111,7 +2117,7 @@ class TaskController extends ApplicationController {
 			$reload_view = false;
 			DB::beginWork();
 			
-			$task->completeTask($options);
+			$log_info = $task->completeTask($options);
 			
 			// if task is repetitive, generate a complete instance of this task and modify repeat values
 			if ($task->isRepetitive()) {
@@ -2143,6 +2149,7 @@ class TaskController extends ApplicationController {
 			}
 			
 			DB::commit();
+			ApplicationLogs::createLog($task, ApplicationLogs::ACTION_CLOSE, false, false, true, substr($log_info,0,-1));
 			flash_success(lang('success complete task'));
 
 			$subt_info = array();
@@ -2197,7 +2204,7 @@ class TaskController extends ApplicationController {
 
 		try {
 			DB::beginWork();
-			$task->openTask();
+			$log_info = $task->openTask();
 				
 			/*FIXME $opened_tasks = array();
 			 $parent = $task->getParent();
@@ -2216,7 +2223,7 @@ class TaskController extends ApplicationController {
 			//Already called in openTask
 			//ApplicationLogs::createLog($task, ApplicationLogs::ACTION_OPEN);
 			DB::commit();
-				
+			ApplicationLogs::createLog($task, ApplicationLogs::ACTION_OPEN, false, false, true, substr($log_info,0,-1));
 			flash_success(lang('success open task'));
 				
 			//$redirect_to = array_var($_GET, 'redirect_to', false);

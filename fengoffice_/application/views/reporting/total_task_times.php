@@ -105,6 +105,8 @@
 					$sub_total_estimated += $task->getTimeEstimate();
 				}
 				$tasks[] = $task->getId();
+			}elseif(array_var($options, 'timeslot_type') == 0 || array_var($options, 'timeslot_type') == 2){
+				echo "<td class='time nobr right'> 0 </td>";
 			}
 			echo "</tr>";
 			
