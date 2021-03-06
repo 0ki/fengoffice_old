@@ -3,7 +3,12 @@
   add_page_action(lang('reply to all mail'), $email->getReplyMailUrl()."&all=1"  , 'ico-reply-all');
   add_page_action(lang('forward mail'), $email->getForwardMailUrl()  , 'ico-forward');
   if($email->canDelete(logged_user())) {
-    add_page_action(lang('delete email'),"javascript:if(confirm(lang('confirm delete mail content'))) {og.openLink('" . $email->getDeleteUrl() ."');}" , 'ico-delete');
+  		if ($email->isTrashed()) {
+    		add_page_action(lang('restore from trash'), "javascript:if(confirm(lang('confirm restore objects'))) og.openLink('" . $email->getUntrashUrl() ."');", 'ico-restore');
+    		add_page_action(lang('delete permanently'), "javascript:if(confirm(lang('confirm delete permanently'))) og.openLink('" . $email->getDeletePermanentlyUrl() ."');", 'ico-delete');
+    	} else {
+    		add_page_action(lang('move to trash'), "javascript:if(confirm(lang('confirm move to trash'))) og.openLink('" . $email->getTrashUrl() ."');", 'ico-trash');
+    	}
   }
   if ($email->canEdit(logged_user())){
     add_page_action(lang('classify'), $email->getClassifyUrl(), 'ico-classify');
@@ -18,7 +23,7 @@
 
 	<?php $description = '<div class="coInfo">
 	<table>
-	<tr><td style="width:100px">' . lang('from') . ':</td><td>' . clean($email->getFromName()) . '</td></tr>
+	<tr><td style="width:100px">' . lang('from') . ':</td><td>' . clean($email->getFromName()) . ' (' . clean($email->getFrom()) . ')' . '</td></tr>
 	<tr><td>' . lang('to') . ':</td><td>' . MailUtilities::displayMultipleAddresses($email->getTo()) . '</td></tr>
 	<tr><td>' . lang('date') . ':</td><td>' . $email->getSentDate()->format('D, d M Y H:i:s') . '</td></tr>';
 	
@@ -46,24 +51,15 @@
   $description .= '</table></div>';
   
 		if($email->getBodyHtml() != ''){
-			$content = convert_to_links($email->getBodyHtml());
+			$content = remove_css_and_scripts(convert_to_links($email->getBodyHtml()));
 			
 			$ispan = strpos(strtoupper($content),"<STYLE>");
 			$body = strpos(strtoupper($content),"<BODY>");
-			while ($ispan > 0 && ($body <= 0 || $ispan < $body)){
-				$iendspan = strpos(strtoupper($content), "</STYLE>") + 8;
-				$totLength = $iendspan - $ispan;
-				if ($totLength > 0)
-					$content = substr($content,0,$ispan) . substr($content,$iendspan);
-					
-				$ispan = strpos(strtoupper($content),"<STYLE>");
-				$body = strpos(strtoupper($content),"<BODY>");
-			}
 		} else {
 			if ($email->getBodyPlain() != ''){
-				$content =  '<div>' . convert_to_links(nl2br(clean($email->getBodyPlain()))) . '</div>';
+				$content =  '<div>' . nl2br(convert_to_links(clean($email->getBodyPlain()))) . '</div>';
 			} else {
-				$content =  '<div>' . convert_to_links(nl2br(clean($email->getContent()))) . '</div>';
+				$content =  '<div>' . nl2br(convert_to_links(clean($email->getContent()))) . '</div>';
 			}
 		}
 		$strDraft = '';

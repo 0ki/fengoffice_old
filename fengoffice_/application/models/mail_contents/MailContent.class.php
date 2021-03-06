@@ -345,6 +345,24 @@ class MailContent extends BaseMailContent {
 	          } // if
 	        } // foreach
     	} // if
+    	
+    	if ($this->isNew() || ($this->isColumnModified('project_id'))){
+        	if (!$this->isNew())
+    			SearchableObjects::dropContentByObjectColumns($this,array('uid'));
+        	$searchable_object = new SearchableObject();
+            
+            $searchable_object->setRelObjectManager(get_class($this->manager()));
+            $searchable_object->setRelObjectId($this->getObjectId());
+            $searchable_object->setColumnName('uid');
+            $searchable_object->setContent($this->getUniqueObjectId());
+	        if($this->getProject() instanceof Project)
+	           	$searchable_object->setProjectId($this->getProject()->getId());
+	        else
+	           	$searchable_object->setProjectId(0);
+            $searchable_object->setIsPrivate(false);
+            
+            $searchable_object->save();
+        }
     }
 	
 	/**
@@ -406,6 +424,14 @@ class MailContent extends BaseMailContent {
     		$type = "email";
     	}
     	
+  		$deletedOn = $this->getTrashedOn() ? $this->getTrashedOn()->getTimestamp() : lang('n/a');
+    	$deletedBy = Users::findById($this->getTrashedById());
+    	if ($deletedBy instanceof User) {
+    		$deletedBy = $deletedBy->getDisplayName();
+    	} else {
+    		$deletedBy = lang("n/a");
+    	}
+    	
     	return array(
 				"id" => $this->getObjectTypeName() . $this->getId(),
 				"object_id" => $this->getId(),
@@ -422,7 +448,10 @@ class MailContent extends BaseMailContent {
 				"projectId" => $projectId,
     			"workspaceColors" => $this->getWorkspaceColorsCSV(),
 				"url" => $this->getObjectUrl(),
-				"manager" => get_class($this->manager())
+				"manager" => get_class($this->manager()),
+    			"deletedById" => $this->getTrashedById(),
+    			"deletedBy" => $deletedBy,
+    			"dateDeleted" => $deletedOn
 		);
 	}
 	

@@ -343,7 +343,7 @@ between the cells of the main calendar.  */
   color: black;
   background-color: #FFFFCC;
   border: 1px solid  #999999;
-  height: 90px; 
+/*  height: 90px;*/ 
 }
 
 #calendar td.selectedday{
@@ -351,7 +351,7 @@ between the cells of the main calendar.  */
   color: black;
   background-color: #F5FFFF;
   border: 1px solid  #999999;
-  height: 90px; 
+  /*height: 90px; */
 }
 
 #calendar div.extralink{

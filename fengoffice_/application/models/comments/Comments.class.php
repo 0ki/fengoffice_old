@@ -66,12 +66,13 @@
 		";
 		$rows = DB::executeAll($sql);
 		$comments = array();
-		if (!is_array($rows)) return $comments;
 		$s = 0; $count = 0;
+		if (!is_array($rows)) return $comments;
 		foreach ($rows as $row) {
 			$comment = Comments::findById($row['id']);
 			$add = false;
-			if ($comment->getObject()->canView($user)) {
+			$object = $comment->getObject();
+			if ($object instanceof ApplicationDataObject && $object->canView($user)) {
 				if ($workspace instanceof Project) {
 					$workspaces = $comment->getWorkspaces();
 					foreach ($workspaces as $w) {

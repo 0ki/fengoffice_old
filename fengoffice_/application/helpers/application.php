@@ -119,10 +119,10 @@ function select_project($name, $projects, $selected = null, $attributes = null, 
 	return select_box($name, $options, $attributes);
 } // select_project
 
-function select_project2($name, $projectId, $genid) {
+function select_project2($name, $projectId, $genid, $allowNone = false) {
 	$html = "<div id='" . $genid  . "wsSel'></div>";
 	$html .= "<script type='text/javascript'>
-	og.drawWorkspaceSelector('" .  $genid  . "wsSel'," . $projectId . ", '" . $name ."');
+	og.drawWorkspaceSelector('" .  $genid  . "wsSel'," . $projectId . ", '" . $name ."', " . ($allowNone? 'true':'false') . " );
 	</script>";
 	
 	return $html;
@@ -134,7 +134,7 @@ function select_project2($name, $projectId, $genid) {
  * @param string $name
  * 		Name for the control
  * @param array $workspaces
- * 		Array of workspaces to choose from
+ * 		Array of workspaces to choose from. If null the workspaces from the WorkspacePanel will be loaded.
  * @param array $selected
  * 		Array of workspaces selected by default
  * @return string
@@ -142,7 +142,6 @@ function select_project2($name, $projectId, $genid) {
  */
 function select_workspaces($name = "", $workspaces = null, $selected = null, $id = null) {
 	if (!isset($id)) $id = gen_id();
-	if (!isset($workspaces)) $workspaces = logged_user()->getActiveProjects();
 		
 	$selectedCSV = "";
 	if (is_array($selected)) {
@@ -157,7 +156,7 @@ function select_workspaces($name = "", $workspaces = null, $selected = null, $id
 	$workspacesToJson = array();
 
 	$wsset = array();
-	if($workspaces){
+	if(is_array($workspaces)){
 		foreach ($workspaces as $w) {
 			$wsset[$w->getId()] = true;
 		}
@@ -181,6 +180,9 @@ function select_workspaces($name = "", $workspaces = null, $selected = null, $id
 				"c" => $w->getColor(),
 				);
 		}
+		$loadFrom = 'false';
+	} else {
+		$loadFrom = "'workspace-panel'";
 	}
 	$output = "<div id=\"$id-wsTree\"></div>
 			<input id=\"$id-field\" type=\"hidden\" value=\"$selectedCSV\" name=\"$name\">
@@ -188,6 +190,7 @@ function select_workspaces($name = "", $workspaces = null, $selected = null, $id
 				var wsTree = new og.WorkspaceChooserTree({
 					renderTo: '$id-wsTree',
 					field: '$id-field',
+					loadWorkspacesFrom: $loadFrom,
 					id: '$id',
 					workspaces: " . json_encode($workspacesToJson) . ",
 					height: 320,
@@ -196,6 +199,22 @@ function select_workspaces($name = "", $workspaces = null, $selected = null, $id
 			</script>";
 	return $output;
 } // select_workspaces
+
+function intersectCSVs($csv1, $csv2){
+	$arr1 = explode(',', $csv1);
+	$arr2 = explode(',', $csv2);
+	$final = array();
+	
+	foreach ($arr1 as $a1)
+		foreach ($arr2 as $a2)
+			if ($a1 == $a2){
+				$final[] = $a1;
+				break;
+			}
+			
+	return implode(',', $final);
+}
+
 
 /**
  * Render assign to SELECT
@@ -270,6 +289,24 @@ function assign_to_select_box($list_name, $project = null, $selected = null, $at
 
 	return select_box($list_name, $options, $attributes);
 } // assign_to_select_box
+
+
+
+function user_select_box($list_name, $selected = null, $attributes = null) {
+	$logged_user = logged_user();
+	
+	$users = Users::getAll();
+	
+	if(is_array($users)) {
+		foreach($users as $user) {
+			$option_attributes = $user->getId() == $selected ? array('selected' => 'selected') : null;
+			$options[] = option_tag($user->getDisplayName(), $user->getId(), $option_attributes);
+		} // foreach
+	} // if
+
+	return select_box($list_name, $options, $attributes);
+} // user_select_box
+
 
 
 /**
@@ -644,6 +681,25 @@ function project_object_tags_widget($name, Project $project, $value, $attributes
  * @param Project $project
  * @return string
  */
+function project_object_tags2(ApplicationDataObject $object) {
+	$tag_names = $object->getTagNames();
+	if(!is_array($tag_names) || !count($tag_names)) return '--';
+
+	$links = array();
+	foreach($tag_names as $tag_name) {
+		$links[] = '<a href="#" class="ico-tag coViewAction" onclick="Ext.getCmp(\'tag-panel\').select(\'' . clean($tag_name) . '\')">' . clean($tag_name) . '</a>';
+	} // foreach
+	return implode('<br/>', $links);
+} // project_object_tags
+
+
+/**
+ * Render comma separated tags of specific object that link on project tag page
+ *
+ * @param ProjectDataObject $object
+ * @param Project $project
+ * @return string
+ */
 function project_object_tags(ApplicationDataObject $object) {
 	$tag_names = $object->getTagNames();
 	if(!is_array($tag_names) || !count($tag_names)) return '--';
@@ -665,6 +721,12 @@ function render_object_comments(ProjectDataObject $object) {
 	if(!$object->isCommentable()) return '';
 	tpl_assign('__comments_object', $object);
 	return tpl_fetch(get_template_path('object_comments', 'comment'));
+} // render_object_comments
+
+function render_object_comments_for_print(ProjectDataObject $object) {
+	if(!$object->isCommentable()) return '';
+	tpl_assign('__comments_object', $object);
+	return tpl_fetch(get_template_path('object_comments_for_print', 'comment'));
 } // render_object_comments
 
 /**
@@ -855,18 +917,6 @@ function render_action_taken_on_by(ApplicationLog $application_log_entry) {
 	return $taken_by instanceof User ? $result . ', <a class="internalLink" href="' . $taken_by->getCardUrl() . '">' . clean($taken_by->getDisplayName()) . '</a>' : $result;
 } // render_action_taken_on
 
-/**
- * Render menu
- *
- * @param $menu_option
- * @return null
- */
-function render_menu($tags, $active_projects, $recent_files) {
-	tpl_assign('tags', $tags);
-	tpl_assign('active_projects', $active_projects);
-	tpl_assign('recent_files', $recent_files);
-	return tpl_fetch(get_template_path('render_menu', 'menu'));
-} // render_menu
 
 /**
  * Comma separated values from a set of options.
@@ -884,9 +934,9 @@ function autocomplete_textfield($name, $value, $options, $emptyText, $attributes
 	foreach ($options as $o) {
 		if ($jsArray != "") $jsArray .= ",";
 		if (count($o) < 2) {
-			$jsArray .= "['$o','$o']";
+			$jsArray .= "['$o','$o','".clean($o)."']";
 		} else {
-			$jsArray .= "['$o[0]','$o[1]']";
+			$jsArray .= "['$o[0]','$o[1]','".clean($o[1])."']";
 		}
 	}
 	$jsArray = "[$jsArray]";
@@ -898,13 +948,45 @@ function autocomplete_textfield($name, $value, $options, $emptyText, $attributes
 		<script type="text/javascript">
 		new og.CSVCombo({
 			store: new Ext.data.SimpleStore({
-        		fields: ["name"],
+        		fields: ["value", "name", "clean"],
         		data: '.$jsArray.'
 			}),
+			valueField: "value",
         	displayField: "name",
         	mode: "local",
         	forceSelection: true,
         	triggerAction: "all",
+        	tpl: "<tpl for=\".\"><div class=\"x-combo-list-item\">{clean}</div></tpl>",
+        	emptyText: "",
+        	applyTo: "'.$id.'"
+    	});
+		</script>
+	';
+	return $html;
+}
+
+function autocomplete_tags_field($name, $value, $id = null) {
+	if (!isset($id)) $id = gen_id();
+	$attributes = array("class" => "long", "id" => $id);
+
+	if (trim($value) != "") $value .= ", ";
+	$html = text_field($name, $value, $attributes) . '
+		<script type="text/javascript">
+		var tags = Ext.getCmp("tag-panel").getTags();
+		var arr = [];
+		for (var i=0; i < tags.length; i++) {
+			arr.push([tags[i].name, og.clean(tags[i].name)]);
+		}
+		new og.CSVCombo({
+			store: new Ext.data.SimpleStore({
+        		fields: ["value", "clean"],
+        		data: arr
+			}),
+			valueField: "value",
+        	displayField: "value",
+        	mode: "local",
+        	forceSelection: true,
+        	tpl: "<tpl for=\".\"><div class=\"x-combo-list-item\">{clean}</div></tpl>",
         	emptyText: "",
         	applyTo: "'.$id.'"
     	});

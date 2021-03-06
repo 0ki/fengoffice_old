@@ -101,7 +101,7 @@ function cleanUrl($url){
 	if (strpos($url,'://')<=0){
 		$url = 'http://' . $url;
 	}
-	return $url;
+	return clean($url);
 }
 
 /**
@@ -516,9 +516,18 @@ function unescapeSLIM($encodedSLIM) {
 	return rawurldecode($encodedSLIM);
 }
 
-function escape_css($html, $id) {
-	/* TODO: preppend the id of the HTML element to each CSS selector */
-	return preg_replace('/<style[^<]*<\/style>/i', '', $html);
+function remove_css_and_scripts($html) {
+	$html = preg_replace('/<style[^<]*>.*<\/style>/i', '', $html);
+	$html = preg_replace('/<script[^<]*>.*(<\/script>|$)/i', '', $html);
+	return $html;
+}
+
+function remove_css($html) {
+	return preg_replace('/<style[^<]*>.*<\/style>/i', '', $html);
+}
+
+function remove_scripts($html) {
+	return preg_replace('/<script[^<]*>.*(<\/script>|$)/i', '', $html);
 }
 
 function make_ajax_url($url) {

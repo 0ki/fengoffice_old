@@ -2,6 +2,8 @@
   set_page_title(lang('search results'));
   $showContext = false; //TODO Implement context support before setting this to true
   $genid = gen_id();
+  $search_all_projects = array_var($_GET, 'search_all_projects', 'false');
+  $has_search_results = isset($search_results) && is_array($search_results) && count($search_results);
 ?>
 <div id="<?php echo $genid; ?>Search" style='height:100%;background-color:white'>
 <div style='background-color:white'>
@@ -16,16 +18,21 @@
 </div>
 
 <div id="headerDiv" class="searchDescription">
-<?php if (active_project() instanceof Project) 
-		echo lang("search for in project", $search_string, active_project()->getName());
+<?php if (array_var($_GET, 'search_all_projects') != 'true' && active_project() instanceof Project) 
+		echo lang("search for in project", clean($search_string), clean(active_project()->getName()));
 	else
-		echo lang("search for", $search_string); ?>
+		echo lang("search for", clean($search_string)); 
+	if ($has_search_results && array_var($_GET, 'search_all_projects') != 'true' && active_project() instanceof Project) { ?>
+	<br/><a class="internalLink" href="<?php echo get_url('search','search',array("search_for" => array_var($_GET, 'search_for'), "search_all_projects" => "true" )) ?>"><?php echo lang('search in all workspaces') ?></a>
+<?php } //if ?>
 </div>
+
+
 
 
 <div style="padding-left:10px;padding-right:10px"><?php 
 
-if(isset($search_results) && is_array($search_results) && count($search_results)) {
+if($has_search_results) {
 	foreach($search_results as $search_result) { 
 		$alt = true;
 		$pagination = $search_result["pagination"];?>
@@ -33,19 +40,19 @@ if(isset($search_results) && is_array($search_results) && count($search_results)
 	<table width="100%"><tr><td align=center>
 	<div class="searchHeader">
 		<table width="100%"><tr><td><a class="coViewAction ico-<?php echo $search_result["icontype"]?> internalLink searchGroupTitle" href='<?php echo get_url('search', 'searchbytype', 
-		array('manager' => $search_result["manager"], 'search_for' => $search_string)); ?>'><?php echo $search_result["type"]?></a></td>
+		array('manager' => $search_result["manager"], 'search_for' => $search_string, 'search_all_projects' => $search_all_projects)); ?>'><?php echo $search_result["type"]?></a></td>
 		<td align=right><?php if (isset($enable_pagination) && $pagination->getTotalItems() > $pagination->getItemsPerPage()) {?>
 			<?php echo advanced_pagination($pagination, get_url('search', 
 				'searchbytype',
 					array('active_project' => (active_project())?active_project()->getId():'',
 					'search_for' => $search_string, 'manager' => $search_result["manager"],
-					'page' => '#PAGE#')), 'search_pagination'); ?>
+					'page' => '#PAGE#', 'search_all_projects' => $search_all_projects)), 'search_pagination'); ?>
 					&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 		<?php echo lang('search result description short', $pagination->getStartItemNumber(),$pagination->getEndItemNumber() , $pagination->getTotalItems(), clean($search_string)) ?>
 		<?php } // if ?>
 		<?php if (!isset($enable_pagination) && $pagination->countItemsOnPage(1) < $pagination->getTotalItems()) { ?>
 			<a class="internalLink" href='<?php echo get_url('search', 'searchbytype', 
-			array('manager' => $search_result["manager"], 'search_for' => $search_string)); ?>'>
+			array('manager' => $search_result["manager"], 'search_for' => $search_string, 'search_all_projects' => $search_all_projects)); ?>'>
 			<?php echo lang('more results', $pagination->getTotalItems() - $pagination->countItemsOnPage(1)) ?></a>
 		<?php } else echo "" ?>
 		</td></tr>
@@ -58,7 +65,7 @@ if(isset($search_results) && is_array($search_results) && count($search_results)
 		$result = $srrow['object'];?>
 		<tr style="vertical-align:middle" class="<?php echo $alt? "searchAltRow" : 'searchRow' ?>">
 			<td style="padding:6px" rowspan=<?php echo $showContext ? 2 : 1 ?> width=36>
-		<?php if ($search_result["manager"] == 'ProjectFiles') {?>
+		<?php if ($search_result["manager"] == 'ProjectFiles' || $search_result["manager"] == 'ProjectFileRevisions') {?>
 			<img style="width:36px" src="<?php echo $result->getTypeIconUrl() ?>"/>
 		<?php } ?>
 		<?php if ($search_result["manager"] == 'Contacts') {?>
@@ -79,7 +86,7 @@ if(isset($search_results) && is_array($search_results) && count($search_results)
 			<a class="internalLink" href="<?php echo $result->getObjectUrl() ?>"><?php echo clean($result->getObjectName()) ?></a>
 		<?php } // if ?>
 		</td>
-		<td style="padding:6px;vertical-align:middle" align=right><?php echo lang("modified by on short", $result->getUpdatedByCardUrl(), ($result->getUpdatedBy() instanceof User ? $result->getUpdatedByDisplayName() : $result->getCreatedByDisplayName()), format_descriptive_date($result->getObjectUpdateTime())) ?></td>
+		<td style="padding:6px;vertical-align:middle" align=right><?php echo lang("modified by on short", $result->getUpdatedByCardUrl(), ($result->getUpdatedBy() instanceof User ? clean($result->getUpdatedByDisplayName()) : clean($result->getCreatedByDisplayName())), format_descriptive_date($result->getObjectUpdateTime())) ?></td>
 		</tr>
 	<?php } // foreach row ?>
 	</table>
@@ -91,6 +98,10 @@ if(isset($search_results) && is_array($search_results) && count($search_results)
 <?php } else { ?>
 <div id="noResultsFoundDiv" class="searchDescription" style="font-weight:normal;font-size:140%;padding-top:30px; padding-bottom:30px">
 <?php echo lang('no search result for', $search_string) ?>
+<?php if (array_var($_GET, 'search_all_projects') != 'true' && active_project() instanceof Project) { ?>
+<br/>
+<a class="internalLink" href="<?php echo get_url('search','search',array("search_for" => array_var($_GET, 'search_for'), "search_all_projects" => "true" )) ?>"><?php echo lang('search in all workspaces') ?></a>
+<?php } //if ?>
 </div>
 <?php } // if ?>
 

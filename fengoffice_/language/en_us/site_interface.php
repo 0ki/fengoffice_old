@@ -136,7 +136,7 @@
   	'add contact' => 'Add Contact',
   	'edit contact' => 'Edit Contact',
     'update contact' => 'Update Contact',
-  	'update picture' => 'Update Picture',
+  	'edit picture' => 'Edit Picture',
   	'delete contact' => 'Delete Contact',
   	'contact card of' => 'Contact card of',
   	'email address 2' => 'Email address 2',
@@ -182,6 +182,22 @@
     'all contacts' => 'All contacts',
     'project contacts' => 'Contacts in {0}', 
     'select' => 'Select',
+  
+ 	// Contact import
+ 	'import contacts from csv' => 'Import contacts from .csv file',
+	'import' => 'Import',
+ 	'file not exists' => 'The file does not exists',
+	'field delimiter' => 'Field delimiter',
+	'first record contains field names' => 'First record contains field names',
+	'import contact success' => 'Contact import success.',
+	'contact fields' => 'Contact Fields',
+	'fields from file' => 'Fields from file',
+	'you must match the database fields with file fields before executing the import process' => 'You must match the database fields with file fields before executing the import process.',
+	'import result' => 'Import results',
+	'contacts succesfully imported' => 'Contacts succesfully imported',
+	'contacts import fail' => 'Import failed for contacts',
+	'contacts import fail help' => 'Import process may have failed due to existing data in the database, like name or email address, etc.',
+	'import fail reason' => 'Fail reason',
   
   
   //Webpages
@@ -293,6 +309,7 @@
   'you' => 'You',
   'created by' => 'Created by',
   'modified by' => 'Modified by',
+  'deleted by' => 'Deleted by',
   'user date' => '<a class="internalLink" href="{0}" title="View {3}\'s profile">{1}</a>, on {2}',
   'user date today at' => '<a class="internalLink" href="{0}" title="View {3}\'s profile">{1}</a>, today at {2}',
   'today at' => 'Today, at {0}',
@@ -340,7 +357,7 @@
   'object time slots' => 'Object time slots',
   'start work' => 'Start work',
   'end work' => 'End work',
-  'confirm delete timeslot' => 'Are you sure you want to delete this timeslot?',
+  'confirm delete timeslot' => 'Are you sure you want to permanently delete this timeslot?',
   'success open timeslot' => 'Time slot opened successfully',
   'success create timeslot' => 'Time slot created successfully',
   'success cancel timeslot' => 'Time slot canceled successfully',
@@ -348,6 +365,12 @@
   'success delete timeslot' => 'Time slot deleted successfully',
   'success edit timeslot' => 'Time slot edited successfully',
   'open timeslot message' => 'Total work time elapsed: ',
+  'success pause timeslot' => 'Time slot paused successfully',
+  'success resume timeslot' => 'Time slot resumed successfully',
+  'paused timeslot message' => 'Time slot paused, total time: {0}',
+  'time since pause' => 'Time since pause',
+  'pause work' => 'Pause work',
+  'resume work' => 'Resume work',
   'end work description' => 'End work description',
   'add timeslot' => 'Add timeslot',
   'edit timeslot' => 'Edit timeslot',
@@ -380,6 +403,7 @@
   
   'hours' => 'Hours',
   'minutes' => 'Minutes',
+  'seconds' => 'Seconds',
   'days' => 'Days',
   'time estimate' => 'Time estimate',
   'work in progress' => 'Work in progress',
@@ -441,6 +465,31 @@
   'do complete' => 'Complete',
   
   'task data' => 'Task data',
+  'search in all workspaces' => 'Search in all workspaces',
+  
+  'total pause time' => 'Total pause time',
+  'pause time cannot be negative' => 'Pause time cannot be negative',
+  'pause time cannot exceed timeslot time' => 'Pause time cannot exceed timeslot time',
+  'timeslots' => 'Timeslots',
+  
+  'task timeslots' => 'Task timeslots',
+  'time timeslots' => 'General timeslots',
+  'all timeslots' => 'Task and general timeslots',
+  
+  'print report' => 'Print report',
+  
+  'all active tasks' => 'All active tasks',
+  
+  'unique id' => 'Unique Id',
+  
+  'my pending tasks' => 'My pending tasks',
+  'pending tasks for' => 'Pending tasks for {0}',
+  'my late milestones and tasks' => 'My late milestones and tasks',
+  'late milestones and tasks for' => 'Late milestones and tasks for {0}',
+  'my tasks in progress' => 'My tasks in progress',
+  'tasks in progress for' => 'Tasks in progress for {0}',
+  
+  'time has to be greater than 0' => 'Time has to be greater than 0'
   
   ); // array
 

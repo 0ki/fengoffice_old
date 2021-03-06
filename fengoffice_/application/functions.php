@@ -310,7 +310,8 @@ function active_projects() {
  * @return Project
  */
 function personal_project() {
-	return logged_user()->getPersonalProject();
+	$usr = logged_user();	
+	return $usr?$usr->getPersonalProject():null;
 } // active_project
 
 // ---------------------------------------------------

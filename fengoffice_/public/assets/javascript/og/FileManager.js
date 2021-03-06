@@ -3,7 +3,7 @@
  *
  */
 og.FileManager = function() {
-	var actions, moreActions;
+	var actions;
 
 	this.doNotRemove = true;
 	this.needRefresh = false;
@@ -33,8 +33,8 @@ og.FileManager = function() {
 				'load': function() {
 					var d = this.reader.jsonData;
 					og.processResponse(d);
-					var ws = Ext.getCmp('workspace-panel').getActiveWorkspace().name;
-					var tag = Ext.getCmp('tag-panel').getSelectedTag().name;
+					var ws = og.clean(Ext.getCmp('workspace-panel').getActiveWorkspace().name);
+					var tag = og.clean(Ext.getCmp('tag-panel').getSelectedTag().name);
 					if (d.totalCount == 0) {
 						if (tag) {
 							this.fireEvent('messageToShow', lang("no objects with tag message", lang("documents"), ws, tag));
@@ -96,6 +96,10 @@ og.FileManager = function() {
 			actions += String.format(
 			'<a class="list-action ico-play" href="#" onclick="og.playXSPF({0})" title="{1}" ' + actionStyle + '>{2}</a>',
 					r.id, lang('play this file'), lang('play'));
+		} else if (r.data.mimeType == 'prsn') {
+			actions += String.format(
+			'<a class="list-action ico-slideshow" href="#" onclick="og.slideshow({0})" title="{1}" ' + actionStyle + '>{2}</a>',
+					r.id, lang('view slideshow'), lang('slideshow'));
 		}
 		
 		if (actions != '')
@@ -107,11 +111,11 @@ og.FileManager = function() {
 	function renderIcon(value, p, r) {
 		var classes = "db-ico ico-unknown ico-" + r.data.type;
 		if (r.data.mimeType) {
-			var path = r.data.mimeType.replace(/\//ig, "-").split("-");
+			var path = r.data.mimeType.replace(/\//g, "-").split("-");
 			var acc = "";
 			for (var i=0; i < path.length; i++) {
 				acc += path[i];
-				classes += " ico-" + acc;
+				classes += " ico-" + acc.replace(/\./g, "_");
 				acc += "-";
 			}
 		}
@@ -191,17 +195,14 @@ og.FileManager = function() {
 		function() {
 			if (sm.getCount() <= 0) {
 				actions.tag.setDisabled(true);
+				actions.properties.setDisabled(true);
 				actions.del.setDisabled(true);
-				actions.more.setDisabled(true);
+				actions.download.setDisabled(true);
 			} else {
 				actions.tag.setDisabled(false);
+				actions.properties.setDisabled(sm.getCount() != 1);
 				actions.del.setDisabled(false);
-				actions.more.setDisabled(sm.getCount() != 1);
-				if (sm.getSelected().data.mimeType == 'prsn') {
-					moreActions.slideshow.setDisabled(false);
-				} else {
-					moreActions.slideshow.setDisabled(true);
-				}
+				actions.download.setDisabled(sm.getCount() != 1);
 			}
 		});
 	var cm = new Ext.grid.ColumnModel([
@@ -256,34 +257,6 @@ og.FileManager = function() {
 			renderer: renderCheckout
 		}]);
 	cm.defaultSortable = false;
-
-	moreActions = {
-		download: new Ext.Action({
-			text: lang('download'),
-			iconCls: 'ico-download',
-			handler: function(e) {
-				var url = og.getUrl('files', 'download_file', {id: getFirstSelectedId()});
-				window.open(url);
-			}
-		}),
-		properties: new Ext.Action({
-			text: lang('properties'),
-			iconCls: 'ico-properties',
-			handler: function(e) {
-				var o = sm.getSelected();
-				var url = og.getUrl('object', 'view', {id: o.data.object_id, manager: o.data.manager});
-				og.openLink(url);
-			}
-		}),
-		slideshow: new Ext.Action({
-			text: lang('slideshow'),
-			iconCls: 'ico-slideshow',
-			handler: function(e) {
-				og.slideshow(getFirstSelectedId());
-			},
-			disabled: true
-		})
-	}
 	
 	actions = {
 		newCO: new Ext.Action({
@@ -329,13 +302,34 @@ og.FileManager = function() {
 				}
 			})
 		}),
+		properties: new Ext.Action({
+			text: lang('properties'),
+			tooltip: lang('edit selected file properties'),
+			iconCls: 'ico-properties',
+			disabled: true,
+			handler: function(e) {
+				var o = sm.getSelected();
+				var url = og.getUrl('files', 'edit_file', {id: o.data.object_id, manager: o.data.manager});
+				og.openLink(url);
+			}
+		}),
+		download: new Ext.Action({
+			text: lang('download'),
+			tooltip: lang('download selected file'),
+			iconCls: 'ico-download',
+			disabled: true,
+			handler: function(e) {
+				var url = og.getUrl('files', 'download_file', {id: getFirstSelectedId()});
+				window.open(url);
+			}
+		}),
 		del: new Ext.Action({
-			text: lang('delete'),
-            tooltip: lang('delete selected objects'),
-            iconCls: 'ico-delete',
+			text: lang('move to trash'),
+            tooltip: lang('move selected objects to trash'),
+            iconCls: 'ico-trash',
 			disabled: true,
 			handler: function() {
-				if (confirm(lang('confirm delete object'))) {
+				if (confirm(lang('confirm move to trash'))) {
 					this.load({
 						action: 'delete',
 						objects: getSelectedIds()
@@ -344,17 +338,6 @@ og.FileManager = function() {
 				}
 			},
 			scope: this
-		}),
-		more: new Ext.Action({
-			text: lang('more'),
-            tooltip: lang('more actions'),
-            iconCls: 'ico-more',
-			disabled: true,
-			menu: {items: [
-				moreActions.download,
-				moreActions.properties,
-				moreActions.slideshow
-			]}
 		}),
 		refresh: new Ext.Action({
 			text: lang('refresh'),
@@ -389,8 +372,9 @@ og.FileManager = function() {
 			actions.newCO,
 			'-',
 			actions.tag,
-			actions.del,
-			actions.more/*,
+			actions.properties,
+			actions.download,
+			actions.del/*,
 			'-',
 			actions.refresh*/
 		],

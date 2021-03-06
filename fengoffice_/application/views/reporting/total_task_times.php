@@ -1,4 +1,6 @@
 <?php //Functions
+	$isAlt = false;
+	
 	function has_value($array, $value){
 		foreach ($array as $val)
 			if ($val == $value)
@@ -26,67 +28,72 @@
 	function getGroupTitle($field, $tsRow){
 		$ts = $tsRow["ts"];
 		switch($field){
-			case 'id': return $ts->getObject()->getTitle();
+			case 'id': 
+				if ($ts->getObjectManager() == 'Projects')
+					return $ts->getObject()->getName();
+				else
+					return $ts->getObject()->getTitle();
 			case 'user_id': return $ts->getUser()->getDisplayName();
-			/*case 'state': 
-				switch ($ts->getObject()->getState()){
-					case 100: return lang('low priority');
-					case 200: return lang('normal priority');
-					case 300: return lang('high priority');
-					default: return $ts->getObject()->getState();
-				}*/
 			case 'project_id_0': return $tsRow["wsId0"] != 0 ? Projects::findById($tsRow["wsId0"])->getName() : '';
 			case 'project_id_1': return $tsRow["wsId1"] != 0 ? Projects::findById($tsRow["wsId1"])->getName() : '';
 			case 'project_id_2': return $tsRow["wsId2"] != 0 ? Projects::findById($tsRow["wsId2"])->getName() : '';
 			case 'priority' : 
+				if ($ts->getObjectManager() == 'ProjectTasks')
 				switch ($ts->getObject()->getPriority()){
 					case 100: return lang('low priority');
 					case 200: return lang('normal priority');
 					case 300: return lang('high priority');
 					default: return $ts->getObject()->getPriority();
 				}
-			case 'milestone_id': return $ts->getObject()->getMilestoneId() != 0? $ts->getObject()->getMilestone()->getTitle() : '';
+				else
+					return lang('not applicable');
+			case 'milestone_id': 
+				if ($ts->getObjectManager() == 'ProjectTasks')
+					return $ts->getObject()->getMilestoneId() != 0? $ts->getObject()->getMilestone()->getTitle() : '';
+				else
+					return '';
 		}
 		return '';
 	}
 	
 	$sectionDepth = 0;
+	$totCols = 5;
 ?>
 <?php if ($start_time) { ?><span style="font-weight:bold"><?php echo lang('from')?></span>:&nbsp;<?php echo format_datetime($start_time, 'd/m/Y') ?><?php } // if ?>
 <?php if ($end_time) { ?><span style="font-weight:bold; padding-left:10px"><?php echo lang('to')?></span>:&nbsp;<?php echo format_datetime($end_time, 'd/m/Y') ?><?php } // if ?>
 
 <?php if(!isset($task_title)) 
 	$task_title = null;
-if ($task_title) { ?><div style="font-size:120%"><span style="font-weight:bold"><?php echo lang('title')?></span>:&nbsp;<?php echo $task_title ?></div> <?php } ?>
+if ($task_title) { ?><div style="font-size:120%"><span style="font-weight:bold"><?php echo lang('title')?></span>:&nbsp;<?php echo clean($task_title) ?></div> <?php } ?>
 
 <br/><br/>
 <?php if ($user instanceof User) { ?>
-	<span style="font-weight:bold"><?php echo lang('user')?></span>:&nbsp;<?php echo $user->getDisplayName(); ?>
+	<span style="font-weight:bold"><?php echo lang('user')?></span>:&nbsp;<?php echo clean($user->getDisplayName()); ?>
 	<br/><br/>
 <?php }	?>
 <?php if ($workspace instanceof Project) { ?>
-	<span style="font-weight:bold"><?php echo lang('workspace')?></span>:&nbsp;<?php echo $workspace->getName(); ?>
+	<span style="font-weight:bold"><?php echo lang('workspace')?></span>:&nbsp;<?php echo clean($workspace->getName()); ?>
 	<br/><br/>
 <?php }	?>
 
 <table style="min-width:564px">
 <?php 
+	$sumTime = 0;
 	if (!is_array($timeslotsArray) || count($timeslotsArray) == 0){?>
 <tr><td colspan = 4><div style="font-size:120%; padding:10px;"><?php echo lang('no data to display') ?></div></td></tr>
 <?php } else { 
 	
 	//Initialize
 	$gbvals = array('','','');
-	$sumTime = 0;
 	$sumTimes = array(0,0,0);
-	$sectionDepth = is_array($group_by) ? count($group_by) : 0;
+	$hasGroupBy = is_array($group_by) && count($group_by) > 0;
+	$sectionDepth = $hasGroupBy ? count($group_by) : 0;
 	$c = 0;
 	for ($i = 0; $i < $sectionDepth; $i++)
 		if ($group_by[$i] == 'project_id'){
 			$group_by[$i] = 'project_id_' . $c;
 			$c++;
 		}
-	$totCols = 5;
 	$showUserCol = !has_value($group_by, 'user_id');
 	$showTitleCol = !has_value($group_by, 'id');
 	if (!$showUserCol) $totCols--;
@@ -108,9 +115,9 @@ if ($task_title) { ?><div style="font-size:120%"><span style="font-weight:bold">
 				if ($previousTSRow != null) {
 			?>		
 <tr style="padding-top:2px;font-weight:bold;">
-	<td style="padding:4px;border-top:2px solid #888;font-size:90%;color:#AAA;text-align:left;font-weight:normal"><?php echo getGroupTitle($group_by[$i], $previousTSRow) ?></td>
+	<td style="padding:4px;border-top:2px solid #888;font-size:90%;color:#AAA;text-align:left;font-weight:normal"><?php echo truncate(clean(getGroupTitle($group_by[$i], $previousTSRow)),40,'&hellip;') ?></td>
 	<td colspan=<?php echo $totCols -1 ?> style="padding:4px;border-top:2px solid #888;text-align:right;"><?php echo lang('total') ?>:&nbsp;<?php echo DateTimeValue::FormatTimeDiff(new DateTimeValue(0), new DateTimeValue($sumTimes[$i] * 60), "hm", 60) ?></td>
-</tr></table></div></td></tr><?php 		}
+</tr></table></div></td></tr><?php 	}
 				$sumTimes[$i] = 0;
 				$isAlt = true;
 			}
@@ -126,7 +133,7 @@ if ($task_title) { ?><div style="font-size:120%"><span style="font-weight:bold">
 			if ($has_difference){?>
 			<tr><td colspan=<?php echo $totCols ?>><div style="width=100%;<?php echo $i > 0 ? 'padding-left:20px;padding-right:10px;' : '' ?>padding-top:10px;padding-bottom:5px;"><table style="width:100%">
 <tr><td colspan=<?php echo $totCols ?> style="border-bottom:2px solid #888;font-size:<?php echo (150 - (15 * $i)) ?>%;font-weight:bold;">
-	<?php echo getGroupTitle($group_by[$i], $tsRow) ?></td></tr>
+	<?php echo clean(getGroupTitle($group_by[$i], $tsRow)) ?></td></tr>
 
 <?php 		}
 			$sumTimes[$i] += $ts->getMinutes();
@@ -135,28 +142,30 @@ if ($task_title) { ?><div style="font-size:120%"><span style="font-weight:bold">
 		$isAlt = !$isAlt;
 		$previousTSRow = $tsRow;
 		
-		if ($showHeaderRow) {
-		?><tr><th style="padding:4px;border-bottom:1px solid #666666"><?php echo lang('date') ?></th>
-	<?php if ($showTitleCol) { ?><th style="padding:4px;border-bottom:1px solid #666666"><?php echo lang('task title') ?></th><?php } ?>
+		if ($showHeaderRow || (!$hasGroupBy && !$headerPrinted)) {
+			$headerPrinted = true;
+		?><tr><th style="padding:4px;border-bottom:1px solid #666666;width:70px"><?php echo lang('date') ?></th>
+	<?php if ($showTitleCol) { ?><th style="padding:4px;border-bottom:1px solid #666666"><?php echo lang('title') ?></th><?php } ?>
 	<th style="padding:4px;border-bottom:1px solid #666666"><?php echo lang('description') ?></th>
 	<?php if ($showUserCol) { ?><th style="padding:4px;border-bottom:1px solid #666666"><?php echo lang('user') ?></th><?php } ?>
-	<th style="padding:4px;text-align:right;border-bottom:1px solid #666666"><?php echo lang('time') ?></th></tr><?php }
+	<th style="padding:4px;text-align:right;border-bottom:1px solid #666666"><?php echo lang('time') ?></th></tr><?php 
+		}
 		
 		//Print row info
 ?>
 <tr>
 	<td style="padding:4px;<?php echo $isAlt? 'background-color:#F2F2F2':'' ?>"><?php echo format_datetime($ts->getStartTime(), 'd/m/y')?></td>
-	<?php if ($showTitleCol) { ?><td style="padding:4px;max-width:250px;<?php echo $isAlt? 'background-color:#F2F2F2':'' ?>"><?php echo $ts->getObject()->getTitle() ?></td><?php } ?>
-	<td style="padding:4px; width:250px;<?php echo $isAlt? 'background-color:#F2F2F2':'' ?>"><?php echo $ts->getDescription() ?></td>
-	<?php if ($showUserCol) { ?><td style="padding:4px;<?php echo $isAlt? 'background-color:#F2F2F2':'' ?>"><?php echo $ts->getUser()->getDisplayName() ?></td><?php } ?>
-	<td style="padding:4px;text-align:right;<?php echo $isAlt? 'background-color:#F2F2F2':'' ?>"><?php echo DateTimeValue::FormatTimeDiff($ts->getStartTime(), $ts->getEndTime(), "hm", 60) ?>
+	<?php if ($showTitleCol) { ?><td style="padding:4px;max-width:250px;<?php echo $isAlt? 'background-color:#F2F2F2':'' ?>"><?php echo ($ts->getObjectManager() == 'Projects' ? lang('workspace') . ':&nbsp;' . clean($ts->getObject()->getName()) : clean($ts->getObject()->getTitle())) ?></td><?php } ?>
+	<td style="padding:4px; width:250px;<?php echo $isAlt? 'background-color:#F2F2F2':'' ?>"><?php echo clean($ts->getDescription()) ?></td>
+	<?php if ($showUserCol) { ?><td style="padding:4px;<?php echo $isAlt? 'background-color:#F2F2F2':'' ?>"><?php echo clean($ts->getUser()->getDisplayName()) ?></td><?php } ?>
+	<td style="padding:4px;text-align:right;<?php echo $isAlt? 'background-color:#F2F2F2':'' ?>"><?php echo DateTimeValue::FormatTimeDiff($ts->getStartTime(), $ts->getEndTime(), "hm", 60, $ts->getSubtract()) ?>
 </td></tr>
 <?php } // foreach
 } // if 
 
 		for ($i = $sectionDepth - 1; $i >= 0; $i--){?>
 <tr style="padding-top:2px;text-align:right;font-weight:bold;">
-	<td style="padding:4px;border-top:2px solid #888;font-size:90%;color:#AAA;text-align:left;font-weight:normal"><?php echo getGroupTitle($group_by[$i], $previousTSRow) ?></td>
+	<td style="padding:4px;border-top:2px solid #888;font-size:90%;color:#AAA;text-align:left;font-weight:normal"><?php echo truncate(clean(getGroupTitle($group_by[$i], $previousTSRow)),40,'&hellip;') ?></td>
 	<td colspan=<?php echo $totCols -1 ?> style="padding:4px;border-top:2px solid #888;text-align:right;"><?php echo lang('total') ?>:&nbsp;<?php echo DateTimeValue::FormatTimeDiff(new DateTimeValue(0), new DateTimeValue($sumTimes[$i] * 60), "hm", 60) ?></td>
 </tr></table></div></td></tr>
 		<?php }?>
@@ -165,31 +174,29 @@ if ($task_title) { ?><div style="font-size:120%"><span style="font-weight:bold">
 
 <?php
 // UNWORKED TASKS
-if (isset($unworkedTasks) && count($unworkedTasks) > 0) { ?>
+if (isset($unworkedTasks) && count($unworkedTasks) > 0) { 
+	?>
 	<tr><td colspan=<?php echo $totCols ?>><div style="width=100%;padding-top:10px;padding-bottom:5px;"><table style="width:100%">
-<tr><td colspan="1" style="border-bottom:2px solid #888;font-size:135%;font-weight:bold;">
-	<?php echo lang("unworked pending tasks") ?></td></tr>
-	
+<tr><td style="border-bottom:2px solid #888;font-size:135%;font-weight:bold;"><?php echo lang("unworked pending tasks") ?></td></tr>	
 <?php
 	$isAlt = true;
-	foreach ($unworkedTasks as $t) {
-?>
-	<tr><td style="padding:4px;<?php echo $isAlt? 'background-color:#F2F2F2':'' ?>"><?php echo $t->getTitle() ?>
-	</td></tr>
+	foreach ($unworkedTasks as $t) {?>
+	<tr><td style="padding:4px;<?php echo $isAlt? 'background-color:#F2F2F2':'' ?>"><?php echo clean($t->getTitle()) ?></td></tr>
 <?php $isAlt = !$isAlt;
-	} ?>
+	} // foreach ?>
 
 <tr style="padding-top:2px;font-weight:bold;">
 	<td style="padding:4px;border-top:2px solid #888;font-size:90%;color:#AAA;text-align:left;font-weight:normal"><?php echo lang("unworked pending tasks") ?></td>
 </tr></table></div></td></tr>
-<?php } ?>
-
-
-<?php
+<?php 
+} // if
+ 
 // TOTAL TIME
-foreach ($timeslotsArray as $ts) {
-	$t = $ts['ts'];
-	$sumTime += $t->getMinutes();
+if (is_array($timeslotsArray)) {
+	foreach ($timeslotsArray as $ts) {
+		$t = $ts['ts'];
+		$sumTime += $t->getMinutes();
+	}
 }?>
 <tr><td colspan="5">
 <div style="text-align: right; border-top: 1px solid #AAA; padding: 10px 0; font-weight: bold;"><?php echo strtoupper(lang("total")) . ": " . DateTimeValue::FormatTimeDiff(new DateTimeValue(0), new DateTimeValue($sumTime * 60), "hm", 60) ?></div>

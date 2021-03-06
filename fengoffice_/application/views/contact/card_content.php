@@ -10,7 +10,7 @@
       <?php if ($contact->getEmail3()) { ?><div style="padding-left:10px"><a href="mailto:<?php echo clean($contact->getEmail3());?>"><?php echo clean($contact->getEmail3());?></a></div><?php } ?>
       <?php } ?>
       <?php if ($contact->getOBirthday()) { ?><?php echo $hasEmailAddrs? '<br/>':'' ?>
-      <div><span style="font-weight:bold"><?php echo lang('birthday') ?>:</span> <?php if ($contact->getOBirthday() instanceof DateTimeValue) echo clean($contact->getOBirthday()->format("D M j, Y"));?></div><?php } ?>
+      <div><span style="font-weight:bold"><?php echo lang('birthday') ?>:</span> <?php if ($contact->getOBirthday() instanceof DateTimeValue) echo clean(format_datetime($contact->getOBirthday(),/*"D M j, Y"*/lang("date format")));?></div><?php } ?>
       </td><td>
       <?php if(is_array($im_values = $contact->getImValues()) && count($contact)) { ?>
 	  <span style="font-weight:bold"><?php echo lang('instant messaging') ?>:</span>

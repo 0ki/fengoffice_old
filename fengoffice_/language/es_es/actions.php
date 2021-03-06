@@ -57,7 +57,7 @@
     
     // Comments
     'add comment' => 'Añadir comentario',
-    'edit comment' => 'Editar comentario',
+    'edit comment' => 'Guardar comentario',
     
     // Task list
     'add task list' => 'Añadir tarea',
@@ -194,6 +194,12 @@
 	'edit preferences' => 'Editar preferencias',
   	'add new message' => 'Añadir nueva nota',  
     'view milestone' => 'Ver hito',
+    'custom properties' => 'Propiedades Personalizadas',
+  	'edit file properties' => 'Editar propiedades del archivo',
+    'move to trash' => 'Enviar a la papelera',
+    'restore from trash' => 'Restaurar de la papelera',
+    'delete permanently' => 'Eliminar permanentemente',
+  
   ); // array
 
 ?>

@@ -22,7 +22,7 @@
 	<fieldset><legend class="toggle_collapsed" onclick="og.toggle('<?php echo $genid ?>file_contents',this)"><?php echo lang('file contents') ?></legend>
 	<div id="<?php echo $genid ?>file_contents" style="display:none">
 		<?php if ($file->getTypeString() == "text/html"){
-			echo escape_css($file->getFileContent(), $genid . "file_contents");
+			echo remove_css_and_scripts($file->getFileContent());
 		} else if ($file->getTypeString() == "text/xml"){
 			echo nl2br(htmlEntities($file->getFileContent() ));
 		} else {
@@ -60,8 +60,8 @@
 <?php 
   $options = array();
   if($file->canDownload(logged_user())) $options[] = '<a href="' . $revision->getDownloadUrl() . '" class="downloadLink">' . lang('download') . ' <span>(' . format_filesize($revision->getFileSize()) . ')</span></a>';
-  if($file->canEdit(logged_user())) $options[] = '<a class="internalLink" href="' . $revision->getEditUrl() . '">' . lang('edit') . '</a>';
-  if($file->canDelete(logged_user())) $options[] = '<a class="internalLink" href="' . $revision->getDeleteUrl() . '" onclick="return confirm(\'' . lang('confirm delete revision') . '\')">' . lang('delete') . '</a>';
+  if($file->canEdit(logged_user()) && !$file->isTrashed()) $options[] = '<a class="internalLink" href="' . $revision->getEditUrl() . '">' . lang('edit') . '</a>';
+  if($file->canDelete(logged_user()) && !$file->isTrashed()) $options[] = '<a class="internalLink" href="' . $revision->getDeleteUrl() . '" onclick="return confirm(\'' . lang('confirm move to trash') . '\')">' . lang('move to trash') . '</a>';
 ?>
 <?php if(count($revisions)) { ?>
     <div class="revisionOptions"><?php echo implode(' | ', $options) ?></div>

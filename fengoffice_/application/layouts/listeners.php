@@ -45,7 +45,7 @@ og.eventManager.addListener('company added',
 
 og.eventManager.addListener('debug',
 	function (text){
-		og.msg(lang('debug'), text);
+		og.msg(lang('debug'), text, 0);
 	}
 );
 </script>

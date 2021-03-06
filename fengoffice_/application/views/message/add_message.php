@@ -28,7 +28,7 @@
 		<?php if($message->isNew() && $project instanceof Project) { ?> - 
 			<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_message_mail_notif_div',this)"><?php echo lang('email notification') ?></a>
 		<?php } ?> - 
-		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_message_properties_div',this)"><?php echo lang('properties') ?></a>
+		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_message_properties_div',this)"><?php echo lang('custom properties') ?></a>
 		<?php if($message->isNew() || $message->canLinkObject(logged_user(), $project)) { ?> - 
 			<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_message_linked_objects_div',this)"><?php echo lang('linked objects') ?></a>
 		<?php } ?>
@@ -40,9 +40,9 @@
 	<div id="<?php echo $genid ?>add_message_select_workspace_div" style="display:none">
 	<fieldset><legend><?php echo lang('workspace')?></legend>
 		<?php if ($message->isNew()) {
-			echo select_workspaces('ws_ids', $projects, array($project), $genid.'ws_ids');
+			echo select_workspaces('ws_ids', null, array($project), $genid.'ws_ids');
 		} else {
-			echo select_workspaces('ws_ids', $projects, $message->getWorkspaces(), $genid.'ws_ids');
+			echo select_workspaces('ws_ids', null, $message->getWorkspaces(), $genid.'ws_ids');
 		} ?>
 	</fieldset>
 	</div>
@@ -50,7 +50,7 @@
 	
 	<div id="<?php echo $genid ?>add_message_add_tags_div" style="display:none">
 	<fieldset><legend><?php echo lang('tags')?></legend>
-		<?php echo autocomplete_textfield("message[tags]", array_var($message_data, 'tags'), Tags::getTagNames(), lang("enter tags desc"), array("class" => "long")); ?>
+		<?php echo autocomplete_tags_field("message[tags]", array_var($message_data, 'tags')); ?>
 	</fieldset>
 	</div>
 
@@ -144,7 +144,7 @@
 
 	<div id='<?php echo $genid ?>add_message_properties_div' style="display:none">
 	<fieldset>
-		<legend><?php echo lang('properties') ?></legend>
+		<legend><?php echo lang('custom properties') ?></legend>
 		<?php echo render_object_properties('message',$message); ?>
 	</fieldset>
 	</div>

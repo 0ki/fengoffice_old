@@ -10,7 +10,7 @@ og.pageSize = 10;
 og.hostname = '';
 og.maxFileSize = 1024 * 1024;
 
-og.hideMailsTab = 0;
+og.showMailsTab = 0;
 
 // functions
 og.msg =  function(title, format, timeout, classname) {
@@ -132,6 +132,11 @@ og.dateselectchange = function(select) {
 			list[i].style.display = select.value == '6'? 'table-row':'none';
 }
 
+og.timeslotTypeSelectChange = function(select, genid) {
+	document.getElementById(genid + 'gbspan').style.display = select.value > 0? 'none':'inline';
+	document.getElementById(genid + 'altgbspan').style.display = select.value > 0? 'inline':'none';
+}
+
 og.switchToOverview = function(){
 	var opanel = Ext.getCmp('overview-panel');
 	opanel.defaultContent = {type: 'panel', data: 'overview'};
@@ -151,6 +156,7 @@ og.loading = function() {
 		this.loadingCt.className = 'loading-indicator';
 		this.loadingCt.style.position = 'absolute';
 		this.loadingCt.style.left = '45%';
+		this.loadingCt.style.zIndex = 1000000;
 		this.loadingCt.style.cursor = 'pointer';
 		this.loadingCt.onclick = function() {
 			this.style.visibility = 'hidden';
@@ -215,7 +221,7 @@ og.getUrl = function(controller, action, args) {
 	url += "?c=" + controller;
 	url += "&a=" + action;
 	for (var key in args) {
-		url += "&" + key + "=" + args[key];
+		url += "&" + encodeURIComponent(key) + "=" + encodeURIComponent(args[key]);
 	}
 	return url;
 };
@@ -234,18 +240,16 @@ og.filesizeFormat = function(fs) {
 og.makeAjaxUrl = function(url, params) {
 	var q = url.indexOf('?');
 	var n = url.indexOf('#');
+	var ap = "";
 	if (url.indexOf("active_project=") < 0) {
 		if (Ext.getCmp('workspace-panel')) {
 			var ap = "active_project=" + Ext.getCmp('workspace-panel').getActiveWorkspace().id;
-		} else {
-			var ap = "active_project=0";
 		}
 	}
+	var at = "";
 	if (url.indexOf("active_tag=") < 0) {
 		if (Ext.getCmp('tag-panel') && Ext.getCmp('tag-panel').getSelectedTag().name != '') {
-			var at = "&active_tag=" + Ext.getCmp('tag-panel').getSelectedTag().name;
-		} else {
-			var at = "";
+			var at = "&active_tag=" + encodeURIComponent(Ext.getCmp('tag-panel').getSelectedTag().name);
 		}
 	}
 	if (url.indexOf("ajax=true") < 0) {
@@ -327,7 +331,7 @@ og.captureLinks = function(id, caller) {
 		if (this.dom.href.indexOf('javascript:') == 0) {
 			return;
 		}
-		if (caller) {
+		if (caller && !this.dom.target) {
 			this.dom.target = caller.id;
 		}
 		this.dom.onvalidate = this.dom.onclick;
@@ -378,10 +382,10 @@ og.openLink = function(url, options) {
 	if (!options.doNotShowLoading)
 		og.loading();
 	var params = options.get || {};
-	if (typeof params == 'string') {
+	if (typeof params == 'string' && params.indexOf('current=') < 0) {
 		params += "&current=" + options.caller;
 	} else {
-		if (options.caller)
+		if (options.caller && ! params.current)
 			params.current = options.caller;
 	}
 	url = og.makeAjaxUrl(url, params);
@@ -605,12 +609,13 @@ og.eventManager = {
 			if (!this.eventsById[list[i].id]) {
 				list.splice(i, 1);
 			}
+			var ret = "";
 			try {
-				list[i].callback.call(list[i].scope, arguments, list[i].id);
+				ret = list[i].callback.call(list[i].scope, arguments, list[i].id);
 			} catch (e) {
 				og.err(e.message);
 			}
-			if (list[i].options.single) {
+			if (list[i].options.single || ret == 'remove') {
 				list.splice(i, 1);;
 			}
 		}
@@ -781,7 +786,7 @@ og.getGooPlayerPanel = function() {
 		gppanel = Ext.getCmp('gooplayer-panel');
 	}
 	return gppanel;
-}
+};
 
 og.playMP3 = function(track) {
 	var gppanel = og.getGooPlayerPanel();
@@ -789,21 +794,21 @@ og.playMP3 = function(track) {
 	var gooplayer = Ext.getCmp('gooplayer');
 	gooplayer.loadPlaylist([track]);
 	gooplayer.start();
-}
+};
 
 og.queueMP3 = function(track) {
 	var gppanel = og.getGooPlayerPanel();
 	//Ext.getCmp('tabs-panel').setActiveTab(gppanel);
 	var gooplayer = Ext.getCmp('gooplayer');
 	gooplayer.queueTrack(track);
-}
+};
 
 og.playXSPF = function(id) {
 	var gppanel = og.getGooPlayerPanel();
 	Ext.getCmp('tabs-panel').setActiveTab(gppanel);
 	var gooplayer = Ext.getCmp('gooplayer');
 	gooplayer.loadPlaylistFromFile(id, true);
-}
+};
 
  
 og.xmlFetchTag = function(xml, tag) {
@@ -822,4 +827,12 @@ og.xmlFetchTag = function(xml, tag) {
 			rest: xml
 		};
 	}
-}
+};
+
+og.clean = function(text) {
+	return Ext.util.Format.htmlEncode(text);
+};
+
+og.removeTags = function(text) {
+	return Ext.util.Format.stripTags(text);
+};

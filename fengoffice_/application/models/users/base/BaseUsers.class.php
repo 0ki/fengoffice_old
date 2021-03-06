@@ -38,7 +38,9 @@
     	'can_manage_configuration'=>DATA_TYPE_BOOLEAN, 
     	'auto_assign' => DATA_TYPE_BOOLEAN, 
     	'personal_project_id' => DATA_TYPE_INTEGER,
-    	'can_manage_contacts'=>DATA_TYPE_BOOLEAN);
+    	'can_manage_contacts'=>DATA_TYPE_BOOLEAN,
+    	'can_manage_templates'=>DATA_TYPE_BOOLEAN,
+    );
   
     /**
     * Construct

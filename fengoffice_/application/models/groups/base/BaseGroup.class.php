@@ -7,6 +7,8 @@
   */
   abstract class BaseGroup extends ApplicationDataObject {
   
+  	protected $objectTypeIdentifier = 'gp';
+  
     // -------------------------------------------------------
     //  Access methods
     // -------------------------------------------------------
@@ -252,6 +254,28 @@
     function setCanManageContacts($value) {
       return $this->setColumnValue('can_manage_contacts', $value);
     } // setCanManageContacts()
+    
+    /**
+    * Return value of 'can_manage_templates' field
+    *
+    * @access public
+    * @param void
+    * @return boolean 
+    */
+    function getCanManageTemplates() {
+      return $this->getColumnValue('can_manage_templates');
+    } // getCanManageTemplates()
+    
+    /**
+    * Set value of 'can_manage_templates' field
+    *
+    * @access public
+    * @param void
+    * @return boolean 
+    */
+    function setCanManageTemplates($value) {
+      return $this->setColumnValue('can_manage_templates', $value);
+    } // setCanManageTemplates()
     
     /**
     * Return manager instance

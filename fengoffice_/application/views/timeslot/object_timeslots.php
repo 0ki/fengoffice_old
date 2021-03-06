@@ -21,13 +21,13 @@
 		foreach($timeslots as $timeslot) {
 			$counter++;
 			$options = array();
-			if ($timeslot->canEdit(logged_user())) {
+			if (!$__timeslots_object->isTrashed() && $timeslot->canEdit(logged_user())) {
 				$options[] = '<a class="internalLink" href="' . $timeslot->getEditUrl() . '">' . lang('edit') . '</a>';
 			}
-			if ($timeslot->canDelete(logged_user())) 
+			if (!$__timeslots_object->isTrashed() && $timeslot->canDelete(logged_user())) 
 				$options[] = '<a class="internalLink" href="' . $timeslot->getDeleteUrl() . '" onclick="return confirm(\'' . lang('confirm delete timeslot') . '\')">' . lang('delete') . '</a>';
 				
-			if ($timeslot->isOpen() && $timeslot->getUserId() == logged_user()->getId() && $timeslot->canEdit(logged_user())){
+			if (!$__timeslots_object->isTrashed() && $timeslot->isOpen() && $timeslot->getUserId() == logged_user()->getId() && $timeslot->canEdit(logged_user())){
 				$open_timeslot = $timeslot;
 				$counter --;
 			} else {
@@ -38,7 +38,7 @@
 			<td style="padding-right:10px"><?php echo format_datetime($timeslot->getStartTime(), 'M d, H:i')?>
 				&nbsp;-&nbsp;<?php echo $timeslot->isOpen() ? ('<b>' . lang('work in progress') . '</b>') : 
 				( (format_date($timeslot->getEndTime()) != format_date($timeslot->getStartTime()))?  format_datetime($timeslot->getEndTime(), 'M d, H:i'): format_time($timeslot->getEndTime())) ?></td>
-			<td style="padding-right:10px"><?php echo DateTimeValue::FormatTimeDiff($timeslot->getStartTime(), $timeslot->getEndTime(), "hm", 60)?></td>
+			<td style="padding-right:10px"><?php echo DateTimeValue::FormatTimeDiff($timeslot->getStartTime(), $timeslot->getEndTime(), "hm", 60, $timeslot->getSubtract())?></td>
 			<td align="right">
 			<?php if(count($options)) { ?>
 					<?php echo implode(' | ', $options) ?>
@@ -56,11 +56,13 @@
 <?php } // if ?>
 
 
-<?php if ($open_timeslot) {
+<?php if (!$__timeslots_object->isTrashed()){
+	if ($open_timeslot) {
 		echo render_open_timeslot_form($__timeslots_object, $open_timeslot);
 	} else { 
 		if($__timeslots_object->canAddTimeslot(logged_user())) { 
 			echo render_timeslot_form($__timeslots_object);
 		} // if
+	} // if
 	} // if ?>
 <br/>

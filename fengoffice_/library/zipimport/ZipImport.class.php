@@ -251,14 +251,13 @@ final class ZipImport {
 			$handle = fopen($sourcePath, "r");
 			$size = filesize($sourcePath);
 			$file_content = fread($handle, $size);
-			fclose($gestor);
+			fclose($handle);
 			
 			$file_dt['name'] = $file->getFilename();
 			$file_dt['size'] = strlen($file_content);
 			$file_dt['tmp_name'] = $sourcePath; //TEMP_PATH . DIRECTORY_SEPARATOR . rand() ;
 			
 			$extension = trim(get_file_extension($sourcePath));
-			//$file_type = FileTypes::instance()->getByExtension($extension);
 			
 			$file_dt['type'] = Mime_Types::instance()->get_type($extension);
 			if(!trim($file_dt['type'])) {
@@ -270,9 +269,7 @@ final class ZipImport {
 			$revision = $file->handleUploadedFile($file_dt, true, '');
 
 			$ws = $file->getWorkspaces();
-			foreach ($ws as $w) {
-				ApplicationLogs::createLog($file, $w, ApplicationLogs::ACTION_EDIT);
-			}
+			ApplicationLogs::createLog($file, $ws, ApplicationLogs::ACTION_ADD);
 			
 			ImportLogger::instance()->log("   File: $doc_name [$ws_id]");
 			print "   File: $doc_name [$ws_id]\r\n";

@@ -31,8 +31,8 @@ og.MessageManager = function() {
 				'load': function() {
 					var d = this.reader.jsonData;
 					og.processResponse(d);
-					var ws = Ext.getCmp('workspace-panel').getActiveWorkspace().name;
-					var tag = Ext.getCmp('tag-panel').getSelectedTag().name;
+					var ws = og.clean(Ext.getCmp('workspace-panel').getActiveWorkspace().name);
+					var tag = og.clean(Ext.getCmp('tag-panel').getSelectedTag().name);
 					if (d.totalCount === 0) {
 						if (tag) {
 							this.fireEvent('messageToShow', lang("no objects with tag message", lang("messages"), ws, tag));
@@ -65,7 +65,7 @@ og.MessageManager = function() {
 		var name = '';
 		name = String.format(
 				'<a style="font-size:120%" href="#" onclick="og.openLink(\'{1}\')" title="{2}">{0}</a>',
-				htmlentities(value), og.getUrl('message', 'view', {id: r.data.object_id}), String.format(r.data.text));
+				og.clean(value), og.getUrl('message', 'view', {id: r.data.object_id}), og.clean(r.data.text));
 	
 		var ids = String(r.data.wsIds).split(',');
 		var wsString = "";
@@ -75,7 +75,7 @@ og.MessageManager = function() {
 		var text = '';
 		if (r.data.text != ''){
 			text = '&nbsp;-&nbsp;<span style="color:#888888;white-space:nowrap">';
-			text += r.data.text + "</span></i>";
+			text += og.clean(r.data.text) + "</span></i>";
 		}
 		
 		return wsString + name + text;
@@ -85,20 +85,20 @@ og.MessageManager = function() {
 	function renderFrom(value, p, r){
 		name = String.format(
 				'<a style="font-size:120%" href="#" onclick="og.openLink(\'{1}\')" title="{2}">{0}</a>',
-				htmlentities(value), og.getUrl('message', 'view', {id: r.data.object_id}), String.format(r.data.text));
+				og.clean(value), og.getUrl('message', 'view', {id: r.data.object_id}), og.clean(r.data.text));
 		return name;
 	}
 	
 	
 	function renderIcon(value, p, r) {
-		return String.format('<div class="db-ico ico-message"></div>');
+		return '<div class="db-ico ico-message"></div>';
 	}
 
 	function renderDate(value, p, r) {
 		if (!value) {
 			return "";
 		}
-		var userString = String.format('<a href="#" onclick="og.openLink(\'{1}\')">{0}</a>', r.data.userName, og.getUrl('user', 'card', {id: r.data.userId}));
+		var userString = String.format('<a href="#" onclick="og.openLink(\'{1}\')">{0}</a>', og.clean(r.data.userName), og.getUrl('user', 'card', {id: r.data.userId}));
 	
 		var now = new Date();
 		if (now.dateFormat('Y-m-d') > value.dateFormat('Y-m-d')) {
@@ -147,9 +147,11 @@ og.MessageManager = function() {
 			if (sm.getCount() <= 0) {
 				actions.tag.setDisabled(true);
 				actions.del.setDisabled(true);
+				actions.edit.setDisabled(true);
 			} else {
 				actions.tag.setDisabled(false);
 				actions.del.setDisabled(false);
+				actions.edit.setDisabled(false);
 			}
 		});
 	
@@ -225,12 +227,12 @@ og.MessageManager = function() {
 			})
 		}),
 		del: new Ext.Action({
-			text: lang('delete'),
-            tooltip: lang('delete selected objects'),
-            iconCls: 'ico-delete',
+			text: lang('move to trash'),
+            tooltip: lang('move selected objects to trash'),
+            iconCls: 'ico-trash',
 			disabled: true,
 			handler: function() {
-				if (confirm(lang('confirm delete object'))) {
+				if (confirm(lang('confirm move to trash'))) {
 					this.load({
 						action: 'delete',
 						ids: getSelectedIds(),
@@ -238,6 +240,17 @@ og.MessageManager = function() {
 					});
 					this.getSelectionModel().clearSelections();
 				}
+			},
+			scope: this
+		}),
+		edit: new Ext.Action({
+			text: lang('edit'),
+            tooltip: lang('edit selected object'),
+            iconCls: 'ico-edit',
+			disabled: true,
+			handler: function() {
+				var url = og.getUrl('message', 'edit', {id:getFirstSelectedId()});
+				og.openLink(url, null);
 			},
 			scope: this
 		})
@@ -269,7 +282,8 @@ og.MessageManager = function() {
 			actions.newCO,
 			'-',
 			actions.tag,
-			actions.del
+			actions.del,
+			actions.edit
 		],
 		listeners: {
 			'render': {

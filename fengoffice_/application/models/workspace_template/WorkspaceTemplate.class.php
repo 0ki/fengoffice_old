@@ -17,7 +17,7 @@ class WorkspaceTemplate extends BaseWorkspaceTemplate {
 	}
 	
 	function getTemplate() {
-		return get_object_by_manager_and_id($this->getTemplateId(), $this->getObjectManager());
+		return COTemplates::findById($this->getTemplateId());
 	}
 } // WorkspaceObject
 

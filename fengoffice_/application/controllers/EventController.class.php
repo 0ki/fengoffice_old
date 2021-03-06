@@ -55,7 +55,8 @@ class EventController extends ApplicationController {
 		$day = isset($_GET['day']) ? $_GET['day'] : date('j');
 		
 		$user_filter = !isset($_GET['user_filter']) || $_GET['user_filter'] == 0 ? logged_user()->getId() : $_GET['user_filter']; 
-	    $state_filter = isset($_GET['state_filter']) ? $_GET['state_filter'] : -1;
+	    $state_filter = isset($_GET['state_filter']) ? $_GET['state_filter'] : ' 0 1 3';
+	    $state_filter = explode(' ', $state_filter); // make an array of filters
 				  
 		$pm = $month - 1;
 		$py = $year;
@@ -91,7 +92,7 @@ class EventController extends ApplicationController {
 		}
 	}
 	
-	function change_invitation_state($attendance, $event_id, $user_id) {
+	function change_invitation_state($attendance = null, $event_id = null, $user_id = null) {
 		$from_post = $attendance == null || $event_id == null; 
 		if ($attendance == null) $attendance = array_var($_POST, 'event_attendance');
 		if ($event_id == null) $event_id = array_var($_POST, 'event_id');
@@ -116,7 +117,7 @@ class EventController extends ApplicationController {
 	
 	function getData($event_data){
 		// get the day
-			if (array_var($event_data, 'start_value') != ''){
+			if (array_var($event_data, 'start_value') != '') {
 				$startDate = explode('/', array_var($event_data, 'start_value'));
 				$posD = 0;
 				$posM = 1;
@@ -133,10 +134,14 @@ class EventController extends ApplicationController {
 				$day = isset($_GET['day'])?$_GET['day']:date('j');
 				$year = isset($_GET['year'])?$_GET['year']:date('Y');
 			}
-       		//$hour = array_var($event_data, 'hour') == 0 ? 12 : array_var($event_data, 'hour');
-       		$hour = array_var($event_data, 'hour');
-       		$minute = array_var($event_data, 'minute');
-			if(array_var($event_data, 'pm') == 1) $hour += 12;
+       		
+			if (array_var($event_data, 'start_time') != '') {
+				$this->parseTime(array_var($event_data, 'start_time'), $hour, $minute);
+			} else {
+				$hour = array_var($event_data, 'hour');
+	       		$minute = array_var($event_data, 'minute');
+				if(array_var($event_data, 'pm') == 1) $hour += 12;
+			}
 			if (array_var($event_data, 'type_id') == 2 && $hour == 24) $hour = 23;
 			// make sure the date is actually valid
 			$redotime = mktime(0, 0, 1, $month, $day, $year);
@@ -206,17 +211,23 @@ class EventController extends ApplicationController {
 		 	// get duration
 			$durationhour = array_var($event_data,'durationhour');
 			$durationmin = array_var($event_data,'durationmin');
-
+			
 			// get event type:  2=full day, 3=time/duratin not specified, 4=time not specified
 			$typeofevent = array_var($event_data,'type_id');
 			if(!is_numeric($typeofevent) OR ($typeofevent!=1 AND $typeofevent!=2 AND $typeofevent!=3)) $typeofevent = 1;
-					
-						
+
+			if ($durationhour == 0 && $durationmin < 15 && $typeofevent != 2) {
+				throw new Exception(lang('duration must be at least 15 minutes'));
+			}
+									
 			// calculate timestamp and durationstamp
 			// By putting through mktime(), we don't have to check for sql injection here and ensure the date is valid at the same time.
 			$timestamp = date('Y-m-d H:i:s', mktime($hour+null, $minute+null, 0, $month,$day,$year));
-			$durationstamp = date('Y-m-d H:i:s', mktime($hour + $durationhour, $minute + $durationmin, 0, $month, $day, $year)); 
-						
+			if ($hour + $durationhour > 24)
+				$durationstamp = date('Y-m-d H:i:s', mktime(0, 0, 0, $month, $day+1, $year));
+			else
+				$durationstamp = date('Y-m-d H:i:s', mktime($hour + $durationhour, $minute + $durationmin, 0, $month, $day, $year)); 
+
 			// organize the data expected by the query function
 			$data = array();
 			$data['repeat_num'] = $rnum;
@@ -269,16 +280,17 @@ class EventController extends ApplicationController {
 		$year = isset($_GET['year'])?$_GET['year']:date('Y');
 		
 		$user_filter = isset($_GET['user_filter']) ? $_GET['user_filter'] : logged_user()->getId();
-		$state_filter = isset($_GET['state_filter']) ? $_GET['state_filter'] : -1; 
+		$state_filter = isset($_GET['state_filter']) ? $_GET['state_filter'] : ' 0 1 3';
+	    $state_filter = explode(' ', $state_filter); // make an array of filters 
 		
-		
-/*		$event->setStart(DateTimeValueLib::make(12, 0, 0, $month, $day, $year));		
-		$event->setDuration(DateTimeValueLib::make(13, 0, 0, $month, $day, $year));
-*/		
 		if(!is_array($event_data)) {
 			// if data sent from quickadd popup (via get) we se it, else default
-			$hour = isset($_GET['hour']) ? $_GET['hour'] : date('i');
-			if(!cal_option("hours_24")) {
+			if (isset($_GET['start_time'])) $this->parseTime($_GET['start_time'], $hour, $minute);
+			else {
+				$hour = isset($_GET['hour']) ? $_GET['hour'] : date('G', DateTimeValueLib::now()->getTimestamp() + logged_user()->getTimezone() * 3600);
+				$minute = isset($_GET['minute']) ? $_GET['minute'] : round((date('i') / 15), 0) * 15; //0,15,30 and 45 min
+			}
+			if(!config_option('time_format_use_24')) {
 				if($hour >= 12){
 					$pm = 1;
 					$hour = $hour - 12;
@@ -289,8 +301,8 @@ class EventController extends ApplicationController {
 				'year' => isset($_GET['year']) ? $_GET['year'] : date('Y'),
 				'day' => isset($_GET['day']) ? $_GET['day'] : date('n'),
 				'hour' => $hour,
-				'minute' => isset($_GET['minute']) ? $_GET['minute'] : date('i'),
-				'pm' => $pm,
+				'minute' => $minute,
+				'pm' => (isset($pm) ? $pm : 0),
 				'typeofevent' => isset($_GET['type_id']) ? $_GET['type_id'] : 1,
 				'subject' => $event_subject,
 				'durationhour' => isset($_GET['durationhour']) ? $_GET['durationhour'] : 1,
@@ -344,7 +356,7 @@ class EventController extends ApplicationController {
 			    $object_controller = new ObjectController();
 			    $object_controller->link_to_new_object($event);
 	         	DB::commit();
-	          	ApplicationLogs::createLog($event, $project, ApplicationLogs::ACTION_ADD);
+	          	ApplicationLogs::createLog($event, $event->getWorkspaces(), ApplicationLogs::ACTION_ADD);
 	          	
 	          	flash_success(lang('success add event', $event->getObjectName()));
 
@@ -390,11 +402,9 @@ class EventController extends ApplicationController {
 			Notifier::notifEventDeletion($event->getSubject(), $event->getProject()->getName(), $event->getStart(), $notifications);
 			
 			DB::beginWork();
-			// delete invitations
-			EventInvitations::delete(array ('`event_id` = ?', $event->getId()));
 			// delete event
-			$event->delete();
-			ApplicationLogs::createLog($event, $event->getProject(), ApplicationLogs::ACTION_DELETE);
+			$event->trash();
+			ApplicationLogs::createLog($event, $event->getWorkspaces(), ApplicationLogs::ACTION_TRASH);
 			DB::commit();
 
 			flash_success(lang('success delete event', $event->getSubject()));
@@ -426,7 +436,8 @@ class EventController extends ApplicationController {
 	    $year = isset($_GET['year'])?$_GET['year']:date('Y');
 
 		$user_filter = !isset($_GET['user_filter']) || $_GET['user_filter'] == 0 ? logged_user()->getId() : $_GET['user_filter']; 
-	    $state_filter = isset($_GET['state_filter']) ? $_GET['state_filter'] : -1;
+	    $state_filter = isset($_GET['state_filter']) ? $_GET['state_filter'] : ' 0 1 3';
+	    $state_filter = explode(' ', $state_filter); // make an array of filters
 	    	    
 	    $this->setTemplate('viewdate');		
 	}
@@ -444,8 +455,9 @@ class EventController extends ApplicationController {
 	    $year = isset($_GET['year']) ? $_GET['year'] : date('Y');
 	    
 		$user_filter = !isset($_GET['user_filter']) || $_GET['user_filter'] == 0 ? logged_user()->getId() : $_GET['user_filter']; 
-	    $state_filter = isset($_GET['state_filter']) ? $_GET['state_filter'] : -1;
-	    		 
+	    $state_filter = isset($_GET['state_filter']) ? $_GET['state_filter'] : ' 0 1 3';
+	    $state_filter = explode(' ', $state_filter); // make an array of filters
+
 		$this->setTemplate('viewweek');		
 	}
 	
@@ -469,6 +481,10 @@ class EventController extends ApplicationController {
 			tpl_assign('view', array_var($_GET, 'view','month'));	
 			tpl_assign('active_projects',logged_user()->getActiveProjects());
 			ajx_extra_data(array("title" => $event->getSubject(), 'icon'=>'ico-calendar'));
+	    } else {
+	    	flash_error(lang('event dnx'));
+			ajx_current("empty");
+			return ;
 	    }
 	}
 
@@ -483,7 +499,8 @@ class EventController extends ApplicationController {
 		$event = ProjectEvents::findById(get_id());
 		
 		$user_filter = isset($_GET['user_id']) ? $_GET['user_id'] : logged_user()->getId();
-		$state_filter = isset($_GET['state_filter']) ? $_GET['state_filter'] : -1;
+		$state_filter = isset($_GET['state_filter']) ? $_GET['state_filter'] : ' 0 1 3';
+	    $state_filter = explode(' ', $state_filter); // make an array of filters
 		
 		$inv = EventInvitations::findById(array('event_id' => $event->getId(), 'user_id' => $user_filter));
 		if ($inv != null) {
@@ -501,6 +518,7 @@ class EventController extends ApplicationController {
 	    
 		$event_data = array_var($_POST, 'event');
 		if(!is_array($event_data)) {
+				
 			$tag_names = $event->getTagNames();
 			$setlastweek = false;
 			$rsel1=false;$rsel2=false; $rsel3=false;
@@ -526,14 +544,13 @@ class EventController extends ApplicationController {
 			$durtime = $event->getDuration()->getTimestamp() - $thetime;
 			$hour = date('G', $thetime);
 			// format time to 24-hour or 12-hour clock.
-			if(!cal_option("hours_24")){
+			if(!config_option('time_format_use_24')){
 				if($hour >= 12){
 					$pm = 1;
 					$hour = $hour - 12;
 				}else $pm = 0;
 			}
-			
-						
+				
 			$event_data = array(
 	          'subject'        => $event->getSubject(),
 	          'description'        => $event->getDescription(),
@@ -560,69 +577,96 @@ class EventController extends ApplicationController {
 			  'durationmin' => ($durtime / 60) % 60,
 			  'durationhour'  => ($durtime / 3600) % 24,
 			  'durday' => floor($durtime / 86400),
-			  'pm' => $pm,
+			  'pm' => isset($pm) ? $pm : 0,
 	          'tags' => is_array($tag_names) ? implode(', ', $tag_names) : ''
 				); // array
-			} // if
+		} // if
 	
-			tpl_assign('event_data', $event_data);
-			tpl_assign('event', $event);
-	
-			if(is_array(array_var($_POST, 'event'))) {
-				try {
-					$data = $this->getData($event_data);
-					// run the query to set the event data 
-					$projId = array_var($event_data,'project_id');                    
-				
-					if($projId != '') {
-						$project = Projects::findById($projId );
-					}
-					else {
-						$project = $event->getProject();
-					} 
-		        	$event->setProjectId($project->getId());
-				    $event->setFromAttributes($data); 
-				    
-				    $this->registerInvitations($data, $event);
-					if (isset($data['confirmAttendance'])) {
-		            	$this->change_invitation_state($data['confirmAttendance'], $event->getId(), $user_filter);
-		            }
-				    
-		            if (isset($data['send_notification']) && $data['send_notification']) {
-						$users_to_inv = array();
-	            		foreach ($data['users_to_invite'] as $us => $v) {
-	            			if ($us != logged_user()->getId()) {
-	            				$users_to_inv[] = Users::findById(array('id' => $us));
-	            			}
-	            		}
-	            		Notifier::notifEvent($event, $users_to_inv, false);
-		            }
-					    
-				    if(!logged_user()->isMemberOfOwnerCompany()) $event->setIsPrivate(false);  				
-		          
-		          	DB::beginWork();
-		         	$event->save();
-		         	$event->setTagsFromCSV(array_var($event_data, 'tags')); 
-				 	$event->save_properties(array_var($event_data,'event'));
-		          	ApplicationLogs::createLog($event, $project, ApplicationLogs::ACTION_EDIT);
-		          	DB::commit();
-		          	
-		          	flash_success(lang('success edit event', $event->getObjectName()));
+		tpl_assign('event_data', $event_data);
+		tpl_assign('event', $event);
 
-		          	if (array_var($_POST, 'popup', false)) {
-						ajx_current("reload");
-		          	} else {
-		          		ajx_current("back");
-		          	}
-		          	ajx_add("overview-panel", "reload");          	
-		        } catch(Exception $e) {
-		        	DB::rollback();
-					flash_error($e->getMessage());
-					ajx_current("empty");		          
-		          //tpl_assign('error', $e);
-		        } // try
-			} // if
+		if(is_array(array_var($_POST, 'event'))) {
+			try {
+				$data = $this->getData($event_data);
+				// run the query to set the event data 
+				$projId = array_var($event_data,'project_id');                    
+			
+				$old_project_id = $event->getProjectId();
+				if($projId != '' && $projId != $old_project_id) {
+					$project = Projects::findById($projId);
+					if(!$event->canAdd(logged_user(),$project)) {
+						flash_error(lang('no access permissions'));
+						ajx_current("empty");
+						return;
+					} // if
+	        		$event->setProjectId($project->getId());
+				}
+			    $event->setFromAttributes($data); 
+			    
+			    $this->registerInvitations($data, $event);
+				if (isset($data['confirmAttendance'])) {
+	            	$this->change_invitation_state($data['confirmAttendance'], $event->getId(), $user_filter);
+	            }
+			    
+	            if (isset($data['send_notification']) && $data['send_notification']) {
+					$users_to_inv = array();
+            		foreach ($data['users_to_invite'] as $us => $v) {
+            			if ($us != logged_user()->getId()) {
+            				$users_to_inv[] = Users::findById(array('id' => $us));
+            			}
+            		}
+            		Notifier::notifEvent($event, $users_to_inv, false);
+	            }
+				    
+			    if(!logged_user()->isMemberOfOwnerCompany()) $event->setIsPrivate(false);  				
+	          
+	          	DB::beginWork();
+	         	$event->save();
+	         	$event->setTagsFromCSV(array_var($event_data, 'tags')); 
+			 	$event->save_properties(array_var($event_data,'event'));
+	          	ApplicationLogs::createLog($event, $event->getWorkspaces(), ApplicationLogs::ACTION_EDIT);
+	          	DB::commit();
+	          	
+	          	flash_success(lang('success edit event', $event->getObjectName()));
+
+	          	if (array_var($_POST, 'popup', false)) {
+					ajx_current("reload");
+	          	} else {
+	          		ajx_current("back");
+	          	}
+	          	ajx_add("overview-panel", "reload");          	
+	        } catch(Exception $e) {
+	        	DB::rollback();
+				flash_error($e->getMessage());
+				ajx_current("empty");		          
+	          //tpl_assign('error', $e);
+	        } // try
+		} // if
 	} // edit
+	
+	
+	/**
+	 * Returns hour and minute in 24 hour format
+	 *
+	 * @param string $time_str
+	 * @param int $hour
+	 * @param int $minute
+	 */
+	function parseTime($time_str, &$hour, &$minute) {
+		$exp = explode(':', $time_str);
+		$hour = $exp[0];
+		$minute = $exp[1];
+		if (str_ends_with($time_str, 'M')) {
+			$exp = explode(' ', $minute);
+			$minute = $exp[0];
+			if ($exp[1] == 'PM' && $hour < 12) {
+				$hour = ($hour + 12) % 24;
+			}
+			if ($exp[1] == 'AM' && $hour == 12) {
+				$hour = 0;
+			}
+		}
+	}
 
 } // EventController
 
@@ -633,7 +677,7 @@ class EventController extends ApplicationController {
  *   copyright            : (C) 2001 The phpBB Group
  *   email                : support@phpbb.com
  *
- *   $Id: EventController.class.php,v 1.59 2008/11/04 12:30:47 alvarotm01 Exp $
+ *   $Id: EventController.class.php,v 1.65 2008/12/05 20:35:05 alvarotm01 Exp $
  *
  ***************************************************************************/
 

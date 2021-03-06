@@ -85,9 +85,9 @@
 	<div id="<?php echo $genid ?>add_company_select_workspace_div" style="display:none">
 	<fieldset><legend><?php echo lang('workspace')?></legend>
 		<?php if ($company->isNew()) {
-			echo select_workspaces('ws_ids', $projects, array($project), $genid.'ws_ids');
+			echo select_workspaces('ws_ids', null, array($project), $genid.'ws_ids');
 		} else {
-			echo select_workspaces('ws_ids', $projects, $company->getWorkspaces(), $genid.'ws_ids');
+			echo select_workspaces('ws_ids', null, $company->getWorkspaces(), $genid.'ws_ids');
 		} ?>
 	</fieldset>
 	</div>
@@ -95,7 +95,7 @@
 		
 	<div id="<?php echo $genid ?>add_company_add_tags_div" style="display:none">
 	<fieldset><legend><?php echo lang('tags')?></legend>
-		<?php echo autocomplete_textfield("company[tags]", array_var($company_data, 'tags'), Tags::getTagNames(), lang("enter tags desc"), array("class" => "long")); ?>
+		<?php echo autocomplete_tags_field("company[tags]", array_var($company_data, 'tags')); ?>
 	</fieldset>
 	</div>
 	

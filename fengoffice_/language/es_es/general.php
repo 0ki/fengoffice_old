@@ -151,7 +151,7 @@
   	'assign to workspace' => 'Asignar a áreas de trabajo',  	
   	'assign' => 'Asignar',  	
   	'assign task template to workspace' => 'Asignar plantilla de tareas \'{0}\' a áreas de trabajo',
-  	'confirm delete task template' => 'Esta seguro que desea eliminar esta plantilla de tarea permanentemente? De hacerlo dejara de estar disponible en todo el sistema.',
+  	'confirm delete task template' => 'Está seguro que desea eliminar esta plantilla de tarea permanentemente? De hacerlo dejara de estar disponible en todo el sistema.',
   	'create contact from user' => 'Crear contacto con datos del usuario',
   	'confirm create contact from user' => 'Está seguro de que desea crear un contacto con los datos de este usuario?',
   	'create contact from user desc' => 'Al seleccionar sí, se creará un contacto del sistema asociado a este usuario',
@@ -174,7 +174,9 @@
 	'add work' => 'Agregar trabajo',
   
   	'date format' => 'd/m/Y',
-  	'date format description' => '(día/mes/año)'
+  	'date format description' => '(día/mes/año)',
+    'confirm move to trash' => 'Está seguro que desea mover el objeto seleccionado a la papelera?',
+
   ); // array
 
 ?>

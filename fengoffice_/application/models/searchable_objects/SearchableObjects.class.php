@@ -109,9 +109,9 @@
     	$wsSearch .= ')';
     
     	if($include_private) {
-    		return DB::prepareString('MATCH (`content`) AGAINST (\'' . $search_for . '\' IN BOOLEAN MODE)' . $otSearch . $columnsSearch );
+    		return DB::prepareString('MATCH (`content`) AGAINST (\'' . $search_for . '\' IN BOOLEAN MODE)'  . $wsSearch . $otSearch . $columnsSearch );
     	} else {
-    		return DB::prepareString('MATCH (`content`) AGAINST (\'' . $search_for . '\' IN BOOLEAN MODE) AND `is_private` = ?' .$wsSearch . $otSearch . $columnsSearch, array($search_for,  false));
+    		return DB::prepareString('MATCH (`content`) AGAINST (\'' . $search_for . '\' IN BOOLEAN MODE) AND `is_private` = 0' .$wsSearch . $otSearch . $columnsSearch);
     	} // if
     } // getSearchConditions
     

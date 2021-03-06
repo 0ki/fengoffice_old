@@ -31,7 +31,7 @@ Ext.extend(og.UserMenu, Ext.menu.Menu, {
 			return;
 		}
 		var item = new Ext.menu.Item({
-			text: user.name,
+			text: og.clean(user.name),
 			handler: function() {
 				this.fireEvent('userselect', user.id);
 			},

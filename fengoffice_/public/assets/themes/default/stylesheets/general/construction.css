@@ -8,8 +8,8 @@
 
 #headerContent {
 	background-position: 2px 3px;
-	/*background-image: url('../../images/layout/logo.png');*/
-	background-image: url('../../images/layout/header_bottom.gif');
+	/*background-image: url(../../images/layout/logo.png);*/
+	background-image: url(../../images/layout/header_bottom.gif);
 	background-repeat: repeat-x;
 	background-position: bottom;
 	height: 55px;
@@ -66,7 +66,7 @@
 .wsTagCrumbsElement {
 	padding-left: 18px;
 	margin-left: 10px;
-	background-image: url('../../images/16x16/tags.png');
+	background-image: url(../../images/16x16/tags.png);
 	background-repeat: no-repeat;
 	text-align: left;
 	position:relative;
@@ -79,14 +79,14 @@
 	position: absolute;
 	right: 0px;
 	top: 0px;
-	background-image: url('../../images/layout/tag-close.gif');
+	background-image: url(../../images/layout/tag-close.gif);
 	background-repeat: no-repeat;
 	cursor:pointer;
 	display:none;
 }
 
 #logodiv {
-	background-image: url('../../images/layout/logo.png');
+	background-image: url(../../images/layout/logo.png);
 	width: 60px;
 	position: relative;
 	margin: 5 auto;
@@ -123,6 +123,33 @@
 	background: transparent url(../../extjs/images/default/button/btn-sprite.gif) repeat-x scroll 0pt -43px !important;
 }
 
+.quickAddButton {
+	width: 60px;
+	height: 18px;
+	border: 1px solid #666;
+	background: transparent url(../../extjs/images/default/button/btn-sprite.gif) repeat-x scroll 0pt -43px !important;
+}
+
+.quickAddButton .x-btn-left{
+	background: transparent !important;
+	height:19px;
+}
+.quickAddButton .x-btn-center{
+	background: transparent !important;
+}
+.quickAddButton .x-btn-center button{
+	padding-left:18px;
+	background-image: url(../../images/16x16/add.png) !important;
+	background-repeat: no-repeat;
+}
+.quickAddButton .x-btn-right{
+	background: transparent !important;
+	height:19px;
+}
+#quickAdd .x-btn-over{
+	border: 1px solid deepskyblue;
+}
+
 #searchboxSearch button:hover {
 	border: 1px solid deepskyblue;
 }
@@ -139,7 +166,7 @@
 	/*padding: 0px 8px;*/
 	/*border: 1px solid #999;
 	background: #ffffcc;*/
-	background-image: url('../../images/layout/userborder.png');
+	background-image: url(../../images/layout/userborder.png);
 	padding-bottom:8px;
 	padding-left: 10px;
 	padding-right: 10px;
@@ -181,59 +208,6 @@
 	display: list-item;
 	font-weight: normal;
 	list-style: square;
-}
-
-/** crumbs **/
-
-#crumbsWrapper {
-	clear: both;
-	background: url('../../images/layout/crumbs.png') repeat-x top left;
-	border-top: 1px solid #7777AA;
-	border-bottom: 1px solid #7777AA;
-	margin: 0 auto;
-	float: left;
-	width: 100%;
-}
-
-#crumbsBlock {
-	margin: 0 auto;
-	padding: 0 20px;
-	text-align: left;
-}
-    
-#crumbs {
-	float: left;
-}
-
-#crumbs ul {
-	margin: 0;
-	padding: 0;
-	list-style: none;
-}
-
-#crumbs ul li {
-	display: inline;
-	line-height: 24px;
-	color: white;
-	font-size: 12px;
-	font-weight: bolder;
-}
-
-#crumbs ul li span {
-	font-weight: normal;
-}
-
-#crumbs ul li a {
-	margin: 0 3px;
-	border: 0;
-	color: white;
-	font-weight: bolder;
-	text-decoration: none;
-}
-
-#crumbs ul li a:hover {
-	text-decoration: underline;
-	background: transparent;
 }
 
 #searchBox {
@@ -312,7 +286,7 @@
 	padding: 0 15px 0 0;
 	color: #444;
 	text-decoration: underline;
-	background: url('../../images/icons/more_down.gif') no-repeat right bottom;
+	background: url(../../images/icons/more_down.gif) no-repeat right bottom;
 }
 
 #page_actions ul li a:hover {
@@ -339,7 +313,7 @@
 
 #listOfRssFeeds li {
 	padding-left: 16px;
-	background: url('../../images/icons/feed.gif') no-repeat;
+	background: url(../../images/icons/feed.gif) no-repeat;
 	line-height: 12px;
 	margin: 2px 0;
 }
@@ -470,7 +444,7 @@ div.private {
 	height: 9px;
 	width: 37px;
 	overflow: hidden;
-	background: url('../../images/icons/private.gif') no-repeat;
+	background: url(../../images/icons/private.gif) no-repeat;
 }
 
 div.private span {

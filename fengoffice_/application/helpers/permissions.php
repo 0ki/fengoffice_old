@@ -53,6 +53,21 @@
   		return false;
   	}
   	
+  	function can_manage_templates(User $user, $include_groups = true) {
+  		if ($user->getCanManageTemplates()) {
+  			return true;
+  		}
+  		if ($include_groups) {
+  			$user_ids = $user->getId();
+			$group_ids = GroupUsers::getGroupsCSVsByUser($user_ids);
+			if($group_ids!=''){
+	  			$gr = Groups::findOne(array('conditions' => array('id in ('.$group_ids.') AND can_manage_templates = true ')));
+	  			return $gr instanceof Group ;
+			}
+  		}
+  		return false;
+  	}
+  	
   	/**
   	 * Returns whether a user can manage configuration.
   	 * If groups are checked, one true permission makes the function return true.
@@ -207,7 +222,8 @@
 		}
 		throw new Exception('Invalid MANAGER in permission helper',-1);
 	}
-  	/**
+  	
+	/**
   	 * Enter description here...
   	 * assumes manager has one field as PK
   	 *
@@ -218,7 +234,7 @@
   	 * @return unknown
   	 */
 	function permissions_sql_for_listings (DataManager $manager, $access_level, User $user, $project_id = '`project_id`', $table_alias = null){
-		if(! ($manager instanceof DataManager )){
+		if(! ($manager instanceof DataManager)){
 			throw new Exception("Invalid manager '$manager' in permissions helper", -1);
 			return '';
 		}
@@ -227,12 +243,14 @@
 		$wo_tablename = WorkspaceObjects::instance()->getTableName(true);
 		$users_table_name =  Users::instance()->getTableName(true);
 		$pu_table_name = ProjectUsers::instance()->getTableName(true);
+		
 		if (isset($table_alias) && $table_alias && $table_alias!='')
 			$object_table_name = $table_alias;
 		else
 			$object_table_name = $manager->getTableName();
 		if (!is_numeric($project_id))
 			$project_id = "$object_table_name.$project_id";
+		
 		$object_id_field = $manager->getPkColumns();
 		$object_id = $object_table_name . '.' . $object_id_field;
 		$object_manager = get_class($manager);
@@ -256,11 +274,11 @@
 		// user or group has specific permissions over object
 		$group_ids = $user->getGroupsCSV();
 		$all_ids = '(' . $user_id . ($group_ids != '' ? ',' . $group_ids : '' ) . ')';
-		$str .= "\n OR ( EXISTS ( SELECT * FROM $oup_tablename `xx_oup` 
+		/*$str .= "\n OR ( EXISTS ( SELECT * FROM $oup_tablename `xx_oup` 
 				WHERE `xx_oup`.`rel_object_id` = $object_id 
 					AND `xx_oup`.`rel_object_manager` = '$object_manager' 
 					AND `xx_oup`.`user_id` IN $all_ids 
-					AND `xx_oup`.$access_level_text = true) )" ; 
+					AND `xx_oup`.$access_level_text = true) )" ; */
 		if($is_project_data_object){ // TODO: type of element belongs to a project
 			if ($manager instanceof ProjectMessages || $manager instanceof ProjectFiles|| $manager instanceof Companies ) {
 				$str .= "\n OR ( EXISTS ( SELECT * FROM $pu_table_name `xx_pu`, $wo_tablename `xx_wo` 
@@ -276,7 +294,6 @@
 					AND `xx_pu`.$can_manage_object = true ) ) ";
 			}
 		}
-		//return ' (1=1) ';
 		return ' (' . $str . ') ';
 	}	
 	

@@ -25,8 +25,8 @@ og.ReportingManager = function() {
 				'load': function() {
 					var d = this.reader.jsonData;
 					og.processResponse(d);
-					var ws = Ext.getCmp('workspace-panel').getActiveWorkspace().name;
-					var tag = Ext.getCmp('tag-panel').getSelectedTag().name;
+					var ws = og.clean(Ext.getCmp('workspace-panel').getActiveWorkspace().name);
+					var tag = og.clean(Ext.getCmp('tag-panel').getSelectedTag().name);
 					if (d.totalCount == 0) {
 						if (tag) {
 							this.fireEvent('messageToShow', lang("no objects with tag message", lang("charts"), ws, tag));
@@ -61,11 +61,11 @@ og.ReportingManager = function() {
 	function renderName(value, p, r) {
 		return String.format(
 			'<a href="#" onclick="og.openLink(\'{2}\')">{0}</a>',
-			value, r.data.name, og.getUrl('reporting', 'chart_details', {id: r.id}));
+			og.clean(value), og.clean(r.data.name), og.getUrl('reporting', 'chart_details', {id: r.id}));
 	}
 
 	function renderProject(value, p, r) {
-		var ids = String(r.data.projectId).split(',');
+		var ids = String(og.clean(r.data.projectId)).split(',');
 		var names = value.split(',');
 		var result = "";
 		for(var i = 0; i < ids.length; i++){

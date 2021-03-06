@@ -76,6 +76,7 @@ class UserController extends ApplicationController {
 					'password_generator' => 'random',
 					'company_id' => $company->getId(),
 					'timezone' => $contact->getTimezone(),
+					'create_contact' => false ,
 				); // array
 				
 			}
@@ -85,6 +86,8 @@ class UserController extends ApplicationController {
 		          'password_generator' => 'random',
 		          'company_id' => $company->getId(),
 		          'timezone' => $company->getTimezone(),
+					'create_contact' => true ,
+					'send_email_notification' => true ,
 				); // array
 			}
 		} // if
@@ -98,7 +101,7 @@ class UserController extends ApplicationController {
 
 		if(is_array(array_var($_POST, 'user'))) {
 			$user->setFromAttributes($user_data);
-			$user->setCompanyId($company->getId());
+			//$user->setCompanyId($company->getId());
 
 			try {
 				// Generate random password

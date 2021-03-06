@@ -64,32 +64,35 @@
 /* ----Shadows---- */
 
 .coViewTopRight {
-	width:12px;
+	width:1%;
+	min-width:12px;
 	height:12px;
-	background-image: url('../../images/layout/shcornertop.png');	
+	background-image: url(../../images/layout/shcornertop.png);	
 	background-repeat: no-repeat;
 }
 
 .coViewRight {
-	background-image: url('../../images/layout/shr.png');	
+	background-image: url(../../images/layout/shr.png);
 	background-repeat: repeat-y;
 }
 
 .coViewBottomRight {
-	background-image: url('../../images/layout/shcorner.png');
+	background-image: url(../../images/layout/shcorner.png);
 	background-repeat: no-repeat;
-	width:12px;
+	width:1%;
+	min-width:12px;
 	height:12px;
 }
 
 .coViewBottom {
-	background-image: url('../../images/layout/shb.png');
+	background-image: url(../../images/layout/shb.png);
 	background-repeat: repeat-x;
 }
 
 .coViewBottomLeft {
-	background-image: url('../../images/layout/shcornerbottom.png');
-	width:12px;
+	background-image: url(../../images/layout/shcornerbottom.png);
+	width:1%;
+	min-width:12px;
 	height:12px;
 	background-repeat: no-repeat;
 }
@@ -142,7 +145,40 @@
 }
 
 .ico-large-message {
-	background-image: url('../../images/48x48/note.png');
+	background-image: url(../../images/48x48/note.png);
+}
+
+.ico-large-message-trashed {
+	background-image: url(../../images/48x48/note_trashed.png);
+}
+
+/* ----- Template ----- */
+.template .coViewHeader {
+  	background: #DDDDDD;
+  	border-color: #AAAAAA;
+  	color: #666666;
+}
+
+.template .coViewIcon {
+  	background: #EEEEEE;
+  	border-color: #AAAAAA;
+}
+
+.template .coViewHeader .coViewTitle {
+  	border-color: #AAAAAA;
+}
+
+.template .coViewClose {
+  	background: #EEEEEE;
+  	color: #666666;
+}
+
+.ico-large-template {
+	background-image: url(../../images/48x48/template.png);
+}
+
+.ico-large-template-trashed {
+	background-image: url(../../images/48x48/template_trashed.png);
 }
 
 
@@ -169,7 +205,11 @@
 }
 
 .ico-large-email {
-	background-image: url('../../images/48x48/email.png');
+	background-image: url(../../images/48x48/email.png);
+}
+
+.ico-large-email-trashed {
+	background-image: url(../../images/48x48/email_trashed.png);
 }
 
 
@@ -196,7 +236,7 @@
 }
 
 .ico-large-chart {
-	background-image: url('../../images/48x48/chart.png');
+	background-image: url(../../images/48x48/chart.png);
 }
 
 
@@ -223,7 +263,11 @@
 }
 
 .ico-large-contact {
-	background-image: url('../../images/48x48/contact.png');
+	background-image: url(../../images/48x48/contact.png);
+}
+
+.ico-large-contact-trashed {
+	background-image: url(../../images/48x48/contact_trashed.png);
 }
 
 
@@ -250,7 +294,11 @@
 }
 
 .ico-large-company {
-	background-image: url('../../images/48x48/company.png');
+	background-image: url(../../images/48x48/company.png);
+}
+
+.ico-large-company-trashed {
+	background-image: url(../../images/48x48/company_trashed.png);
 }
 
 
@@ -277,7 +325,7 @@
 }
 
 .ico-large-user {
-	background-image: url('../../images/48x48/user.png');
+	background-image: url(../../images/48x48/user.png);
 }
 
 
@@ -304,7 +352,11 @@
 }
 
 .ico-large-files {
-	background-image: url('../../images/48x48/files.png');
+	background-image: url(../../images/48x48/files.png);
+}
+
+.ico-large-files-trashed {
+	background-image: url(../../images/48x48/files_trashed.png);
 }
 
 
@@ -331,7 +383,11 @@
 }
 
 .ico-large-tasks {
-	background-image: url('../../images/48x48/tasks.png');
+	background-image: url(../../images/48x48/tasks.png);
+}
+
+.ico-large-tasks-trashed {
+	background-image: url(../../images/48x48/tasks_trashed.png);
 }
 
 
@@ -358,7 +414,11 @@
 }
 
 .ico-large-milestone {
-	background-image: url('../../images/48x48/milestone.png');
+	background-image: url(../../images/48x48/milestone.png);
+}
+
+.ico-large-milestone-trashed {
+	background-image: url(../../images/48x48/milestone_trashed.png);
 }
 
 /* ----- Events ----- */
@@ -384,7 +444,11 @@
 }
 
 .ico-large-event {
-	background-image: url('../../images/48x48/view_calendar_day.png');
+	background-image: url(../../images/48x48/view_calendar_day.png);
+}
+
+.ico-large-event-trashed {
+	background-image: url(../../images/48x48/event_trashed.png);
 }
 
 
@@ -414,7 +478,7 @@
 }
 
 .ico-small-calendar {
-	background-image: url('../../images/32x32/view_calendar_month.png');
+	background-image: url(../../images/32x32/view_calendar_month.png);
 }
 
 /* ----- Report ----- */
@@ -440,7 +504,7 @@
 }
 
 .ico-large-report {
-	background-image: url('../../images/48x48/report.png');
+	background-image: url(../../images/48x48/report.png);
 }
 
 

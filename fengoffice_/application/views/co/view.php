@@ -110,7 +110,14 @@
 		
 	<tr><td class="coViewRight" rowspan=2></td></tr>
 	<tr><td class="coViewBody" colspan=2>
-	<?php if ($object instanceof ProjectDataObject && (is_array($object->getWorkspaces()) && count($object->getWorkspaces()) > 0)) { ?>
+	
+	<div class="prop-col-div" style="width:200;">
+		<span style="color:333333;font-weight:bolder;"><?php echo lang('unique id') ?>:&nbsp;</span><?php echo $object->getUniqueObjectId() ?>
+	</div>
+		
+	<?php 
+	$has_wss = $object instanceof ProjectDataObject && (is_array($object->getWorkspaces()) && count($object->getWorkspaces()) > 0);
+	if ($has_wss) { ?>
 		<div class="prop-col-div"><span style="color:333333;font-weight:bolder;"><?php echo lang('workspace') ?>:</span>
 			<?php
 				$wsl = $object->getWorkspaces();
@@ -121,22 +128,23 @@
 					}
 					echo '<br/>' . implode('<br/>',$projectLinks);
 				}
+	}
 				?>
 				
 		<?php if ($object->isTaggable()) {
-			$tags = project_object_tags($object);
+			$tags = project_object_tags2($object);
 			if ($tags != '--'){
 			?>
 		<br/>
-		<table><tr><td class="ico-db ico-tag" style="height:16px; width:16px;"></td><td>: <?php echo $tags ?></td></tr></table>
+		<div style="color:333333;font-weight:bolder;"><?php echo lang('tags') ?>:</div><?php echo $tags ?>
 		<?php }} ?>
-	
+	<?php if($has_wss){?>
 		</div>
 	<?php } ?>
 	
 	
 	
-	<?php if($object->isLinkableObject()) { ?>
+	<?php if($object->isLinkableObject() && !$object->isTrashed()) { ?>
 		<div class="prop-col-div" style="width:200;"><?php echo render_object_links($object, $object->canEdit(logged_user()))?></div>
 	<?php } ?>
 	<?php if ($object instanceof ProjectDataObject && $object->isCommentable()) { ?>
@@ -157,10 +165,10 @@
 					
 				if ($object->getObjectCreationTime() && $object->getCreatedOn()->isToday()){
 					$datetime = format_time($object->getCreatedOn());
-					echo lang('user date today at', $object->getCreatedBy()->getCardUrl(), $username, $datetime, $object->getCreatedBy()->getDisplayName());
+					echo lang('user date today at', $object->getCreatedBy()->getCardUrl(), $username, $datetime, clean($object->getCreatedBy()->getDisplayName()));
 				} else {
-					$datetime = format_date($object->getCreatedOn());
-					echo lang('user date', $object->getCreatedBy()->getCardUrl(), $username, $datetime, $object->getCreatedBy()->getDisplayName());
+					$datetime = format_datetime($object->getCreatedOn(), lang('date format'), logged_user()->getTimezone());
+					echo lang('user date', $object->getCreatedBy()->getCardUrl(), $username, $datetime, clean($object->getCreatedBy()->getDisplayName()));
 				}
 			} ?></div>
     	<?php } // if ?>
@@ -176,13 +184,37 @@
 					$username = lang('you');
 				else
 					$username = clean($object->getUpdatedBy()->getDisplayName());
-			
+
 				if ($object->getUpdatedOn()->isToday()){
 					$datetime = format_time($object->getUpdatedOn());
-					echo lang('user date today at', $object->getUpdatedBy()->getCardUrl(), $username, $datetime, $object->getUpdatedBy()->getDisplayName());
+					echo lang('user date today at', $object->getUpdatedBy()->getCardUrl(), $username, $datetime, clean($object->getUpdatedBy()->getDisplayName()));
 				} else {
-					$datetime = format_date($object->getUpdatedOn());
-					echo lang('user date', $object->getUpdatedBy()->getCardUrl(), $username, $datetime, $object->getUpdatedBy()->getDisplayName());
+					$datetime = format_datetime($object->getUpdatedOn(), lang('date format'), logged_user()->getTimezone());
+					echo lang('user date', $object->getUpdatedBy()->getCardUrl(), $username, $datetime, clean($object->getUpdatedBy()->getDisplayName()));
+				}
+			}
+			 ?></div>
+		<?php } // if ?>
+		
+		<?php
+		if ($object instanceof ProjectDataObject && $object->isTrashable() && $object->getTrashedById() != 0) { ?>
+    		<span style="color:#333333;font-weight:bolder;">
+    			<?php echo lang('deleted by') ?>:
+			</span><br/><div style="padding-left:10px">
+			<?php
+			$trash_user = Users::findById($object->getTrashedById());
+			if ($trash_user instanceof User){
+				if (logged_user()->getId() == $trash_user->getId())
+					$username = lang('you');
+				else
+					$username = clean($trash_user->getDisplayName());
+
+				if ($object->getTrashedOn()->isToday()){
+					$datetime = format_time($object->getTrashedOn());
+					echo lang('user date today at', $trash_user->getCardUrl(), $username, $datetime, clean($trash_user->getDisplayName()));
+				} else {
+					$datetime = format_datetime($object->getTrashedOn(), lang('date format'), logged_user()->getTimezone());
+					echo lang('user date', $trash_user->getCardUrl(), $username, $datetime, clean($trash_user->getDisplayName()));
 				}
 			}
 			 ?></div>
@@ -197,5 +229,5 @@
 </td>
 </tr></table>
 <script type="text/javascript">
-og.showWsPaths('<?php echo $genid ?>-co');
+og.showWsPaths('<?php echo $genid ?>-co',null,true);
 </script>

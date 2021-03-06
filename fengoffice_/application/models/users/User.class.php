@@ -16,6 +16,13 @@ class User extends BaseUser {
 	protected $is_searchable = true;
 
 	/**
+    * This project object is taggable
+    *
+    * @var boolean
+    */
+    protected $is_taggable = false;
+    
+	/**
 	 * Array of searchable columns
 	 *
 	 * @var array
@@ -147,6 +154,16 @@ class User extends BaseUser {
 	
 	private $groups_csv;
 	
+    /**
+    * Returns true if this user is taggable
+    *
+    * @param void
+    * @return boolean
+    */
+    function isTaggable() {
+      return $this->is_taggable;
+    } // isTaggable
+    
 	/**
 	 * Save
 	 *
@@ -392,13 +409,13 @@ class User extends BaseUser {
 
 
 	/**
-	 * Return array of active projects that this user have access
+	 * Return array of active projects that this user has access to
 	 *
 	 * @access public
 	 * @param void
 	 * @return array
 	 */
-	function getActiveProjectIdsCSV( ) {
+	function getActiveProjectIdsCSV() {
 		if(is_null($this->active_projects_ids)){
 			$active_proj = $this->getWorkspaces();
 			if (!is_null($active_proj)){

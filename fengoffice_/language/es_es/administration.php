@@ -46,7 +46,11 @@
     'config option desc default_project_folders' => 'Carpetas que van a ser creadas cuando se cree el área de trabajo. El nombre de cada carpeta debera aparecer en una línea. Las líneas duplicadas o vacías no van a ser tenidas en cuenta',
     'config option name theme' => 'Tema',
     'config option desc theme' => 'Usando temas puede cambiar el aspecto de OpenGoo',
-    
+    'config option name work_day_start_time' => 'Hora de inicio de la jornada laboral',
+  	'config option desc work_day_start_time' => 'Especifica la hora de comienzo de la jornada laboral',
+  	'config option name time_format_use_24' => 'Utilizar formato de 24 horas',
+  	'config option desc time_format_use_24' => 'Si está habilitado el formato de hora será \'hh:mm\' desde 00:00 hasta 23:59, sino las horas se utilizarán desde 1 a 12 utilizando AM o PM.',
+	
     // OpenGoo.org
     'config option name upgrade_check_enabled' => 'Habilitar comprobación de actualizaciones',
     'config option desc upgrade_check_enabled' => 'Si escoge esta opción el sistema comprobará una vez al día si hay nuevas versiones disponibles de OpenGoo',
@@ -111,6 +115,32 @@
   	'user ws config option name task panel status' => 'Estado',
   	'user ws config option name task panel filter' => 'Filtrar por',
   	'user ws config option name task panel filter value' => 'Valor del filtro',
+  	'config option name days_on_trash' => 'Días en la papelera',
+    'config option desc days_on_trash' => 'Cuántos días un objeto es almacenado en la papelera antes de ser eliminado automáticamente. Si es 0, los objetos no serán eliminados de la papelera.',
+    'templates' => 'Templates',
+    'add template' => 'Add template',
+    'confirm delete template' => 'Are you sure you want to delete this template?',
+    'no templates' => 'There are no templates',
+    'template name required' => 'The template\'s name is required',
+    'can manage templates' => 'Can manage templates',
+    'new template' => 'New template',
+    'edit template' => 'Edit template',
+    'template dnx' => 'The template does not exist',
+    'success edit template' => 'Template modified successfully',
+    'log add cotemplates' => '{0} added',
+    'log edit cotemplates' => '{0} modified',
+    'success delete template' => 'Template deleted successfully',
+    'error delete template' => 'Error deleting the template',
+    'objects' => 'Objects',
+    'objects in template' => 'Objects in template',
+    'no objects in template' => 'There are no objects in this template',
+    'add to a template' => 'Add to a template',
+    'add an object to template' => 'Add an object to this template',
+    'you are adding object to template' => 'You are adding {0} \'{1}\' to a template. Choose a template below or create a new one for this {0}.',
+    'success add object to template' => 'Object added to template successfully',
+    'object type not supported' => 'This object type is not supported for templates',
+    'assign template to workspace' => 'Assign template to workspace',
+  
   ); // array
 
 ?>

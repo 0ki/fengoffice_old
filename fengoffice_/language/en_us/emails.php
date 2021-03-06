@@ -80,6 +80,10 @@ return array(
 	'task has been modified' => 'Task "{0}" in workspace "{1}" has been modified',
 	'task modified' => 'Task modified',
 	'view task' => 'View task',
+
+	'original message' => 'Original message',
+	'mail sent' => 'Sent',
+
     ); // array
 
     ?>

@@ -51,7 +51,7 @@ addLangs({
 	'confirm delete object': '¿Está seguro que desea eliminar los objetos seleccionados?',
 	'confirm delete contact': '¿Está seguro que desea eliminar contacto(s)?',
 	'confirm delete company': '¿Está seguro que desea eliminar la companía?',
-	'confirm delete event': '¿Está seguro de que desea eliminar permanentemente este evento? \nSi lo elimina, dejará de estar disponible para otros usuarios.',
+	'confirm delete event': '¿Está seguro de que desea eliminar permanentemente este evento? \nTambién se eliminarán las invitaciones a este evento. \nSi lo elimina, dejará de estar disponible para otros usuarios.',
 	'confirm delete file': '¿Está seguro que desea eliminar este archivo?',
 	'confirm delete mail content': '¿Está seguro que desea eliminar este correo?',
 	'confirm delete mail account': 'Advertencia: Todos los correos pertenecientes a esta cuenta también serán eliminados, ¿Está seguro que desea eliminar esta cuenta?',
@@ -182,6 +182,7 @@ addLangs({
 	'edit selected object': 'Editar object',
 	'assign to project': 'Asignar a espacio',
 	'assign contact to project': 'Editar tareas del contacto',
+	'import': 'Importar',
 	
 	/* webpage manager*/
 	'description': 'Descripción',
@@ -292,6 +293,7 @@ addLangs({
 	'next':'Suiguiente',
 	'my calendar': 'Mi Calendario',
 	'edit event details': 'Editar detalles del evento',
+	'duration': 'Duración',
 	
 	/* Charts */
 	'reporting' : 'Reportar',
@@ -416,6 +418,9 @@ addLangs({
 	'show more tasks number' : 'Ver mas ({0})...',
 	'start_work': 'Comenzar a trabajar en esta tarea',
 	'close_work': 'Finalizar el trabajo sobre esta tarea',
+	'pause_work': 'Pausar el trabajo sobre esta tarea',
+	'resume_work': 'Retomar el trabajo sobre esta tarea',
+	'close work': 'Finalizar trabajo',
 	'time worked' : 'Tiempo trabajado',
 	'hours' : 'horas',
 	'complete this task' : 'Completar esta tarea',
@@ -468,11 +473,57 @@ addLangs({
   	'date format alternatives' : 'd/m/y|j/n/Y|j/n/y|j/m/y|d/n/y|j/m/Y|d/n/Y',
   	'warning start date greater than due date': 'Aviso: la fecha de inicio es mayor que la fecha límite',
   	
+  	'event start time': 'Hora',
+  	'all day event': 'Todo el día',
+  	
   	'choose an image': 'Elija una imagen',
   	'sort by': 'Ordenar por',
   	'file size': 'Tamaño del archivo',
   	'last modified': 'Última modificación',
   	'image name': 'Nombre de imagen',
   	'size': 'Tamaño',
-  	'completed on': 'Fecha de completado'
+  	'completed on': 'Fecha de completado',
+  	
+  	'save changes' : 'Guardar cambios',
+  	'no filter' : 'No filtrar',
+  	'nothing (groups)' : 'No agrupar',
+  	'none' : 'Ninguno',
+  	'new task time report': 'Nuevo reporte de horas de tarea',
+  	
+  	'print' : 'Imprimir', 
+    'confirm delete timeslot' : 'Está seguro que desea eliminar el tiempo de trabajo?',
+    'no items selected' : 'No hay objetos seleccionados',
+    
+    'error adding timeslot' : 'Un error ocurrió al ingresar un tiempo de trabajo',
+  	
+  	'no deleted objects message': 'No hay {0} borrados en \'{1}\'',
+	'no deleted objects with tag message': 'NO hay {0} borrados y etiquetados \'{2}\' en \'{1}\'',
+	'deleted on': 'Eliminado el',
+	'deleted by': 'Eliminado por',
+	'trash': 'Papelera',
+	'restore': 'Restaurar',
+	'restore selected objects': 'Restaurar objetos seleccionados',
+	'delete selected objects permanently': 'Eliminar permanentemente los objetos seleccionados',
+	'confirm delete objects permanently': 'Una vez que los objetos fueron eliminados, estos no podrán ser recuperados.\nEstá seguro de que desea eliminarlos permanentemente?',
+	
+	'n/a': '<acronym title="No Disponible">n/a</acronym>',
+	'move to trash': 'Mover a la papelera',
+    'move selected objects to trash': 'Mover objetos seleccionados a la papelera',
+    'confirm move to trash': 'Está seguro de que desea mover los objetos seleccionados a la papelera?',
+    'confirm restore objects': 'Está seguro que desea restaurar los objetos seleccionados?',
+    
+    'file_revision': 'Revisión de archivo',
+    'trash emptied periodically': 'Objetos con más de {0} días van a ser eliminados.',
+    'remove': 'Eliminar',
+    'object type not supported': 'Este tipo de objeto no está soportado para plantilla', 
+    'confirm delete timeslot' : 'Está seguro que desea eliminar el tiempo de trabajo?',
+    'view slideshow': 'View slideshow',
+    'no images match the specified filter': 'No images match the specified filter',
+    'confirm delete permanently': 'Are you sure you want to delete this object?',
+    'download selected file': 'Descargar el archivo seleccionado',
+    'edit selected file properties': 'Editar las propiedades del archivo seleccionado',
+    'no due date': 'Sin fecha de inicio',
+    'no start date': 'Sin fecha de fin',
+    'untagged': 'No etiquetadas',
+    'you must enter a name': 'Debe ingresar un nombre'
 });

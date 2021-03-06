@@ -47,6 +47,7 @@
       $installation->setDatabasePassword((string) $this->getFromStorage('database_pass'));
       $installation->setDatabaseName((string) trim($this->getFromStorage('database_name')));
       $installation->setTablePrefix((string) trim($this->getFromStorage('database_prefix')));
+      $installation->setDatabaseEngine((string) trim($this->getFromStorage('database_engine')));
       $installation->setAbsoluteUrl((string) trim($this->getFromStorage('absolute_url')));
       
       ob_start();

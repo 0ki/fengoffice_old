@@ -2,7 +2,7 @@
 /*
  * mime_parser.php
  *
- * @(#) $Id: mime_parser.class.php,v 1.4 2008/09/09 20:10:42 idesoto Exp $
+ * @(#) $Id: mime_parser.class.php,v 1.5 2008/11/28 14:20:08 alvarotm01 Exp $
  *
  */
 
@@ -30,7 +30,7 @@ define('MIME_ADDRESS_FIRST',            2);
 
 	<package>net.manuellemos.mimeparser</package>
 
-	<version>@(#) $Id: mime_parser.class.php,v 1.4 2008/09/09 20:10:42 idesoto Exp $</version>
+	<version>@(#) $Id: mime_parser.class.php,v 1.5 2008/11/28 14:20:08 alvarotm01 Exp $</version>
 	<copyright>Copyright  (C) Manuel Lemos 2006 - 2008</copyright>
 	<title>MIME parser</title>
 	<author>Manuel Lemos</author>
@@ -1704,7 +1704,8 @@ class mime_parser_class
 			if($this->extract_addresses)
 			{
 				$headers = $decoded_message['Headers'];
-				$positions = $decoded_message['HeaderPositions'];
+				if (is_array($headers) && count($headers) && isset($decoded_message['HeaderPositions']))
+					$positions = $decoded_message['HeaderPositions'];
 				$th = count($headers);
 				for(Reset($headers), $h = 0; $h<$th; Next($headers), ++$h)
 				{
@@ -1740,7 +1741,7 @@ class mime_parser_class
 						}
 					}
 				}
-				UnSet($decoded_message['HeaderPositions']);
+				if (isset($decoded_message['HeaderPositions'])) UnSet($decoded_message['HeaderPositions']);
 			}
 			$decoded[$message]=$decoded_message;
 		}

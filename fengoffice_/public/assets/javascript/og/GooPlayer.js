@@ -184,11 +184,11 @@ og.GooPlayer = function(config) {
 	        	scope: this
 			}],
         	columns: [
-        		{header: '#', width: 25, sortable: true, dataIndex: 'track'},
-	            {id:'song', header: lang("song"), width: 120, sortable: true, dataIndex: 'song', renderer: function(v, p, r) { if (v) return v; else return r.data.filename;}},
-	            {header: lang("album"), width: 120, sortable: true, dataIndex: 'album'},
-	            {header: lang("artist"), width: 120, sortable: true, dataIndex: 'artist'},
-	            {header: lang("year"), width: 60, sortable: true, dataIndex: 'year'}
+        		{header: '#', width: 25, sortable: true, dataIndex: 'track', renderer: og.clean},
+	            {id:'song', header: lang("song"), width: 120, sortable: true, dataIndex: 'song', renderer: function(v, p, r) { if (v) return v; else return og.clean(r.data.filename);}},
+	            {header: lang("album"), width: 120, sortable: true, dataIndex: 'album', renderer: og.clean},
+	            {header: lang("artist"), width: 120, sortable: true, dataIndex: 'artist', renderer: og.clean},
+	            {header: lang("year"), width: 60, sortable: true, dataIndex: 'year', renderer: og.clean}
         	],
         	stripeRows: true,
         	autoExpandColumn: 'song',
@@ -482,7 +482,7 @@ Ext.extend(og.GooPlayer, Ext.Panel, {
 		var artist = track.artist || lang('unknown');
 		var album = track.album || lang('unknown');
 		var song = track.song || track.filename || track.url;
-		var html = String.format(this.htmlTemplate, image, song, artist, album);
+		var html = String.format(this.htmlTemplate, og.clean(image), og.clean(song), og.clean(artist), og.clean(album));
 		this.getPanel().body.update(html);
 	},
 	

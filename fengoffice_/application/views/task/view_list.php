@@ -1,32 +1,45 @@
 <?php
+if (isset($task_list) && $task_list instanceof ProjectTask) {
+	if (!$task_list->isTrashed()){
+		if(!$task_list->isCompleted() && $task_list->canEdit(logged_user())) {
+			add_page_action(lang('do complete'), $task_list->getCompleteUrl(rawurlencode(get_url('task','view_task',array('id'=>$task_list->getId())))) , 'ico-complete');
+		} // if
+		if($task_list->isCompleted() && $task_list->canEdit(logged_user())) {
+			add_page_action(lang('open task'), $task_list->getOpenUrl(rawurlencode(get_url('task','view_task',array('id'=>$task_list->getId())))) , 'ico-reopen');
+		} // if
+	
+		if(active_project() && ProjectTask::canAdd(logged_user(), active_project())) {
+			add_page_action(lang('add task'), get_url('task', 'add_task'), 'ico-task');
+		} // if
+	
+		if($task_list->canEdit(logged_user())) {
+			add_page_action(lang('edit'), $task_list->getEditListUrl(), 'ico-edit');
+		} // if
+	}
+	
+	if($task_list->canDelete(logged_user())) {
+		if ($task_list->isTemplate()) {
+			add_page_action(lang('delete'), "javascript:if(confirm(lang('confirm delete task'))) og.openLink('" . $task_list->getDeletePermanentlyUrl() ."');", 'ico-delete');
+		} else if ($task_list->isTrashed()) {
+			add_page_action(lang('restore from trash'), "javascript:if(confirm(lang('confirm restore objects'))) og.openLink('" . $task_list->getUntrashUrl() ."');", 'ico-restore');
+			add_page_action(lang('delete permanently'), "javascript:if(confirm(lang('confirm delete permanently'))) og.openLink('" . $task_list->getDeletePermanentlyUrl() ."');", 'ico-delete');
+		} else {
+			add_page_action(lang('move to trash'), "javascript:if(confirm(lang('confirm move to trash'))) og.openLink('" . $task_list->getTrashUrl() ."');", 'ico-trash');
+		} // if
+	} // if
+	
+	if (!$task_list->isTrashed()){
+		if ($task_list->getIsTemplate()) {
+			add_page_action(lang('new task from template'), get_url("task", "copy_task", array("id" => $task_list->getId())), 'ico-copy');
+		} else {
+			add_page_action(lang('copy task'), get_url("task", "copy_task", array("id" => $task_list->getId())), 'ico-copy');
+			if (can_manage_templates(logged_user())) {
+				add_page_action(lang('add to a template'), get_url("template", "add_to", array("manager" => 'ProjectTasks', "id" => $task_list->getId())), 'ico-template');
+			} // if
+		} // if
+	} // if
 
-  set_page_title($task_list->getTitle());
-  project_tabbed_navigation(PROJECT_TAB_TASKS);
-  project_crumbs(array(
-    array(lang('tasks'), get_url('task')),
-    array($task_list->getTitle())
-  ));
-  if(!$task_list->isCompleted() && $task_list->canEdit(logged_user())) {
-    add_page_action(lang('do complete'), $task_list->getCompleteUrl(rawurlencode(get_url('task','view_task',array('id'=>$task_list->getId())))) , 'ico-complete');
-  } // if
-  if($task_list->isCompleted() && $task_list->canEdit(logged_user())) {
-    add_page_action(lang('open task'), $task_list->getOpenUrl(rawurlencode(get_url('task','view_task',array('id'=>$task_list->getId())))) , 'ico-reopen');
-  } // if
-  
-  if(active_project() && ProjectTask::canAdd(logged_user(), active_project())) {
-    add_page_action(lang('add task'), get_url('task', 'add_task'), 'ico-task');
-  } // if
-//add_javascript_to_page('modules/addTaskForm.js');  
-  if($task_list->canEdit(logged_user())) {
-    add_page_action(lang('edit'), $task_list->getEditListUrl(), 'ico-edit');
-  } // if
-  if($task_list->canDelete(logged_user())) {
-    add_page_action(lang('delete'), "javascript:if(confirm(lang('confirm delete task list'))) og.openLink('" . $task_list->getDeleteListUrl() ."');", 'ico-delete');
-  } // if
-  add_page_action(lang('copy task'), get_url("task", "copy_task", array("id" => $task_list->getId())), 'ico-copy');
-  
-  add_page_action(lang('save as template'), get_url("task", "new_template", array("id" => $task_list->getId())), 'ico-template-task');
-
+   add_page_action(lang('print'), get_url('task', 'print_task', array("id" => $task_list->getId())), 'ico-print','_blank');
   
   //TODO Fix reorder subtasks
   /*if($task_list->canReorderTasks(logged_user()) && is_array($task_list->getOpenSubTasks())) {
@@ -48,14 +61,14 @@
 	
 	$status = '<div class="taskStatus">';
 	if(!$task_list->isCompleted()) {
-		if ($task_list->canEdit(logged_user()))
+		if ($task_list->canEdit(logged_user()) && !$task_list->isTrashed())
 			$status .= '<a class=\'internalLink og-ico ico-delete\' style="color:white;" href=\'' . $task_list->getCompleteUrl(rawurlencode(get_url('task','view_task',array('id'=>$task_list->getId())))) . '\' title=\'' 
 			.lang('complete task') . '\'>' . lang('incomplete') . '</a>';
 		else
 			$status .= '<div style="display:inline;" class="og-ico ico-delete">' . lang('incomplete') . '</div>';
 	}
 	else {
-		if ($task_list->canEdit(logged_user()))
+		if ($task_list->canEdit(logged_user()) && !$task_list->isTrashed())
 			$status .= '<a class=\'internalLink og-ico ico-complete\' style="color:white;" href=\'' . $task_list->getOpenUrl(rawurlencode(get_url('task','view_task',array('id'=>$task_list->getId())))) . '\' title=\'' 
 			. lang('open task') . '\'>' . lang('complete') . '</a>';
 		else
@@ -100,13 +113,14 @@
 	tpl_assign("content_template", array('task_list', 'task'));
 	tpl_assign('object', $task_list);
 	tpl_assign('title', clean($title));
-	tpl_assign('iconclass', 'ico-large-tasks');
+	tpl_assign('iconclass', $task_list->isTrashed()? 'ico-large-tasks-trashed' :  'ico-large-tasks');
 	
 
 	$this->includeTemplate(get_template_path('view', 'co'));
 ?>
 </div>
 </div>
+<?php } //if isset ?>
 
 <script type="text/javascript">
   App.modules.addTaskForm.hideAllAddTaskForms();

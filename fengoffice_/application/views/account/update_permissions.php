@@ -12,7 +12,7 @@
 <form style="height:100%;background-color:white" action="<?php echo get_url("account", "update_permissions", array("id" => $user->getId())) ?>" class="internalForm" onsubmit="javascript:ogPermPrepareSendData('<?php echo $genid ?>');return true;" method="POST">
 <div class="adminClients">
   <div class="adminHeader">
-  	<div class="adminTitle"><?php echo lang("permissions for user", $user->getUsername()) ?></div>
+  	<div class="adminTitle"><?php echo lang("permissions for user", clean($user->getUsername())) ?></div>
   </div>
   <div class="adminSeparator"></div>
   <div class="adminMainBlock">
@@ -40,7 +40,11 @@
 	    <div>
 	      <?php echo checkbox_field('user[can_manage_contacts]', array_var($user_data,'can_manage_contacts'), array('id' => 'user[can_manage_contacts]' )) ?> 
 	      <label for="<?php echo 'user[can_manage_contacts]' ?>" class="checkbox"><?php echo lang('can manage contacts') ?></label>
-	    </div>  
+	    </div>
+	    <div>
+	      <?php echo checkbox_field('user[can_manage_templates]', array_var($user_data,'can_manage_templates'), array('id' => 'user[can_manage_templates]' )) ?> 
+	      <label for="<?php echo 'user[can_manage_templates]' ?>" class="checkbox"><?php echo lang('can manage templates') ?></label>
+	    </div>
 	</div>
 </fieldset>
 

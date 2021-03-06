@@ -18,6 +18,9 @@ INSERT INTO `<?php echo $table_prefix ?>config_options` (`category_name`, `name`
 INSERT INTO `<?php echo $table_prefix ?>config_options` (`category_name`, `name`, `value`, `config_handler_class`, `is_system`, `option_order`, `dev_comment`) VALUES ('general', 'upgrade_check_enabled', '0', 'BoolConfigHandler', 0, 0, 'Upgrade check enabled / dissabled');
 INSERT INTO `<?php echo $table_prefix ?>config_options` (`category_name`, `name`, `value`, `config_handler_class`, `is_system`, `option_order`, `dev_comment`) VALUES ('general', 'file_storage_adapter', 'fs', 'FileStorageConfigHandler', 0, 0, 'What storage adapter should be used? fs or mysql');
 INSERT INTO `<?php echo $table_prefix ?>config_options` (`category_name`, `name`, `value`, `config_handler_class`, `is_system`, `option_order`, `dev_comment`) VALUES ('general', 'theme', 'default', 'ThemeConfigHandler', 0, 0, NULL);
+INSERT INTO `<?php echo $table_prefix ?>config_options` (`category_name`, `name`, `value`, `config_handler_class`, `is_system`, `option_order`, `dev_comment`) VALUES ('general', 'days_on_trash', '30', 'IntegerConfigHandler', 0, 0, 'Days before a file is deleted from trash. 0 = Not deleted');
+INSERT INTO `<?php echo $table_prefix ?>config_options` (`category_name`, `name`, `value`, `config_handler_class`, `is_system`, `option_order`, `dev_comment`) VALUES ('general', 'work_day_start_time', '9:00', 'TimeConfigHandler', 0, 0, 'Work day start time');
+INSERT INTO `<?php echo $table_prefix ?>config_options` (`category_name`, `name`, `value`, `config_handler_class`, `is_system`, `option_order`, `dev_comment`) VALUES ('general', 'time_format_use_24', '0', 'BoolConfigHandler', 0, 0, 'Use 24 hours time format');
 INSERT INTO `<?php echo $table_prefix ?>config_options` (`category_name`, `name`, `value`, `config_handler_class`, `is_system`, `option_order`, `dev_comment`) VALUES ('mailing', 'exchange_compatible', '0', 'BoolConfigHandler', 0, 0, NULL);
 INSERT INTO `<?php echo $table_prefix ?>config_options` (`category_name`, `name`, `value`, `config_handler_class`, `is_system`, `option_order`, `dev_comment`) VALUES ('mailing', 'mail_transport', 'mail()', 'MailTransportConfigHandler', 0, 0, 'Values: ''mail()'' - try to emulate mail() function, ''smtp'' - use SMTP connection');
 INSERT INTO `<?php echo $table_prefix ?>config_options` (`category_name`, `name`, `value`, `config_handler_class`, `is_system`, `option_order`, `dev_comment`) VALUES ('mailing', 'smtp_server', '', 'StringConfigHandler', 0, 0, '');
@@ -37,7 +40,7 @@ INSERT INTO `<?php echo $table_prefix ?>file_types` (`extension`, `icon`, `is_se
 INSERT INTO `<?php echo $table_prefix ?>file_types` (`extension`, `icon`, `is_searchable`, `is_image`) VALUES ('wma', 'audio.png', 0, 0);
 INSERT INTO `<?php echo $table_prefix ?>file_types` (`extension`, `icon`, `is_searchable`, `is_image`) VALUES ('ogg', 'audio.png', 0, 0);
 INSERT INTO `<?php echo $table_prefix ?>file_types` (`extension`, `icon`, `is_searchable`, `is_image`) VALUES ('doc', 'doc.png', 0, 0);
-INSERT INTO `<?php echo $table_prefix ?>file_types` (`extension`, `icon`, `is_searchable`, `is_image`) VALUES ('xsl', 'doc.png', 0, 0);
+INSERT INTO `<?php echo $table_prefix ?>file_types` (`extension`, `icon`, `is_searchable`, `is_image`) VALUES ('xls', 'xls.png', 0, 0);
 INSERT INTO `<?php echo $table_prefix ?>file_types` (`extension`, `icon`, `is_searchable`, `is_image`) VALUES ('gif', 'image.png', 0, 1);
 INSERT INTO `<?php echo $table_prefix ?>file_types` (`extension`, `icon`, `is_searchable`, `is_image`) VALUES ('jpg', 'image.png', 0, 1);
 INSERT INTO `<?php echo $table_prefix ?>file_types` (`extension`, `icon`, `is_searchable`, `is_image`) VALUES ('jpeg', 'image.png', 0, 1);
@@ -76,6 +79,7 @@ INSERT INTO `<?php echo $table_prefix ?>eventtypes` (`typename`, `typedesc`, `ty
 -- 
 INSERT INTO `<?php echo $table_prefix ?>user_ws_config_categories` (`id`,`name`,`is_system`,`type`,`category_order`) VALUES  (1,'dashboard',0,0,0);
 INSERT INTO `<?php echo $table_prefix ?>user_ws_config_categories` (`id`,`name`,`is_system`,`type`,`category_order`) VALUES  (2,'task panel',0,0,1);
+INSERT INTO `<?php echo $table_prefix ?>user_ws_config_categories` (`id`,`name`,`is_system`,`type`,`category_order`) VALUES  (3,'time panel',1,0,2);
 
 -- 
 -- Dumping data for table `user_ws_config_options`
@@ -88,8 +92,7 @@ INSERT INTO `<?php echo $table_prefix ?>user_ws_config_options` (`id`,`category_
  (5,'dashboard','show emails widget','1','BoolConfigHandler',0,300,''),
  (6,'dashboard','show messages widget','1','BoolConfigHandler',0,400,''),
  (7,'dashboard','show documents widget','1','BoolConfigHandler',0,500,''),
- (8,'dashboard','show charts widget','1','BoolConfigHandler',0,600,''),
- (9,'task panel','my tasks is default view','1','BoolConfigHandler',0,0,'');
+ (8,'dashboard','show charts widget','1','BoolConfigHandler',0,600,'');
  
 
 -- Milanga
@@ -107,3 +110,11 @@ INSERT INTO `<?php echo $table_prefix ?>user_ws_config_options` (`id`,`category_
  (20,'task panel','task panel filter value','0:0','UserCompanyConfigHandler',1,0,''),
  (21,'dashboard','show comments widget','1','BoolConfigHandler',0,0,''),
  (22,'dashboard','always show unread mail in dashboard','0','BoolConfigHandler',0,10,'when false, active workspace email is shown');
+ 
+
+-- Bondiola
+INSERT INTO `<?php echo $table_prefix ?>user_ws_config_options` (`id`,`category_name`,`name`,`default_value`,`config_handler_class`,`is_system`,`option_order`,`dev_comment`) VALUES 
+ (23,'time panel','TM show time type','0','IntegerConfigHandler',1,0,''),
+ (24,'time panel','TM report show time type','0','IntegerConfigHandler',1,0,''),
+ (25,'time panel','TM user filter','0','IntegerConfigHandler',1,0,''),
+ (26,'time panel','TM tasks user filter','0','IntegerConfigHandler',1,0,'');

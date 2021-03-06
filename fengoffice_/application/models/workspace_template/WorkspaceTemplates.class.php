@@ -19,7 +19,9 @@ class WorkspaceTemplates extends BaseWorkspaceTemplates {
 		if (!is_array($all)) return array();
 		$objs = array();
 		foreach ($all as $obj) {
-			$objs[] = get_object_by_manager_and_id($obj->getObjectId(), $obj->getObjectManager());
+			$template = $obj->getTemplate();
+			if ($template instanceof COTemplate)
+				$objs[] = $obj->getTemplate();
 		}
 		return $objs;
 	}
@@ -30,8 +32,8 @@ class WorkspaceTemplates extends BaseWorkspaceTemplates {
 	 * @param $Template_id
 	 * @return array
 	 */
-	static function getWorkspacesByTemplate($object_manager, $template_id, $wsCSV = null){
-		$all = self::findAll(array('conditions' => "`object_manager` = '$object_manager' AND `template_id` = $template_id" . ($wsCSV ? " AND `workspace_id in` ($wsCSV)":'')));
+	static function getWorkspacesByTemplate($template_id, $wsCSV = null){
+		$all = self::findAll(array('conditions' => "`template_id` = $template_id" . ($wsCSV ? " AND `workspace_id in` ($wsCSV)":'')));
 		if (!is_array($all)) return array();
 		$csv = "";
 		foreach ($all as $w) {
@@ -48,9 +50,9 @@ class WorkspaceTemplates extends BaseWorkspaceTemplates {
 	 * @param $workspace_id
 	 * @return boolean
 	 */
-	static function isTemplateInWorkspace($object_manager, $template_id, $workspace_id){
+	static function isTemplateInWorkspace($template_id, $workspace_id){
 		try {
-			return count(self::find(array('conditions' => array("`object_manager` = ? AND `template_id` = ? AND `workspace_id` = ?", $object_manager, $template_id, $workspace_id)))) > 0;
+			return count(self::find(array('conditions' => array("`template_id` = ? AND `workspace_id` = ?", $template_id, $workspace_id)))) > 0;
 		} catch (Exception $e) {
 			return false;
 		}
@@ -60,23 +62,23 @@ class WorkspaceTemplates extends BaseWorkspaceTemplates {
 	 * Returns one Workspace Template given WS id and template id and manager
 	 *
 	 * @param unknown_type $workspace_id
-	 * @param unknown_type $task_template_id
+	 * @param unknown_type $template_id
 	 * @param unknown_type $object_manager
 	 */
-	function getByTemplateAndWorkspace($workspace_id,$task_template_id,$object_manager){
+	function getByTemplateAndWorkspace($workspace_id,$template_id){
 		return self::find(array('conditions' => 
-			array("`object_manager` = ? AND `template_id` = ".$task_template_id." AND `workspace_id` = ". $workspace_id, $object_manager)));		
+			array("`template_id` = ".$template_id." AND `workspace_id` = ". $workspace_id)));		
 	} //getByTemplateAndWorkspace
 	
 	/**
 	 * delete all workspace-template associations for a given template
 	 *
-	 * @param unknown_type $task_template_id
+	 * @param unknown_type $template_id
 	 * @param unknown_type $object_manager
 	 * @return unknown
 	 */
-	function deleteByTemplate($task_template_id,$object_manager){
-		return self::delete(array("`object_manager` = ? AND `template_id` = ".$task_template_id, $object_manager));		
+	function deleteByTemplate($template_id){
+		return self::delete(array("`template_id` = ".$template_id));		
 	}
 } // WorkspaceTemplates
 

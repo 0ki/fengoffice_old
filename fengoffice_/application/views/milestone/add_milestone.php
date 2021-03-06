@@ -1,8 +1,5 @@
 <?php 
   $genid = gen_id();
-  if (isset($base_milestone) && $base_milestone instanceof ProjectMilestone && $base_milestone->getIsTemplate()) {
-  	add_page_action(lang("delete template"), "javascript:if(confirm('".lang('confirm delete template')."')) og.openLink('" . get_url("milestone", "delete", array("id" => $base_milestone->getId())) ."');", "ico-delete");
-  }
   $project = $milestone->getProject();
 ?>
 <form style='height:100%;background-color:white' class="internalForm" action="<?php echo $milestone->isNew() ? get_url('milestone', 'add', array("copyId" => array_var($milestone_data, 'copyId'))) : $milestone->getEditUrl() ?>" method="post">
@@ -39,7 +36,7 @@
 		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_milestone_tags_div', this)"><?php echo lang('tags') ?></a> - 
 		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_milestone_description_div', this)"><?php echo lang('description') ?></a> - 
 		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_milestone_options_div', this)"><?php echo lang('options') ?></a> - 
-		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_milestone_properties_div', this)"><?php echo lang('properties') ?></a>
+		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_milestone_properties_div', this)"><?php echo lang('custom properties') ?></a>
 		<?php if($milestone->isNew() || $milestone->canLinkObject(logged_user())) { ?> - 
 			<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_milestone_linked_objects_div', this)"><?php echo lang('linked objects') ?></a>
 		<?php } ?>
@@ -62,7 +59,8 @@
 	<div id="<?php echo $genid ?>add_milestone_tags_div" style="display:none">
 	<fieldset>
 	<legend><?php echo lang('tags') ?></legend>
-		<?php echo autocomplete_textfield("milestone[tags]", array_var($milestone_data, 'tags'), Tags::getTagNames(), lang("enter tags desc"), array("class" => "long")); ?>
+		<?php echo autocomplete_tags_field("milestone[tags]", array_var($milestone_data, 'tags')); ?>
+		
 	</fieldset>
 	</div>
 	
@@ -93,7 +91,7 @@
 	
 	<div id='<?php echo $genid ?>add_milestone_properties_div' style="display:none">
 	<fieldset>
-	<legend><?php echo lang('properties') ?></legend>
+	<legend><?php echo lang('custom properties') ?></legend>
 		<?php echo render_object_properties('milestone', $milestone); ?>
 	</fieldset>
 	</div>

@@ -71,7 +71,8 @@ og.ObjectPicker = function(config) {
 	        },{
 				id: 'name',
 				header: lang("name"),
-				dataIndex: 'name'
+				dataIndex: 'name',
+				renderer: og.clean
 				//,width: 120
 	        },{
 				id: 'type',
@@ -85,6 +86,7 @@ og.ObjectPicker = function(config) {
 				header: lang("project"),
 				dataIndex: 'project',
 				width: 60,
+				renderer: og.clean,
 				sortable: false,
 				hidden: true
 	        },{
@@ -105,6 +107,7 @@ og.ObjectPicker = function(config) {
 	        	header: lang('user'),
 	        	dataIndex: 'updatedBy',
 	        	width: 60,
+	        	renderer: og.clean,
 	        	sortable: false,
 				hidden: true
 	        },{
@@ -119,6 +122,7 @@ og.ObjectPicker = function(config) {
 				header: lang("author"),
 				dataIndex: 'createdBy',
 				width: 60,
+				renderer: og.clean,
 				hidden: true
 			}]);
 	    cm.defaultSortable = true;
@@ -348,6 +352,7 @@ og.ObjectPicker = function(config) {
 						id: 'wsFilter',
 						region: 'north',
 						autoScroll: true,
+						loadWorkspacesFrom: 'workspace-panel',
 						split: true,
 						title: lang('filter'),
 						height: 120,
@@ -379,6 +384,7 @@ og.ObjectPicker = function(config) {
 						id: 'tagFilter',
 						region: 'south',
 						autoScroll: true,
+						loadTagsFrom: 'tag-panel',
 						split: true,
 						height: 115,
 						listeners: {

@@ -3,7 +3,7 @@
   if(App.modules.addTaskForm) {
     App.modules.addTaskForm.task_lists[<?php echo $task_list->getId() ?>] = {
       id               : <?php echo $task_list->getId() ?>,
-	      can_add_task     : <?php echo $task_list->canAddSubTask(logged_user()) ? 'true' : 'false' ?>,
+	      can_add_task     : <?php echo ($task_list->canAddSubTask(logged_user()) && !$task_list->isTrashed()) ? 'true' : 'false' ?>,
       add_task_link_id : 'addTaskForm<?php echo $task_list->getId() ?>ShowLink',
       task_form_id     : 'addTaskForm<?php echo $task_list->getId() ?>',
       text_id          : 'addTaskText<?php echo $task_list->getId() ?>',
@@ -27,7 +27,7 @@
       <tr>
       
 <!-- Checkbox -->
-<?php if($task->canChangeStatus(logged_user())) { ?>
+<?php if($task->canChangeStatus(logged_user()) && !$task_list->isTrashed()) { ?>
     <td class="taskCheckbox"><?php echo checkbox_link($task->getCompleteUrl(rawurlencode(get_url('task', 'view_task', array('id' => $task_list->getId())))), false, lang('mark task as completed')) ?></td>
 <?php } else { ?>
         <td class="taskCheckbox"><img src="<?php echo icon_url('not-checked.jpg') ?>" alt="<?php echo lang('open task') ?>" /></td>
@@ -39,11 +39,11 @@
           <span class="assignedTo"><?php echo clean($task->getAssignedTo()->getObjectName()) ?>:</span> 
 <?php } // if{ ?>
           <a class="internalLink" href="<?php echo $task->getObjectUrl() ?>"><?php echo ($task->getTitle() && $task->getTitle()!='' )?clean($task->getTitle()):clean($task->getText()) ?></a> 
-          <?php if($task->canEdit(logged_user())) { ?>
+          <?php if($task->canEdit(logged_user()) && !$task->isTrashed()) { ?>
           	<a class="internalLink blank" href="<?php echo $task->getEditListUrl() ?>" title="<?php echo lang('edit task') ?>">
           	<img src="<?php echo icon_url('edit.gif') ?>" alt="" /></a>
           <?php } // if ?>
-          <?php if($task->canDelete(logged_user())) { ?>
+          <?php if($task->canDelete(logged_user()) && !$task->isTrashed()) { ?>
           	<a class="internalLink blank" href="<?php echo $task->getDeleteUrl() ?>" onclick="return confirm('<?php echo lang('confirm delete task') ?>')" title="<?php echo lang('delete task') ?>">
           	<img src="<?php echo icon_url('cancel_gray.gif') ?>" alt="" /></a>
           <?php } // if ?>
@@ -58,7 +58,7 @@
   
     
   <div class="addTask">
-<?php if($task_list->canAddSubTask(logged_user())) { ?>
+<?php if($task_list->canAddSubTask(logged_user()) && !$task_list->isTrashed()) { ?>
     <div id="addTaskForm<?php echo $task_list->getId() ?>ShowLink"><a class="internalLink" href="<?php echo $task_list->getAddTaskUrl(false) ?>" onclick="App.modules.addTaskForm.showAddTaskForm(<?php echo $task_list->getId() ?>); return false"><?php echo lang('add sub task') ?></a></div>
   
     <div id="addTaskForm<?php echo $task_list->getId() ?>" style="display:none">
@@ -100,18 +100,18 @@
 <?php $counter++; ?>
 <?php if($on_list_page || ($counter <= 5)) { ?>
       <tr>
-<?php if($task->canChangeStatus(logged_user())) { ?>
+<?php if($task->canChangeStatus(logged_user()) && !$task->isTrashed()) { ?>
     <td class="taskCheckbox"><?php echo checkbox_link($task->getOpenUrl(rawurlencode(get_url('task', 'view_task', array('id' => $task_list->getId())))), true, lang('mark task as open')) ?></td>
 <?php } else { ?>
         <td class="taskCheckbox"><img src="<?php echo icon_url('checked.jpg') ?>" alt="<?php echo lang('completed task') ?>" /></td>
 <?php } // if ?>
         <td class="taskText">
         	<a class="internalLink" href="<?php echo $task->getObjectUrl() ?>"><?php echo clean($task->getTitle()) ?></a> 
-          <?php if($task->canEdit(logged_user())) { ?>
+          <?php if($task->canEdit(logged_user()) && !$task->isTrashed()) { ?>
           	<a class="internalLink" href="<?php echo $task->getEditListUrl() ?>" class="blank" title="<?php echo lang('edit task') ?>">
           	<img src="<?php echo icon_url('edit.gif') ?>" alt="" /></a>
           <?php } // if ?> 
-          <?php if($task->canDelete(logged_user())) { ?>
+          <?php if($task->canDelete(logged_user()) && !$task->isTrashed()) { ?>
           	<a href="<?php echo $task->getDeleteUrl() ?>" class="blank internalLink" onclick="return confirm('<?php echo lang('confirm delete task') ?>')" title="<?php echo lang('delete task') ?>">
           	<img src="<?php echo icon_url('cancel_gray.gif') ?>" alt="" /></a>
           <?php } // if ?>

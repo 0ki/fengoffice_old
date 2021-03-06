@@ -27,7 +27,7 @@ class SearchController extends ApplicationController {
 		$objectManagers = array("ProjectWebpages", "ProjectMessages", "MailContents", "ProjectFiles",
 			 "ProjectFileRevisions", "ProjectMilestones", "ProjectTasks", "ProjectEvents");
 		$objectTypes = array(lang('webpages'), lang('messages'), lang('emails'), 
-			lang('files'), lang('files'), lang('milestones'), lang('tasks'), lang('events'));
+			lang('files'), lang('file revisions'), lang('milestones'), lang('tasks'), lang('events'));
 		$iconTypes = array('webpage', 'message', 'email', 
 			'file', 'file', 'milestone', 'task', 'event');                        
 		
@@ -38,7 +38,7 @@ class SearchController extends ApplicationController {
 			$search_results = null;
 			$pagination = null;
 		} else {
-			if(active_project() instanceof Project)
+			if(array_var($_GET, 'search_all_projects') != "true" && active_project() instanceof Project)
 				$projects = active_project()->getAllSubWorkspacesCSV(true,logged_user());
 			else 
 				$projects = logged_user()->getActiveProjectIdsCSV();
@@ -170,7 +170,7 @@ class SearchController extends ApplicationController {
 			$search_results = null;
 			$pagination = null;
 		} else {
-			if(active_project() instanceof Project)
+			if(array_var($_GET, 'search_all_projects') != "true" && active_project() instanceof Project)
 				$projects = active_project()->getAllSubWorkspacesCSV(true,logged_user());
 			else 
 				$projects = logged_user()->getActiveProjectIdsCSV();

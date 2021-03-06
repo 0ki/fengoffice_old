@@ -55,6 +55,13 @@
     abstract protected function connect($params);
     
     /**
+     * Check whether the resource is a valid connection resource.
+     *
+     * @param boolean $resource
+     */
+    abstract public function isResource($resource);
+    
+    /**
     * Basic query execution
     *
     * @access protected
@@ -382,7 +389,7 @@
     * @return boolean
     */
     function isConnected() {
-      return is_resource($this->link);
+      return $this->isResource($this->link);
     } // isConnected
     
     /**
@@ -403,7 +410,7 @@
     * @return null
     */
     protected function setLink($link) {
-      if(is_resource($link)) $this->link = $link;
+      if($this->isResource($link)) $this->link = $link;
     } // setLink
     
     /**

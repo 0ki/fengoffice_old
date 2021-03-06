@@ -1,22 +1,42 @@
 <?php
-  
-  if(!$milestone->isCompleted() && $milestone->canEdit(logged_user())) {
-    add_page_action(lang('complete milestone'), $milestone->getCompleteUrl(rawurlencode(get_url('milestone','view',array('id'=>$milestone->getId())))) , 'ico-complete');
-  } // if
-  if($milestone->isCompleted() && $milestone->canEdit(logged_user())) {
-    add_page_action(lang('open milestone'), $milestone->getOpenUrl(rawurlencode(get_url('milestone','view',array('id'=>$milestone->getId())))) , 'ico-reopen');
-  }
-  if(!$milestone->isCompleted()) {    
-    if(ProjectTask::canAdd(logged_user(), $milestone->getProject())) 
-    	add_page_action(lang('add task list'), $milestone->getAddTaskUrl(), 'ico-task');
-  } // if
-  if($milestone->canEdit(logged_user())) {
-		add_page_action(lang('edit'), $milestone->getEditUrl(), 'ico-edit');
-	} // if
+if (isset($milestone) && $milestone instanceof ProjectMilestone) {
+	if (!$milestone->isTrashed()){
+		if(!$milestone->isCompleted() && $milestone->canEdit(logged_user())) {
+			add_page_action(lang('complete milestone'), $milestone->getCompleteUrl(rawurlencode(get_url('milestone','view',array('id'=>$milestone->getId())))) , 'ico-complete');
+		} // if
+		if($milestone->isCompleted() && $milestone->canEdit(logged_user())) {
+			add_page_action(lang('open milestone'), $milestone->getOpenUrl(rawurlencode(get_url('milestone','view',array('id'=>$milestone->getId())))) , 'ico-reopen');
+		}
+		if(!$milestone->isCompleted()) {
+			if(ProjectTask::canAdd(logged_user(), $milestone->getProject()))
+			add_page_action(lang('add task list'), $milestone->getAddTaskUrl(), 'ico-task');
+		} // if
+		if($milestone->canEdit(logged_user())) {
+			add_page_action(lang('edit'), $milestone->getEditUrl(), 'ico-edit');
+		} // if
+	}
+	
 	if($milestone->canDelete(logged_user())) {
-		add_page_action(lang('delete'), "javascript:if(confirm(lang('confirm delete milestone'))) og.openLink('" . $milestone->getDeleteUrl() ."');", 'ico-delete');
+		if ($milestone->isTemplate()) {
+			add_page_action(lang('delete'), "javascript:if(confirm(lang('confirm delete milestone'))) og.openLink('" . $milestone->getDeletePermanentlyUrl() ."');", 'ico-delete');
+		} else if ($milestone->isTrashed()) {
+			add_page_action(lang('restore from trash'), "javascript:if(confirm(lang('confirm restore objects'))) og.openLink('" . $milestone->getUntrashUrl() ."');", 'ico-restore');
+			add_page_action(lang('delete permanently'), "javascript:if(confirm(lang('confirm delete permanently'))) og.openLink('" . $milestone->getDeleteUrl() ."');", 'ico-delete');
+		} else {
+			add_page_action(lang('move to trash'), "javascript:if(confirm(lang('confirm move to trash'))) og.openLink('" . $milestone->getTrashUrl() ."');", 'ico-trash');
+		}
 	} // if
-	add_page_action(lang('copy milestone'), get_url("milestone", "copy_milestone", array("id" => $milestone->getId())), 'ico-copy');
+	
+	if (!$milestone->isTrashed()){
+		if ($milestone->getIsTemplate()) {
+			add_page_action(lang('new milestone from template'), get_url("milestone", "copy_milestone", array("id" => $milestone->getId())), 'ico-copy');
+		} else {
+			add_page_action(lang('copy milestone'), get_url("milestone", "copy_milestone", array("id" => $milestone->getId())), 'ico-copy');
+			if (can_manage_templates(logged_user())) {
+				add_page_action(lang('add to a template'), get_url("template", "add_to", array("manager" => 'ProjectMilestones', "id" => $milestone->getId())), 'ico-template');
+			}
+		}
+	}
 	
 	//add_page_action(lang('save as template'), get_url("milestone", "new_template", array("id" => $milestone->getId())), 'ico-template-milestone');
 
@@ -129,8 +149,11 @@ $on_list_page = false;
 	   
 	tpl_assign("content", $content);
 	tpl_assign("object", $milestone);
+	tpl_assign('iconclass', $milestone->isTrashed()? 'ico-large-milestone-trashed' :  'ico-large-milestone');
 	
 	$this->includeTemplate(get_template_path('view', 'co'));
 	?>
 </div>
 </div>
+
+<?php } //if isset ?>

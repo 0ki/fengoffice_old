@@ -3,7 +3,7 @@
   * 
   * @author Carlos Palma <chonwil@gmail.com>
   */
-  abstract class BaseProjectCharts extends DataManager {
+  abstract class BaseProjectCharts extends ProjectDataObjects {
   
     /**
     * Column name => Column type map
@@ -22,7 +22,10 @@
     	'created_on' => DATA_TYPE_DATETIME, 
     	'created_by_id' => DATA_TYPE_INTEGER, 
     	'updated_on' => DATA_TYPE_DATETIME, 
-    	'updated_by_id' => DATA_TYPE_INTEGER);
+    	'updated_by_id' => DATA_TYPE_INTEGER,
+    	'trashed_on' => DATA_TYPE_DATETIME,
+     	'trashed_by_id' => DATA_TYPE_INTEGER,
+    );
   
     /**
     * Construct

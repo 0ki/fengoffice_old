@@ -1,16 +1,6 @@
 <script type="text/javascript">
-	var cant_tips = 0;
-	var tips_array = [];
-	
-	function addTip(div_id, title, bdy) {
-		tips_array[cant_tips++] = new Ext.ToolTip({
-			target: div_id,
-	        html: bdy,
-	        title: title,
-	        hideDelay: 1500,
-	        closable: true
-		});
-	}
+	scroll_to = -1;
+	showCalendarToolbar();
 </script>
 
 <?php
@@ -24,7 +14,7 @@ $_SESSION['month'] = $month;
 $_SESSION['day'] = $day;
 
 $user_filter = !isset($_GET['user_filter']) || $_GET['user_filter'] == 0 ? logged_user()->getId() : $_GET['user_filter'];
-$state_filter = isset($_GET['state_filter']) ? $_GET['state_filter'] : -1; 
+$state_filter = isset($_GET['state_filter']) ? $_GET['state_filter'] : ' 0 1 3'; 
 
 $user = Users::findById(array('id' => $user_filter));
 /*
@@ -32,6 +22,8 @@ $user = Users::findById(array('id' => $user_filter));
  * to prevent null exception when calling getRangeTasksByUser(), because this func. expects an User instance.
  */
 if ($user == null) $user = logged_user();
+
+$use_24_hours = config_option('time_format_use_24');
 
 $tags = active_tag();	
 ?>
@@ -121,32 +113,27 @@ $tags = active_tag();
 	$alldaygridHeight = $max_events * PX_HEIGHT / 2 + PX_HEIGHT / 2;//Day events container height= all the events plus an extra free space
 	
 ?>
-<div class="calendar" style="padding:7px;height:100%" id="cal_main_div">
-<table style="width:100%;height:95%">
+
+
+
+<div class="calendar" style="padding:0px;height:100%;overflow:hidden;" id="cal_main_div" onmouseup="clearPaintedCells();">
+
+<table style="width:100%;height:100%;">
 <tr>
 <td>
-	<table style="width:100%">
-	<col width=1%/>
-	<col/>
-	<col width=1%/>
+	<table style="width:100%;height:100%;">
 	<tr>
-	<td class="coViewHeader" colspan=2  rowspan=2>
-	<div class="coViewTitle">				
+	<td class="coViewHeader" colspan=2 rowspan=1>
+	<div class="coViewTitle">
 		<span id="chead0"><?php echo  date(lang('date format'), mktime(0, 0, 0, $month, $startday, $year)) ." - ". date(lang('date format'), mktime(0, 0, 0, $month, $endday-1, $year))
-		 .' - '. ($user_filter == -1 ? lang('all users') : lang('calendar of', $user->getDisplayName()));?></span>	
+		 .' - '. ($user_filter == -1 ? lang('all users') : lang('calendar of', clean($user->getDisplayName())));?></span>	
 	</div>		
 	</td>
-			
-	<td class="coViewTopRight"></td>
 	</tr>
 	<tr>
-		<td class="coViewRight" rowspan=2></td>
-	</tr>
-		
-	<tr>
-		<td class="coViewBody" style="padding:0px" colspan=2>					
-		<div id="chrome_main2" class="printborder" style="border-color: rgb(195, 217, 255); background: rgb(195, 217, 255) none repeat scroll 0% 50%; width:100%; height:95%">
-		<div id="allDayGrid" class="inset grid"  style="height: <?php echo $alldaygridHeight ?>px; margin-bottom: 5px;background:#E8EEF7;margin-right:0px;margin-left:40px;position:relative;"   >
+		<td class="coViewBody" style="padding:0px;height:100%;" colspan=2>					
+		<div id="chrome_main2" class="printborder" style="border-color: rgb(195, 217, 255); background: rgb(195, 217, 255) none repeat scroll 0% 50%; width:100%; height:100%">
+		<div id="allDayGrid" class="inset grid"  style="height: <?php echo $alldaygridHeight ?>px; margin-bottom: 5px;background:#E8EEF7;margin-right:15px;margin-left:40px;position:relative;">
 		<?php					
 									
 			$width_percent = 100/7;
@@ -206,34 +193,34 @@ $tags = active_tag();
 				</div>
 				<div id="allDay<?php echo $day_of_week ?>" class="allDayCell" style="left: <?php echo $width ?>%; height: <?php echo $alldaygridHeight ?>px;border-left:3px double #DDDDDD !important; position:absolute;width:3px;z-index:110;background:#E8EEF7;top:0%;"></div>
 
-				<div id="alldayeventowner" style="width: <?php echo $width_percent ?>%;position:absolute;left: <?php echo $width ?>%; top: 12px;height: <?php echo $alldaygridHeight ?>px;" onclick="showEventPopup(<?php echo $dtv_temp->getDay() ?>, <?php echo $dtv_temp->getMonth()?>, <?php echo $dtv_temp->getYear()?>, -1, -1);">
+				<div id="alldayeventowner" style="width: <?php echo $width_percent ?>%;position:absolute;left: <?php echo $width ?>%; top: 12px;height: <?php echo $alldaygridHeight ?>px;" onclick="showEventPopup(<?php echo $dtv_temp->getDay() ?>, <?php echo $dtv_temp->getMonth()?>, <?php echo $dtv_temp->getYear()?>, -1, -1, <?php echo ($use_24_hours ? 'true' : 'false'); ?>);">
 					<?php	
 						$top=5;
 						if(is_array(array_var($alldayevents,$day_of_week))){
-							foreach ($alldayevents[$day_of_week] as $event){	
+							foreach ($alldayevents[$day_of_week] as $event){
 								$tipBody = '';
 								$divtype = '';
 								$div_prefix = '';
 								if ($event instanceof ProjectMilestone ){
 									$div_prefix = 'w_ms_div_';									
-									$subject =$event->getName();
+									$subject = clean($event->getName());
 									$img_url = image_url('/16x16/milestone.png');
 									$due_date=$event->getDueDate();
 									$divtype = '<i>' . lang('milestone') . '</i> - ';
-									$tipBody = lang('assigned to') .': '. $event->getAssignedToName() . (trim($event->getDescription()) != '' ? '<br><br>' . trim($event->getDescription()) : '');
+									$tipBody = lang('assigned to') .': '. clean($event->getAssignedToName()) . (trim(clean($event->getDescription())) != '' ? '<br><br>' . trim(clean($event->getDescription())) : '');
 								}elseif ($event instanceof ProjectTask){
 									$div_prefix = 'w_ta_div_';
-									$subject =$event->getTitle();
+									$subject = clean($event->getTitle());
 									$img_url = image_url('/16x16/tasks.png');
 									$due_date=$event->getDueDate();
 									$divtype = '<i>' . lang('task') . '</i> - ';
-									$tipBody = lang('assigned to') .': '. $event->getAssignedToName() . (trim($event->getText()) != '' ? '<br><br>' . trim($event->getText()) : '') ;
+									$tipBody = lang('assigned to') .': '. clean($event->getAssignedToName()) . (trim(clean($event->getText())) != '' ? '<br><br>' . trim(clean($event->getText())) : '') ;
 								}elseif ($event instanceof ProjectEvent){
 									$div_prefix = 'w_ev_div_';
-									$subject = $event->getSubject();
+									$subject = clean($event->getSubject());
 									$img_url = image_url('/16x16/calendar.png'); /* @var $event ProjectEvent */											
 									$divtype = '<i>' . lang('event') . '</i> - ';
-									$tipBody = (trim($event->getDescription()) != '' ? '<br>' . $event->getDescription() : '');									
+									$tipBody = (trim(clean($event->getDescription())) != '' ? '<br>' . clean($event->getDescription()) : '');									
 								}
 								$tipBody = str_replace("\r", '', $tipBody);
 								$tipBody = str_replace("\n", '<br>', $tipBody);
@@ -245,23 +232,23 @@ $tags = active_tag();
 									if (count($dws) >= 1){
 										$ws_color = $dws[0]->getColor();
 									}
-									cal_get_ws_color($ws_color, $ws_style, $ws_class, $txt_color);
+									cal_get_ws_color($ws_color, $ws_style, $ws_class, $txt_color, $border_color);
 					?>
-					<div id="<?php echo $div_prefix . $event->getId() ?>" class="adc" style="left: 6%; top: <?php echo $top ?>px; z-index: 5;width: 90%;margin:1px;position:absolute;">
-						<div class="t3 <?php echo  $ws_class?>" style="<?php echo  $ws_style?>;margin:0px 1px 0px 1px;height:1px;"></div>
-						<div class="noleft <?php echo  $ws_class?>" style="<?php echo  $ws_style?>">							
+					<div id="<?php echo $div_prefix . $event->getId() ?>" class="adc" style="left: 4%; top: <?php echo $top ?>px; z-index: 5;width: 92%;margin:1px;position:absolute;">
+						<div class="t3 <?php echo  $ws_class?>" style="<?php echo  $ws_style?>;margin:0px 1px 0px 1px;height:0px; border-bottom:1px solid; border-color:<?php echo $border_color ?>"></div>
+						<div class="noleft <?php echo  $ws_class?>" style="<?php echo  $ws_style?>;border-left:1px solid; border-right:1px solid; border-color:<?php echo $border_color ?>">							
 							<div class="" style="overflow: hidden; padding-bottom: 1px;">										
-								<nobr style="display: block; text-decoration: none;"><a href='<?php echo $event->getViewUrl()."&amp;view=week"?>' class='internalLink'" onclick="stopPropagation(event)"><img src="<?php echo $img_url?>" align='absmiddle' border='0'> <span style="color:<?php echo $txt_color ?>!important"><?php echo $subject ?></span> </a></nobr>										
+								<nobr style="display: block; text-decoration: none;"><a href='<?php echo $event->getViewUrl()."&amp;view=week"?>' class='internalLink'" onclick="stopPropagation(event);hideCalendarToolbar();"><img src="<?php echo $img_url?>" align='absmiddle' border='0'> <span style="color:<?php echo $txt_color ?>!important"><?php echo $subject ?></span> </a></nobr>										
 							</div>
 						</div>
-						<div class="t3 <?php echo  $ws_class?>" style="<?php echo  $ws_style?>;margin:0px 1px 0px 1px;height:1px;"></div>
+						<div class="t3 <?php echo  $ws_class?>" style="<?php echo  $ws_style?>;margin:0px 1px 0px 1px;height:0px; border-top:1px solid; border-color:<?php echo $border_color ?>"></div>
 					</div>
 					<script type="text/javascript">
-						addTip('<?php echo $div_prefix . $event->getId() ?>', '<?php echo $divtype . $subject ?>', '<?php echo $tipBody ?>');
+						addTip('<?php echo $div_prefix . $event->getId() ?>', <?php echo json_encode($divtype . $subject) ?>, <?php echo json_encode($tipBody) ?>);
 					</script>
 					<?php
-									$top += 21;	
-								}
+									$top += 21;
+								}	
 							}
 						}
 					?>
@@ -270,11 +257,12 @@ $tags = active_tag();
 				$width += $width_percent;
 			}
 		?>
-	</div>					
-	<div id="gridcontainer" style="background-color:#fff;overflow: hidden;height: 1008px; 	position:relative;" >	
-		<!-- <div class='grid_bg' style="background-image: url(public/assets/themes/default/images/Calendar_BG.gif);background-repeat: repeat;background-color:#ffffff;height:1024px;"> -->
+	</div>
+	
+	
+	<div id="gridcontainer" style="background-color:#fff; position:relative; overflow-x:hidden; overflow-y:scroll; height:504px;">	
 			<div id='calowner' style="display:block; width:100%;">  
-				<table cellspacing="0" cellpadding="0" border="0" style="table-layout: fixed; width: 100%;height: 1008px;">
+				<table cellspacing="0" cellpadding="0" border="0" style="table-layout: fixed; width: 100%;height: 100%;">
 					<tr>
 						<td id="rowheadcell" style="width: 40px;">
 							<div id="rowheaders" style="top: 0pt; left: 0pt;">										
@@ -282,7 +270,7 @@ $tags = active_tag();
 								for ($hour=0; $hour<=23; $hour++){	
 							?>
 <div style="height: <?php echo PX_HEIGHT-1?>px; top: 0ex;background: #E8EEF7 none repeat scroll 0%;border-top:1px solid #DDDDDD;left:0pt;width: 100%;" id="rhead<?php echo $hour?>" class="rhead">
-<div class="rheadtext"><?php echo date("ga",mktime($hour)) ?></div>
+<div class="rheadtext" style="text-align:right;padding-right:2px;"><?php echo date($use_24_hours ? "G:i" : "g a", mktime($hour, 0)) ?></div>
 </div>												
 										<?php
 								}
@@ -290,7 +278,7 @@ $tags = active_tag();
 
 							</div>
 						</td>
-						<td id="gridcontainercell" style="width: auto;position:relative" >	
+						<td id="gridcontainercell" style="width: auto; position:relative" >	
 							<div id="grid" style="height: 100%;background-color:#fff;position:relative;" class="grid">										
 								<div id="decowner">
 									
@@ -308,7 +296,7 @@ $tags = active_tag();
 									}
 									$top = (PX_HEIGHT/2) * $hour;
 							?>
-<div id="r<?php echo $hour?>"" class="hrule <?php echo $parity?>" style="top: <?php echo $top?>px; height:1px; z-index: 101;position:absolute;left:0px;<?php echo $style?>;width:100%">
+<div id="r<?php echo $hour?>"" class="hrule <?php echo $parity?>" onmousedown="" onmouseup="" style="top: <?php echo $top?>px; height:0px; z-index:101; position:absolute; left:0px;<?php echo $style?>;width:100%">
 <?php $hour == $curr_hour? print("<span id='curr_hour' style='visibility:hidden;height:0px;width:0px'></span>"):print('');?>
 </div>
 <?php
@@ -319,16 +307,22 @@ $tags = active_tag();
 									$left = (100/7)*$day_of_week;
 									for ($hour=0; $hour<=47; $hour++){
 										$top = (PX_HEIGHT/2) * $hour;
+								
+									$div_id = 'h' . $day_of_week . "_" . $hour; 
+									$border_style = ($currentyear == $date->getYear() && $currentmonth == $date->getMonth() && $currentday == $date->getDay()) || ($year == $date->getYear() && $month == $date->getMonth() && $day == $date->getDay()) ? ($hour % 2 == 0 ? "border-top:1px solid #DDDDDD;" : "border-top:1px dotted #DDDDDD;") : ''; 
 ?>
 
-<div id="h<?php echo $day_of_week."_".$hour?>" style="left:<?php echo $left ?>%;width:<?php echo $width_percent ?>%;top:<?php echo $top?>px;height:20px;position:absolute;<?php echo $today_style[$day_of_week] ?>"
-onmousedown="selectStartDateTime(<?php echo $date->getDay() ?>, <?php echo $date->getMonth()?>, <?php echo $date->getYear()?>, <?php echo date("G",mktime($hour/2))?>, <?php echo ($hour % 2 == 0) ? 0 : 30 ?>);"
-onmouseup="showEventPopup(<?php echo $date->getDay() ?>, <?php echo $date->getMonth()?>, <?php echo $date->getYear()?>, <?php echo date("G",mktime($hour/2))?>, <?php echo ($hour % 2 == 0) ? 0 : 30 ?>);"
+<div id="<?php echo $div_id?>" style="left:<?php echo $left ?>%;width:<?php echo $width_percent ?>%;top:<?php echo $top?>px;height:21px;position:absolute;z-index: 100;<?php echo $today_style[$day_of_week].$border_style ?>"
+onmouseover="if (!selectingCells) overCell('<?php echo $div_id?>'); else paintSelectedCells('<?php echo $div_id?>');"
+onmouseout="if (!selectingCells) resetCell('<?php echo $div_id?>');"
+onmousedown="selectStartDateTime(<?php echo $date->getDay() ?>, <?php echo $date->getMonth()?>, <?php echo $date->getYear()?>, <?php echo date("G",mktime($hour/2))?>, <?php echo ($hour % 2 == 0) ? 0 : 30 ?>); resetCell('<?php echo $div_id?>'); paintingDay = <?php echo $day_of_week ?>; paintSelectedCells('<?php echo $div_id?>');"
+onmouseup="showEventPopup(<?php echo $date->getDay() ?>, <?php echo $date->getMonth()?>, <?php echo $date->getYear()?>, <?php echo date("G",mktime(($hour+1)/2))?>, <?php echo (($hour+1) % 2 == 0) ? 0 : 30 ?>, <?php echo ($use_24_hours ? 'true' : 'false'); ?>);"
 ></div>
+
 <?php								} ?>
 									
 									<div id="vd<?php echo $day_of_week ?>" style="left: <?php echo $left ?>%; height: <?php echo (PX_HEIGHT)*24 ?>px;border-left:3px double #DDDDDD !important; position:absolute;width:3px;z-index:110;"></div>
-									<div id="eventowner" style="z-index: 102;" onclick="stopPropagation(event) ">
+									<div id="eventowner" style="z-index: 120;" onclick="stopPropagation(event) ">
 <?php
 										$cells = array();
 										for ($i = 0; $i < 24; $i++) {
@@ -336,6 +330,7 @@ onmouseup="showEventPopup(<?php echo $date->getDay() ?>, <?php echo $date->getMo
 											$cells[$i][1] = 0;
 										}
 										foreach ($results[$day_of_week] as $event){
+											$event->getDuration()->add('s', -1);
 											if ($event->getStart()->getMinute() < 30) {
 												$cells[$event->getStart()->getHour()][0]++;
 												$cells[$event->getStart()->getHour()][1]++;
@@ -354,17 +349,17 @@ onmouseup="showEventPopup(<?php echo $date->getDay() ?>, <?php echo $date->getMo
 										$occup = array(); //keys: hora - pos
 										foreach ($results[$day_of_week] as $event){
 											$event_id = $event->getId();
-											$subject = $event->getSubject();
+											$subject = clean($event->getSubject());
 											$dws = $event->getWorkspaces();
 											$ws_color = 0;
 											if (count($dws) >= 1){
 												$ws_color = $dws[0]->getColor();
 											}	
 											
-											cal_get_ws_color($ws_color, $ws_style, $ws_class, $txt_color);	
+											cal_get_ws_color($ws_color, $ws_style, $ws_class, $txt_color, $border_color);	
 											
-											if(!cal_option("hours_24")) $timeformat = 'g:i A';
-											else $timeformat = 'G:i';
+											if($use_24_hours) $timeformat = 'G:i';
+											else $timeformat = 'g:i A';
 											$start_time = date($timeformat, $event->getStart()->getTimestamp());
 											$end_time = date($timeformat, $event->getDuration()->getTimestamp());
 											
@@ -447,31 +442,43 @@ onmouseup="showEventPopup(<?php echo $date->getDay() ?>, <?php echo $date->getMo
 												}
 											}
 											
+											$event->getDuration()->add('s', 1);
+											$end_time = date($timeformat, $event->getDuration()->getTimestamp());
 											if ($posHoriz + 1 == $evs_same_time) $width = $width - 0.5;
+											
+											$tipBody = $event->getStart()->format($use_24_hours ? 'G:i' : 'g:i A') .' - '. $event->getDuration()->format($use_24_hours ? 'G:i' : 'g:i A') . (trim(clean($event->getDescription())) != '' ? '<br><br>' . clean($event->getDescription()) : '');
+											$tipBody = str_replace("\r", '', $tipBody);
+											$tipBody = str_replace("\n", '<br>', $tipBody);
+											if (strlen($tipBody) > 200) $tipBody = substr($tipBody, 0, strpos($tipBody, ' ', 200)) . ' ...';
+											
+											$ev_duration = DateTimeValueLib::get_time_difference($event->getStart()->getTimestamp(), $event->getDuration()->getTimestamp()); 
 ?>
 											<script type="text/javascript">
-												addTip('w_ev_div_' + <?php echo $event->getId() ?>, '<?php echo $event->getSubject() ?>', '<?php echo $event->getStart()->format('h:i') .' - '. $event->getDuration()->format('h:i') . (trim($event->getDescription()) != '' ? '<br><br>' . $event->getDescription() : '');?>');
+												if (<?php echo $top; ?> < scroll_to || scroll_to == -1) {
+													scroll_to = <?php echo $top;?>;
+												}
+												addTip('w_ev_div_' + <?php echo $event->getId() ?>, <?php echo json_encode(clean($event->getSubject())) ?>, <?php echo json_encode($tipBody);?>);
 											</script>
 											
-						<div id="w_ev_div_<?php echo $event->getId()?>" class="chip" style="position: absolute; top: <?php echo $top?>px; left: <?php echo $left?>%; width: <?php echo $width?>%;z-index:120;"  onclick="stopPropagation(event)">
-						<div class="t1 <?php echo $ws_class ?>" style="<?php echo $ws_style ?>;margin:0px 2px 0px 2px;height:1px;"></div>
-						<div class="t2 <?php echo $ws_class ?>" style="<?php echo $ws_style ?>;margin:0px 1px 0px 1px;height:1px;"></div>
+						<div id="w_ev_div_<?php echo $event->getId()?>" class="chip" style="position: absolute; top: <?php echo $top?>px; left: <?php echo $left?>%; width: <?php echo $width?>%;z-index:120;"  onclick="stopPropagation(event)" onmouseup="clearPaintedCells()">
+						<div class="t1 <?php echo $ws_class ?>" style="<?php echo $ws_style ?>;margin:0px 2px 0px 2px;height:0px; border-bottom:1px solid;border-color:<?php echo $border_color ?>"></div>
+						<div class="t2 <?php echo $ws_class ?>" style="<?php echo $ws_style ?>;margin:0px 1px 0px 1px;height:1px; border-left:1px solid;border-right:1px solid;border-color:<?php echo $border_color ?>"></div>
 						<div class="chipbody edit og-wsname-color-<?php echo $ws_color?>">
-						<dl class="<?php echo  $ws_class?>" style="height: <?php echo $height ?>px;<?php echo $ws_style?>">
-							<dt class="<?php echo  $ws_class?>" style="<?php echo $ws_style?>">
+						<dl class="<?php echo  $ws_class?>" style="height: <?php echo $height ?>px;<?php echo $ws_style?>;border-left:1px solid;border-right:1px solid;border-color:<?php echo $border_color ?>">
+							<dt class="<?php echo  $ws_class?>" style="<?php echo $ws_style?>;">
 							<table width="100%"><tr><td>
-								<a
+								<a 
 								href='<?php echo cal_getlink("index.php?action=viewevent&amp;view=week&amp;id=".$event->getId())."&amp;user_id=".$user_filter;?>'
-								class='internalLink'><!-- nobr --><span style="color:<?php echo $txt_color?>!important;padding-left:5px;;font-size:93%"><?php echo "$start_time"?></span></a>
-		<!-- nobr				<span class="eventheadlabel" style="color:<?php echo $txt_color?>!important;padding-left:5px;font-size:94%"><?php echo "$start_time"; ?></span>-->
+								onclick="hideCalendarToolbar();"
+								class='internalLink'><!-- nobr --><span style="color:<?php echo $txt_color?>!important;padding-left:5px;font-size:93%;"><?php echo "$start_time"?></span></a>
 							</td><td align="right">
-								<dd><div align="right" style="padding-right:4px;">
+								<dd><div align="right" style="padding-right:4px;<?php echo ($ev_duration['hours'] == 0 ? 'height:'.$height.'px;' : '') ?>">
 								<?php
 								if ($user_filter != -1) { 
 									$invitations = $event->getInvitations();
 									if ($invitations != null && is_array($invitations) && $invitations[$user_filter] != null) {
 										$inv = $invitations[$user_filter];
-										//echo "userfilter=".$user_filter."<br>val=".$invitations[$user_filter]->getInvitationState();
+										
 										if ($inv->getInvitationState() == 0) { // Not answered
 											echo '<img src="' . image_url('/16x16/mail_mark_unread.png') . '"/>';
 										} else if ($inv->getInvitationState() == 1) { // Assist = Yes
@@ -488,17 +495,21 @@ onmouseup="showEventPopup(<?php echo $date->getDay() ?>, <?php echo $date->getMo
 								</div></dd>
 							</td></tr></table>
 							</dt>
+							<?php
+							if ($ev_duration['hours'] > 0) { ?>
 							<dd>
 							<div><a
 								href='<?php echo cal_getlink("index.php?action=viewevent&amp;view=week&amp;id=".$event->getId())."&amp;user_id=".$user_filter;?>'
-								class='internalLink'><!-- nobr --><span style="color:<?php echo $txt_color?>!important;padding-left:5px;;font-size:93%"><?php echo $subject?></span></a>
+								onclick="hideCalendarToolbar();"
+								class='internalLink'><!-- nobr --><span style="color:<?php echo $txt_color?>!important;padding-left:5px;;font-size:93%;"><?php echo $subject;?></span></a>
 							</div>
 							</dd>
+							<?php } //if ?>
 						</dl>
 						</div>
-						<div class="b2 <?php echo  $ws_class?>" style="<?php echo  $ws_style?>;margin:0px 1px 0px 1px;height:1px;">
+						<div class="b2 <?php echo  $ws_class?>" style="<?php echo  $ws_style?>;margin:0px 1px 0px 1px;height:1px; border-left:1px solid;border-right:1px solid; border-color:<?php echo $border_color ?>">
 						</div>
-						<div class="b1 <?php echo  $ws_class?>" style="<?php echo  $ws_style?>;margin:0px 2px 0px 2px;height:1px;">
+						<div class="b1 <?php echo  $ws_class?>" style="<?php echo  $ws_style?>;margin:0px 2px 0px 2px;height:0px; border-top:1px solid; border-color:<?php echo $border_color ?>">
 						</div>
 						</div>
 <?php												}//foreach ?>
@@ -506,23 +517,32 @@ onmouseup="showEventPopup(<?php echo $date->getDay() ?>, <?php echo $date->getMo
 <?php										}//day of week ?>
 										</div>
 									</td>
+									<td id="ie_scrollbar_adjust" style="width:0px;"></td>
 								</tr>
 							</table>
 						</div><!--calowner -->															 
-					<!--  </div>		 -->				
 				</div><!--gridcontainer -->
 				
 			</div>		
 			
 			</td>
 			</tr>
-			<tr><td class="coViewBottomLeft" style="width:12"></td>
-			<td class="coViewBottom" style="width:85%"></td>
-			<td class="coViewBottomRight" style="width:12"></td></tr>
 		</table>
 	</td>
-</tr></table>
+</tr>
+</table>
 </div>
+
+<?php
+	$wdst = config_option('work_day_start_time', '09:00');
+	$h_m = explode(':', $wdst);
+	if (str_ends_with($wdst, 'PM')) {
+		$h_m[0] = ($h_m[0] + 12) % 24;
+		$h_m[1] = substr($h_m[1], 0 , strpos(' ', $h_m[1]));
+	}
+	$defaultScrollTo = PX_HEIGHT * ($h_m[0] + ($h_m[1] / 60));
+ ?>
+
 
 <script type="text/javascript">
 
@@ -534,101 +554,25 @@ onmouseup="showEventPopup(<?php echo $date->getDay() ?>, <?php echo $date->getMo
 	dtv.setDate(<?php echo $day ?>);
 	calToolbarDateMenu.picker.setValue(dtv);
 //----------
+
+	// scroll to first event
+	var scroll_pos = (scroll_to == -1 ? <?php echo $defaultScrollTo ?> : scroll_to);
+	Ext.get('gridcontainer').scrollTo('top', scroll_pos, true);
 	
+	if (Ext.isIE) document.getElementById('ie_scrollbar_adjust').style.width = '15px';
+	
+	// resize grid
+	function resizeGridContainer() {
+		maindiv = document.getElementById('cal_main_div');
+		if (maindiv != null) {
+			var divHeight = maindiv.offsetHeight;
+			divHeight = divHeight - <?php echo (PX_HEIGHT + $alldaygridHeight); ?>;
+			document.getElementById('gridcontainer').style.height = divHeight + 'px';
+		}
+	}
+	resizeGridContainer();
+	window.onresize = resizeGridContainer;
+	
+	// init tooltips
 	Ext.QuickTips.init();
-  
-	var ev_start_day, ev_start_month, ev_start_year, ev_start_hour, ev_start_minute;
-	var ev_end_day, ev_end_month, ev_end_year, ev_end_hour, ev_end_minute;
-	
-	function selectStartDateTime(day, month, year, hour, minute) {
-		selectDateTime(true, day, month, year, hour, minute);
-	}
-	
-	function selectEndDateTime(day, month, year, hour, minute) {
-		selectDateTime(false, day, month, year, hour, minute);
-	}
-	
-	function selectDateTime(start, day, month, year, hour, minute) {
-		if (start == true) {
-			ev_start_day = day;
-			ev_start_month = month; 
-			ev_start_year = year; 
-			ev_start_hour= hour; 
-			ev_start_minute = minute; 
-		} else {
-			ev_end_day = day; 
-			ev_end_month = month; 
-			ev_end_year = year; 
-			ev_end_hour = hour; 
-			ev_end_minute = minute; 
-		}
-		
-	}
-	
-	function getDurationMinutes() {
-		var s_val = new Date();
-		s_val.setFullYear(ev_start_year);
-		s_val.setMonth(ev_start_month);
-		s_val.setDate(ev_start_day);
-		s_val.setHours(ev_start_hour);
-		s_val.setMinutes(ev_start_minute);
-		s_val.setSeconds(0);
-		s_val.setMilliseconds(0);
-		
-		var e_val = new Date();
-		e_val.setFullYear(ev_end_year);
-		e_val.setMonth(ev_end_month);
-		e_val.setDate(ev_end_day);
-		e_val.setHours(ev_end_hour);
-		e_val.setMinutes(ev_end_minute);
-		e_val.setSeconds(0);
-		e_val.setMilliseconds(0);
-		
-		var millis = e_val.getTime() - s_val.getTime();
-		
-		return ((millis / 1000) / 60); 		
-	}
-	
-	function showEventPopup(day, month, year, hour, minute) {
-		var typeid = 1, hrs = 1, mins = 0;
-		if (hour == -1 || minute == -1) {
-			hour = 0;
-			minute = 0;
-			typeid = 2;
-			ev_start_hour = ev_start_minute = durationhour = durationmin = 0;
-			ev_start_day = day;
-			ev_start_month = month;
-			ev_start_year = year;
-		} else {
-			selectEndDateTime(day, month, year, hour, minute);
-			hrs = 0;
-			mins = getDurationMinutes();
-			while (mins >= 60) {
-				mins -= 60;
-				hrs +=1;
-			}
-			if (hrs == 0) {
-				hrs = 1;
-				mins = 0;
-			}
-		}
-		
-		if (lang('date format') == 'm/d/Y') 
-			st_val = ev_start_month + '/' + ev_start_day + '/' + ev_start_year;
-		else
-			st_val = ev_start_day + '/' + ev_start_month + '/' + ev_start_year;
-
-		og.EventPopUp.show(null, {day: ev_start_day,
-								month: ev_start_month,
-								year: ev_start_year,
-								hour: ev_start_hour,
-								minute: ev_start_minute,
-								durationhour: hrs,
-								durationmin: mins,
-								start_value: st_val,
-								type_id: typeid,
-								view:'week', title: lang('add event')
-								}, '');
-	}
 </script>
-

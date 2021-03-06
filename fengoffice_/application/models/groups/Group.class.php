@@ -51,6 +51,7 @@
     	$this->setCanManageSecurity($value);
     	$this->setCanManageWorkspaces($value);
     	$this->setCanManageContacts($value);
+    	$this->setCanManageTemplates($value);
     }
 //    /**
 //    * Return array of group users on specific project

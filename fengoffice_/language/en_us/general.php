@@ -80,7 +80,6 @@
     'state' => 'State',
     'zipcode' => 'Zipcode',
     'country' => 'Country',
-    'n/a' => '<acronym title="Not Available">n/a</acronym>',
     'contact' => 'Contact',
     'pagination page' => 'Page:',
     'pagination first' => 'First page',
@@ -171,9 +170,11 @@
   	'none no bars' => 'None',
   	'apply to all subworkspaces' => 'Apply these permissions to all subworkspaces',
   	'weblinks' => 'Web links',
+	'add work' => 'Add work',
   
   	'date format' => 'm/d/Y',
-  	'date format description' => '(mm/dd/yyyy)'
+  	'date format description' => '(mm/dd/yyyy)',
+  	'confirm move to trash' => 'Are you sure you want to move the selected object to the trash?'
 
   ); // array
 

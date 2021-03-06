@@ -422,7 +422,7 @@ class ProjectFileRevision extends BaseProjectFileRevision {
 	 * @return string
 	 */
 	function getObjectTypeName() {
-		return 'file revision';
+		return 'file_revision';
 	} // getObjectTypeName
 
 	/**
@@ -436,6 +436,11 @@ class ProjectFileRevision extends BaseProjectFileRevision {
 		return $this->getDetailsurl();
 	} // getObjectUrl
 
+
+  	function getUniqueObjectId(){
+    	return $this->getFile()->getUniqueObjectId() . 'r' . $this->getRevisionNumber();
+    }
+    
 } // ProjectFileRevision
 
 ?>

@@ -162,7 +162,8 @@
       $destination_dir = dirname($file_path);
       
       if(!is_dir($destination_dir)) {
-        if(!force_mkdir($destination_dir, 0777)) {
+        //if(!force_mkdir_from_base($this->getRepositoryDir(), dirname($this->idToPath($file_id)), 0777)) {
+      	if(!force_mkdir($destination_dir, 0777)) {
           throw new FailedToCreateFolderError($destination_dir);
         } // if
       } // if

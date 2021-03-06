@@ -1,18 +1,27 @@
 <?php 
-  set_page_title(lang('contact card of').' '.$contact->getDisplayName());
-  if($contact->canEdit(logged_user())) {
-    add_page_action(lang('edit contact'), $contact->getEditUrl(), 'ico-edit');
-    add_page_action(lang('update picture'), $contact->getUpdatePictureUrl(), 'ico-picture');
-	add_page_action(lang('assign to project'), $contact->getAssignToProjectUrl(), 'ico-workspace');
-  }
-  if($contact->canDelete(logged_user())) {
-    add_page_action(lang('delete contact'), "javascript:if(confirm(lang('confirm delete contact'))) og.openLink('" . $contact->getDeleteUrl() ."');", 'ico-delete');
-  } // if
-  if(can_manage_security(logged_user())){
-  	if(! $contact->getUserId() || $contact->getUserId() == 0){
-  		add_page_action(lang('create user from contact'), $contact->getCreateUserUrl() , 'ico-user');
-  	}
-  } 
+	//set_page_title(lang('contact card of').' '.$contact->getDisplayName());
+	if (!$contact->isTrashed()){
+		if($contact->canEdit(logged_user())) {
+			add_page_action(lang('edit contact'), $contact->getEditUrl(), 'ico-edit');
+			add_page_action(lang('edit picture'), $contact->getUpdatePictureUrl(), 'ico-picture');
+			add_page_action(lang('assign to project'), $contact->getAssignToProjectUrl(), 'ico-workspace');
+		}
+	}
+	if($contact->canDelete(logged_user())) {
+		if ($contact->isTrashed()) {
+			add_page_action(lang('restore from trash'), "javascript:if(confirm(lang('confirm restore objects'))) og.openLink('" . $contact->getUntrashUrl() ."');", 'ico-restore');
+			add_page_action(lang('delete permanently'), "javascript:if(confirm(lang('confirm delete permanently'))) og.openLink('" . $contact->getDeletePermanentlyUrl() ."');", 'ico-delete');
+		} else {
+			add_page_action(lang('move to trash'), "javascript:if(confirm(lang('confirm move to trash'))) og.openLink('" . $contact->getTrashUrl() ."');", 'ico-trash');
+		}
+	} // if
+	if (!$contact->isTrashed()){
+		if(can_manage_security(logged_user())){
+			if(! $contact->getUserId() || $contact->getUserId() == 0){
+				add_page_action(lang('create user from contact'), $contact->getCreateUserUrl() , 'ico-user');
+			}
+		}
+	}
 ?>
    
    
@@ -25,7 +34,7 @@
 		
 		if ($contact->canEdit(logged_user()))
 			$image .= '<a class="internalLink" href="' .
-			$contact->getUpdatePictureUrl() .'" title="' . lang('update picture') . '">';
+			$contact->getUpdatePictureUrl() .'" title="' . lang('edit picture') . '">';
 		
 		$image .= '<img src="' . $contact->getPictureUrl() .'" alt="'. clean($contact->getDisplayName()) .' picture" />';
 		
@@ -69,6 +78,7 @@
 	tpl_assign("content_template", array('card_content', 'contact'));
 	tpl_assign("object", $contact);
 	tpl_assign("title", lang('contact') . ': ' . clean($contact->getDisplayName()));
+	tpl_assign('iconclass', $contact->isTrashed()? 'ico-large-contact-trashed' :  'ico-large-contact');
 		
   	$this->includeTemplate(get_template_path('view', 'co'));
   	

@@ -55,7 +55,7 @@ class TimeslotController extends ApplicationController {
 		try{
 			DB::beginWork();
 			$timeslot->save();
-			ApplicationLogs::createLog($timeslot, active_or_personal_project(), ApplicationLogs::ACTION_OPEN);
+			ApplicationLogs::createLog($timeslot, $timeslot->getWorkspaces(), ApplicationLogs::ACTION_OPEN);
 			DB::commit();
 				
 			flash_success(lang('success open timeslot'));
@@ -103,7 +103,7 @@ class TimeslotController extends ApplicationController {
 		try{
 			DB::beginWork();
 			$timeslot->save();
-			ApplicationLogs::createLog($timeslot, active_or_personal_project(), ApplicationLogs::ACTION_OPEN);
+			ApplicationLogs::createLog($timeslot, $timeslot->getWorkspaces(), ApplicationLogs::ACTION_OPEN);
 			DB::commit();
 				
 			flash_success(lang('success create timeslot'));
@@ -144,10 +144,7 @@ class TimeslotController extends ApplicationController {
 			return;
 		} // if
 		$timeslot_data = array_var($_POST, 'timeslot');
-		
-		$dt = DateTimeValueLib::now();
-		$dt->setSecond(0);
-		$timeslot->setEndTime($dt);
+		$timeslot->close();
 		$timeslot->setFromAttributes($timeslot_data);
 		
 		try{
@@ -156,7 +153,7 @@ class TimeslotController extends ApplicationController {
 				$timeslot->delete();
 			else
 				$timeslot->save();
-			ApplicationLogs::createLog($timeslot, active_or_personal_project(), ApplicationLogs::ACTION_CLOSE);
+			ApplicationLogs::createLog($timeslot, $timeslot->getWorkspaces(), ApplicationLogs::ACTION_CLOSE);
 			DB::commit();
 				
 			if (array_var($_GET, 'cancel') && array_var($_GET, 'cancel') == 'true')
@@ -168,6 +165,74 @@ class TimeslotController extends ApplicationController {
 		} catch (Exception $e) {
 			DB::rollback();
 			ajx_current("empty");
+			flash_error($e->getMessage());
+		} // try
+	} 
+	
+	function pause() {
+		ajx_current("empty");
+
+		$timeslot = Timeslots::findById(get_id());
+		if(!($timeslot instanceof Timeslot)) {
+			flash_error(lang('timeslot dnx'));
+			return;
+		} // if
+
+		$object = $timeslot->getObject();
+		if(!($object instanceof ProjectDataObject)) {
+			flash_error(lang('object dnx'));
+			return;
+		} // if
+		
+		if(!($object->canEdit(logged_user()))) {
+			flash_error(lang('no access permissions'));
+			return;
+		} // if
+		
+		try{
+			DB::beginWork();
+			$timeslot->pause();
+			$timeslot->save();
+			DB::commit();
+				
+			flash_success(lang('success pause timeslot'));
+			ajx_current("reload");
+		} catch (Exception $e) {
+			DB::rollback();
+			flash_error($e->getMessage());
+		} // try
+	} 
+	
+	function resume() {
+		ajx_current("empty");
+
+		$timeslot = Timeslots::findById(get_id());
+		if(!($timeslot instanceof Timeslot)) {
+			flash_error(lang('timeslot dnx'));
+			return;
+		} // if
+
+		$object = $timeslot->getObject();
+		if(!($object instanceof ProjectDataObject)) {
+			flash_error(lang('object dnx'));
+			return;
+		} // if
+		
+		if(!($object->canEdit(logged_user()))) {
+			flash_error(lang('no access permissions'));
+			return;
+		} // if
+		
+		try{
+			DB::beginWork();
+			$timeslot->resume();
+			$timeslot->save();
+			DB::commit();
+				
+			flash_success(lang('success pause timeslot'));
+			ajx_current("reload");
+		} catch (Exception $e) {
+			DB::rollback();
 			flash_error($e->getMessage());
 		} // try
 	} 
@@ -237,6 +302,29 @@ class TimeslotController extends ApplicationController {
 					return;
 				}
 				
+				$seconds = array_var($timeslot_data,'subtract_seconds',0);
+				$minutes = array_var($timeslot_data,'subtract_minutes',0);
+				$hours = array_var($timeslot_data,'subtract_hours',0);
+				
+				$subtract = $seconds + 60 * $minutes + 3600 * $hours;
+				if ($subtract < 0){
+					flash_error(lang('pause time cannot be negative'));
+					ajx_current("empty");
+					return;
+				}
+				
+				$testEndTime = new DateTimeValue($timeslot->getEndTime()->getTimestamp());
+				
+				$testEndTime->add('s',-$subtract);
+				
+				if ($timeslot->getStartTime() > $testEndTime){
+					flash_error(lang('pause time cannot exceed timeslot time'));
+					ajx_current("empty");
+					return;
+				}
+				
+				$timeslot->setSubtract($subtract);
+				
 				DB::beginWork();
 				$timeslot->save();
 				DB::commit();
@@ -284,7 +372,7 @@ class TimeslotController extends ApplicationController {
 		try {
 			DB::beginWork();
 			$timeslot->delete();
-			ApplicationLogs::createLog($timeslot, active_or_personal_project(), ApplicationLogs::ACTION_DELETE);
+			ApplicationLogs::createLog($timeslot, $object->getWorkspaces(), ApplicationLogs::ACTION_DELETE);
 			$object->onDeleteTimeslot($timeslot);
 			DB::commit();
 

@@ -6,7 +6,7 @@
  *
  * @author Ilija Studen <ilija.studen@gmail.com>
  */
-abstract class BaseProjectMilestones extends DataManager {
+abstract class BaseProjectMilestones extends ProjectDataObjects {
 
 	/**
 	 * Column name => Column type map
@@ -31,6 +31,8 @@ abstract class BaseProjectMilestones extends DataManager {
     	'updated_by_id' => DATA_TYPE_INTEGER,
 		'is_template' => DATA_TYPE_BOOLEAN,
 		'from_template_id' => DATA_TYPE_INTEGER,
+		'trashed_on' => DATA_TYPE_DATETIME,
+     	'trashed_by_id' => DATA_TYPE_INTEGER,
 	);
 
 	/**

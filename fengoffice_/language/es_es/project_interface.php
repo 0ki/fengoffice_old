@@ -260,6 +260,10 @@ return array(
 	'include unworked pending tasks' => 'Incluir tareas pendientes no trabajadas',
 	'unworked pending tasks' => 'Tareas pendientes no trabajadas',
 	'assign contact to workspace desc' => 'Para asignar un contacto a un área de trabajo marque el área de trabajo y luego ingrese el rol en el campo de texto.',
+	'edit task template' => 'Editar plantilla de tarea',
+
+	'cannot change parent workspace' => 'Usted no tiene permisos suficientes para cambiar el padre de este espacio de trabajo.',
+	'cannot change parent workspace description' => 'Este espacio de trabajo puede pertenecer a un espacio al cual ud. no tiene acceso.'
 
 ); // array
 

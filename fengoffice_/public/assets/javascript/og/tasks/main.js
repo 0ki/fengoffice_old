@@ -17,6 +17,8 @@ ogTaskEvents = {};
 
 ogTasks.Groups = [];
 
+ogTasks.redrawGroups = true;
+
 
 
 //************************************
@@ -39,6 +41,8 @@ ogTasksTask = function(){
 	this.startDate;
 	this.workingOnIds;
 	this.workingOnTimes;
+	this.workingOnPauses;
+	this.pauseTime;
 	this.tags;
 	this.isAdditional = false;
 	this.completedById;
@@ -85,6 +89,8 @@ ogTasksTask.prototype.setFromTdata = function(tdata){
 	if (tdata.sd) this.startDate = tdata.sd - secondsToSubtract; else this.startDate = null;
 	if (tdata.wid) this.workingOnIds = tdata.wid; else this.workingOnIds = null;
 	if (tdata.wt) this.workingOnTimes = tdata.wt; else this.workingOnTimes = null;
+	if (tdata.wp) this.workingOnPauses = tdata.wp; else this.workingOnPauses = null;
+	if (tdata.wpt) this.pauseTime = tdata.wpt; else this.pauseTime = null;
 	if (tdata.tags) this.tags = tdata.tags; else this.tags = null;
 	if (tdata.cbid) this.completedById = tdata.cbid; else this.completedById = null;
 	if (tdata.con) this.completedOn = tdata.con; else this.completedOn = null;
@@ -226,12 +232,22 @@ ogTasks.getGroupData = function(displayCriteria, groups,tasks){
 	var td = this.getTimeDistances();
 	for (var i = 0; i < groups.length; i++){
 		var groupId = groups[i];
-		var name = lang('ungrouped');
-		if (displayCriteria.group_by == 'assigned_to')
-			name = lang('unassigned');
+		var name;
+		switch (displayCriteria.group_by){
+			case 'assigned_to': name = lang('unassigned'); break;
+			case 'nothing': name = lang('tasks'); break;
+			case 'completed_by':
+			case 'completed_on':
+				name = lang('pending'); break;
+			case 'due_date': name = lang('no due date');break;
+			case 'start_date': name = lang('no start date');break;
+			case 'tag': name = lang('untagged'); break;
+			default:
+				name = lang('ungrouped');
+		}
 		var icon = '';
 		var id = i;
-		if (groupId != 'ungrouped'){
+		if (groupId != 'unclassified'){
 			switch(displayCriteria.group_by){
 				case 'milestone':
 					icon = 'ico-milestone';
@@ -292,12 +308,27 @@ ogTasks.getGroupData = function(displayCriteria, groups,tasks){
 				default:
 			}
 		}
+		var solo = false;
+		var expanded = false;
+		if (!this.redrawGroups){
+			var group = this.getGroup(groupId);
+			if (group){
+				solo = group.solo;
+				expanded = group.isExpanded;
+			}
+		}
+		
+		if (!tasks[i])
+			tasks[i] = [];
+		
 		groupData[groupData.length] = {
 			group_name: name,
 			group_id: groupId,
 			group_icon: icon,
 			group_tasks: tasks[i],
-			solo: false
+			solo: solo,
+			isExpanded: expanded,
+			isChecked: false
 		}
 	}
 	return groupData;
@@ -308,6 +339,9 @@ ogTasks.groupTasks = function(displayCriteria, tasksContainer){
 	var tasks = [];
 	groups[0] = 'unclassified';
 	tasks[0] = [];
+	if (!this.redrawGroups)
+		for (var i = 0; i < this.Groups.length - 1; i++)
+			groups[i+1] = this.Groups[i].group_id;
 	
 	for (var i = 0; i < tasksContainer.length; i++){
 		var task = tasksContainer[i];
@@ -324,7 +358,9 @@ ogTasks.groupTasks = function(displayCriteria, tasksContainer){
 							if (groups.indexOf(ids[j]) < 0){
 								groups[groups.length] = ids[j];
 								tasks[tasks.length] = [];
-							}
+							}	
+							if (!tasks[groups.indexOf(ids[j])])
+								 tasks[groups.indexOf(ids[j])] = [];
 							var tasksArray = tasks[groups.indexOf(ids[j])]; 
 							tasksArray[tasksArray.length]= task;
 						}
@@ -348,6 +384,8 @@ ogTasks.groupTasks = function(displayCriteria, tasksContainer){
 								groups[groups.length] = task.tags[j];
 								tasks[tasks.length] = [];
 							}
+							if (!tasks[groups.indexOf(task.tags[j])])
+								 tasks[groups.indexOf(task.tags[j])] = [];
 							var tasksArray = tasks[groups.indexOf(task.tags[j])]; 
 							tasksArray[tasksArray.length]= task;
 						}
@@ -364,6 +402,8 @@ ogTasks.groupTasks = function(displayCriteria, tasksContainer){
 						groups[groups.length] = group;
 						tasks[tasks.length] = [];
 					}
+					if (!tasks[groups.indexOf(group)])
+						 tasks[groups.indexOf(group)] = [];
 					var tasksArray = tasks[groups.indexOf(group)]; 
 					tasksArray[tasksArray.length]= task;
 				} else {
@@ -516,6 +556,26 @@ ogTasks.TaskSelected = function(checkbox, task_id, group_id){
 }
 
 
+ogTasks.GroupSelected = function(checkbox, group_id){
+	this.expandGroup(group_id);
+	var group = this.getGroup(group_id);
+	var tasks = [];
+	for(var i = 0; i < group.group_tasks.length; i++)
+		tasks = tasks.concat(group.group_tasks[i].flatten());
+
+	for (var i = 0; i < tasks.length; i++){
+		tasks[i].isChecked = checkbox.checked;
+		var tgId = "T" + tasks[i].id + 'G' + group_id;
+		var chkTask = document.getElementById('ogTasksPanelChk' + tgId);
+		chkTask.checked = checkbox.checked;
+		var table = document.getElementById('ogTasksPanelTaskTable' + tgId);
+		if (table)
+			table.className = checkbox.checked ? 'ogTasksTaskTableSelected' : 'ogTasksTaskTable';
+	}
+	var topToolbar = Ext.getCmp('tasksPanelTopToolbarObject');
+	topToolbar.updateCheckedStatus();
+}
+
 
 //************************************
 //*		Helpers
@@ -537,43 +597,27 @@ ogTasks.executeAction = function(actionName, ids, options){
 			if (success && ! data.errorCode) {
 				for (var i = 0; i < data.tasks.length; i++){
 					var tdata = data.tasks[i];
-					if (actionName == 'delete')
-						this.removeTask(tdata.id);
-					else {
+					if (actionName == 'delete'){
+						var task = this.getTask(tdata.id);
+						if (task){
+							var tasksToRemove = task.flatten();
+							for (var j = 0; j < tasksToRemove.length; j++)
+								this.removeTask(tasksToRemove[j].id);
+							if (task.parent)
+								for (var j = 0; j < task.parent.subtasks.length; j++)
+									if (task.parent.subtasks[j].id == task.id)
+										task.parent.subtasks.splice(j,1);
+						}
+					} else {
 						var task = ogTasks.getTask(tdata.id);
 						task.setFromTdata(tdata);
 					}
 				}
+				this.redrawGroups = false;
 				this.draw();
+				this.redrawGroups = true;
 			} else {
 			
-			}
-		},
-		scope: this
-	});
-}
-
-ogTasks.changeAssignedToUser = function(task_id, assigned_to){
-	og.openLink(og.getUrl('task', 'assign'), {
-		method: 'POST',
-		post: {
-			"taskId": task_id,
-			"assigned_to" : assigned_to
-		},
-		callback: function(success, data) {
-			if (success && ! data.errorCode) {
-        		var task = ogTasks.getTask(data.id);
-        		task.assignedToId = assigned_to;
-        		if (assigned_to == '0:0' || assigned_to == '-1:-1')
-        			task.assignedToId = '';
-				var bottomToolbar = Ext.getCmp('tasksPanelBottomToolbarObject');
-				var displayCriteria = bottomToolbar.getDisplayCriteria();
-				if (displayCriteria.group_by != 'assigned_to' && displayCriteria.order_by != 'assigned_to')
-        			ogTasks.UpdateTask(task.id);
-        		else
-        			ogTasks.draw();	
-			} else {
-				og.err(lang("error assigning task"));
 			}
 		},
 		scope: this
@@ -808,4 +852,23 @@ ogTasks.flattenTasks = function(tasks){
 	for (var i = 0; i < tasks.length; i++)
 		result = result.concat(tasks[i].flatten());
 	return result;
+}
+
+ogTasks.existsSoloGroup = function(){
+	for (var i = 0; i < this.Groups.length; i++)
+		if (this.Groups[i].solo)
+			return true;
+	return false;
+}
+
+//Written for edit task view
+og.addTaskUserChanged = function(genid){
+	var ddUser = document.getElementById(genid + 'taskFormAssignedTo');
+	if (ddUser){
+		var values = ddUser.value.split(':');
+		var user = values[1];
+		var chk = document.getElementById(genid + 'taskFormSendNotification');
+		chk.checked = user > 0;
+		document.getElementById(genid + 'taskFormSendNotificationDiv').style.display = user > 0 ? 'block':'none';
+	}
 }

@@ -237,6 +237,12 @@ class ProjectEvent extends BaseProjectEvent {
 	//  System
 	// ---------------------------------------------------
 
+	function delete() {
+		// delete invitations
+		EventInvitations::delete(array ('`event_id` = ?', $this->getId()));
+		parent::delete();
+	}
+	
 	// ---------------------------------------------------
 	//  ApplicationDataObject implementation
 	// ---------------------------------------------------

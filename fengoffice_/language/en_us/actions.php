@@ -11,7 +11,7 @@
     
     // Companies
     'add company' => 'Add company',
-    'edit company' => 'Update company info',
+    'edit company' => 'Edit company info',
     'delete company' => 'Delete company',
     'edit company logo' => 'Update logo',
     'delete company logo' => 'Delete logo',
@@ -58,7 +58,7 @@
     
     // Comments
     'add comment' => 'Post comment',
-    'edit comment' => 'Edit comment',
+    'edit comment' => 'Save comment',
     
     // Task list
     'add task list' => 'Add task',
@@ -126,7 +126,7 @@
     
     // Files
     'add file' => 'Add file',
-    'file properties' => 'File Properties',
+    'edit file properties' => 'Edit file Properties',
     'upload file' => 'Upload file',
     'create new revision' => 'Create new Revision',
 
@@ -194,6 +194,10 @@
 	'view history' => 'View History',    
 	'edit preferences' => 'Edit preferences',
 	'view milestone' => 'View milestone',
+  	'custom properties' => 'Custom Properties',
+  	'move to trash' => 'Move to trash',
+  	'restore from trash' => 'Restore from trash',
+  	'delete permanently' => 'Delete permanently',
   ); // array
 
 ?>

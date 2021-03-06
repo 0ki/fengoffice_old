@@ -32,8 +32,8 @@ og.OverviewManager = function() {
 				'load': function() {
 					var d = this.reader.jsonData;
 					og.processResponse(d);
-					var ws = Ext.getCmp('workspace-panel').getActiveWorkspace().name;
-					var tag = Ext.getCmp('tag-panel').getSelectedTag().name;
+					var ws = og.clean(Ext.getCmp('workspace-panel').getActiveWorkspace().name);
+					var tag = og.clean(Ext.getCmp('tag-panel').getSelectedTag().name);
 					if (d.totalCount == 0) {
 						if (tag) {
 							this.fireEvent('messageToShow', lang("no objects with tag message", lang("objects"), ws, tag));
@@ -68,10 +68,11 @@ og.OverviewManager = function() {
 		for(var i = 0; i < ids.length; i++)
 			projectsString += String.format('<span class="project-replace">{0}</span>&nbsp;', ids[i]);
 	
-		if (r.data.type == 'weblink')
-			return projectsString + String.format('<a href="#" onclick="window.open(\'{1}\'); return false">{0}</a>', value, r.data.url);
-		else
-			return projectsString + String.format('<a href="#" onclick="og.openLink(\'{1}\')">{0}</a>', value, r.data.url);
+		if (r.data.type == 'webpage') {
+			return projectsString + String.format('<a href="#" onclick="window.open(\'{1}\'); return false">{0}</a>', og.clean(value), r.data.url);
+		} else {
+			return projectsString + String.format('<a href="#" onclick="og.openLink(\'{1}\')">{0}</a>', og.clean(value), r.data.url);
+		}
 	}
 
 	function renderType(value, p, r){
@@ -93,11 +94,11 @@ og.OverviewManager = function() {
 	}
 
 	function renderUser(value, p, r) {
-		return String.format('<a href="#" onclick="og.openLink(\'{1}\')">{0}</a>', value, og.getUrl('user', 'card', {id: r.data.updatedById}));
+		return String.format('<a href="#" onclick="og.openLink(\'{1}\')">{0}</a>', og.clean(value), og.getUrl('user', 'card', {id: r.data.updatedById}));
 	}
 
 	function renderAuthor(value, p, r) {
-		return String.format('<a href="#" onclick="og.openLink(\'{1}\')">{0}</a>', value, og.getUrl('user', 'card', {id: r.data.createdById}));
+		return String.format('<a href="#" onclick="og.openLink(\'{1}\')">{0}</a>', og.clean(value), og.getUrl('user', 'card', {id: r.data.createdById}));
 	}
 
 	function renderDate(value, p, r) {
@@ -318,12 +319,12 @@ og.OverviewManager = function() {
 			})
 		}),
 		del: new Ext.Action({
-			text: lang('delete'),
-            tooltip: lang('delete selected objects'),
-            iconCls: 'ico-delete',
+			text: lang('move to trash'),
+            tooltip: lang('move selected objects to trash'),
+            iconCls: 'ico-trash',
 			disabled: true,
 			handler: function() {
-				if (confirm(lang('confirm delete object'))) {
+				if (confirm(lang('confirm move to trash'))) {
 					this.load({
 						action: 'delete',
 						objects: getSelectedIds()

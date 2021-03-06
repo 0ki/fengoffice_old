@@ -29,7 +29,11 @@ og.TagPanel = function(config) {
 				Ext.Msg.prompt(lang('rename tag'), lang('enter a new name for the tag') + ':',
 					function(btn, text) {
 						if (btn == 'ok') {
-							this.renameTag(this.getSelectedTag().name, text);
+							if (text == '') {
+								alert(lang("you must enter a name"));
+							} else {
+								this.renameTag(this.getSelectedTag().name, text);
+							}
 						}
 					},
 					this);
@@ -58,6 +62,7 @@ og.TagTree = function(config) {
 	Ext.applyIf(config, {
 		id: 'tag-panel',
 		autoScroll: true,
+		autoLoadTags: false,
 		rootVisible: false,
 		lines: false,
 		border: false,
@@ -87,7 +92,13 @@ og.TagTree = function(config) {
 	this.tags = this.root.appendChild(
 		new Ext.tree.TreeNode({
 			text: lang('all'),
-			expanded: true
+			expanded: true,
+			listeners: {
+				click: function() {
+					this.unselect();
+					this.select();
+				}
+			}
 		})
 	);
 	this.tags.tag = {name: ""};
@@ -113,13 +124,15 @@ og.TagTree = function(config) {
 	og.eventManager.addListener('tag added', this.addTag, this);
 	og.eventManager.addListener('tag deleted', this.removeTag, this);
 	
-	this.loadTags();
+	if (this.autoLoadTags) {
+		this.loadTags();
+	}
 };
 
 Ext.extend(og.TagTree, Ext.tree.TreePanel, {
 
 	removeTag: function(tag) {
-		var node = this.getNodeById(tag.name);
+		var node = this.getNodeById(this.nameToId(tag.name));
 		if (node) {
 			node.unselect();
 			Ext.fly(node.ui.elNode).ghost('l', {
@@ -129,7 +142,7 @@ Ext.extend(og.TagTree, Ext.tree.TreePanel, {
 	},
 
 	addTag : function(tag){
-		var exists = this.getNodeById(tag.name);
+		var exists = this.getNodeById(this.nameToId(tag.name));
 		if (exists) {
 			return;
 		}
@@ -137,8 +150,14 @@ Ext.extend(og.TagTree, Ext.tree.TreePanel, {
 			iconCls: 'ico-tag',
 			leaf: true,
 			cls: 'tag-item',
-			text: tag.name,
-			id: tag.name
+			text: og.clean(tag.name),
+			id: this.nameToId(tag.name),
+			listeners: {
+				click: function() {
+					this.unselect();
+					this.select();
+				}
+			}
 		};
 		var node = new Ext.tree.TreeNode(config);
 		node.tag = tag;
@@ -164,11 +183,21 @@ Ext.extend(og.TagTree, Ext.tree.TreePanel, {
 		}
 	},
 	
+	getTags: function() {
+		var tags = [];
+		var node = this.tags.firstChild;
+		while (node) {
+			tags.push(node.tag);
+			node = node.nextSibling;
+		}
+		return tags;
+	},
+	
 	select: function(id) {
 		if (!id) {
 			this.tags.select();
 		} else {
-			var node = this.getNodeById(id);
+			var node = this.getNodeById(this.nameToId(id));
 			if (node) {
 				node.select();
 			}
@@ -176,35 +205,42 @@ Ext.extend(og.TagTree, Ext.tree.TreePanel, {
 	},
 	
 	hasTag: function(tagname) {
-		return this.getNodeById(tagname);
+		return this.getNodeById(this.nameToId(tagname));
 	},
 	
 	loadTags: function(url) {
-		if (!url) {
-			url = og.getUrl('tag', 'list_tags');
-		}
-		og.openLink(url, {
-			callback: function(success, data) {
-				if (success && data.tags) {
-					var selected = this.getSelectedTag();
-					this.removeAll();
-					this.addTags(data.tags);
-					
-					this.tags.expand();
-					
-					if (this.hasTag(selected.name)) {
-						this.pauseEvents = true;
-						this.select(selected.name);
-						this.pauseEvents = false;
-					} else {
-						this.pauseEvents = true;
-						this.tags.select();
-						this.pauseEvents = false;
+		if (this.loadTagsFrom) {
+			this.removeAll();
+			var tags = Ext.getCmp(this.loadTagsFrom).getTags();
+			this.addTags(tags);
+			this.tags.expand();
+		} else {
+			if (!url) {
+				url = og.getUrl('tag', 'list_tags');
+			}
+			og.openLink(url, {
+				callback: function(success, data) {
+					if (success && data.tags) {
+						var selected = this.getSelectedTag();
+						this.removeAll();
+						this.addTags(data.tags);
+						
+						this.tags.expand();
+						
+						if (this.hasTag(selected.name)) {
+							this.pauseEvents = true;
+							this.select(selected.name);
+							this.pauseEvents = false;
+						} else {
+							this.pauseEvents = true;
+							this.tags.select();
+							this.pauseEvents = false;
+						}
 					}
-				}
-			},
-			scope: this
-		});
+				},
+				scope: this
+			});
+		}
 	},
 	
 	removeAll: function() {
@@ -233,6 +269,9 @@ Ext.extend(og.TagTree, Ext.tree.TreePanel, {
 	},
 	
 	filterTree: function(text) {
+		if (text == this.getTopToolbar().items.get('tag-filter').emptyText) {
+			text = "";
+		}
 		this.expandAll();
 		var re = new RegExp(Ext.escapeRe(text.toLowerCase()), 'i');
 		this.filterNode(this.tags, re);
@@ -243,6 +282,13 @@ Ext.extend(og.TagTree, Ext.tree.TreePanel, {
 		if (!this.hasTag(newTagname) || confirm(lang('confirm merge tags', tagname, newTagname))) {
 			this.loadTags(og.getUrl('tag', 'rename_tag', {tag: tagname, new_tag: newTagname}));
 		}
+	},
+	/**
+	 * Removes invalid characters from a tag name
+	 * so that the result can be used as a node id.
+	 */
+	nameToId: function(name) {
+		return og.clean(name).replace(/[^a-zA-Z0-9]/g, '_');
 	}
 });
 

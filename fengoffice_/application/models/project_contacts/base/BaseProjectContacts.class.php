@@ -6,7 +6,7 @@
   *
   * @author Carlos Palma <chonwil@gmail.com>
   */
-  abstract class BaseProjectContacts extends DataManager {
+  abstract class BaseProjectContacts extends ProjectDataObjects {
   
     /**
     * Column name => Column type map

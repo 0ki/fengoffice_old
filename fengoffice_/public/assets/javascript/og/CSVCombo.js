@@ -125,7 +125,7 @@ og.CSVCombo = Ext.extend(Ext.form.ComboBox, {
 			} else {
 				var val = this.getRawValue() || "";
 				var l = val.lastIndexOf(",");
-				val = val.susbtring(l + 1).trim();
+				val = val.substring(l + 1).trim();
 				this.doQuery(val);
 			}
         	this.el.focus();

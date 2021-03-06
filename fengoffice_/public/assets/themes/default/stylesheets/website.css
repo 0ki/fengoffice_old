@@ -1,12 +1,21 @@
-@import '../jquery/jquery.cluetip.css';
-@import '../jquery/ui.datepicker.css';
 @import 'general/rewrites.css';
 @import '../extjs/css/ext-all.css';
 @import 'og/ext_modify.css';
 @import 'general/layout.css';
 @import 'general/forms.css';
 @import 'general/construction.css';
+@import 'og/ObjectPicker.css';
+@import 'og/FileManager.css';
+@import 'og/Dashboard.css';
+@import 'og/HtmlPanel.css';
+@import 'og/ImageChooser.css';
+@import 'og/TagPanel.css';
+@import 'og/WorkspacePanel.css';
+@import 'og/MessageManager.css';
+@import 'og/MilestoneItem.css';
+@import 'og/TaskItem.css';
 @import 'og/og.css';
+@import 'og/time.css';
 @import 'og/tasks.css';
 @import 'page_actions.css';
 @import '../reesecal/default.css';
@@ -16,7 +25,6 @@
 @import 'og/coInput.css';
 @import 'og/administration.css';
 @import 'og/textile-rewrite.css';
-
 @import '../slimey/slimey.css';
 @import 'og/ImageChooser.css';
 @import 'og/GooPlayer.css';
@@ -30,7 +38,6 @@
 @import 'project/comments.css';
 @import 'project/documents.css';
 @import 'project/files.css';
-/*@import 'project/forms.css';*/
 @import 'project/linked_objects.css';
 @import 'project/messages.css';
 @import 'project/milestones.css';
@@ -38,16 +45,4 @@
 @import 'project/permissions.css';
 @import 'project/project_log.css';
 @import 'project/reorder_tasks.css';
-/*@import 'project/search_results.css';*/
-/*@import 'project/spreadsheet.css';*/
-/*@import 'project/spreadsheet_grey.css';*/
 @import 'project/task_list.css';
-
-
-select.select_milestone, select.select_task_list, select.select_message {
-  width: 250px;
-}
-
-.options {
-  margin: 10px 0 0 0;
-}

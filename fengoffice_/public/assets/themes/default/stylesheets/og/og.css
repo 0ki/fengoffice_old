@@ -1,13 +1,3 @@
-@import 'ObjectPicker.css';
-@import 'FileManager.css';
-@import 'Dashboard.css';
-@import 'HtmlPanel.css';
-@import 'ImageChooser.css';
-@import 'TagPanel.css';
-@import 'WorkspacePanel.css';
-@import 'MessageManager.css';
-@import 'MilestoneItem.css';
-@import 'TaskItem.css';
 
 /** autoCompleter **/
 .autoCompleter .selected {
@@ -29,6 +19,10 @@
 
 .ico-reporting {
 	background-image: url(../../images/16x16/reporting.png) !important;
+}
+
+.ico-template {
+	background-image: url(../../images/16x16/template.png) !important;
 }
 
 .ico-account {
@@ -122,6 +116,9 @@
 .ico-calendar-week {
 	background-image: url(../../images/16x16/view_calendar_week.png) !important;
 }
+.ico-file_revision {
+	background-image: url(../../images/16x16/types/file.png) !important;
+}
 .ico-help {
 	background-image: url(../../images/16x16/help.png);
 }
@@ -129,22 +126,22 @@
 	background-image: url(../../images/16x16/hide_messages.png) !important;
 }
 .ico-large-backup {
-	background-image: url('../../images/48x48/backup.png');
+	background-image: url(../../images/48x48/backup.png);
 }
 .ico-large-configuration {
-	background-image: url('../../images/48x48/configuration.png');
+	background-image: url(../../images/48x48/configuration.png);
 }
 .ico-large-group {
-	background-image: url('../../images/48x48/groups.png');
+	background-image: url(../../images/48x48/groups.png);
 }
 .ico-large-tools {
-	background-image: url('../../images/48x48/tools.png');
+	background-image: url(../../images/48x48/tools.png);
 }
 .ico-large-upgrade {
-	background-image: url('../../images/48x48/upgrade.png');
+	background-image: url(../../images/48x48/upgrade.png);
 }
 .ico-large-workspace {
-	background-image: url('../../images/48x48/workspace.png');
+	background-image: url(../../images/48x48/workspace.png);
 }
 .ico-locked {
 	background-image: url(../../images/16x16/locked.png) !important;
@@ -188,6 +185,9 @@
 .ico-rename {
 	background-image: url(../../images/16x16/rename.png) !important;
 }
+.ico-restore {
+	background-image: url(../../images/16x16/undo.png) !important;
+}
 .ico-revisions {
 	background-image: url(../../images/16x16/revisions.png) !important;
 }
@@ -215,6 +215,18 @@
 .ico-time {
 	background-image: url(../../images/16x16/time.png) !important;
 }
+.ico-time-pause {
+	background-image: url(../../images/16x16/time_pause.png) !important;
+}
+.ico-time-play {
+	background-image: url(../../images/16x16/time_play.png) !important;
+}
+.ico-time-stop {
+	background-image: url(../../images/16x16/time_stop.png) !important;
+}
+.ico-trash {
+	background-image: url(../../images/16x16/trash.png) !important;
+}
 .ico-undo {
 	background-image: url(../../images/16x16/undo.png) !important;
 }
@@ -231,10 +243,10 @@
 	background-image: url(../../images/16x16/history.png) !important;
 }
 .ico-view-as-dashboard {
-	background-image: url('../../images/16x16/view_as_db.png') !important; 
+	background-image: url(../../images/16x16/view_as_db.png) !important; 
 }
 .ico-warning32 {
-	background-image: url('../../images/32x32/warning.png') !important; 
+	background-image: url(../../images/32x32/warning.png) !important; 
 }
 .ico-workspace {
 	background-image: url(../../images/16x16/workspace.png) !important;
@@ -330,7 +342,7 @@
 }
 
 .og-wsname-color-0 {
-	border-color: #BBB;
+	border-color: #777777;
 	color: #777777;
 }
 
@@ -343,11 +355,13 @@
 .og-wsname-color-2 {
 	color: #E0ECFF;
 	background-color: #206CE1;
+	border-color: #206CE1;
 }
 
 .og-wsname-color-3 {
 	color: #DFE2FF;
 	background-color: #0000CC;
+	border-color: #0000CC;
 }
 
 .og-wsname-color-4 {
@@ -359,101 +373,121 @@
 .og-wsname-color-5 {
 	color: #FDE9F4;
 	background-color: #854F61;
+	border-color: #854F61;
 }
 
 .og-wsname-color-6 {
 	color: #FFE3E3;
 	background-color: #CC0000;
+	border-color: #CC0000;
 }
 
 .og-wsname-color-7 {
 	color: #FFF0E1;
 	background-color: #EC7000;
+	border-color: #EC7000;
 }
 
 .og-wsname-color-8 {
 	color: #FADCB3;
 	background-color: #B36D00;
+	border-color: #B36D00;
 }
 
 .og-wsname-color-9 {
 	color: #F3E7B3;
 	background-color: #AB8B00;
+	border-color: #AB8B00;
 }
 
 .og-wsname-color-10 {
 	color: #FFFFD4;
 	background-color: #636330;
+	border-color: #636330;
 }
 
 .og-wsname-color-11 {
 	color: #F9FFEF;
 	background-color: #64992C;
+	border-color: #64992C;
 }
 
 .og-wsname-color-12 {
 	color: #F1F5EC;
 	background-color: #006633;
+	border-color: #006633;
 }
 
 .og-wsname-color-13 {
 	color: #5A6986;
 	background-color: #DEE5F2;
+	border-color: #5A6986;
 }
 
 .og-wsname-color-14 {
 	color: #206CE1;
 	background-color: #E0ECFF;
+	border-color: #206CE1;
 }
 
 .og-wsname-color-15 {
 	color: #0000CC;
 	background-color: #DFE2FF;
+	border-color: #0000CC;
 }
 
 .og-wsname-color-16 {
 	color: #5229A3;
 	background-color: #E0D5F9;
+	border-color: #5229A3;
 }
 
 .og-wsname-color-17 {
 	color: #854F61;
 	background-color: #FDE9F4;
+	border-color: #854F61;
 }
 
 .og-wsname-color-18 {
 	color: #CC0000;
 	background-color: #FFE3E3;
+	border-color: #CC0000;
 }
 
 .og-wsname-color-19 {
 	color: #EC7000;
 	background-color: #FFF0E1;
+	border-color: #EC7000;
 }
 
 .og-wsname-color-20 {
 	color: #B36D00;
 	background-color: #FADCB3;
+	border-color: #B36D00;
 }
 
 .og-wsname-color-21 {
 	color: #AB8B00;
 	background-color: #F3E7B3;
+	border-color: #AB8B00;
 }
 
 .og-wsname-color-22 {
 	color: #636330;
 	background-color: #FFFFD4;
+	border-color: #636330;
 }
 
 .og-wsname-color-23 {
 	color: #64992C;
 	background-color: #F9FFEF;
+	border-color: #64992C;
 }
 
 .og-wsname-color-24 {
 	color: #006633;
 	background-color: #F1F5EC;
+	border-color: #006633;
 }
 
 
@@ -512,6 +546,13 @@
 	background-repeat:no-repeat;
 	font-weight:bold;
 }
+.og-timeslot-work-paused{
+	line-height:22px;
+	padding-left:28px;
+	background-image: url(../../images/22x22/chronometer_pause.png) !important;
+	background-repeat:no-repeat;
+	font-weight:bold;
+}
 .scrollable-menu {
 	max-height: 300px;
 	overflow: auto;
@@ -540,10 +581,6 @@
 	background-color:#F4F8F9;
 }
 
-.adminMainBlock td {
-	padding:2px 5px;
-}
-
 .list-action {
 	margin-left: 6px;
 }
@@ -568,4 +605,13 @@
 
 .og-ws-selector-arrow:hover{
 	background-position:-17px 0;
+}
+
+
+select.select_milestone, select.select_task_list, select.select_message {
+  width: 250px;
+}
+
+.options {
+  margin: 10px 0 0 0;
 }

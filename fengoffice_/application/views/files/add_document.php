@@ -3,7 +3,7 @@ include("public/assets/javascript/fckeditor/fckeditor.php");
 ?>
 
 <?php
-	set_page_title($file->isNew() ? lang('new document') : lang('edit document') . ' - ' . $file->getFilename());
+	set_page_title($file->isNew() ? lang('new document') : lang('edit document') . ' - ' . clean($file->getFilename()));
 	project_tabbed_navigation(PROJECT_TAB_FILES);
 	project_crumbs(array(
 		array(lang('files'), get_url('files')),
@@ -17,7 +17,7 @@ include("public/assets/javascript/fckeditor/fckeditor.php");
 ?>
 <script type="text/javascript" src="<?php echo get_javascript_url('modules/addFileForm.js') ?>"></script>
 <script type="text/javascript">
-function checkFilename(iname) {
+og._checkFilename = function(iname) {
 	var form = Ext.getDom(iname);
 	form['fileContent'].value = FCKeditorAPI.GetInstance(iname).GetHTML();
 	if (form['file[name]'].value && !form.rename) {
@@ -40,7 +40,7 @@ function checkFilename(iname) {
 }
 </script>
 
-<form class="internalForm" id="<?php echo $instanceName ?>" action="<?php echo get_url('files', 'save_document') ?>" method="post" enctype="multipart/form-data" onsubmit="return checkFilename('<?php echo $instanceName ?>')">
+<form class="internalForm" id="<?php echo $instanceName ?>" action="<?php echo get_url('files', 'save_document') ?>" method="post" enctype="multipart/form-data" onsubmit="return og._checkFilename('<?php echo $instanceName ?>')">
 <input type="hidden" name="instanceName" value="<?php echo $instanceName ?>" />
 <?php tpl_display(get_template_path('form_errors')) ?>
 
@@ -82,7 +82,7 @@ function FCKeditor_OnComplete(fck) {
  	<div>
 		<input type="hidden" id="fileContent" name="fileContent" value="" />
 		<input type="hidden" id="fileid" name="file[id]" value="<?php if (!$file->isNew()) echo $file->getId(); ?>" />
-		<input type="hidden" id="filename" name="file[name]" value="<?php if (!$file->isNew()) echo $file->getFilename(); ?>" />
+		<input type="hidden" id="filename" name="file[name]" value="<?php if (!$file->isNew()) echo clean($file->getFilename()); ?>" />
 		<input type="hidden" name="new_revision_document" value="" />
 	</div>
 </form>

@@ -6,7 +6,7 @@
  *
  * @author Ilija Studen <ilija.studen@gmail.com>
  */
-abstract class BaseProjectTasks extends DataManager {
+abstract class BaseProjectTasks extends ProjectDataObjects {
 
 	/**
 	 * Column name => Column type map
@@ -41,7 +41,9 @@ abstract class BaseProjectTasks extends DataManager {
 		'assigned_by_id' => DATA_TYPE_INTEGER,
 		'time_estimate' => DATA_TYPE_INTEGER,
 		'is_template' => DATA_TYPE_BOOLEAN,
-		'from_template_id' => DATA_TYPE_INTEGER
+		'from_template_id' => DATA_TYPE_INTEGER,
+		'trashed_on' => DATA_TYPE_DATETIME,
+     	'trashed_by_id' => DATA_TYPE_INTEGER,
 	);
 
 	/**

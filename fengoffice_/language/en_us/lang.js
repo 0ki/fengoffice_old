@@ -36,6 +36,7 @@ addLangs({
 	'properties': 'Properties',
 	'revisions and comments': 'Revisions & Coments',
 	'slideshow': 'Slideshow',
+	'view slideshow': 'View slideshow',
 	'add tag': 'Add Tag',
 	'enter the desired tag': 'Enter the desired tag',
 	'new': 'New',
@@ -51,7 +52,7 @@ addLangs({
 	'confirm delete object': 'Are you sure you want to delete the selected object(s)?',
 	'confirm delete contact': 'Are you sure you want to delete this contact?',
 	'confirm delete company': 'Are you sure you want to delete this company?',
-	'confirm delete event': 'Are you sure you want to permanenetly delete this event? \nAfter deleting an event other users won\'t be able to see it in their calendars'   ,
+	'confirm delete event': 'Are you sure you want to permanenetly delete this event? \nInvitations to this event will also be deleted. \nAfter deleting an event other users won\'t be able to see it in their calendars'   ,
 	'confirm delete file': 'Are you sure you want to delete this file?',
 	'confirm delete mail content': 'Are you sure you want to delete this email?',
 	'confirm delete mail account': 'Warning: All emails belonging to this account will be deleted as well, are you sure that you want to delete this mail account?',
@@ -182,6 +183,7 @@ addLangs({
 	'edit selected object': 'Edit selected object',
 	'assign to project': 'Assign to workspace',
 	'assign contact to project': 'Edit contact assignnments',
+	'import': 'Import',
 	
 	/* webpage manager*/
 	'description': 'Description',
@@ -292,6 +294,7 @@ addLangs({
 	'next':'Next',
 	'my calendar': 'My Calendar',
 	'edit event details': 'Edit event details',
+	'duration': 'Duration',
 	
 	/* Charts */
 	'reporting' : 'Reporting',
@@ -416,6 +419,9 @@ addLangs({
 	'show more tasks number' : 'Show more ({0})...',
 	'start_work': 'Start working on this task',
 	'close_work': 'Stop working on this task',
+	'pause_work': 'Pause work on this task',
+	'resume_work': 'Resume working on this task',
+	'close work': 'Stop work',
 	'time worked' : 'Time worked',
 	'hours' : 'hours',
 	'complete this task' : 'Complete this task',
@@ -467,11 +473,55 @@ addLangs({
   	'date format alternatives' : 'm/d/y|n/j/Y|n/j/y|m/j/y|n/d/y|m/j/Y|n/d/Y',
   	'warning start date greater than due date': 'Warning: the start date is later than the due date',
   	
+	'event start time': 'Time',
+	'all day event': 'All day',
+	
   	'choose an image': 'Choose an image',
   	'sort by': 'Sort by',
   	'file size': 'File size',
   	'last modified': 'Last modified',
   	'image name': 'Image name',
   	'size': 'Size',
-  	'completed on': 'Completed on'
+  	'completed on': 'Completed on',
+  	
+  	'save changes' : 'Save changes',
+  	'no filter' : 'No filter',
+  	'nothing (groups)' : 'Nothing',
+  	'none' : 'None',
+  	'new task time report': 'New task time report',
+  	'no images match the specified filter': 'No images match the specified filter',
+  	
+  	'print' : 'Print',
+  	
+  	'no deleted objects message': 'There are no deleted {0} in \'{1}\'',
+	'no deleted objects with tag message': 'There are no deleted {0} tagged as \'{2}\' in \'{1}\'',
+	'deleted on': 'Deleted on',
+	'deleted by': 'Deleted by',
+	'trash': 'Trash',
+	'restore': 'Restore',
+	'restore selected objects': 'Restore selected objects',
+	'delete selected objects permanently': 'Delete the selected objects permanently',
+	'confirm delete objects permanently': 'Once deleted you won\'t be able to bring these objects back.\nAre you sure you want to delete the selected objects permanently?',
+	
+	'n/a': '<acronym title="Not Available">n/a</acronym>',
+	'move to trash': 'Move to trash',
+    'move selected objects to trash': 'Move selected objects to trash',
+    'confirm move to trash': 'Are you sure you want to move the selected objects to the trash can?',
+    'confirm restore objects': 'Are you sure you want to restore the selected objects?',
+    
+    'file_revision': 'File revision',
+    'trash emptied periodically': 'Objects left in the trash more than {0} days will be deleted.',
+    'remove': 'Remove',
+    'object type not supported': 'This object type is not supported for templates', 
+    'confirm delete timeslot' : 'Are you sure you want to permanently delete this timeslot?',
+    'confirm delete permanently': 'Are you sure you want to delete this object?',
+    'no items selected' : 'No items selected',
+    'error adding timeslot' : 'An error occurred while adding the timeslot',
+    
+    'no due date': 'No due date',
+    'no start date': 'No start date',
+    'untagged': 'Untagged',
+    'download selected file': 'Download selected file',
+    'edit selected file properties': 'Edit selected file\' properties',
+    'you must enter a name': 'You must enter a name'
 });

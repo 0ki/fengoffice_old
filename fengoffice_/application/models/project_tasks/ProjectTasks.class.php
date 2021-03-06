@@ -50,11 +50,12 @@ class ProjectTasks extends BaseProjectTasks {
 	 * @param Project $project
 	 * @return array
 	 */
-	static function getOpenTimeslotTasks(User $user, Project $project = null, $tag = null, $assigned_to_company = null, $assigned_to_user = null) {
+	static function getOpenTimeslotTasks(User $user, User $logged_user, Project $project = null, $tag = null, $assigned_to_company = null, $assigned_to_user = null) {
 		if ($project)
-		$project_ids = $project->getAllSubWorkspacesCSV();
-		else
-		$project_ids = $user->getActiveProjectIdsCSV();
+			$project_ids = $project->getAllSubWorkspacesCSV(false, $logged_user);
+		else{
+			$project_ids = $logged_user->getActiveProjectIdsCSV();
+		}
 
 		$openTimeslot = " AND id in (SELECT object_id from " . TABLE_PREFIX . "timeslots t WHERE user_id="
 		. $user->getId() . " AND t.object_manager='ProjectTasks' AND t.end_time='" . EMPTY_DATETIME . "')";
@@ -372,7 +373,7 @@ class ProjectTasks extends BaseProjectTasks {
 	} // paginateProjectTasks
 
 	function maxOrder($parentId = null, $milestoneId = null) {
-		$condition = "`is_template` = false";
+		$condition = "`trashed_by_id` = 0 AND `is_template` = false";
 		if (is_numeric($parentId)) {
 			$condition .= " AND ";
 			$condition .= " `parent_id` = " . DB::escape($parentId);

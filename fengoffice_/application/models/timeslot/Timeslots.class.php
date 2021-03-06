@@ -13,10 +13,10 @@ class Timeslots extends BaseTimeslots {
 	 * @param ProjectDataObject $object
 	 * @return array
 	 */
-	static function getTimeslotsByObject(ProjectDataObject $object, User $user = null) {
+	static function getTimeslotsByObject(ProjectDataObject $object, $user = null) {
 		$userCondition = '';
 		if ($user)
-		$userCondition = ' and `user_id` = '. $user->getId();
+			$userCondition = ' and `user_id` = '. $user->getId();
 
 		return self::findAll(array(
           'conditions' => array('`object_id` = ? AND `object_manager` = ?' . $userCondition, $object->getObjectId(), get_class($object->manager())),
@@ -25,7 +25,7 @@ class Timeslots extends BaseTimeslots {
 	} // getTimeslotsByObject
 	
 	
-	static function getOpenTimeslotByObject(ProjectDataObject $object, User $user = null) {
+	static function getOpenTimeslotByObject(ProjectDataObject $object, $user = null) {
 		$userCondition = '';
 		if ($user)
 			$userCondition = ' and `user_id` = '. $user->getId();
@@ -50,7 +50,7 @@ class Timeslots extends BaseTimeslots {
 	 * @param ProjectDataObject $object
 	 * @return integer
 	 */
-	static function countTimeslotsByObject(ProjectDataObject $object, User $user = null) {
+	static function countTimeslotsByObject(ProjectDataObject $object, $user = null) {
 		$userCondition = '';
 		if ($user)
 		$userCondition = ' and `user_id` = '. $user->getId();
@@ -81,7 +81,7 @@ class Timeslots extends BaseTimeslots {
 	 * @param array $order_by
 	 * @return array
 	 */
-	static function getTaskTimeslots(Project $workspace = null, User $user= null, $workspacesCSV=null, DateTimeValue $start_date, DateTimeValue $end_date, $object_id = 0, $group_by = null, $order_by = null){
+	static function getTaskTimeslots($workspace = null, $user = null, $workspacesCSV = null, $start_date = null, $end_date = null, $object_id = 0, $group_by = null, $order_by = null, $limit = 0, $offset = 0, $timeslot_type = 0){
 		$wslevels = 0;
 		foreach ($group_by as $gb)
 			if ($gb == "project_id")
@@ -98,26 +98,59 @@ class Timeslots extends BaseTimeslots {
 		for ($i = 0; $i < $wslevels; $i++)
 			$select .= ", ws" . $i . ".name as wsName" . $i . ", ws" . $i . ".id as wsId" . $i;
 			
-		$from = " FROM ";
+		$preFrom = " FROM ";
 		for ($i = 0; $i < $wslevels; $i++)
-			$from .= "(";
-		$from .= "`" . TABLE_PREFIX . "timeslots`, `" . TABLE_PREFIX . "project_tasks`, `" . TABLE_PREFIX ."projects`";
+			$preFrom .= "(";
+		$postFrom = "";
 		for ($i = 0; $i < $wslevels; $i++)
-			$from .= ") LEFT OUTER JOIN `" . TABLE_PREFIX . "projects` as ws" . $i . " on `" . TABLE_PREFIX . "projects`.p" . ($wsDepth + $i + 1) . " = ws" . $i . ".id";
+			$postFrom .= ") LEFT OUTER JOIN `" . TABLE_PREFIX . "projects` as ws" . $i . " on `" . TABLE_PREFIX . "projects`.p" . ($wsDepth + $i + 1) . " = ws" . $i . ".id";
 		
-		
-		$sql = $select . $from;
-		$sql .= " WHERE `object_manager` = 'ProjectTasks'  and " . TABLE_PREFIX . "project_tasks.id = object_id and " . TABLE_PREFIX . "project_tasks.project_id = `" . TABLE_PREFIX . "projects`.id";
-		$sql .= DB::prepareString(' and `start_time` > ? and `end_time` < ?', array($start_date, $end_date));
-		
+		$commonConditions = "";
+		if ($start_date)
+			$commonConditions .= DB::prepareString(' and `start_time` >= ? ', array($start_date));
+		if ($end_date)
+			$commonConditions .= DB::prepareString(' and `end_time` < ? ', array($end_date));
+			
 		//User condition
-		$sql .= $user? ' and `user_id` = '. $user->getId() : '';
-		
-		//Project condition
-		$sql .= $workspacesCSV? ' and ' . TABLE_PREFIX . 'project_tasks.project_id in (' . $workspacesCSV . ')' : '';
+		$commonConditions .= $user? ' and `user_id` = '. $user->getId() : '';
 		
 		//Object condition
-		$sql .= $object_id > 0 ? ' and object_id = ' . $object_id : '';
+		$commonConditions .= $object_id > 0 ? ' and `object_manager` = "ProjectTasks" and object_id = ' . $object_id : ''; //Only applies to tasks
+		
+		$sql = '';
+		switch($timeslot_type){
+			case 0: //Task timeslots
+				$from = "`" . TABLE_PREFIX . "timeslots`, `" . TABLE_PREFIX . "project_tasks`, `" . TABLE_PREFIX ."projects`";
+				$conditions = " WHERE `object_manager` = 'ProjectTasks'  and " . TABLE_PREFIX . "project_tasks.id = object_id and " . TABLE_PREFIX . "project_tasks.deleted_by = 0 and " . TABLE_PREFIX . "project_tasks.project_id = `" . TABLE_PREFIX . "projects`.id";
+				//Project condition
+				$conditions .= $workspacesCSV? ' and ' . TABLE_PREFIX . 'project_tasks.project_id in (' . $workspacesCSV . ')' : '';
+				
+				$sql = $select . $preFrom . $from . $postFrom . $conditions . $commonConditions;
+				break;
+			case 1: //Time timeslots
+				$from = "`" . TABLE_PREFIX . "timeslots`, `" . TABLE_PREFIX ."projects`";
+				$conditions = " WHERE `object_manager` = 'Projects'";
+				$conditions .= $workspacesCSV? ' AND object_id in (' . $workspacesCSV . ") AND object_id = `" . TABLE_PREFIX . "projects`.id" : " AND object_id = `" . TABLE_PREFIX . "projects`.id";
+				
+				$sql = $select . $preFrom . $from . $postFrom . $conditions . $commonConditions;
+				break;
+			case 2: //All timeslots
+				$from1 = "`" . TABLE_PREFIX . "timeslots`, `" . TABLE_PREFIX . "project_tasks`, `" . TABLE_PREFIX ."projects`";
+				$from2 = "`" . TABLE_PREFIX . "timeslots`, `" . TABLE_PREFIX ."projects`";
+				
+				$conditions1 = " WHERE `object_manager` = 'ProjectTasks'  and " . TABLE_PREFIX . "project_tasks.deleted_by = 0 and " . TABLE_PREFIX . "project_tasks.id = object_id and " . TABLE_PREFIX . "project_tasks.project_id = `" . TABLE_PREFIX . "projects`.id";
+				//Project condition
+				$conditions1 .= $workspacesCSV? ' and ' . TABLE_PREFIX . 'project_tasks.project_id in (' . $workspacesCSV . ')' : '';
+				
+				$conditions2 = " WHERE `object_manager` = 'Projects'";
+				$conditions2 .= $workspacesCSV? ' AND object_id in (' . $workspacesCSV . ") AND object_id = `" . TABLE_PREFIX . "projects`.id" : " AND object_id = `" . TABLE_PREFIX . "projects`.id";
+				
+				
+				$sql = $select . $preFrom . $from1 . $postFrom . $conditions1 . $commonConditions . ' UNION ' . $select . $preFrom . $from2 . $postFrom . $conditions2 . $commonConditions;
+				break;
+			default:
+				throw new Error("Timeslot type not recognised: " . $timeslot_type);
+		}
 		
 		//Group by
 		$wsCount = 0;
@@ -133,9 +166,11 @@ class Timeslots extends BaseTimeslots {
 					case 'priority':
 					case 'milestone_id':
 					case 'state':
-						$sql.= "`" . TABLE_PREFIX . "project_tasks`.`$gb` ASC, "; break;
+						if ($timeslot_type == 0)
+							$sql.= "`" . TABLE_PREFIX . "project_tasks`.`$gb` ASC, "; 
+						break;
 					default:
-						$sql.= "`" . TABLE_PREFIX . "timeslots`.`$gb` ASC, "; break;
+						$sql.= "`$gb` ASC, "; break;
 				}
 			}
 		}
@@ -148,6 +183,8 @@ class Timeslots extends BaseTimeslots {
 		}
 		
 		$sql .= " `start_time`";
+		if ($limit > 0 && $offset > 0)
+			$sql .= " LIMIT $offset, $limit";
 		
 		$timeslots = array();
 		$rows = DB::executeAll($sql);
@@ -163,17 +200,14 @@ class Timeslots extends BaseTimeslots {
     	return count($timeslots) ? $timeslots : null;
 	}
 	
-	
-	static function getTimeslotsByUserWorkspacesAndDate(User $user= null, $workspacesCSV=null, DateTimeValue $start_date, DateTimeValue $end_date, $object_manager, $object_id = 0){
-		
-		
+	static function getTimeslotsByUserWorkspacesAndDate(DateTimeValue $start_date, DateTimeValue $end_date, $object_manager, $user = null, $workspacesCSV = null, $object_id = 0){
 		$userCondition = '';
 		if ($user)
-		$userCondition = ' and `user_id` = '. $user->getId();
+			$userCondition = ' and `user_id` = '. $user->getId();
 		
 		$projectCondition = '';
 		if ($workspacesCSV && $object_manager == 'ProjectTasks')
-			$projectCondition = ' and (Select count(*) from '. TABLE_PREFIX . 'project_tasks where '. TABLE_PREFIX . 'project_tasks.id = object_id and '
+			$projectCondition = ' and (Select count(*) from '. TABLE_PREFIX . 'project_tasks where '. TABLE_PREFIX . 'project_tasks.id = object_id and ' . TABLE_PREFIX . 'project_tasks.deleted_by = 0 and '
 			. TABLE_PREFIX . 'project_tasks.project_id in (' . $workspacesCSV . ')) > 0';
 			
 		$objectCondition = '';
@@ -185,6 +219,21 @@ class Timeslots extends BaseTimeslots {
           'order' => '`start_time`'
           )); // array
 	
+	}
+
+	static function getProjectTimeslots($allowedWorkspaceIdsCSV, $user = null, $project = null, $offset = 0, $limit = 20){
+		$project_ids = ($project instanceof Project)? intersectCSVs($project->getAllSubWorkspacesCSV(), $allowedWorkspaceIdsCSV) : $allowedWorkspaceIdsCSV;
+		$project_sql = " AND object_id in (" .$project_ids . ")";
+			
+		$user_sql = "";
+		if ($user instanceof User)
+			$user_sql = " AND user_id = " . $user->getId();
+		
+		return Timeslots::findAll(array(
+			'conditions' => "object_manager = 'Projects'" . $project_sql . $user_sql, 
+			'order' => 'start_time DESC, id DESC',
+			'offset' => $offset,
+			'limit' => $limit));
 	}
 } // Comments
 

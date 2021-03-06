@@ -1,14 +1,19 @@
 <?php
-  if($message->canEdit(logged_user())) {
-  	add_page_action(lang('edit'), $message->getEditUrl(), 'ico-edit');
-  } // if
-  if($message->canDelete(logged_user())) {
-  	add_page_action(lang('delete'), "javascript:if(confirm(lang('confirm delete message'))) og.openLink('" . $message->getDeleteUrl() ."');", 'ico-delete');
-  } // if
-  add_page_action(lang('print view'), $message->getPrintViewUrl(), "ico-print", "_blank");
-  if(!active_project() || (active_project() && ProjectMessage::canAdd(logged_user(), active_project()))) {
-    add_page_action(lang('add new message'), get_url('message', 'add'), 'ico-message');
-  } // if
+if (isset($message) && $message instanceof ProjectMessage) {
+	if (!$message->isTrashed()){
+		if($message->canEdit(logged_user())) {
+			add_page_action(lang('edit'), $message->getEditUrl(), 'ico-edit');
+		} // if
+	}
+	if($message->canDelete(logged_user())) {
+		if ($message->isTrashed()) {
+			add_page_action(lang('restore from trash'), "javascript:if(confirm(lang('confirm restore objects'))) og.openLink('" . $message->getUntrashUrl() ."');", 'ico-restore');
+			add_page_action(lang('delete permanently'), "javascript:if(confirm(lang('confirm delete permanently'))) og.openLink('" . $message->getDeletePermanentlyUrl() ."');", 'ico-delete');
+		} else {
+			add_page_action(lang('move to trash'), "javascript:if(confirm(lang('confirm move to trash'))) og.openLink('" . $message->getTrashUrl() ."');", 'ico-trash');
+		}
+	} // if
+	add_page_action(lang('print view'), $message->getPrintViewUrl(), "ico-print", "_blank");
 ?>
 
 <div style="padding:7px">
@@ -22,8 +27,10 @@
 		
 		tpl_assign("content", $content);
 		tpl_assign("object", $message);
+		tpl_assign('iconclass', $message->isTrashed()? 'ico-large-message-trashed' :  'ico-large-message');
 		
 		$this->includeTemplate(get_template_path('view', 'co'));
 	?>
 </div>
 </div>
+<?php } //if isset ?>

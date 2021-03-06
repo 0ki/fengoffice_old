@@ -68,7 +68,7 @@ class WebpageController extends ApplicationController {
 			    $object_controller->link_to_new_object($webpage);
 			  DB::commit();
 	
-			  ApplicationLogs::createLog($webpage, $webpage->getProject(), ApplicationLogs::ACTION_ADD);
+			  ApplicationLogs::createLog($webpage, $webpage->getWorkspaces(), ApplicationLogs::ACTION_ADD);
 	
 			  flash_success(lang('success add webpage', $webpage->getTitle()));
 			  ajx_current("back");
@@ -124,12 +124,19 @@ class WebpageController extends ApplicationController {
 
 		if(is_array(array_var($_POST, 'webpage'))) {
 			try {
-//				if(substr($webpage_data['url'],0,7) != 'http://')
-//				$webpage_data['url'] = 'http://' . $webpage_data['url'];
+				$old_project_id = $webpage->getProjectId();
+				$project_id = $webpage_data["project_id"];
+				if ($old_project_id != $project_id) {
+					$newProject = Projects::findById($project_id);
+					if(!$webpage->canAdd(logged_user(),$newProject)) {
+						flash_error(lang('no access permissions'));
+						ajx_current("empty");
+						return;
+					} // if
+				}
+				
 				$old_is_private = $webpage->isPrivate();
 				$webpage->setFromAttributes($webpage_data);
-
-				$project_id = $webpage_data["project_id"];
 				$webpage->setProjectId($project_id);
 
 				// Options are reserved only for members of owner company
@@ -143,7 +150,7 @@ class WebpageController extends ApplicationController {
 		  $webpage->save_properties($webpage_data);
 		  DB::commit();
 
-		  ApplicationLogs::createLog($webpage, $webpage->getProject(), ApplicationLogs::ACTION_EDIT);
+		  ApplicationLogs::createLog($webpage, $webpage->getWorkspaces(), ApplicationLogs::ACTION_EDIT);
 
 		  flash_success(lang('success edit webpage', $webpage->getTitle()));
 		  ajx_current("back");
@@ -183,8 +190,8 @@ class WebpageController extends ApplicationController {
 		try {
 
 			DB::beginWork();
-			$webpage->delete();
-			ApplicationLogs::createLog($webpage, $webpage->getProject(), ApplicationLogs::ACTION_DELETE);
+			$webpage->trash();
+			ApplicationLogs::createLog($webpage, $webpage->getWorkspaces(), ApplicationLogs::ACTION_TRASH);
 			DB::commit();
 
 			flash_success(lang('success deleted webpage', $webpage->getTitle()));
@@ -225,8 +232,8 @@ class WebpageController extends ApplicationController {
 				if (isset($web_page) && $web_page->canDelete(logged_user())) {
 					try{
 						DB::beginWork();
-						$web_page->delete();
-						ApplicationLogs::createLog($web_page, $web_page->getProject(), ApplicationLogs::ACTION_DELETE);
+						$web_page->trash();
+						ApplicationLogs::createLog($web_page, $web_page->getWorkspaces(), ApplicationLogs::ACTION_TRASH);
 						DB::commit();
 						flash_success(lang('success deleted webpage'));
 					} catch(Exception $e){
@@ -243,9 +250,13 @@ class WebpageController extends ApplicationController {
 				$web_page = ProjectWebpages::findById($id);
 				if (isset($web_page) && $web_page->canEdit(logged_user())) {
 					$arr_tags = $web_page->getTags();
-					if (!array_search($tagTag, $arr_tags)) {
-						$arr_tags[] = $tagTag;
-						$web_page->setTagsFromCSV(implode(',', $arr_tags));
+					$arr = array();
+					foreach ($arr_tags as $t) {
+						$arr[] = $t->getTag();
+					}
+					if (!array_search($tagTag, $arr)) {
+						$arr[] = $tagTag;
+						$web_page->setTagsFromCSV(implode(',', $arr));
 					}
 					
 				} else flash_error(lang('no access permissions'));

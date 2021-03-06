@@ -4,7 +4,7 @@ include("public/assets/javascript/fckeditor/fckeditor.php");
   set_page_title( lang('write mail'));
  
   $instanceName = "fck" . gen_id();
-  $type = array_var($mail_data, 'type','html');
+  $type = array_var($mail_data, 'type','plain');
 ?>
 <script type="text/javascript">
 function setBody(iname) {
@@ -81,7 +81,8 @@ function setDiscard(val){
 }
 
 </script>
-<form style='height:100%;background-color:white'  id="<?php echo $instanceName ?>" name="frmMail"  class="internalForm" action="<?php echo $mail->getSendMailUrl()?>" method="post"  onsubmit="return setBody('<?php echo $instanceName ?>')">
+
+<form style="height:100%;background-color:white;" id="<?php echo $instanceName ?>" name="frmMail"  class="internalForm" action="<?php echo $mail->getSendMailUrl()?>" method="post"  onsubmit="return setBody('<?php echo $instanceName ?>')">
 <input type="hidden" name="instanceName" value="<?php echo $instanceName ?>" />
 <input type="hidden" name="mail[body]" value="" />
 <input type="hidden" name="mail[isDraft]" id="isDraft" value="false" />
@@ -91,7 +92,7 @@ function setDiscard(val){
 
 
 
-<div class="mail">
+<div class="mail" style="height:80%;">
 <div class="coInputHeader">
 	<div class="coInputHeaderUpperRow">
   		<div class="coInputTitle"><table style="width:535px"><tr><td>
@@ -118,20 +119,20 @@ function setDiscard(val){
     <label for='mailTo'><?php echo lang('mail to')?> <span class="label_required">*</span>  
     </label>
     <?php echo text_field('mail[to]', array_var($mail_data, 'to'), 
-    	array('class' => 'title', 'tabindex'=>'1', 'id' => 'mailTo')) ?>
+    	array('class' => 'title', 'tabindex'=>'10', 'id' => 'mailTo')) ?>
   </div>
   
  	<div id="add_mail_CC" style="<?php  array_var($mail_data, 'cc')==''? print('display:none;'):print('')?>">
     	<label for="mailCC"><?php echo lang('mail CC')?> </label>
     	<?php echo text_field('mail[CC]', array_var($mail_data, 'cc'), 
-    	array('class' => 'title', 'id' => 'mailCC', 'tabindex'=>'2')) ?>
+    	array('class' => 'title', 'id' => 'mailCC', 'tabindex'=>'20')) ?>
  	</div>
  	
  	
  	<div id="add_mail_BCC" style="display:none;">
 	    <label for="mailBCC"><?php echo lang('mail BCC')?></label>
 	    <?php echo text_field('mail[BCC]', array_var($mail_data, 'BCC'), 
-	    array('class' => 'title','id' => 'mailBCC', 'tabindex'=>'3')) ?>
+	    array('class' => 'title','id' => 'mailBCC', 'tabindex'=>'30')) ?>
 	</div>
  	
  	
@@ -141,7 +142,7 @@ function setDiscard(val){
     <label for='mailSubject'><?php echo lang('mail subject')?> 
     </label>
     <?php echo text_field('mail[subject]', array_var($mail_data, 'subject'), 
-    	array('class' => 'title', 'tabindex'=>'4', 'id' => 'mailSubject')) ?>
+    	array('class' => 'title', 'tabindex'=>'40', 'id' => 'mailSubject')) ?>
   </div>
   <div style="padding-top:5px">
 	
@@ -160,7 +161,7 @@ function setDiscard(val){
     <label for="mailAccount"><?php echo lang('mail account')?> 
     <span class="desc"><?php echo lang('mail account desc') ?></span></label>
     <?php echo render_select_mail_account('mail[account_id]',  $mail_accounts, '1',
-    array('id' => 'mailAccount', 'tabindex'=>'3')) ?>
+    array('id' => 'mailAccount', 'tabindex'=>'44')) ?>
   </div>
  
 
@@ -168,8 +169,8 @@ function setDiscard(val){
   
   <div id="add_mail_options" style="display:none;">
     <label><?php echo lang('mail options')?></label>
-    <label><?php echo radio_field('mail[format]',$type=='html', array('id' => 'format_html','value' => 'html', 'tabindex'=>'4','onchange'=>"alertFormat('$instanceName','html')")) ." ".lang('format html') ?></label>
-    <label><?php echo radio_field('mail[format]',$type=='plain', array('id' => 'format_plain','value' => 'plain', 'tabindex'=>'5', 'onchange'=>"alertFormat('$instanceName','plain')"))." ".lang('format plain')  ?></label>
+    <label><?php echo radio_field('mail[format]',$type=='html', array('id' => 'format_html','value' => 'html', 'tabindex'=>'45','onchange'=>"alertFormat('$instanceName','html')")) ." ".lang('format html') ?></label>
+    <label><?php echo radio_field('mail[format]',$type=='plain', array('id' => 'format_plain','value' => 'plain', 'tabindex'=>'46', 'onchange'=>"alertFormat('$instanceName','plain')"))." ".lang('format plain')  ?></label>
   </div>
   
      
@@ -177,9 +178,8 @@ function setDiscard(val){
     $display=($type=='html')?'none':'block';
     $display_fck=($type=='html')?'block':'none';
     echo textarea_field('plain_body', array_var($mail_data, 'body'), 
-    array('id' => 'mailBody', 'tabindex'=>'2','style'=>"display:".$display.";")) ?>
-    
-    <div id="fck_editor" style="display:<?php echo $display_fck ?>; width:100%; padding:0px; margin:0px">
+    array('id' => 'mailBody', 'tabindex'=>'50','style'=>"display:".$display.";width:97%;height:75%;margin-left:1%;margin-right:1%;margin-top:1%;margin-bottom:1%;")) ?>
+    <div id="fck_editor" style="display:<?php echo $display_fck ?>; width:100%; height:100%; padding:0px; margin:0px;">
 		<?php
 			$oFCKeditor = new FCKeditor($instanceName);
 			$oFCKeditor->BasePath = 'public/assets/javascript/fckeditor/';

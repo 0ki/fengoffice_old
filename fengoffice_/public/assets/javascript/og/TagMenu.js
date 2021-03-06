@@ -52,13 +52,14 @@ Ext.extend(og.TagMenu, Ext.menu.Menu, {
 			return;
 		}
 		var item = new Ext.menu.Item({
-			text: tag.name,
+			text: og.clean(tag.name),
 			handler: function() {
 				this.fireEvent('tagselect', tag.name);
 			},
 			scope: this
 		});
-		this.insert(0, item);
+		var c = this.items.getCount();
+		this.insert(c-2, item);
 		this.tagnames[tag.name] = item;
 		return item;
 	},
@@ -74,18 +75,7 @@ Ext.extend(og.TagMenu, Ext.menu.Menu, {
 	},
 
 	loadTags: function() {
-		og.openLink(og.getUrl('tag', 'list_tags'),{
-			callback: function(success, data) {
-				if (success && data.errorCode == 0) {
-					try {
-						var tags = data.tags;
-						this.addTags(tags);
-					} catch (e) {
-						throw e;
-					}
-				}
-			},
-			scope: this
-		});
+		var tags = Ext.getCmp('tag-panel').getTags();
+		this.addTags(tags);
 	}
 });

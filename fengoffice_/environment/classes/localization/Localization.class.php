@@ -175,7 +175,8 @@ class Localization {
 	 * @return string
 	 */
 	function formatDate(DateTimeValue $date, $timezone = 0) {
-		return date($this->date_format, $date->getTimestamp() + ($timezone * 3600));
+		//return date($this->date_format, $date->getTimestamp() + ($timezone * 3600));
+		return $this->dateByLocalization($this->date_format, $date->getTimestamp(), $timezone);
 	} // formatDate
 
 	/**
@@ -189,7 +190,7 @@ class Localization {
 	 * @return string
 	 */
 	function formatDescriptiveDate(DateTimeValue $date, $timezone = 0) {
-		return $this->dateByLocalization($this->descriptive_date_format, $date->getTimestamp() + ($timezone * 3600));
+		return $this->dateByLocalization($this->descriptive_date_format, $date->getTimestamp(), $timezone);
 	} // formatDescriptiveDate
 
 	/**
@@ -201,7 +202,8 @@ class Localization {
 	 * @return string
 	 */
 	function formatDateTime(DateTimeValue $date, $timezone = 0) {
-		return date($this->datetime_format, $date->getTimestamp() + ($timezone * 3600));
+		//return date($this->datetime_format, $date->getTimestamp() + ($timezone * 3600));
+		return $this->dateByLocalization($this->datetime_format, $date->getTimestamp(), $timezone);
 	} // formatDateTime
 
 	/**
@@ -213,7 +215,8 @@ class Localization {
 	 * @return string
 	 */
 	function formatTime(DateTimeValue $date, $timezone = 0) {
-		return date($this->time_format, $date->getTimestamp() + ($timezone * 3600));
+		//return date($this->time_format, $date->getTimestamp() + ($timezone * 3600));
+		return $this->dateByLocalization($this->time_format, $date->getTimestamp(), $timezone);
 	} // formatTime
 
 	/**
@@ -224,10 +227,12 @@ class Localization {
 	 * @param int $timestamp
 	 * @return string
 	 */
-	function dateByLocalization($format, $timestamp) {
+	function dateByLocalization($format, $timestamp, $timezone = 0) {
 		if ($timestamp == 0) { 
 			$timestamp = time();
 		}
+		$timestamp += ($timezone * 3600);
+		
 		$names['l'] = array(-1 => 'w', 0 => lang('sunday'), 1 => lang('monday'), 2 => lang('tuesday'), 3 => lang('wednesday'), 4 => lang('thursday'), 5 => lang('friday'), 6 => lang('saturday'), 7 => lang('sunday'));
 		$names['D'] = array(-1 => 'w', 0 => lang('sunday short'), 1 => lang('monday short'), 2 => lang('tuesday short'), 3 => lang('wednesday short'), 4 => lang('thursday short'), 5 => lang('friday short'), 6 => lang('saturday short'), 7 => lang('sunday short'));
 		$names['F'] = array(-1 => 'n', 1 => lang('month 1'), 2 => lang('month 2'), 3 => lang('month 3'), 4 => lang('month 4'), 5 => lang('month 5'), 6 => lang('month 6'), 7 => lang('month 7'), 8 => lang('month 8'), 9 => lang('month 9'), 10 => lang('month 10'), 11 => lang('month 11'), 12 => lang('month 12') );

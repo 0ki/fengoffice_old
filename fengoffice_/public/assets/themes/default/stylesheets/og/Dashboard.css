@@ -26,7 +26,7 @@
 	background-repeat: no-repeat;
 	height: 16px;
 	padding-left:20px;
-	background-image: url('../../images/16x16/view_as_list.png');
+	background-image: url(../../images/16x16/view_as_list.png);
 	cursor: pointer;		
 }
 
@@ -161,7 +161,7 @@
 	background: #F68D4D;
 	border-color: #DB7D45;
 	padding-left:34px;
-	background-image: url(../../images/22x22/chronometer.png) !important;
+	background-image: url(../../images/16x16/time.png) !important;
 	background-repeat:no-repeat;
 	background-position: 8px 4px;
 }

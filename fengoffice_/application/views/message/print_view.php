@@ -40,14 +40,14 @@ h2 {
 <div class="print-view-message">
 
 <div class="header">
-<h1><?php echo $message->getTitle(); ?></h1>
-<b><?php echo lang('from') ?>:</b> <?php echo $message->getCreatedByDisplayName() ?><br />
-<b><?php echo lang('date') ?>:</b> <?php echo $message->getUpdatedOn()->format("d/m/Y H:i:s") ?><br />
-<b><?php echo lang('workspace') ?>:</b> <?php echo $message->getWorkspacesNamesCSV() ?><br />
+<h1><?php echo clean($message->getTitle()); ?></h1>
+<b><?php echo lang('from') ?>:</b> <?php echo clean($message->getCreatedByDisplayName()) ?><br />
+<b><?php echo lang('date') ?>:</b> <?php echo format_datetime($message->getUpdatedOn(), logged_user()->getTimezone()) ?><br />
+<b><?php echo lang('workspace') ?>:</b> <?php echo clean($message->getWorkspacesNamesCSV()) ?><br />
 </div>
 
 <div class="body">
-<?php echo nl2br($message->getText()); ?>
+<?php echo nl2br(clean($message->getText())); ?>
 </div>
 
 <?php
@@ -62,10 +62,10 @@ if (count($comments) > 0) {
 ?>
 	<div class="comment">
 		<div class="comment-header">
-			<b>#<?php echo $i ?>:</b><?php echo lang('comment posted on by', format_datetime($comment->getUpdatedOn()), $comment->getCreatedByCardUrl(), $comment->getCreatedByDisplayName()) ?>
+			<b>#<?php echo $i ?>:</b><?php echo lang('comment posted on by', format_datetime($comment->getUpdatedOn()), $comment->getCreatedByCardUrl(), clean($comment->getCreatedByDisplayName())) ?>
 		</div>
 		<div class="comment-body">
-		<?php echo nl2br($comment->getText()) ?>
+		<?php echo nl2br(clean($comment->getText())) ?>
 		</div>
 	</div>
 <?php } ?>

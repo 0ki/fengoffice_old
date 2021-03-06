@@ -1,107 +1,37 @@
+<?php header ("Content-Type: text/html; charset=utf-8", true); ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html>
 <head>
 	<!-- script src="http://www.savethedevelopers.org/say.no.to.ie.6.js"></script -->
 	<title><?php echo clean(CompanyWebsite::instance()->getCompany()->getName()) ?> - OpenGoo</title>
-	<?php echo stylesheet_tag('website.css') ?>
-	<?php echo add_favicon_to_page('favicon.ico') ?>
+	<?php echo link_tag(with_slash(ROOT_URL)."favicon.ico", "rel", "shortcut icon") ?>
 	<?php echo add_javascript_to_page("app.js") // loaded first because it's needed for translating?>
 	<?php echo add_javascript_to_page(get_url("access", "get_javascript_translation")); ?>
+	<?php //echo add_javascript_to_page(with_slash(ROOT_URL) . 'language/' . Localization::instance()->getLocale() . "/lang.js") ?>
 	<?php echo meta_tag('content-type', 'text/html; charset=utf-8', true) ?>
+<?php
 
-<?php 
-	$jss= array('extjs/adapter/ext/ext-base.js',
-			'extjs/ext-all.js',
-			'extfix.js',
-			'og/Helpers.js',
-			'og/og.js',
-			'og/tasks/main.js',
-			'og/tasks/addTask.js',
-			'og/tasks/drawing.js',
-			'og/tasks/TasksTopToolbar.js',
-			'og/tasks/TasksBottomToolbar.js',
-			'og/WorkspaceChooser.js',
-			'og/QuickAdd.js',
-			'og/Permissions.js',
-			'og/WorkspaceUtils.js',
-			'og/CalendarDatePicker.js',
-			'og/MessageManager.js',
-			'og/MailManager.js',
-			'og/WebpageManager.js',
-			'og/UserMenu.js',
-			'og/CalendarToolbar.js',
-			'og/ContactManager.js',
-			'og/OverviewManager.js',
-			'og/FileManager.js',
-			'og/ReportingManager.js',
-			'og/ReportingFunctions.js',
-			'og/swfobject.js',
-			'og/ImageChooser.js',
-			'og/Sound.js',
-			'og/GooPlayer.js',
-			'og/ObjectPicker.js',
-			'og/CSVCombo.js',
-			'og/LoginDialog.js',
-			'og/HtmlPanel.js',
-			'og/WorkspacePanel.js',
-			'og/TagPanel.js',
-			'og/EmailAccountMenu.js',
-			'og/TagMenu.js',
-			'og/TaskManager.js',
-			'og/ContentPanelLayout.js',
-			'og/ContentPanel.js',
-			'og/HelpPanel.js',
-			'og/layout.js',
-			'og/EventPopUp.js',
-			'modules/addTaskForm.js',
-			'modules/addMessageForm.js',
-			'modules/addContactForm.js',
-			'modules/addFileForm.js',
-			'modules/addProjectForm.js',
-			'modules/addUserForm.js',
-			'modules/massmailerForm.js',
-			'modules/updatePermissionsForm.js',
-			'modules/updateUserPermissions.js',
-			'modules/linkObjects.js',
-			'modules/linkToObjectForm.js',
-			'slimey/slimey.js',
-			'slimey/functions.js',
-			'slimey/stack.js',
-			'slimey/editor.js',
-			'slimey/navigation.js',
-			'slimey/actions.js',
-			'slimey/tools.js',
-			'slimey/toolbar.js',
-			'slimey/integration.js',
-			'modules/spreadsheet_engine.js',
-			'modules/spreadsheet_ui.js',
-			'modules/overlib.js',
-			'og/DateField.js',
-			'jquery/jquery.min.js',
-			'jquery/jquery.dimensions.js',
-			'jquery/jquery.hoverIntent.js',
-			'jquery/jquery.cluetip.js',
-			'jquery/jquery-ui.min.js',
-			 
-		);
-	
-	if(defined('USE_JS_CACHE') && USE_JS_CACHE){
-		echo add_javascript_to_page(implode(',',$jss));
+	if (defined('COMPRESSED_CSS') && COMPRESSED_CSS) {
+		echo stylesheet_tag('ogmin.css');
+	} else {
+		echo stylesheet_tag('website.css');
 	}
-	else{
-		foreach ($jss as $onejs){
+
+	if (defined('COMPRESSED_JS') && COMPRESSED_JS) {
+		$jss = array('ogmin.js');
+	} else {
+		$jss = include "javascripts.php";
+	}	
+	if (defined('USE_JS_CACHE') && USE_JS_CACHE) {
+		echo add_javascript_to_page(with_slash(ROOT_URL).'public/tools/combine.php?type=javascript&files='.implode(',', $jss));
+	} else {
+		foreach ($jss as $onejs) {
 			echo add_javascript_to_page($onejs);
 		}
 	}
-	
-	?>
-	<?php echo add_javascript_to_page(with_slash(ROOT_URL) .  'help/help.js') ?>
 
-		
-	<?php echo render_page_links() ?>
-	<?php echo render_page_meta() ?>
-	<?php echo render_page_inline_css() ?>
-	<link rel="alternate" type="application/rss+xml" title="<?php echo owner_company()->getName() ?> RSS Feed" href="<?php echo logged_user()->getRecentActivitiesFeedUrl() ?>" />
+	?>
+	<link rel="alternate" type="application/rss+xml" title="<?php echo clean(owner_company()->getName()) ?> RSS Feed" href="<?php echo logged_user()->getRecentActivitiesFeedUrl() ?>" />
 </head>
 <body id="body" <?php echo render_body_events() ?>>
 
@@ -132,19 +62,18 @@
 				$search_field_default_value = lang('search') . '...';
 				$search_field_attrs = array(
 				'onfocus' => 'if (value == \'' . $search_field_default_value . '\') value = \'\'',
-				'onblur' => 'if (value == \'\') value = \'' . $search_field_default_value . '\'');
-				?>
+				'onblur' => 'if (value == \'\') value = \'' . $search_field_default_value . '\''); ?>
 				<?php echo input_field('search_for', $search_field_default_value, $search_field_attrs) ?>
 				</td><td id="searchboxSearch">
 				<button type="submit"><?php echo lang('search button caption') ?></button>
-				</td><td style="padding-left:10px"><div id="quickAdd"></div></td></tr></table>
+				</td><td style="padding-left:10px"><div id="quickAdd" style="padding-top:1px"></div></td></tr></table>
 				<input type="hidden" name="c" value="search" />
 				<input type="hidden" name="a" value="search" />
 				<input type="hidden" name="current" value="search" />
 				<input type="hidden" id="hfVars" name="vars" value="dashboard" />
 			</form>
 		</div>
-		<?php echo render_system_notices(logged_user()) ?>
+		<?php // echo render_system_notices(logged_user()) ?>
 	</div>
 </div>
 <!-- /header -->
@@ -170,8 +99,15 @@ og.hostName = '<?php echo ROOT_URL ?>';
 og.maxUploadSize = <?php echo get_max_upload_size() ?>;
 og.initialGUIState = <?php echo json_encode(GUIController::getState()) ?>;
 og.initialURL = '<?php echo ROOT_URL . "?" . $_SERVER['QUERY_STRING'] ?>';
+og.loggedUser = {
+	id: <?php echo logged_user()->getId() ?>,
+	username: <?php echo json_encode(logged_user()->getUsername()) ?>,
+	displayName: <?php echo json_encode(logged_user()->getDisplayName()) ?>
+};
 
-og.hideMailsTab = <?php echo (defined('HIDE_MAILS_TAB') ? HIDE_MAILS_TAB : 0)?>;
+// To enable emails tab: define('SHOW_MAILS_TAB', 1); in config/config.php
+og.showMailsTab = <?php echo (defined('SHOW_MAILS_TAB') ? SHOW_MAILS_TAB : 0)?>;
+og.daysOnTrash = <?php echo config_option("days_on_trash", 0) ?>;
 Ext.Ajax.timeout = <?php echo get_max_execution_time()*1000 ?>;
 og.GooPlayer.sound = new Sound();
 

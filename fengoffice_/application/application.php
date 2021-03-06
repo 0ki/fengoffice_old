@@ -24,6 +24,8 @@
       VersionChecker::check(false);
     } // if
     
+    
+    
     if(config_option('file_storage_adapter', 'mysql') == FILE_STORAGE_FILE_SYSTEM) {
       FileRepository::setBackend(new FileRepository_Backend_FileSystem(FILES_DIR));
     } else {

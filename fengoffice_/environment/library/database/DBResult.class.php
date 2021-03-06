@@ -127,7 +127,7 @@
     * @return null
     */
     function setResource($resource) {
-      if(is_resource($resource)) $this->resource = $resource;
+      if($this->adapter->isResource($resource)) $this->resource = $resource;
     } // setResource
   
   } // DBResult

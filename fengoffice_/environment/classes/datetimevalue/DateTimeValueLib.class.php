@@ -58,7 +58,7 @@
      * @param        int                                 $end
      * @return       array
      */
-    static function get_time_difference( $start, $end )
+    static function get_time_difference($start, $end, $subtract = 0)
     {
     	$uts['start']      = $start;
     	$uts['end']        = $end;
@@ -71,6 +71,8 @@
     			$diff    =    $uts['start'] - $uts['end'];
     			$sign = -1;
     		}
+    		
+    		$diff -= $subtract;
     		
     		if( $days=intval((floor($diff/86400))) )
     			$diff = $diff % 86400;

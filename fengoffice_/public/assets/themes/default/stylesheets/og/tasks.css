@@ -71,6 +71,7 @@
 	background-color:#DAE3F0;
 	border-left:1px solid #DDD;
 	width:1px;
+	color:#7289CF;
 }
 
 .ogTasksActiveTimeTd{
@@ -78,6 +79,13 @@
 	border-left:1px solid #DDD;
 	width:1px;
 	color:white;
+}
+
+.ogTasksPausedTimeTd{
+	background-color:#FFE79F;
+	border-left:1px solid #DDD;
+	width:1px;
+	color:#B07500;
 }
 
 .ogTasksTimeClock{

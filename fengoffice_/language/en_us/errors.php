@@ -139,6 +139,7 @@
 	'error create backup folder' => 'Error while creating backup folder. Cannot complete backup',
 	'error delete backup' => 'Error while deleting database backup,',
 	'success delete backup' => 'Backup was deleted',
+    'name must be unique' => 'Sorry, but selected name is already taken',
    ); // array
 
 ?>

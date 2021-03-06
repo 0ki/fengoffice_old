@@ -14,7 +14,7 @@
     'search results' => 'Resultados de la búsqueda',
     'account' => 'Cuenta',
     'settings' => 'Configuración',
-    'index' => '�?ndice',
+    'index' => 'Índice',
     'view' => 'Ver',
     'edit' => 'Editar',
     'delete' => 'Eliminar',
@@ -171,9 +171,11 @@
   	'weblinks' => 'Páginas Web',
   	'include subworkspaces' => 'Incluir subespacios',
     'timeslot on object' => 'Tiempo de trabajo en {0}',
+	'add work' => 'Agregar trabajo',
   
   	'date format' => 'd/m/Y',
-  	'date format description' => '(día/mes/año)'
+  	'date format description' => '(día/mes/año)',
+  	'confirm move to trash' => '¿Está seguro de que desea mover el objeto seleccionado a la papelera? ',
   ); // array
 
 ?>

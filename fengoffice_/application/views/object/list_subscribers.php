@@ -6,7 +6,7 @@ if (!$object->isNew()) {
 	<div class="objectFilesTitle"></div>
 	<table style="width:100%;margin-left:2px;margin-right:3px">
 	<?php $counter = 0;
-	if (!$object->isSubscriber(logged_user())) {
+	if (!$object->isSubscriber(logged_user()) && !$object->isTrashed()) {
 		echo "<tr><td colspan=\"2\">";
 		echo lang("user not subscribed to object");
 		echo " (";
@@ -20,7 +20,9 @@ if (!$object->isNew()) {
 		<a class="internalLink" href="<?php echo logged_user()->getCardUrl() ?>">
 		<div class="db-ico unknown ico-user"></div>
 		</a></td><td><b><a class="internalLink" href="<?php echo logged_user()->getCardUrl() ?>">
-		<span><?php echo lang("you") ?></span> </a></b> (<a class="internalLink" href="<?php echo $object->getUnsubscribeUrl() ?>" onclick="return confirm('<?php echo lang("confirm unsubscribe") ?>')"><?php echo lang("unsubscribe from object") ?></a>) </td></tr>
+		<span><?php echo lang("you") ?></span> </a></b> <?php if (!$object->isTrashed()) {?>
+			(<a class="internalLink" href="<?php echo $object->getUnsubscribeUrl() ?>" onclick="return confirm('<?php echo lang("confirm unsubscribe") ?>')"><?php echo lang("unsubscribe from object") ?></a>)
+		<?php } ?></td></tr>
 	<?php } ?>
 	<?php $subscribers = $object->getSubscribers();
 		if($subscribers){

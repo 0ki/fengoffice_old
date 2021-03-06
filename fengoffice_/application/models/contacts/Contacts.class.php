@@ -74,15 +74,15 @@
     function getByProject(Project $project, $arguments = null, $items_per_page = 10, $current_page = 1)
     {
     	if(!is_array($arguments)) $arguments = array();
-      $conditions = array_var($arguments, 'conditions');
+      $conditions = array_var($arguments, 'conditions', '');
       $rolesTableName = ProjectContacts::instance()->getTableName(true);
       	  
       $pagination = new DataPagination($this->count($conditions), $items_per_page, $current_page);
       
       if (strlen($conditions) > 0)
-          $conditions .= " AND ".$this->getTableName(true).".id = $rolesTableName.contact_id";
+          $conditions .= "`trashed_by_id` = 0 AND ".$this->getTableName(true).".id = $rolesTableName.contact_id";
       else
-      	  $conditions = $this->getTableName(true).".id = $rolesTableName.contact_id";
+      	  $conditions = '`trashed_by_id` = 0 AND ' . $this->getTableName(true).".id = $rolesTableName.contact_id";
       $conditions .= " AND $rolesTableName.project_id = ".$project->getId();
       
       $offset = $pagination->getLimitStart();

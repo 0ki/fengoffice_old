@@ -94,7 +94,7 @@ class FilesController extends ApplicationController {
 		} else if (strcmp($file->getTypeString(), 'prsn') != 0) {
 			$error = 'File is not a presentation';
 		} else {
-			$content = $file->getFileContent();
+			$content = remove_css_and_scripts($file->getFileContent());
 		}
 		tpl_assign('error', $error);
 		tpl_assign('content', $content);
@@ -316,9 +316,9 @@ class FilesController extends ApplicationController {
 						$file->addToWorkspace($w);
 					}
 				}
-				foreach ($validWS as $w) {
-					ApplicationLogs::createLog($file, $w, ApplicationLogs::ACTION_ADD);
-				}
+				
+				ApplicationLogs::createLog($file, $validWS, ApplicationLogs::ACTION_ADD);
+
 				//Add links
 			    $object_controller = new ObjectController();
 			    $object_controller->link_to_new_object($file);
@@ -397,9 +397,7 @@ class FilesController extends ApplicationController {
 				$file->handleUploadedFile($file_dt, $post_revision, $revision_comment);
 				
 				$ws = $file->getWorkspaces();
-				foreach ($ws as $w) {
-					ApplicationLogs::createLog($file, $w, ApplicationLogs::ACTION_EDIT);
-				}
+				ApplicationLogs::createLog($file, $ws, ApplicationLogs::ACTION_EDIT);
 				DB::commit();
 				unlink($file_dt['tmp_name']);
 
@@ -452,9 +450,8 @@ class FilesController extends ApplicationController {
 				$revision = $file->handleUploadedFile($file_dt, true);
 				
 				$ws = $file->getWorkspaces();
-				foreach ($ws as $w) {
-					ApplicationLogs::createLog($file, $w, ApplicationLogs::ACTION_ADD);
-				}
+				ApplicationLogs::createLog($file, $ws, ApplicationLogs::ACTION_ADD);
+
 				DB::commit();
 				flash_success(lang('success save file', $file->getFilename()));
 				evt_add("document saved", array("id" => $file->getId(), "instance" => array_var($_POST, 'instanceName')));
@@ -505,9 +502,8 @@ class FilesController extends ApplicationController {
 				$file->handleUploadedFile($file_dt, $post_revision, $revision_comment);
 				
 				$ws = $file->getWorkspaces();
-				foreach ($ws as $w) {
-					ApplicationLogs::createLog($file, $w, ApplicationLogs::ACTION_EDIT);
-				}
+				ApplicationLogs::createLog($file, $ws, ApplicationLogs::ACTION_EDIT);
+
 				DB::commit();
 				unlink($file_dt['tmp_name']);
 
@@ -571,9 +567,8 @@ class FilesController extends ApplicationController {
 				$revision = $file->handleUploadedFile($file_dt, true);
 				
 				$ws = $file->getWorkspaces();
-				foreach ($ws as $w) {
-					ApplicationLogs::createLog($file, $w, ApplicationLogs::ACTION_ADD);
-				}
+				ApplicationLogs::createLog($file, $ws, ApplicationLogs::ACTION_ADD);
+
 				DB::commit();
 				flash_success(lang('success save file', $file->getFilename()));
 				evt_add("presentation saved", array("id" => $file->getId()));
@@ -620,9 +615,8 @@ class FilesController extends ApplicationController {
 				$file->handleUploadedFile($file_dt, $post_revision, $revision_comment);
 				
 				$ws = $file->getWorkspaces();
-				foreach ($ws as $w) {
-					ApplicationLogs::createLog($file, $w, ApplicationLogs::ACTION_EDIT);
-				}
+				ApplicationLogs::createLog($file, $ws, ApplicationLogs::ACTION_EDIT);
+				
 				DB::commit();
 				unlink($file_dt['tmp_name']);
 
@@ -688,9 +682,8 @@ class FilesController extends ApplicationController {
 				$revision = $file->handleUploadedFile($file_dt, true); // handle uploaded file
 				
 				$ws = $file->getWorkspaces();
-				foreach ($ws as $w) {
-					ApplicationLogs::createLog($file, $w, ApplicationLogs::ACTION_ADD);
-				}
+				ApplicationLogs::createLog($file, $ws, ApplicationLogs::ACTION_ADD);
+
 				DB::commit();
 				unlink($file_dt['tmp_name']);
 				flash_success(lang('success add file', $file->getFilename()));
@@ -761,9 +754,8 @@ class FilesController extends ApplicationController {
 				$file->handleUploadedFile($file_dt, $post_revision, $revision_comment);
 				
 				$ws = $file->getWorkspaces();
-				foreach ($ws as $w) {
-					ApplicationLogs::createLog($file, $w, ApplicationLogs::ACTION_EDIT);
-				}
+				ApplicationLogs::createLog($file, $ws, ApplicationLogs::ACTION_EDIT);
+
 				DB::commit();
 				unlink($file_dt['tmp_name']);
 
@@ -955,16 +947,17 @@ class FilesController extends ApplicationController {
 				if (isset($file) && $file->canDelete(logged_user())) {
 					try{
 						DB::beginWork();
-						$file->delete();
-						ApplicationLogs::createLog($file, $file->getProject(), ApplicationLogs::ACTION_DELETE);
+						$file->trash();
+						ApplicationLogs::createLog($file, $file->getWorkspaces(), ApplicationLogs::ACTION_TRASH);
 						DB::commit();
 						flash_success(lang('success delete file', $file->getFilename()));
 					} catch(Exception $e){
 						DB::rollback();
 						flash_error(lang('error delete file'));
 					}
-				} else
+				} else {
 					flash_error(lang('no access permissions'));
+				}
 			}
 
 		} else if (array_var($_GET, 'action') == 'tag') {
@@ -1182,7 +1175,7 @@ class FilesController extends ApplicationController {
 				$enteredWS = Projects::findByCSVIds($ids);
 				$validWS = array();
 				foreach ($enteredWS as $ws) {
-					if (ProjectMessage::canAdd(logged_user(), $ws)) {
+					if (ProjectFile::canAdd(logged_user(), $ws)) {
 						$validWS[] = $ws;
 					}
 				}
@@ -1223,9 +1216,8 @@ class FilesController extends ApplicationController {
 				foreach ($validWS as $w) {
 					$file->addToWorkspace($w);
 				}
-				foreach ($validWS as $w) {
-					ApplicationLogs::createLog($file, $w, ApplicationLogs::ACTION_EDIT);
-				}
+				ApplicationLogs::createLog($file, $validWS, ApplicationLogs::ACTION_EDIT);
+				
 				DB::commit();
 				
 				$uploads = array_var($_SESSION, "uploads_success", array());
@@ -1297,6 +1289,7 @@ class FilesController extends ApplicationController {
 				$revision_comment = $post_revision ? trim(array_var($file_data, 'revision_comment')) : ''; // user comment?
 
 				$file->setFromAttributes($file_data);
+				$file->setFilename(array_var($file_data, 'name'));
 				$file->setCheckedOutById(0);
 
 				if(!logged_user()->isMemberOfOwnerCompany()) {
@@ -1313,10 +1306,13 @@ class FilesController extends ApplicationController {
 				$file->save_properties($file_data);
 				
 				$ws = $file->getWorkspaces();
-				foreach ($ws as $w) {
-					ApplicationLogs::createLog($file, $w, ApplicationLogs::ACTION_EDIT);
-				}
+				ApplicationLogs::createLog($file, $ws, ApplicationLogs::ACTION_EDIT);
+				
 				DB::commit();
+				
+				$uploads = array_var($_SESSION, "uploads_success", array());
+				$uploads[array_var($_POST, "upload_id")] = true;
+				$_SESSION["uploads_success"] = $uploads;
 
 				flash_success(lang('success add file', $file->getFilename()));
 				ajx_current("back");
@@ -1352,12 +1348,10 @@ class FilesController extends ApplicationController {
 			
 		try {
 			DB::beginWork();
-			$file->delete();
+			$file->trash();
 			
 			$ws = $file->getWorkspaces();
-			foreach ($ws as $w) {
-				ApplicationLogs::createLog($file, $w, ApplicationLogs::ACTION_DELETE);
-			}
+			ApplicationLogs::createLog($file, $ws, ApplicationLogs::ACTION_TRASH);
 			DB::commit();
 
 			flash_success(lang('success delete file', $file->getFilename()));
@@ -1477,9 +1471,8 @@ class FilesController extends ApplicationController {
 				$revision->save();
 				
 				$ws = $revision->getWorkspaces();
-				foreach ($ws as $w) {
-					ApplicationLogs::createLog($revision, $w, ApplicationLogs::ACTION_EDIT, $revision->isPrivate());
-				}
+				ApplicationLogs::createLog($revision, $ws, ApplicationLogs::ACTION_EDIT, $revision->isPrivate());
+				
 				DB::commit();
 
 				flash_success(lang('success edit file revision'));
@@ -1528,11 +1521,9 @@ class FilesController extends ApplicationController {
 			
 		try {
 			DB::beginWork();
-			$revision->delete();
+			$revision->trash();
 			$ws = $revision->getWorkspaces();
-			foreach ($ws as $w) {
-				ApplicationLogs::createLog($revision, $w, ApplicationLogs::ACTION_DELETE);
-			}
+			ApplicationLogs::createLog($revision, $ws, ApplicationLogs::ACTION_TRASH);
 			DB::commit();
 
 			flash_success(lang('success delete file revision'));

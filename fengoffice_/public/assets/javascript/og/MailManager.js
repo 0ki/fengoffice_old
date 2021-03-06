@@ -11,7 +11,6 @@ og.MailManager = function() {
 	this.doNotRemove = true;
 	this.needRefresh = false;
 	
-
 	
 	
 	if (!og.MailManager.store) {
@@ -26,7 +25,7 @@ og.MailManager = function() {
 				id: 'id',
 				fields: [
 					'object_id', 'type', 'accountId', 'accountName', 'hasAttachment', 'title', 'text', {name: 'date', type: 'date', dateFormat: 'timestamp'},
-					'projectId', 'projectName', 'userId', 'userName', 'tags', 'workspaceColors','isRead','from','isDraft','isSent'
+					'projectId', 'projectName', 'userId', 'userName', 'tags', 'workspaceColors','isRead','from','from_email','isDraft','isSent'
 				]
 			}),
 			remoteSort: true,
@@ -34,8 +33,8 @@ og.MailManager = function() {
 				'load': function() {
 					var d = this.reader.jsonData;
 					og.processResponse(d);
-					var ws = Ext.getCmp('workspace-panel').getActiveWorkspace().name;
-					var tag = Ext.getCmp('tag-panel').getSelectedTag().name;
+					var ws = og.clean(Ext.getCmp('workspace-panel').getActiveWorkspace().name);
+					var tag = og.clean(Ext.getCmp('tag-panel').getSelectedTag().name);
 					if (d.totalCount === 0) {
 						if (tag) {
 							this.fireEvent('messageToShow', lang("no objects with tag message", lang("messages"), ws, tag));
@@ -78,17 +77,17 @@ og.MailManager = function() {
 		
 		name = String.format(
 				'{4}<a style="font-size:120%;{3}" href="#" onclick="og.openLink(\'{1}\')" title="{2}">{0}</a>',
-				htmlentities(value), og.getUrl('mail', strAction, {id: r.data.object_id}), String.format(r.data.text),bold,strDraft);
+				og.clean(value), og.getUrl('mail', strAction, {id: r.data.object_id}), og.clean(r.data.text),bold,strDraft);
 				
 		if (r.data.isSent) {
-			name = String.format('<div class="db-ico ico-sent" style="padding-left:18px" title="{1}">{0}</div>',name,lang("mail sent"));
+			name = String.format('<span class="db-ico ico-sent" style="padding-left:18px" title="{1}">{0}</span>',name,lang("mail sent"));
 		}
 
 			
 		var projectstring = '';		
 	    if (r.data.projectId !== ''){
 			var ids = String(r.data.projectId).split(',');
-			var names = r.data.projectName.split(',');
+			var names = og.clean(r.data.projectName).split(',');
 			var colors = String(r.data.workspaceColors).split(',');
 			projectstring = '<span class="og-wsname">';
 			for(var i = 0; i < ids.length; i++){
@@ -101,7 +100,7 @@ og.MailManager = function() {
 		var text = '';
 		if (r.data.text != ''){
 			text = '&nbsp;-&nbsp;<span style="color:#888888;white-space:nowrap">';
-			text += htmlentities(r.data.text) + "</span></i>";
+			text += og.clean(r.data.text) + "</span></i>";
 		}
 		
 		return projectstring + name + text;
@@ -110,38 +109,41 @@ og.MailManager = function() {
 		
 	function renderFrom(value, p, r){
 		var bold = 'font-weight:normal;';
+		var strAction = 'view';
+		
+		if (r.data.isDraft) strAction = 'edit_mail';
 		if (!r.data.isRead) bold = 'font-weight:600;';
+		
 		name = String.format(
 				'<a style="font-size:120%;{3}" href="#" onclick="og.openLink(\'{1}\')" title="{2}">{0}</a>',
-				htmlentities(value), og.getUrl('mail', 'view', {id: r.data.object_id}), String.format(r.data.from),bold);
-		
+				og.clean(value), og.getUrl('mail', strAction, {id: r.data.object_id}), og.clean(r.data.from_email),bold);
 		return name;
 	}
 	
 	
 	function renderIcon(value, p, r) {
 		if (r.data.projectId > 0)
-			return String.format('<div class="db-ico ico-email"></div>');
+			return '<div class="db-ico ico-email"></div>';
 		else
 			return String.format('<a href="#" onclick="og.openLink(\'{0}\')" title={1}><div class="db-ico ico-classify"></div></a>', og.getUrl('mail', 'classify', {id: r.data.object_id}), lang('classify'));
 	}
 
 	function renderAttachment(value, p, r){
 		if (value)
-			return String.format('<div class="db-ico ico-attachment"></div>');
+			return '<div class="db-ico ico-attachment"></div>';
 		else
 			return '';
 	}
 
 	function renderAccount(value, p, r) {
-		return String.format('<a href="#" onclick="og.eventManager.fireEvent(\'mail account selected\',\'{1}\')">{0}</a>', value, r.data.accountId);
+		return String.format('<a href="#" onclick="og.eventManager.fireEvent(\'mail account selected\',\'{1}\')">{0}</a>', og.clean(value), r.data.accountId);
 	}
 	
 	function renderDate(value, p, r) {
 		if (!value) {
 			return "";
 		}
-		var userString = String.format('<a href="#" onclick="og.openLink(\'{1}\')">{0}</a>', r.data.userName, og.getUrl('user', 'card', {id: r.data.userId}));
+		var userString = String.format('<a href="#" onclick="og.openLink(\'{1}\')">{0}</a>', og.clean(r.data.userName), og.getUrl('user', 'card', {id: r.data.userId}));
 	
 		var now = new Date();
 		if (now.dateFormat('Y-m-d') > value.dateFormat('Y-m-d')) {
@@ -669,10 +671,12 @@ og.MailManager = function() {
 				text: lang('check mails'),
 				iconCls: 'ico-check_mails',
 				handler: function() {
-					this.load({
-						action: "checkmail"
-					});
+					Ext.Ajax.timeout = Ext.Ajax.timeout * 10;
+					og.openLink(og.getUrl('mail', 'checkmail', {ajax:true}));
+					this.load({});
+							//action: "checkmail"});
 					this.action = "";
+					Ext.Ajax.timeout = Ext.Ajax.timeout / 10;
 				},
 				scope: this
 			}),
@@ -700,12 +704,12 @@ og.MailManager = function() {
 			]}
 		}),
 		del: new Ext.Action({
-			text: lang('delete'),
-            tooltip: lang('delete selected objects'),
-            iconCls: 'ico-delete',
+			text: lang('move to trash'),
+            tooltip: lang('move selected objects to trash'),
+            iconCls: 'ico-trash',
 			disabled: true,
 			handler: function() {
-				if (confirm(lang('confirm delete object'))) {
+				if (confirm(lang('confirm move to trash'))) {
 					this.load({
 						action: 'delete',
 						ids: getSelectedIds(),

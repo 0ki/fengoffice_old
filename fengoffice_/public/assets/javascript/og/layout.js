@@ -80,7 +80,7 @@ Ext.onReady(function(){
 				refreshOnWorkspaceChange: false, //the handler is in listeners.php
 				defaultContent: {
 					type: "url",
-					data: og.getUrl('event', cal_actual_view, {day: today_date.format('d'), month: today_date.format('n'), year: today_date.format('Y'), user_filter: 0, state_filter: -1})
+					data: og.getUrl('event', cal_actual_view, {day: today_date.format('d'), month: today_date.format('n'), year: today_date.format('Y'), user_filter: 0, state_filter: ' 0 1 3'})
 				},
 				baseCls: '',
 				tbar: og.CalendarToolbarItems
@@ -114,6 +114,16 @@ Ext.onReady(function(){
 					type: "panel",
 					data: "webpages"
 				}
+			}),
+			new og.ContentPanel({
+				title: lang('time'),
+				id: 'time-panel',
+				iconCls: 'ico-time',
+				refreshOnWorkspaceChange: true,
+				defaultContent: {
+					type: "url",
+					data: og.getUrl('time','index')
+				}
 			})/*,
 			new og.ContentPanel({
 				title: lang('reporting'),
@@ -128,18 +138,17 @@ Ext.onReady(function(){
 		]
 	});
 	
-	if (og.hideMailsTab == 1) tab_panel.remove('mails-panel');
+	// To enable emails tab: define('SHOW_MAILS_TAB', 1); in config/config.php
+	if (og.showMailsTab == 0) tab_panel.remove('mails-panel');
 	
 	var viewport = new Ext.Viewport({
 		layout: 'border',
 		stateful: false,
 		items: [
-			{
-				xtype: 'panel',
+			new Ext.BoxComponent({
 				region: 'north',
-				id: 'header-panel',
 				el: 'header'
-			},
+			}),
 			new Ext.BoxComponent({
 				region: 'south',
 				el: 'footer'
@@ -179,7 +188,8 @@ Ext.onReady(function(){
 								og.eventManager.fireEvent('workspace changed', ws);
 								og.updateWsCrumbs(ws);
 							}
-						}
+						},
+						autoLoadWorkspaces: true
 					},
 					listeners: {
 						render: function() {
@@ -194,7 +204,8 @@ Ext.onReady(function(){
 								og.eventManager.fireEvent('tag changed', tag);
 								og.updateWsCrumbsTag(tag);
 							}
-						}
+						},
+						autoLoadTags: true
 					}
 				}]
 			},

@@ -409,7 +409,7 @@ class ProjectTask extends BaseProjectTask {
 			$open_tasks = $task_list->getOpenSubTasks();
 			if(empty($open_tasks)) $task_list->complete(DateTimeValueLib::now(), logged_user());
 		} // if*/
-		ApplicationLogs::createLog($this, $this->getProject(), ApplicationLogs::ACTION_CLOSE);
+		ApplicationLogs::createLog($this, $this->getWorkspaces(), ApplicationLogs::ACTION_CLOSE);
 	} // completeTask
 
 	/**
@@ -431,7 +431,7 @@ class ProjectTask extends BaseProjectTask {
 			$open_tasks = $task_list->getOpenSubTasks();
 			if(!empty($open_tasks)) $task_list->open();
 		} // if*/
-		ApplicationLogs::createLog($this, $this->getProject(), ApplicationLogs::ACTION_OPEN);
+		ApplicationLogs::createLog($this, $this->getWorkspaces(), ApplicationLogs::ACTION_OPEN);
 	} // openTask
 
 	function getRemainingDays(){
@@ -530,7 +530,7 @@ class ProjectTask extends BaseProjectTask {
 		$this->setCompletedOn($on);
 		$this->setCompletedById($by->getId());
 		$this->save();
-		ApplicationLogs::createLog($this, $this->getProject(), ApplicationLogs::ACTION_CLOSE);
+		ApplicationLogs::createLog($this, $this->getWorkspaces(), ApplicationLogs::ACTION_CLOSE);
 	} // complete
 
 	/**
@@ -544,7 +544,7 @@ class ProjectTask extends BaseProjectTask {
 		$this->setCompletedOn(NULL);
 		$this->setCompletedById(0);
 		$this->save();
-		ApplicationLogs::createLog($this, $this->getProject(), ApplicationLogs::ACTION_OPEN);
+		ApplicationLogs::createLog($this, $this->getWorkspaces(), ApplicationLogs::ACTION_OPEN);
 	} // open
 
 	// ---------------------------------------------------
@@ -859,6 +859,16 @@ class ProjectTask extends BaseProjectTask {
 	function getViewUrl() {
 		return get_url('task', 'view_task', array('id' => $this->getId(), 'active_project' => $this->getProjectId()));
 	} // getViewUrl
+	
+	/**
+	 * Return print URL
+	 *
+	 * @param void
+	 * @return string
+	 */
+	function getPrintUrl() {
+		return get_url('task', 'print_task', array('id' => $this->getId()));
+	} // getViewUrl
 
 	/**
 	 * This function will return URL of this specific list on project tasks page
@@ -948,6 +958,21 @@ class ProjectTask extends BaseProjectTask {
 		return true;
 	} // save
 
+	function untrash(){
+		$deleteTime = $this->getTrashedOn();
+		parent::untrash();
+
+		if ($this->hasOpenTimeslots()){
+			$openTimeslots = $this->getOpenTimeslots();
+			foreach ($openTimeslots as $timeslot){
+				if (!$timeslot->isPaused()){
+					$timeslot->setPausedOn($deleteTime);
+					$timeslot->resume();
+					$timeslot->save();
+				}
+			}
+		}
+	}
 
 	/**
 	 * Drop all tasks that are in this list
@@ -1040,6 +1065,14 @@ class ProjectTask extends BaseProjectTask {
     	else 
     		$parent_id = $this->getId();
    	
+		$deletedOn = $this->getTrashedOn() ? $this->getTrashedOn()->getTimestamp() : lang('n/a');
+    	$deletedBy = Users::findById($this->getTrashedById());
+    	if ($deletedBy instanceof User) {
+    		$deletedBy = $deletedBy->getDisplayName();
+    	} else {
+    		$deletedBy = lang("n/a");
+    	}
+    		
     	return array(
 				"id" => $this->getObjectTypeName() . $this->getId(),
 				"object_id" => $this->getId(),
@@ -1056,7 +1089,10 @@ class ProjectTask extends BaseProjectTask {
 				"url" => $this->getObjectUrl(),
 				"parentId" => $parent_id,
 				"status" => "Pending",
-				"manager" => get_class($this->manager())
+				"manager" => get_class($this->manager()),
+    			"deletedById" => $this->getTrashedById(),
+    			"deletedBy" => $deletedBy,
+    			"dateDeleted" => $deletedOn
 			);
     }
 
@@ -1125,12 +1161,17 @@ class ProjectTask extends BaseProjectTask {
 		if ($ot){
 			$users = array();
 			$time = array();
+			$paused = array();
 			foreach ($ot as $t){
 				$time[] = $t->getSeconds();
 				$users[] = $t->getUserId();
+				$paused[] = $t->isPaused()?1:0;
+				if ($t->isPaused() && $t->getUserId() == logged_user()->getId())
+					$result['wpt'] = $t->getPausedOn()->getTimestamp();
 			}
 			$result['wt'] = $time;
 			$result['wid'] = $users;
+			$result['wp'] = $paused;
 		}
 		
 		$tags = $this->getTagNames();

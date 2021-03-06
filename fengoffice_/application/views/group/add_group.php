@@ -60,7 +60,7 @@
 		<?php } else { ?>    	
 	    <div>
 	      <?php echo checkbox_field($ctrl_name , array_var($group_data, $ctrl_name), array('id' => $ctrl_name  )) ?> 
-	      <label for="<?php echo $ctrl_name  ?>" class="checkbox"><?php echo $user->getUsername() ?></label>
+	      <label for="<?php echo $ctrl_name  ?>" class="checkbox"><?php echo clean($user->getUsername()) ?></label>
 	    </div>  
 	    <?php }//if ?>
     <?php } // for ?>

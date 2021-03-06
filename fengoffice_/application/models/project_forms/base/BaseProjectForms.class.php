@@ -6,7 +6,7 @@
   *
   * @author Ilija Studen <ilija.studen@gmail.com>
   */
-  abstract class BaseProjectForms extends DataManager {
+  abstract class BaseProjectForms extends ProjectDataObjects {
   
     /**
     * Column name => Column type map
@@ -14,7 +14,24 @@
     * @var array
     * @static
     */
-    static private $columns = array('id' => DATA_TYPE_INTEGER, 'project_id' => DATA_TYPE_INTEGER, 'name' => DATA_TYPE_STRING, 'description' => DATA_TYPE_STRING, 'success_message' => DATA_TYPE_STRING, 'action' => DATA_TYPE_STRING, 'in_object_id' => DATA_TYPE_INTEGER, 'created_on' => DATA_TYPE_DATETIME, 'created_by_id' => DATA_TYPE_INTEGER, 'updated_on' => DATA_TYPE_DATETIME, 'updated_by_id' => DATA_TYPE_INTEGER, 'is_visible' => DATA_TYPE_BOOLEAN, 'is_enabled' => DATA_TYPE_BOOLEAN, 'order' => DATA_TYPE_INTEGER);
+    static private $columns = array(
+    	'id' => DATA_TYPE_INTEGER,
+    	'project_id' => DATA_TYPE_INTEGER,
+    	'name' => DATA_TYPE_STRING,
+    	'description' => DATA_TYPE_STRING,
+    	'success_message' => DATA_TYPE_STRING,
+    	'action' => DATA_TYPE_STRING,
+    	'in_object_id' => DATA_TYPE_INTEGER,
+    	'created_on' => DATA_TYPE_DATETIME,
+    	'created_by_id' => DATA_TYPE_INTEGER,
+    	'updated_on' => DATA_TYPE_DATETIME,
+    	'updated_by_id' => DATA_TYPE_INTEGER,
+    	'is_visible' => DATA_TYPE_BOOLEAN,
+    	'is_enabled' => DATA_TYPE_BOOLEAN,
+    	'order' => DATA_TYPE_INTEGER,
+    	'trashed_on' => DATA_TYPE_DATETIME,
+     	'trashed_by_id' => DATA_TYPE_INTEGER,
+    );
   
     /**
     * Construct

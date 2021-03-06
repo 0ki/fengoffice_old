@@ -43,6 +43,10 @@
       
     } // connect
     
+    function isResource($resource) {
+    	return is_resource($resource);
+    }
+    
     /**
     * Basic query execution
     *

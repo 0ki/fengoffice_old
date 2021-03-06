@@ -405,7 +405,7 @@
     	return select_box($name . '_month', $month_options, $attM) . select_box($name . '_day', $day_options, $attD) . select_box($name . '_year', $year_options, $attY );
   } // pick_date_widget
   
-  function pick_date_widget2($name, $value = null, $genid = null) {
+  function pick_date_widget2($name, $value = null, $genid = null, $display_date_info = true) {
   	$dateValue = '';
   	if ($value instanceOf DateTimeValue){
   		if (lang('date format') == 'm/d/Y')
@@ -414,11 +414,14 @@
   			$dateValue =  $value->getDay() . '/' . $value->getMonth() . '/' . $value->getYear();
   	}
   	
-  	$html = "<table><tr><td width=140><span id='" . $genid . $name . "'></span></td><td style='padding-top:4px;font-size:80%'><span class='desc'>" . lang('date format description') . "</span></td></tr></table>";
+  	$html = "<table><tr><td width=140><span id='" . $genid . $name . "'></span></td></tr></table>";
+  	if ($display_date_info)
+  		$html .= "<td style='padding-top:4px;font-size:80%'><span class='desc'>" . lang('date format description') . "</span></td>";
 	$html .= "<script type='text/javascript'>
 	var dtp" . gen_id() . " = new og.DateField({
 		renderTo:'" . $genid . $name . "',
 		name: '" . $name . "',
+		id: '" . $genid . $name . "Cmp',
 		value: '" . $dateValue . "'});
 	</script>";
 	return $html;
@@ -436,6 +439,20 @@
     return text_field($name, $value);
   } // pick_time_widget
   
+  function pick_time_widget2($name, $value = null, $genid = null, $format = null) {
+  	if ($format == null) $format = (config_option('time_format_use_24') ? 'G:i' : 'g:i A');
+  	
+  	$html = "<table><tr><td><div id='" . $genid . $name . "'></div></td></tr></table>";
+	$html .= "<script type='text/javascript'>
+	var tp" . gen_id() . " = new Ext.form.TimeField({
+		renderTo:'" . $genid . $name . "',
+		name: '" . $name . "',
+		format: '" . $format . "',
+		width: 80,
+		value: '" . $value . "'});
+	</script>";
+  	return $html;
+  }
   /**
   * Return WYSIWYG editor widget
   *

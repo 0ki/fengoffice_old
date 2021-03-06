@@ -7,6 +7,8 @@
   */
   abstract class BaseProject extends ApplicationDataObject {
   
+  	protected $objectTypeIdentifier = 'ws';
+  
     // -------------------------------------------------------
     //  Access methods
     // -------------------------------------------------------

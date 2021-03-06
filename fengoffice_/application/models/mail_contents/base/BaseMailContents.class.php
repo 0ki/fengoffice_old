@@ -6,7 +6,7 @@
  *
  * @author Carlos Palma <chonwil@gmail.com>
  */
-abstract class BaseMailContents extends DataManager {
+abstract class BaseMailContents extends ProjectDataObjects {
 
 	/**
 	 * Column name => Column type map
@@ -35,7 +35,9 @@ abstract class BaseMailContents extends DataManager {
     'is_shared' => DATA_TYPE_BOOLEAN,
     'is_private' => DATA_TYPE_BOOLEAN,
     'created_on' => DATA_TYPE_DATETIME, 
-    'created_by_id' => DATA_TYPE_INTEGER
+    'created_by_id' => DATA_TYPE_INTEGER,
+	'trashed_on' => DATA_TYPE_DATETIME,
+    'trashed_by_id' => DATA_TYPE_INTEGER,
 	);
 
 	/**

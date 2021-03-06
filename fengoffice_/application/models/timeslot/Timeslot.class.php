@@ -106,7 +106,7 @@ class Timeslot extends BaseTimeslot {
     	$endTime = $this->getEndTime();
     	if (!$endTime)
     		$endTime = DateTimeValueLib::now();
-    	$timeDiff = DateTimeValueLib::get_time_difference($this->getStartTime()->getTimestamp(),$endTime->getTimestamp());
+    	$timeDiff = DateTimeValueLib::get_time_difference($this->getStartTime()->getTimestamp(),$endTime->getTimestamp(), $this->getSubtract());
     	
     	return $timeDiff['days'] * 1440 + $timeDiff['hours'] * 60 + $timeDiff['minutes'];
     }
@@ -117,15 +117,54 @@ class Timeslot extends BaseTimeslot {
     		
     	$endTime = $this->getEndTime();
     	if (!$endTime)
-    		$endTime = DateTimeValueLib::now();
-    	$timeDiff = DateTimeValueLib::get_time_difference($this->getStartTime()->getTimestamp(),$endTime->getTimestamp());
+    		if ($this->getPausedOn())
+    			$endTime = $this->getPausedOn();
+    		else
+    			$endTime = DateTimeValueLib::now();
+    	$timeDiff = DateTimeValueLib::get_time_difference($this->getStartTime()->getTimestamp(),$endTime->getTimestamp(), $this->getSubtract());
+    	
+    	return $timeDiff['days'] * 86400 + $timeDiff['hours'] * 3600  + $timeDiff['minutes']* 60 + $timeDiff['seconds'];
+    }
+
+    function getSecondsSincePause(){
+    	if (!$this->getPausedOn())
+    		return 0;
+    		
+    	$endTime = DateTimeValueLib::now();
+    	$timeDiff = DateTimeValueLib::get_time_difference($this->getPausedOn()->getTimestamp(),$endTime->getTimestamp());
     	
     	return $timeDiff['days'] * 86400 + $timeDiff['hours'] * 3600  + $timeDiff['minutes']* 60 + $timeDiff['seconds'];
     }
     
-    function closeTimeslot(){
-    		
+    function isPaused(){
+    	return $this->getPausedOn() != null;
+    }
     
+    function pause(){
+    	if ($this->isPaused())
+    		throw new Error('Timeslot is already paused');
+    	$dt = DateTimeValueLib::now();
+		$this->setPausedOn($dt);
+    }
+    
+    function resume(){
+    	if (!$this->isPaused())
+    		throw new Error('Timeslot is not paused');
+    	$dt = DateTimeValueLib::now();
+    	$timeToSubtract = $dt->getTimestamp() - $this->getPausedOn()->getTimestamp();
+		$this->setPausedOn(null);
+		$this->setSubtract($this->getSubtract() + $timeToSubtract);
+    }
+    
+    function close($description = null){
+    	if ($this->isPaused()) {
+    		$this->setEndTime($this->getPausedOn());
+    	} else {
+    	  	$dt = DateTimeValueLib::now();
+			$this->setEndTime($dt);
+    	}
+		if ($description)
+			$this->setDescription($description);
     }
     
     // ---------------------------------------------------
@@ -164,7 +203,7 @@ class Timeslot extends BaseTimeslot {
 	} // getAddUrl
 	
 	/**
-	 * Return add timeslot URL for specific object
+	 * Return close timeslot URL for specific object
 	 *
 	 * @param ProjectDataObject $object
 	 * @return string
@@ -173,7 +212,31 @@ class Timeslot extends BaseTimeslot {
 		return get_url('timeslot', 'close', array(
 		'id' => $this->getId()
 		)); // get_url
-	} // getAddUrl
+	} // getCloseUrl
+	
+	/**
+	 * Return pause timeslot URL for specific object
+	 *
+	 * @param ProjectDataObject $object
+	 * @return string
+	 */
+	function getPauseUrl() {
+		return get_url('timeslot', 'pause', array(
+		'id' => $this->getId()
+		)); // get_url
+	} // getPauseUrl
+	
+	/**
+	 * Return resume timeslot URL for specific object
+	 *
+	 * @param ProjectDataObject $object
+	 * @return string
+	 */
+	function getResumeUrl() {
+		return get_url('timeslot', 'resume', array(
+		'id' => $this->getId()
+		)); // get_url
+	} // getResumeUrl
 
 	/**
 	 * Return edit URL
@@ -334,6 +397,33 @@ class Timeslot extends BaseTimeslot {
 		return $this->getViewUrl();
 	} // getObjectUrl
 
+	function getArrayInfo(){
+		$task_name = '';
+		$project_id = 0;
+		
+		if ($this->getObjectManager() == 'Projects')
+			$project_id = $this->getObjectId();
+		else if ($this->getObjectManager() == 'ProjectTasks'){
+			$project_id = $this->getObject()->getProjectId();
+			$task_name = '';
+		}
+			
+		$result = array(
+			'id' => $this->getId(),
+			'date' => $this->getStartTime()->getTimestamp(),
+			'time' => $this->getSeconds(),
+			'pid' => $project_id,
+			'uid' => $this->getUserId(),
+			'uname' => $this->getUser()->getDisplayName());
+		
+		if ($this->getDescription() != '')
+			$result['desc'] = $this->getDescription();
+			
+		if ($task_name != '')
+			$result['tn'] = $task_name;
+		
+		return $result;
+	}
 } // Timeslot
 
 ?>

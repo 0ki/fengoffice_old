@@ -247,6 +247,7 @@ class AccessController extends ApplicationController {
 				$administrator->setCanManageSecurity(true);
 				$administrator->setCanManageWorkspaces(true);
 				$administrator->setCanManageContacts(true);
+				$administrator->setCanManageTemplates(true);
 				$administrator->setAutoAssign(false);
 				$administrator->setPersonalProjectId(1);
 
@@ -304,14 +305,14 @@ class AccessController extends ApplicationController {
 	
 	function get_javascript_translation() {
 		$filenames = get_files("./language/" . Localization::instance()->getLocale(), "js");
-		$content = "/* inicio */\n";
+		$content = "/* start */\n";
 		foreach ($filenames as $f) {
 			$content .= "\n/* $f */\n";
 			$content .= "try {";				
 			$content .= file_get_contents($f);
 			$content .= "} catch (e) {}";
 		}
-		$content .= "\n/* fin */\n";
+		$content .= "\n/* end */\n";
 		$this->setLayout("json");
 		$this->renderText($content, true);
 	}

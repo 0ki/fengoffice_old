@@ -13,7 +13,8 @@
 
 ogTasks.draw = function(){
 	var start = new Date(); 
-	this.Groups = [];
+	if (this.redrawGroups)
+		this.Groups = [];
 	for (var i = 0; i < this.Tasks.length; i++)
 		this.Tasks[i].divInfo = [];
 	
@@ -82,8 +83,11 @@ ogTasks.drawMilestoneCompleteBar = function(group){
 ogTasks.drawGroup = function(displayCriteria, drawOptions, group){
 	var sb = new StringBuffer();
 	
-	sb.append("<div id='ogTasksPanelGroupCont" + group.group_id + "' class='ogTasksGroup'><div id='ogTasksPanelGroup" + group.group_id + "' class='ogTasksGroupHeader' onmouseover='ogTasks.mouseMovement(null,\"" + group.group_id + "\",true)' onmouseout='ogTasks.mouseMovement(null,\"" + group.group_id + "\", false)'>");
-	sb.append("<table width='100%'><tr><td width='20px'><div class='db-ico " + group.group_icon + "'></div></td>");
+	sb.append("<div id='ogTasksPanelGroupCont" + group.group_id + "' class='ogTasksGroup' style='display:" + ((this.existsSoloGroup() && !group.solo)? 'none':'block') + "'><div id='ogTasksPanelGroup" + group.group_id + "' class='ogTasksGroupHeader' onmouseover='ogTasks.mouseMovement(null,\"" + group.group_id + "\",true)' onmouseout='ogTasks.mouseMovement(null,\"" + group.group_id + "\", false)'>");
+	sb.append("<table width='100%'><tr>");
+	sb.append('<td style="width:20px"><input style="width:14px;height:14px" type="checkbox" id="ogTasksPanelGroupChk' + group.group_id + '" ' + (group.isChecked?'checked':'') + ' onchange="ogTasks.GroupSelected(this,\'' + group.group_id + '\')"/></td>');
+	
+	sb.append("<td width='20px'><div class='db-ico " + group.group_icon + "'></div></td>");
 	
 	sb.append('<td>');
 	switch (displayCriteria.group_by){
@@ -96,12 +100,12 @@ ogTasks.drawGroup = function(displayCriteria, drawOptions, group){
 					var tooltip = '';
 					if (user){
 						var time = new Date(milestone.completedOn * 1000);
-						tooltip = lang('completed by name on', user.name, time.dateFormat('M j')).replace(/'\''/g, '\\\'');
+						tooltip = lang('completed by name on', og.clean(user.name), time.dateFormat('M j')).replace(/'\''/g, '\\\'');
 					}
-					sb.append("<a href='#' style='text-decoration:line-through' class='internalLink' onclick='og.openLink(\"" + og.getUrl('milestone', 'view', {id: group.group_id}) + "\")' title='" + tooltip + "'>" + group.group_name + '</a></div></td>');
+					sb.append("<a href='#' style='text-decoration:line-through' class='internalLink' onclick='og.openLink(\"" + og.getUrl('milestone', 'view', {id: group.group_id}) + "\")' title='" + tooltip + "'>" + og.clean(group.group_name) + '</a></div></td>');
 				}
 				else
-					sb.append("<a href='#' class='internalLink' onclick='og.openLink(\"" + og.getUrl('milestone', 'view', {id: group.group_id}) + "\")'>" + group.group_name + '</a></div></td>');
+					sb.append("<a href='#' class='internalLink' onclick='og.openLink(\"" + og.getUrl('milestone', 'view', {id: group.group_id}) + "\")'>" + og.clean(group.group_name) + '</a></div></td>');
 				
 				if (drawOptions.show_workspaces){
 					var ids = String(milestone.workspaceIds).split(',');
@@ -111,12 +115,12 @@ ogTasks.drawGroup = function(displayCriteria, drawOptions, group){
 					sb.append(projectsString + "</td>");
 				}
 			} else {
-				sb.append("<table><tr><td><div class='ogTasksGroupHeaderName'>" + group.group_name + '</div></td>');
+				sb.append("<table><tr><td><div class='ogTasksGroupHeaderName'>" + og.clean(group.group_name) + '</div></td>');
 			}
 			sb.append("</tr></table>");
 			break;
 		default:
-			sb.append("<div class='ogTasksGroupHeaderName'>" + group.group_name + '</div>');
+			sb.append("<div class='ogTasksGroupHeaderName'>" + og.clean(group.group_name) + '</div>');
 	}
 	sb.append("</td><td align='right'>");
 	if (displayCriteria.group_by == 'milestone' && this.getMilestone(group.group_id)){
@@ -137,18 +141,22 @@ ogTasks.drawGroup = function(displayCriteria, drawOptions, group){
 			sb.append('</span></td>');
 		}
 		sb.append("<td><div id='ogTasksPanelCompleteBar" + group.group_id + "'>" + this.drawMilestoneCompleteBar(group) + "</div></td>");
-		sb.append("<td><div class='ogTasksGroupHeaderActions' style='visibility:hidden;padding-left:15px' id='ogTasksPanelGroupActions" + group.group_id + "'>" + this.drawGroupActions(group.group_id) + '</div></td></tr></table>');
+		sb.append("<td><div class='ogTasksGroupHeaderActions' style='visibility:hidden;padding-left:15px' id='ogTasksPanelGroupActions" + group.group_id + "'>" + this.drawGroupActions(group) + '</div></td></tr></table>');
 	} else
-		sb.append("<div class='ogTasksGroupHeaderActions' style='visibility:hidden' id='ogTasksPanelGroupActions" + group.group_id + "'>" + this.drawGroupActions(group.group_id) + '</div>');
+		sb.append("<div class='ogTasksGroupHeaderActions' style='visibility:hidden' id='ogTasksPanelGroupActions" + group.group_id + "'>" + this.drawGroupActions(group) + '</div>');
 	sb.append('</td></tr></table></div>');
 	
 	//draw the group's tasks
 	for (var i = 0; i < group.group_tasks.length; i++){
 		if (i == 8){			//Draw expander if group has more than 8 tasks
-			sb.append("<div class='ogTasksTaskRow' id='ogTasksGroupExpandTasksTitle" + group.group_id + "'>");
+			sb.append("<div class='ogTasksTaskRow' style='display:" + (group.isExpanded? "none" : "inline") + "' id='ogTasksGroupExpandTasksTitle" + group.group_id + "'>");
 			sb.append("<a href='#' class='internalLink' onclick='ogTasks.expandGroup(\"" + group.group_id + "\")'>" + lang('show more tasks number', (group.group_tasks.length - i)) + "</a>");
 			sb.append("</div>");
-			sb.append("<div id='ogTasksGroupExpandTasks" + group.group_id + "'></div>");
+			sb.append("<div id='ogTasksGroupExpandTasks" + group.group_id + "'>");
+			if (group.isExpanded)
+				for (var j = 8; j < group.group_tasks.length; j++)
+					sb.append(this.drawTask(group.group_tasks[j], drawOptions, displayCriteria, group.group_id, 1));
+			sb.append("</div>");
 			break;
 		}
 		sb.append(this.drawTask(group.group_tasks[i], drawOptions, displayCriteria, group.group_id, 1));
@@ -157,12 +165,11 @@ ogTasks.drawGroup = function(displayCriteria, drawOptions, group){
 	return sb.toString();
 }
 
-ogTasks.drawGroupActions = function(group_id){
-	return '<a id="ogTasksPanelGroupSoloOn' + group_id + '" style="padding-right:15px;" href="#" class="internalLink" onClick="ogTasks.hideShowGroups(\'' + group_id + '\')" title="' + lang('hide other groups') + '">' + (lang('hide others')) + '</a>' +
-	'<a id="ogTasksPanelGroupSoloOff' + group_id + '" style="display:none;padding-right:15px;" href="#" class="internalLink" onClick="ogTasks.hideShowGroups(\'' + group_id + '\')" title="' + lang('show all groups') + '">' + (lang('show all')) + '</a>' +
-	'<div class="ogTasksGroupAction ico-add">' +
-	'<a href="#" class="internalLink" onClick="ogTasks.drawAddNewTaskForm(\'' + group_id + '\')" title="' + lang('add a new task to this group') + '">' + (lang('add task')) + '</a>' +
-	'</div>';
+ogTasks.drawGroupActions = function(group){
+	return '<a id="ogTasksPanelGroupSoloOn' + group.group_id + '" style="margin-right:15px;display:' + (group.solo? "none" : "inline") + '" href="#" class="internalLink" onClick="ogTasks.hideShowGroups(\'' + group.group_id + '\')" title="' + lang('hide other groups') + '">' + (lang('hide others')) + '</a>' +
+	'<a id="ogTasksPanelGroupSoloOff' + group.group_id + '" style="display:' + (group.solo? "inline" : "none") + ';margin-right:15px;" href="#" class="internalLink" onClick="ogTasks.hideShowGroups(\'' + group.group_id + '\')" title="' + lang('show all groups') + '">' + (lang('show all')) + '</a>' +
+	'<a href="#" class="internalLink ogTasksGroupAction ico-print" style="margin-right:15px;" onClick="ogTasks.printGroup(\'' + group.group_id + '\')" title="' + lang('print this group') + '">' + (lang('print')) + '</a>' +
+	'<a href="#" class="internalLink ogTasksGroupAction ico-add" onClick="ogTasks.drawAddNewTaskForm(\'' + group.group_id + '\')" title="' + lang('add a new task to this group') + '">' + (lang('add task')) + '</a>';
 }
 
 
@@ -198,6 +205,7 @@ ogTasks.expandGroup = function(group_id){
 	var divLink = document.getElementById('ogTasksGroupExpandTasksTitle' + group_id);
 	if (div){
 		var group = this.getGroup(group_id);
+		group.isExpanded = true;
 		var html = '';
 		var bottomToolbar = Ext.getCmp('tasksPanelBottomToolbarObject');
 		var displayCriteria = bottomToolbar.getDisplayCriteria();
@@ -217,6 +225,8 @@ ogTasks.collapseGroup = function(group_id){
 	var div = document.getElementById('ogTasksGroupExpandTasks' + group_id);
 	var divLink = document.getElementById('ogTasksGroupExpandTasksTitle' + group_id);
 	if (div){
+		var group = this.getGroup(group_id);
+		group.isExpanded = false;
 		div.innerHTML = '';
 		divLink.style.display = 'block';
 	}
@@ -258,8 +268,8 @@ ogTasks.drawTaskRow = function(task, drawOptions, displayCriteria, group_id, lev
 	//Draw checkbox
 	var priorityColor = "white";
 	switch(task.priority){
-		case 200: priorityColor = "#D0E0F4"; break;
-		case 300: priorityColor = "#D20"; break;
+		case 200: priorityColor = "#DAE3F0"; break;
+		case 300: priorityColor = "#FF9088"; break;
 		default: break;
 	}
 	sb.append('<td width=19 class="ogTasksCheckbox" style="background-color:' + priorityColor + '">');
@@ -288,16 +298,16 @@ ogTasks.drawTaskRow = function(task, drawOptions, displayCriteria, group_id, lev
 	var taskName = '';
 	//Draw the Assigned user
 	if (task.assignedToId && (displayCriteria.group_by != 'assigned_to' || task.assignedToId != group_id)){
-		taskName += '<b>' + this.getUserCompanyName(task.assignedToId) + '</b>:&nbsp;';
+		taskName += '<b>' + og.clean(this.getUserCompanyName(task.assignedToId)) + '</b>:&nbsp;';
 	}
 	//Draw the task name
-	taskName += htmlentities(task.title);
+	taskName += og.clean(task.title);
 	if (task.status > 0){
 		var user = this.getUser(task.completedById);
 		var tooltip = '';
 		if (user){
 			var time = new Date(task.completedOn * 1000);
-			tooltip = lang('completed by name on', user.name, time.dateFormat('M j')).replace(/'\''/g, '\\\'');
+			tooltip = lang('completed by name on', og.clean(user.name), time.dateFormat('M j')).replace(/'\''/g, '\\\'');
 		}
 		taskName = "<span style='text-decoration:line-through' title='" + tooltip + "'>" + taskName + "</span>";
 	}
@@ -306,21 +316,22 @@ ogTasks.drawTaskRow = function(task, drawOptions, displayCriteria, group_id, lev
 	//Draw tags
 	if (drawOptions.show_tags)
 		if (task.tags)
-			sb.append('<span style="padding-left:18px;padding-top:4px;padding-bottom:2px;color:#888;font-size:10px;margin-left:10px" class="ico-tags ogTasksIcon"><i>' + task.tags + '</i></span>');
+			sb.append('<span style="padding-left:18px;padding-top:4px;padding-bottom:2px;color:#888;font-size:10px;margin-left:10px" class="ico-tags ogTasksIcon"><i>' + og.clean(task.tags) + '</i></span>');
 	
-	sb.append('</td><td align=right><table><tr>');
+	sb.append('</td><td align=right><table style="height:100%"><tr>');
 	
 	//Draw task actions
 	sb.append("<td><div id='ogTasksPanelTaskActions" + tgId + "' class='ogTaskActions'><table><tr>");
 	var renderTo = "ogTasksPanelTaskActions" + tgId + "Assign";
-	sb.append("<td><div id='" + renderTo + "'>" + this.drawUserCompanySelector(renderTo, task.assignedToId, task.id) + "</div></td>");
+	sb.append("<td style='padding-left:8px;'><a href='#' onclick='ogTasks.drawEditTaskForm(" + task.id + ", \"" + group_id + "\")'>");
+	sb.append("<div class='ico-edit coViewAction' title='" + lang('edit') + "' style='cursor:pointer;height:16px;padding-top:0px'>" + lang('edit') + "</div></a></td>");
 	sb.append("<td style='padding-left:8px;'><a href='#' onclick='ogTasks.ToggleCompleteStatus(" + task.id + ", " + task.status + ")'>");
 	if (task.status > 0){
-		sb.append("<div class='ico-reopen coViewAction' title='" + lang('reopen this task') + "' style='cursor:pointer;height:16px;padding-top:0px'>" + lang('reopen') + "</div></a>");
+		sb.append("<div class='ico-reopen coViewAction' title='" + lang('reopen this task') + "' style='cursor:pointer;height:16px;padding-top:0px'>" + lang('reopen') + "</div></a></td>");
 	} else {
-		sb.append("<div class='ico-complete coViewAction' title='" + lang('complete this task') + "' style='cursor:pointer;height:16px;padding-top:0px'>" + lang('do complete') + "</div></a>");
+		sb.append("<div class='ico-complete coViewAction' title='" + lang('complete this task') + "' style='cursor:pointer;height:16px;padding-top:0px'>" + lang('do complete') + "</div></a></td>");
 	}
-	sb.append("</td></tr></table></div></td>");
+	sb.append("</tr></table></div></td>");
 	
 	//Draw dates
 	if (drawOptions.show_dates && (task.startDate || task.dueDate)){
@@ -336,7 +347,7 @@ ogTasks.drawTaskRow = function(task, drawOptions, displayCriteria, group_id, lev
 		}
 		if (task.startDate && task.dueDate)
 			sb.append('&nbsp;-&nbsp;');
-			
+		
 		if (task.dueDate){
 			var date = new Date((task.dueDate) * 1000);
 			var dueString = lang('due') + ':&nbsp;' + date.dateFormat('M j');
@@ -354,23 +365,41 @@ ogTasks.drawTaskRow = function(task, drawOptions, displayCriteria, group_id, lev
 	if (drawOptions.show_time){
 		if (task.workingOnIds){
 			var ids = (task.workingOnIds + ' ').split(',');
-			var action = "start_work"; 
+			var userIsWorking = false;
 			for (var i = 0; i < ids.length; i++)
-				if (ids[i] == this.currentUser.id)
-					action = "close_work";
-			sb.append("<td class='ogTasksActiveTimeTd'><table><tr><td>");
-			sb.append("<a href='#' onclick='ogTasks.executeAction(\"" + action + "\",[" + task.id + "])'><div class='ogTasksTimeClock ico-time' title='" + lang(action) + "'></div></a></td><td style='white-space:nowrap'><b>");
+				if (ids[i] == this.currentUser.id){
+					userIsWorking = true;
+					var pauses = (task.workingOnPauses + ' ').split(',');
+					var userPaused = pauses[i] == 1;
+				}
+			sb.append("<td class='" + (userIsWorking?(userPaused?"ogTasksPausedTimeTd": "ogTasksActiveTimeTd") : "ogTasksTimeTd") + "'><table><tr>");
+			if (userIsWorking){
+				if (userPaused)
+					sb.append("<td><a href='#' onclick='ogTasks.executeAction(\"resume_work\",[" + task.id + "])'><div class='ogTasksTimeClock ico-time-play' title='" + lang('resume_work') + "'></div></a></td>");
+				else
+					sb.append("<td><a href='#' onclick='ogTasks.executeAction(\"pause_work\",[" + task.id + "])'><div class='ogTasksTimeClock ico-time-pause' title='" + lang('pause_work') + "'></div></a></td>");
+				
+				sb.append("<td><a href='#' onclick='ogTasks.closeTimeslot(\"" + tgId + "\")'><div class='ogTasksTimeClock ico-time-stop' title='" + lang('close_work') + "'></div></a></td>");
+			} else
+				sb.append("<td><a href='#' onclick='ogTasks.executeAction(\"start_work\",[" + task.id + "])'><div class='ogTasksTimeClock ico-time' title='" + lang('start_work') + "'></div></a></td>");
+			
+			sb.append("<td style='white-space:nowrap'><b>");
 			
 			for (var i = 0; i < ids.length; i++){
 				var user = this.getUser(ids[i]);
 				if (user){
-					sb.append("" + user.name);
+					sb.append("" + og.clean(user.name));
 					if (i < ids.length - 1)
 						sb.append(",");
 					sb.append("&nbsp;");
 				}
 			}
-			sb.append("</b></td></tr></table>");
+			sb.append("</b>");
+			if (userIsWorking){
+				sb.append("<div id='ogTasksPanelCWD" + tgId + "' style='display:none'><table><tr><td>" + lang('description') + ":<br/><textarea tabIndex=10100 style='height:54px;width:220px;margin-right:8px' id='ogTasksPanelCWDescription" + tgId + "'></textarea></td></tr>");
+				sb.append("<tr><td style='padding-bottom:5px'><button type='submit' tabIndex=10101 onclick='ogTasks.executeAction(\"close_work\",[" + task.id + "],document.getElementById(\"ogTasksPanelCWDescription" + tgId + "\").value);return false'>" + lang('close work') + "</button>&nbsp;&nbsp;<button tabIndex=10102 type='submit' onclick='ogTasks.closeTimeslot(\"" + tgId + "\");return false'>" + lang('cancel') + "</button></td></tr></table></div>");
+			}
+			sb.append("</td></tr></table>");
 		}else{
 			sb.append("<td class='ogTasksTimeTd'>");
 			sb.append("<a href='#' onclick='ogTasks.executeAction(\"start_work\",[" + task.id + "])'><div class='ogTasksTimeClock ico-time' title='" + lang('start_work') + "'></div></a>");
@@ -380,6 +409,18 @@ ogTasks.drawTaskRow = function(task, drawOptions, displayCriteria, group_id, lev
 	
 	sb.append('</tr></table></td></tr></table>');
 	return sb.toString();
+}
+
+
+
+ogTasks.closeTimeslot = function(tgId){
+	var panel = document.getElementById('ogTasksPanelCWD' + tgId);
+	if (panel.style.display == 'block')
+		panel.style.display = 'none';
+	else {
+		panel.style.display = 'block';
+		document.getElementById('ogTasksPanelCWDescription' + tgId).focus();
+	}
 }
 
 ogTasks.drawSubtasks = function(task, drawOptions, displayCriteria, group_id, level){
@@ -436,44 +477,4 @@ ogTasks.UpdateTask = function(task_id){
 			og.showWsPaths(containerName);
 		}
 	}
-}
-
-ogTasks.drawUserCompanySelector = function(renderTo, assigned_to, task_id){
-	var name = lang('assign');
-	
-	return "<div id='" + renderTo + "Header'>" +
-	"<a href='#' onclick='ogTasks.ShowUserCompanySelector(\"" + renderTo + "\",\"" + assigned_to + "\"," + task_id + ")' title='" + lang('change user') + "'>" + name + "</a>" +
-	"</div><div id='" + renderTo + "Panel'></div>";
-}
-
-ogTasks.ShowUserCompanySelector = function(controlName, assigned_to, task_id){
-	document.getElementById(controlName + 'Header').style.display = 'none';
-	document.getElementById(controlName + 'Panel').style.display = 'block';
-	
-	if (document.getElementById(controlName + 'Panel').innerHTML == ''){
-		var combo = Ext.getCmp('ogTasksFilterNamesCompaniesCombo');
-		var newCombo = combo.cloneConfig({
-			id: (controlName + 'Combo'),
-			renderTo: controlName + 'Panel',
-			controlName: controlName,
-			isInternalSelector: true,
-			taskId : task_id,
-			assignedTo : assigned_to,
-			value: assigned_to,
-			hidden: false
-		});	
-		newCombo.expand();
-	}
-}
-
-ogTasks.UserCompanySelected = function(controlName, assigned_to, task_id){
-	var name;
-	if (assigned_to)
-		name = '<span style="font-size:80%;color:#888"><i>' + lang('assigning to') + '&nbsp;' + this.getUserCompanyName(assigned_to) + '&hellip;&nbsp;&nbsp;</i></span>';
-	this.changeAssignedToUser(task_id, assigned_to);
-	
-	document.getElementById(controlName + 'Panel').style.display = 'none';
-	document.getElementById(controlName + 'Header').innerHTML = "<a href='#' onclick='og.ShowUserCompanySelector(\"" + controlName + "\",\"" + assigned_to + "\")' title='" + lang('change user') + "'>" + name + "</a>";
-	document.getElementById(controlName + 'Header').style.display = 'block';
-	
 }

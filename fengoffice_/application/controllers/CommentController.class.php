@@ -78,7 +78,7 @@ class CommentController extends ApplicationController {
 					} // foreach
 				} // if
 
-				ApplicationLogs::createLog($comment, active_or_personal_project(), ApplicationLogs::ACTION_ADD);
+				ApplicationLogs::createLog($comment, $object->getWorkspaces(), ApplicationLogs::ACTION_ADD);
 
 				// Subscribe user to object
 				if(!$object->isSubscriber(logged_user())) {
@@ -156,7 +156,7 @@ class CommentController extends ApplicationController {
 
 				DB::beginWork();
 				$comment->save();
-				ApplicationLogs::createLog($comment, active_or_personal_project(), ApplicationLogs::ACTION_EDIT);
+				ApplicationLogs::createLog($comment, $object->getWorkspaces(), ApplicationLogs::ACTION_EDIT);
 				$object->onEditComment($comment);
 				DB::commit();
 
@@ -201,9 +201,8 @@ class CommentController extends ApplicationController {
 
 		try {
 			DB::beginWork();
-			$comment->delete();
-			ApplicationLogs::createLog($comment, active_or_personal_project(), ApplicationLogs::ACTION_DELETE);
-			$object->onDeleteComment($comment);
+			$comment->trash();
+			ApplicationLogs::createLog($comment, $object->getWorkspaces(), ApplicationLogs::ACTION_TRASH);
 			DB::commit();
 
 			flash_success(lang('success delete comment'));

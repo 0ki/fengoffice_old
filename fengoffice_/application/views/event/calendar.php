@@ -1,16 +1,5 @@
 <script type="text/javascript">
-	var cant_tips = 0;
-	var tips_array = [];
-	
-	function addTip(div_id, title, bdy) {
-		tips_array[cant_tips++] = new Ext.ToolTip({
-			target: div_id,
-	        html: bdy,
-	        title: title,
-	        hideDelay: 1500,
-	        closable: true
-		});
-	}
+	showCalendarToolbar();
 </script>
 <?php
 
@@ -39,7 +28,7 @@ $_SESSION['month'] = $month;
 $_SESSION['day'] = $day;
 
 $user_filter = !isset($_GET['user_filter']) || $_GET['user_filter'] == 0 ? logged_user()->getId() : $_GET['user_filter'];
-$state_filter = isset($_GET['state_filter']) ? $_GET['state_filter'] : -1; 
+$state_filter = isset($_GET['state_filter']) ? $_GET['state_filter'] : ' 0 1 3';
 
 $user = Users::findById(array('id' => $user_filter));
 /*
@@ -47,6 +36,8 @@ $user = Users::findById(array('id' => $user_filter));
  * to prevent null exception when calling getRangeTasksByUser(), because this func. expects an User instance.
  */
 if ($user == null) $user = logged_user(); 
+
+$use_24_hours = config_option('time_format_use_24');
 
 global $cal_db;
 // get actual current day info
@@ -62,7 +53,6 @@ $lastday = date("t", mktime(0, 0, 0, $month, 1, $year));
 
 
 <script type="text/javascript">
-
 function cancel (evt) {//cancel clic event bubbling. used to cancel opening a New Event window when clicking an object
   	var e=(evt)?evt:window.event;
     if (window.event) {
@@ -72,52 +62,29 @@ function cancel (evt) {//cancel clic event bubbling. used to cancel opening a Ne
     }
     return true;
 }
-var ob=true;
-
-function hide_tooltip(elem){
-	jQuery(elem).parent().trigger('mouseout');
-}
-
-
-//disable showing the tooltip. 
-function disable_overlib(){
-	ob = false;
-}
-
-
-
 </script>
-<div style="padding:7px">
-<div class="calendar" align="center">
-<table style="width:95%">
+<div style="padding-right:1px">
+<div class="calendar" align="center" style="width:100%;height:100%;">
+<table style="width:100%;height:100%;">
 <tr>
 <td>
-	<table style="width:100%">
-			<col width=1%/>
-			<col/>
-			<col width=1%/>
+	<table style="width:100%;height:100%;">
 		<tr>
-			<td class="coViewHeader" colspan=2  rowspan=2>
-				<div class="coViewTitle">				
-					<?php echo cal_month_name($month)." ". $year .' - '. ($user_filter == -1 ? lang('all users') : lang('calendar of', $user->getDisplayName()));?>				
+			<td class="coViewHeader" colspan=1 rowspan=1>
+				<div class="coViewTitle" style="width:100%;">				
+					<?php echo cal_month_name($month)." ". $year .' - '. ($user_filter == -1 ? lang('all users') : lang('calendar of', clean($user->getDisplayName())));?>
 				</div>		
 			</td>
-			
-			<td class="coViewTopRight"></td>
 		</tr>
 		<tr>
-			<td class="coViewRight" rowspan=2></td>
-		</tr>
-		
-		<tr>
-			<td class="coViewBody" style="padding:0px" colspan=2>
-				<div style="padding-bottom:0px">
-				<table id="calendar" border='0' cellspacing='0' cellpadding='0' width="100%">
+			<td class="coViewBody" style="padding:0px;width:100%;height:100%;" colspan=1>
+				<div style="padding-bottom:0px;width:100%;height:100%;">
+				<table id="calendar" border='0' cellspacing='0' cellpadding='0' width="100%" height="100%">
 					<colgroup span="7" width="1*">
 					<tr>
 					<?php 
 					if(!cal_option("start_monday")) {
-						echo "    <th width='15%' align='center'>" .  lang('sunday short') . '</th>' . "\n";
+						echo "    <th width='15%'>" .  lang('sunday short') . '</th>' . "\n";
 					}
 					?>
 					<th width="14%"><?php echo  lang('monday short') ?></th>
@@ -223,7 +190,7 @@ function disable_overlib(){
 							}
 														
 					?>	
-								<div style='z-index:0; height:100%;cursor:pointer' onclick="showEventPopup('<?php echo $dtv->getDay() ?>','<?php echo $dtv->getMonth()?>','<?php echo $dtv->getYear()?>');" >
+								<div style='z-index:0; min-height:90px; height:100%; cursor:pointer;' onclick="showMonthEventPopup('<?php echo $dtv->getDay() ?>','<?php echo $dtv->getMonth()?>','<?php echo $dtv->getYear()?>');" >
 									<div class='<?php echo $daytitle?>' style='text-align:right'>
 							
 							 		<a class='internalLink' href="<?php echo $p ?>" onclick="cancel(event);return true;"  style='color:#5B5B5B' ><?php echo $w?></a>				
@@ -260,7 +227,7 @@ function disable_overlib(){
 									foreach($result as $event){
 										if($event instanceof ProjectEvent ){
 											$count++;
-											$subject =  $event->getSubject();//truncate($event->getSubject(),30,'','UTF-8',true,true);
+											$subject =  clean($event->getSubject());//truncate($event->getSubject(),30,'','UTF-8',true,true);
 											$typeofevent = $event->getTypeId(); 
 											$private = $event->getIsPrivate(); 
 											$eventid = $event->getId(); 
@@ -271,8 +238,8 @@ function disable_overlib(){
 											$overlib_time = lang('CAL_UNKNOWN_TIME');
 											switch($typeofevent) {
 												case 1:
-													if(!cal_option("hours_24")) $timeformat = 'g:i A';
-													else $timeformat = 'G:i';
+													if($use_24_hours) $timeformat = 'G:i';
+													else $timeformat = 'g:i A';
 													$event_time = date($timeformat, $event->getStart()->getTimestamp()); 
 													$overlib_time = "@ $event_time";
 													break;
@@ -288,7 +255,7 @@ function disable_overlib(){
 											} 
 											
 											// build overlib text
-											$overlib_text = "$overlib_time<br>" . truncate($event->getDescription(), 195, '...', 'UTF-8');
+											$overlib_text = "$overlib_time<br>" . clean(truncate($event->getDescription(), 195, '...', 'UTF-8'));
 											$overlibtext_color = "#000000";
 											// make the event subjects links or not according to the variable $whole_day in gatekeeper.php
 											if(!$private && $count <= 3){
@@ -297,18 +264,18 @@ function disable_overlib(){
 												if($event->getEventTypeObject() && $event->getEventTypeObject()->getTypeColor() == "") { 
 													$strStyle= "style='z-index:1000;border-left-color: #$color;'";
 												}
-												$tip_text = str_replace("\r", '', $event->getDescription());
+												$tip_text = str_replace("\r", '', clean($event->getDescription()));
 												$tip_text = str_replace("\n", '<br>', $tip_text);													
 												if (strlen($tip_text) > 200) $tip_text = substr($tip_text, 0, strpos($tip_text, ' ', 200)) . ' ...';
 								?>
 												<div id="m_ev_div_<?php echo $event->getId()?>" class="event_block" <?php echo $strStyle ?> > 
-														<a href='<?php echo cal_getlink("index.php?action=viewevent&amp;id=".$event->getId()."&amp;user_id=".$user_filter)?>' class='internalLink' onclick="hide_tooltip(this); cancel(event); disable_overlib();return true;" >
+														<a href='<?php echo cal_getlink("index.php?action=viewevent&amp;id=".$event->getId()."&amp;user_id=".$user_filter)?>' class='internalLink' onclick="cancel(event); hideCalendarToolbar(); return true;" >
 															<img src="<?php echo image_url('/16x16/calendar.png')?>" align='absmiddle' border='0'>
 														<?php echo $subject ?>
 														</a>
 											 	</div>
 										 		<script type="text/javascript">
-													addTip('m_ev_div_<?php echo $event->getId() ?>', '<i>' + lang('event') + '</i> - <?php echo $event->getSubject() ?>', '<?php echo ($event->getTypeId() == 2 ? lang('CAL_FULL_DAY') : $event->getStart()->format('h:i') .' - '. $event->getDuration()->format('h:i') . ($tip_text != '' ? '<br><br>' . $tip_text : ''));?>');
+													addTip('m_ev_div_<?php echo $event->getId() ?>', '<i>' + lang('event') + '</i> - ' + <?php echo json_encode(clean($event->getSubject())) ?>, <?php echo json_encode($event->getTypeId() == 2 ? lang('CAL_FULL_DAY') : $event->getStart()->format($use_24_hours ? 'G:i' : 'g:i A') .' - '. $event->getDuration()->format($use_24_hours ? 'G:i' : 'g:i A') . ($tip_text != '' ? '<br><br>' . $tip_text : ''));?>);
 												</script>
 											 	
 								<?php
@@ -323,30 +290,30 @@ function disable_overlib(){
 											if ($now == mktime(0, 0, 0, $due_date->getMonth(), $due_date->getDay(), $due_date->getYear())) {	
 												$count++;
 												if ($count <= 3){
-													$overlib_text = truncate($milestone->getDescription(), 195, '...') . "<br>";
+													$overlib_text = clean(truncate($milestone->getDescription(), 195, '...')) . "<br>";
 													
 													if ($milestone->getAssignedTo() instanceof ApplicationDataObject) { 
 														$overlib_text .= 'Assigned to:'. clean($milestone->getAssignedTo()->getObjectName());
 													} else $overlib_text .= 'Assigned to: None';
 													$color = 'FFC0B3'; 
 													
-													$subject = "&nbsp;" . $milestone->getName()." - <i>Milestone</i>";//"&nbsp;".truncate($milestone->getName(),30,'','UTF-8',true,true)." - <i>Milestone</i>";
-													$cal_text = $milestone->getName();
+													$subject = "&nbsp;" . clean($milestone->getName())." - <i>Milestone</i>";
+													$cal_text = clean($milestone->getName());
 													$overlibtext_color = "#000000";
 													
-													$tip_text = str_replace("\r", '', lang('assigned to') .': '. $milestone->getAssignedToName() . (trim($milestone->getDescription()) == '' ? '' : '<br><br>'. $milestone->getDescription()));
+													$tip_text = str_replace("\r", '', lang('assigned to') .': '. clean($milestone->getAssignedToName()) . (trim(clean($milestone->getDescription())) == '' ? '' : '<br><br>'. clean($milestone->getDescription())));
 													$tip_text = str_replace("\n", '<br>', $tip_text);													
 													if (strlen($tip_text) > 200) $tip_text = substr($tip_text, 0, strpos($tip_text, ' ', 200)) . ' ...';
 													
 								?>
 													<div id="m_ms_div_<?php echo $milestone->getId()?>" class="event_block" style="border-left-color: #<?php echo $color?>;">
-															<a href='<?php echo $milestone->getViewUrl()?>' class='internalLink' onclick="hide_tooltip(this);cancel(event);disable_overlib();return true;" >
-																<img src="<?php echo image_url('/16x16/milestone.png')?>" align='absmiddle' border='0'>
+															<a href='<?php echo $milestone->getViewUrl()?>' class="internalLink" onclick="cancel(event);return true;" >
+																<img src="<?php echo image_url('/16x16/milestone.png')?>" align="absmiddle" border="0">
 															<?php echo $cal_text ?>
 															</a>
 													</div>
 													<script type="text/javascript">
-														addTip('m_ms_div_<?php echo $milestone->getId() ?>', '<i>' + lang('milestone') + '</i> - <?php echo $milestone->getTitle() ?>', '<?php echo ($tip_text != '' ? $tip_text : '');?>');
+														addTip('m_ms_div_<?php echo $milestone->getId() ?>', '<i>' + lang('milestone') + '</i> - ' + <?php echo json_encode(clean($milestone->getTitle())) ?>, <?php echo json_encode($tip_text != '' ? $tip_text : '');?>);
 													</script>
 								<?php
 												}//if count
@@ -364,29 +331,29 @@ function disable_overlib(){
 											if ($now == mktime(0, 0, 0, $due_date->getMonth(), $due_date->getDay(), $due_date->getYear())) {	
 												$count++;
 												if ($count <= 3){
-													$overlib_text = "&nbsp;" . $task->getText() . "<br>";
+													$overlib_text = "&nbsp;" . clean($task->getText()) . "<br>";
 													if ($task->getAssignedTo() instanceof ApplicationDataObject) { 
 														$overlib_text .= 'Assigned to:' . clean($task->getAssignedTo()->getObjectName());
 													} else $overlib_text .= 'Assigned to: None';
 													
 													$color = 'B1BFAC'; 
-													$subject = $task->getTitle().'- <i>Task</i>';//truncate($task->getTitle(),25,'','UTF-8',true,true).'- <i>Task</i>';
-													$cal_text = $task->getTitle();
+													$subject = clean($task->getTitle()).'- <i>Task</i>';
+													$cal_text = clean($task->getTitle());
 													
-													$tip_text = str_replace("\r", '', lang('assigned to') .': '. $task->getAssignedToName() . (trim($task->getText()) == '' ? '' : '<br><br>'. $task->getText()));
+													$tip_text = str_replace("\r", '', lang('assigned to') .': '. clean($task->getAssignedToName()) . (trim(clean($task->getText())) == '' ? '' : '<br><br>'. clean($task->getText())));
 													$tip_text = str_replace("\n", '<br>', $tip_text);													
 													if (strlen($tip_text) > 200) $tip_text = substr($tip_text, 0, strpos($tip_text, ' ', 200)) . ' ...';
 													$overlibtext_color = "#000000";
 								?>
 								
 													<div id="m_ta_div_<?php echo $task->getId()?>" class="event_block" style="border-left-color: #<?php echo $color?>;">
-															<a href='<?php echo $task->getViewUrl()?>' class='internalLink' onclick="hide_tooltip(this);cancel(event);disable_overlib();return true;"  border='0'>
+															<a href='<?php echo $task->getViewUrl()?>' class='internalLink' onclick="cancel(event);return true;"  border='0'>
 																	<img src="<?php echo image_url('/16x16/tasks.png')?>" align='absmiddle'>
 														 		<?php echo $cal_text ?>
 														 	</a>
 													</div>
 													<script type="text/javascript">
-														addTip('m_ta_div_<?php echo $task->getId() ?>', '<i>' + lang('task') + '</i> - <?php echo $task->getTitle()?>', '<?php echo (trim($tip_text) != '' ? trim($tip_text) : '');?>');
+														addTip('m_ta_div_<?php echo $task->getId() ?>', '<i>' + lang('task') + '</i> - ' + <?php echo json_encode(clean($task->getTitle()))?>, <?php echo json_encode(trim($tip_text) != '' ? trim($tip_text) : '');?>);
 													</script>
 								<?php
 												}//if count
@@ -399,7 +366,7 @@ function disable_overlib(){
 									if ($count > 3) {
 								?>
 									
-										<div style="witdh:100%;text-align:center;font-size:9px" ><a href="<?php echo $p?>" class="internalLink"  onclick="cancel(event);disable_overlib();return true;">+<?php echo ($count-3) ?> more</a></div>
+										<div style="witdh:100%;text-align:center;font-size:9px" ><a href="<?php echo $p?>" class="internalLink"  onclick="cancel(event);return true;"><?php echo ($count-3) . ' ' . lang('more');?> </a></div>
 								<?php
 									}
 								}
@@ -422,9 +389,6 @@ function disable_overlib(){
 				</div>
 			</td>
 			</tr>
-			<tr><td class="coViewBottomLeft" style="width:12"></td>
-			<td class="coViewBottom" style="width:85%"></td>
-			<td class="coViewBottomRight" style="width:12"></td></tr>
 		</table>
 	</td>
 </tr></table>
@@ -433,7 +397,7 @@ function disable_overlib(){
 <script type="text/javascript">
 	Ext.QuickTips.init();
 
-	function showEventPopup(day, month, year) {
+	function showMonthEventPopup(day, month, year) {
 		if (lang('date format') == 'm/d/Y') 
 			st_val = month + '/' + day + '/' + year;
 		else
@@ -447,80 +411,12 @@ function disable_overlib(){
 								durationhour: 1,
 								durationmin: 0,
 								start_value: st_val,
-								type_id:2, view:'month', title: lang('add event')
+								start_time: '9:00',
+								type_id:2, 
+								view:'month', 
+								title: lang('add event'),
+								time_format: '<?php echo ($use_24_hours ? 'G:i' : 'g:i A') ?>',
+								hide_calendar_toolbar: 1
 								}, '');
 	}
-	
-	/*
-	jQuery.noConflict();//YUI redefines $, so we need to set jQuery to non-conflict mode	
-
-	jQuery('span.task_hover_details').cluetip({		
-	    splitTitle: '|', // use the invoking element's title attribute to populate the clueTip...
-	                     // ...and split the contents into separate divs where there is a "|"
-	    cluetipClass: 'task',
-	    width: 'auto',
-	    // effect and speed for opening clueTips
-	    fx: {             
-              open:       'fadeIn', // can be 'show' or 'slideDown' or 'fadeIn'
-              openSpeed:  ''
-	    },
-	                  
-	    // settings for when hoverIntent plugin is used
-	    hoverIntent: {    
-              sensitivity:  3,
-              interval:     50,
-              timeout:      0
-	    }, 
-	    topOffset:        8,       // Number of px to offset clueTip from top of invoking element. more info below [3]
-    	leftOffset:       8,
-    	onActivate: function(e) {//to prevent keeping the tooltip after moving away from the page
-		    return ob;
-		  },
-	    showTitle: false // hide the clueTip's heading
-  	});
-  	
-  	jQuery('span.milestone_hover_details').cluetip({		
-	    splitTitle: '|', 
-	    cluetipClass: 'milestone',
-	    width: 'auto',
-	    fx: {             
-              open:       'fadeIn', 
-              openSpeed:  ''
-	    },
-	    hoverIntent: {    
-              sensitivity:  3,
-              interval:     50,
-              timeout:      0
-	    }, 
-	    topOffset:        8,       
-    	leftOffset:       8,
-    	onActivate: function(e) {//to prevent keeping the tooltip after moving away from the page
-		    return ob;
-		  },
-	    showTitle: false 
-  	});
-  	
-  	jQuery('span.event_hover_details').cluetip({		
-	    splitTitle: '|', 
-	    cluetipClass: 'event',
-	    width: 'auto',
-	    fx: {             
-              open:       'fadeIn', 
-              openSpeed:  ''
-	    },
-	                  
-	    hoverIntent: {    
-              sensitivity:  3,
-              interval:     50,
-              timeout:      0
-	    }, 
-	    topOffset:        8,      
-    	leftOffset:       8,
-    	onActivate: function(e) {//to prevent keeping the tooltip after moving away from the page
-		    return ob;
-		  },
-	    showTitle: false 
-  	});
-  	*/
-  	
 </script>

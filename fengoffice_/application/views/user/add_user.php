@@ -27,11 +27,14 @@
     	array('class' => 'title', 'id' => 'userFormEmail', 'tabindex' => '200')) ?>
   </div>
   
-  	<?php if(!$user->isNew() && logged_user()->isAdministrator()) { ?>
+  	<?php if(logged_user()->isAdministrator()) { ?>
   <div>
-    <?php echo label_tag(lang('company'), 'userFormCompany', true) ?>
+    <?php echo label_tag(lang('company'), $genid.'userFormCompany', true) ?>
     <?php echo select_company('user[company_id]', array_var($user_data, 'company_id'), 
-    	array('id' => 'userFormCompany', 'tabindex' => '300')) ?>
+    	array('id' => $genid.'userFormCompany', 'tabindex' => '300')) ?>
+    	
+   	<a href="<?php echo get_url("company", "add_client") ?>" target="company" class="internalLink coViewAction ico-add" title="<?php echo lang('add a new company')?>"><?php echo lang('add company') . '...' ?></a></div>
+
   </div>
 <?php } else { ?>
   <input type="hidden" name="user[company_id]" value="<?php echo $company->getId()?>" />
@@ -100,14 +103,19 @@
 <?php if($user->isNew()) { ?>
   <div class="formBlock">
     <?php echo label_tag(lang('send new account notification'), null, true) ?>
-    <?php echo yes_no_widget('user[send_email_notification]', 'userFormEmailNotification', array($user_data, 'send_email_notification'), lang('yes'), lang('no'), '1300') ?>
+    <?php echo yes_no_widget('user[send_email_notification]', 'userFormEmailNotification', array_var($user_data, 'send_email_notification'), lang('yes'), lang('no'), '1300') ?>
     <br /><span class="desc"><?php echo lang('send new account notification desc') ?></span>
   </div>
+  <?php 
+  if (array_var($user_data, 'create_contact')){ 
+  	// this condition is only false when the user is created from a contact, in which case creating a new contact is not desired.
+  	?>
   <div class="formBlock">
     <?php echo label_tag(lang('create contact from user'), null, true) ?>
-    <?php echo yes_no_widget('user[create_contact]', 'createContact', array($user_data, 'create_contact'), lang('yes'), lang('no'), '1400') ?>
+    <?php echo yes_no_widget('user[create_contact]', 'createContact', array_var($user_data, 'create_contact'), lang('yes'), lang('no'), '1400') ?>
     <br /><span class="desc"><?php echo lang('create contact from user desc') ?></span>
   </div>
+  <?php } ?>
   <br/>
   
 <fieldset>
@@ -130,4 +138,17 @@
 
 <script type="text/javascript">
 	Ext.get('userFormName').focus();
+</script>
+
+<script>
+og.eventManager.addListener("company added", function(company) {
+	var id = '<?php echo $genid.'userFormCompany' ?>';
+	var select = document.getElementById('<?php echo $genid.'userFormCompany' ?>');
+	if (!select) return "remove";
+	var newopt = document.createElement('option');
+	newopt.value = company.id;
+	newopt.innerHTML = company.name;
+	select.appendChild(newopt);
+	select.value = company.id;
+}); 
 </script>

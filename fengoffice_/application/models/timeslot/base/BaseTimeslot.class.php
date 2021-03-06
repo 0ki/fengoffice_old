@@ -7,6 +7,8 @@
   */
   abstract class BaseTimeslot extends ApplicationDataObject {
   
+  	protected $objectTypeIdentifier = 'ts';
+  
     // -------------------------------------------------------
     //  Access methods
     // -------------------------------------------------------
@@ -120,8 +122,6 @@
     function setEndTime($value) {
       return $this->setColumnValue('end_time', $value);
     } // setEndTime() 
-    
-    
     
     /**
     * Return value of 'user_id' field
@@ -254,6 +254,50 @@
     function setUpdatedById($value) {
       return $this->setColumnValue('updated_by_id', $value);
     } // setUpdatedById() 
+    
+    /**
+    * Return value of 'paused_on' field
+    *
+    * @access public
+    * @param void
+    * @return DateTimeValue 
+    */
+    function getPausedOn() {
+      return $this->getColumnValue('paused_on');
+    } // getPausedOn()
+    
+    /**
+    * Set value of 'paused_on' field
+    *
+    * @access public   
+    * @param DateTimeValue $value
+    * @return boolean
+    */
+    function setPausedOn($value) {
+      return $this->setColumnValue('paused_on', $value);
+    } // setPausedOn() 
+    
+    /**
+    * Return value of 'subtract' field
+    *
+    * @access public
+    * @param void
+    * @return integer 
+    */
+    function getSubtract() {
+      return $this->getColumnValue('subtract');
+    } // getUserId()
+    
+    /**
+    * Set value of 'subtract' field
+    *
+    * @access public   
+    * @param integer $value
+    * @return boolean
+    */
+    function setSubtract($value) {
+      return $this->setColumnValue('subtract', $value);
+    } // setUserId() 
     
     
     /**

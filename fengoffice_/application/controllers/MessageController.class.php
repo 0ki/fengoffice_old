@@ -92,7 +92,8 @@ class MessageController extends ApplicationController {
 							if (isset($message) && $message->canDelete(logged_user())){
 								try{
 									DB::beginWork();
-									$message->delete();
+									$message->trash();
+									ApplicationLogs::createLog($message, $ws, ApplicationLogs::ACTION_TRASH);
 									DB::commit();
 									$resultMessage = lang("success delete objects", '');
 								} catch(Exception $e){
@@ -216,7 +217,7 @@ class MessageController extends ApplicationController {
 		$permissions = ' AND ( ' . permissions_sql_for_listings(ProjectMessages::instance(),ACCESS_LEVEL_READ, logged_user(), 'project_id') .')';
 
 		$res = DB::execute("SELECT id, 'ProjectMessages' as manager, `updated_on` as comp_date from " . TABLE_PREFIX. "project_messages where " . 
-			$messageConditions . " AND " . $tagstr . $permissions 
+			"`trashed_by_id` = 0 AND ".$messageConditions . " AND " . $tagstr . $permissions 
 			. " ORDER BY updated_on DESC");
 			
 		if(!$res) return null;
@@ -370,10 +371,9 @@ class MessageController extends ApplicationController {
 			
 			try {
 				$message->setFromAttributes($message_data);
-
+				$message->setIsPrivate(false);
 				// Options are reserved only for members of owner company
 				if(!logged_user()->isMemberOfOwnerCompany()) {
-					$message->setIsPrivate(false);
 					$message->setIsImportant(false);
 					$message->setCommentsEnabled(true);
 					$message->setAnonymousCommentsEnabled(false);
@@ -388,9 +388,8 @@ class MessageController extends ApplicationController {
 				}
 
 				$message->save_properties($message_data);
-				foreach ($validWS as $w) {
-					ApplicationLogs::createLog($message, $w, ApplicationLogs::ACTION_ADD);
-				}			    
+				ApplicationLogs::createLog($message, $validWS, ApplicationLogs::ACTION_ADD);
+			    
 				$object_controller = new ObjectController();
 			    $object_controller->link_to_new_object($message);
 
@@ -513,10 +512,7 @@ class MessageController extends ApplicationController {
 				$message->setTagsFromCSV(array_var($message_data, 'tags'));
 				
 				/* <multiples workspaces> */
-				$oldws = $message->getWorkspaces();
-				foreach ($oldws as $oldw) {
-					$message->removeFromWorkspace($oldw);
-				}
+				$message->removeFromWorkspaces(logged_user()->getActiveProjectIdsCSV());
 				$ids = array_var($_POST, "ws_ids", "");
 				$enteredWS = Projects::findByCSVIds($ids);
 				$validWS = array();
@@ -534,9 +530,8 @@ class MessageController extends ApplicationController {
 				/* </multiples workspaces> */
 
 				$message->save_properties($message_data);
-				foreach ($validWS as $w) {
-					ApplicationLogs::createLog($message, $w, ApplicationLogs::ACTION_EDIT);
-				}
+				ApplicationLogs::createLog($message, $validWS, ApplicationLogs::ACTION_EDIT);
+				
 				DB::commit();
 
 				flash_success(lang('success edit message', $message->getTitle()));
@@ -580,11 +575,9 @@ class MessageController extends ApplicationController {
 		try {
 
 			DB::beginWork();
-			$message->delete();
+			$message->trash();
 			$ws = $message->getWorkspaces();
-			foreach ($ws as $w) {
-				ApplicationLogs::createLog($message, $w, ApplicationLogs::ACTION_DELETE);
-			}
+			ApplicationLogs::createLog($message, $ws, ApplicationLogs::ACTION_TRASH);
 			DB::commit();
 
 			flash_success(lang('success deleted message', $message->getTitle()));

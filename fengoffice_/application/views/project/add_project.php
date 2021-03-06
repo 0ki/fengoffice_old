@@ -145,7 +145,13 @@
 	<?php if (($project->getId() != $user->getPersonalProjectId() || $user->isAdministrator()) && isset ($projects) && count($projects) > 0) { ?>
 	<fieldset>
 	<legend><?php echo lang('parent workspace') ?></legend>
-		<?php echo select_project('project[parent_id]', $projects, $project->isNew()?active_project()?active_project()->getId():0:$project->getParentId(), null, true) ?>
+		<?php // echo select_project('project[parent_id]', $projects, $project->isNew()?active_project()?active_project()->getId():0:$project->getParentId(), null, true) ?>
+		<?php 
+			if (!$project->isNew() && $project->getParentWorkspace() instanceof Project && !logged_user()->isProjectUser($project->getParentWorkspace())){?>
+		<div class="tasksPanelWarning ico-warning32" style="font-size:10px;color:#666;background-repeat:no-repeat;padding-left:40px;max-width:600px;border:1px solid #E3AD00;background-color:#FFF690;background-position:4px 4px;">
+			<div style="font-weight:bold;width:99%;text-align:center;padding:4px;color:#AF8300;"><?php echo lang('cannot change parent workspace') ?><br/><?php echo lang('cannot change parent workspace description') ?></div>
+		</div>
+			<?php } else echo select_project2('project[parent_id]', ($project->isNew())? (active_project()?active_project()->getId():0):$project->getParentId(), $genid, true) ?>
 	</fieldset>
 	<?php } ?>
     
@@ -153,7 +159,7 @@
 		<input type="hidden" id="workspace_color" name="project[color]" value="<?php echo $project->isNew()?0:$project->getColor() ?>" />
 		<div>
 			<script type="text/javascript">
-			function wsColorChoose(obj, color) {
+			og.wsColorChoose = function(obj, color) {
 				var elements = document.getElementsByName("wsColor-<?php echo $genid ?>");
 				for (var i = 0; i < elements.length; i++){
 					var p = elements[i];
@@ -168,15 +174,15 @@
 				}
 			}
 			</script>
-			<table><tr><td><img class="ico-color0 ws-color-chooser" name="wsColor-<?php echo $genid ?>" onclick="wsColorChoose(this, 0)" src="<?php echo EMPTY_IMAGE ?>"/></td>
+			<table><tr><td><img class="ico-color0 ws-color-chooser" name="wsColor-<?php echo $genid ?>" onclick="og.wsColorChoose(this, 0)" src="<?php echo EMPTY_IMAGE ?>"/></td>
 				<td>	
     		<?php for ($i=1; $i <= 12; $i++) {
 				$class = "ico-color$i " . ($project->getColor() != $i?"ws-color-chooser":"ws-color-chooser-selected");
-				echo "<img src=\"".EMPTY_IMAGE."\" name=\"wsColor-$genid\" class=\"$class\" onclick=\"wsColorChoose(this, $i)\" />";
+				echo "<img src=\"".EMPTY_IMAGE."\" name=\"wsColor-$genid\" class=\"$class\" onclick=\"og.wsColorChoose(this, $i)\" />";
 			} ?></td></tr><tr><td></td><td>	
     		<?php for ($i=13; $i <= 24; $i++) {
 				$class = "ico-color$i " . ($project->getColor() != $i?"ws-color-chooser":"ws-color-chooser-selected");
-				echo "<img src=\"".EMPTY_IMAGE."\" name=\"wsColor-$genid\" class=\"$class\" onclick=\"wsColorChoose(this, $i)\" />";
+				echo "<img src=\"".EMPTY_IMAGE."\" name=\"wsColor-$genid\" class=\"$class\" onclick=\"og.wsColorChoose(this, $i)\" />";
 			} ?></td></tr></table>
 		</div>
 		

@@ -73,7 +73,7 @@ return array(
 	
     'link existing object' => 'Link existing object (from Files section)',
     'upload and link' => 'Upload new file and attach it to object',
-    'file permissions description' => 'Select users from Combo or write their name on the Text Box. Then press Add user to visualize them on the grid. <br>When you see them, select the approriate permissions in the grid.<br>Note: the Combo Box will only display users you are currently sharing files with.',
+    'file permissions description' => 'Select users from Combo or write their name on the Text Box. Then press Add user to visualize them on the grid. <br>When you see them, select the appropriate permissions in the grid.<br>Note: the Combo Box will only display users you are currently sharing files with.',
 
     'subscribers desc' => 'Subscribers will receive an email notification whenever someone (except themselves) posts a comment on this object',
     'admins can post comments on locked objects desc' => '<strong>Comments are locked</strong>, but you as administrator still have the permissions to post comments. Note that if you expect replies from your clients and non-admin users you need to unlock comments for this object <i>(set "Enable comments" option to "Yes")</i>.',
@@ -244,6 +244,7 @@ return array(
 	'pending' => 'Pending',
 
 	'new task template' => 'New task template',
+	'edit task template' => 'Edit task template',
 	'new task from template' => 'New task from template',
 	'save as template' => 'Save as template',
 	'save template' => 'Save template',
@@ -259,6 +260,9 @@ return array(
 	'include unworked pending tasks' => 'Include unworked pending tasks',
 	'unworked pending tasks' => 'Unworked pending tasks',
 	'assign contact to workspace desc' => 'To assign the contact to a workspace check the workspace and then fill in the role in the text field.',
+
+	'cannot change parent workspace' => 'You don\'t have enough access permissions to change this workspace\'s parent.',
+	'cannot change parent workspace description' => 'This workspace might be a child of a workspace you don\'t have access to.'
 ); // array
 
 ?>

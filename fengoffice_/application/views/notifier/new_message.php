@@ -4,6 +4,16 @@
 ?><?php echo "\r\n"
 ?><?php echo lang('new message posted', $new_message->getTitle()) ?>.<?php echo "\r\n"
 ?><?php echo "\r\n"
+?><?php echo lang('text') ?>:<?php echo "\r\n"
+?><?php echo "\r\n"
+?><?php
+$text = '> '.$new_message->getText();
+$text = str_replace("\r\n", "\n", $text);
+$text = str_replace("\r", "\n", $text);
+$text = str_replace("\n", "\r\n> ", $text);
+echo $text ?><?php echo "\r\n"
+?><?php echo "\r\n"
+?><?php echo "\r\n"
 ?><?php echo lang('view new message') ?>: <?php echo str_replace('&amp;', '&', $new_message->getViewUrl()) ?><?php echo "\r\n"
 ?><?php echo "\r\n"
 ?><?php echo "\r\n"

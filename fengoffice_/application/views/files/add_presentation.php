@@ -13,7 +13,7 @@
 		$url = str_replace("&amp;", "&", get_url('files', 'save_presentation', array(
 				'id' => $file->getId())));
 		$filename = $file->getFilename();
-		$slimContent = escapeSLIM($file->getFileContent());
+		$slimContent = escapeSLIM(remove_css_and_scripts($file->getFileContent()));
 	} else {
 		$url = str_replace("&amp;", "&", get_url('files', 'save_presentation'));
 		$filename = '';
@@ -32,7 +32,7 @@
 		container: body,
 		rootDir: '<?php echo SLIMEY_PATH ?>',
 		imagesDir: '<?php echo get_theme_url("slimey/images/") ?>',
-		filename: '<?php echo ($file->isNew()?'':$file->getFilename()) ?>',
+		filename: <?php echo ($file->isNew()?"''":json_encode($file->getFilename())) ?>,
 		fileId: <?php echo ($file->isNew()?0:$file->getId()) ?>,
 		slimContent: '<?php echo $slimContent ?>',
 		saveUrl: '<?php echo $url ?>'

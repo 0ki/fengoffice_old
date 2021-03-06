@@ -130,5 +130,13 @@
 	"weeks" => "semanas",
 	"months" => "meses",
 	"years" => "años",
+  
+  	'invitations' => 'Invitaciones',
+	'pending response' => 'Respuesta pendiente',
+	'participate' => 'Participa',
+	'no invitations to this event' => 'No se enviaron invitaciones para este evento',
+	'duration must be at least 15 minutes' => 'La duración debe ser al menos 15 minutos',
+
+	'event dnx' => 'El evento requerido no existe',
   ); // array
 ?>

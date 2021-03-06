@@ -4,7 +4,7 @@
   *
   * @author Carlos Palma <chonwil@gmail.com>
   */
-  abstract class BaseContacts extends DataManager {
+  abstract class BaseContacts extends ProjectDataObjects {
   
     /**
     * Column name => Column type map
@@ -67,6 +67,8 @@
      'created_by_id' => DATA_TYPE_INTEGER,
      'updated_on' => DATA_TYPE_DATETIME,
      'updated_by_id' => DATA_TYPE_INTEGER,
+     'trashed_on' => DATA_TYPE_DATETIME,
+     'trashed_by_id' => DATA_TYPE_INTEGER,
     );
   
     /**

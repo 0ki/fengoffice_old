@@ -25,8 +25,8 @@ og.WebpageManager = function() {
 				'load': function() {
 					var d = this.reader.jsonData;
 					og.processResponse(d);
-					var ws = Ext.getCmp('workspace-panel').getActiveWorkspace().name;
-					var tag = Ext.getCmp('tag-panel').getSelectedTag().name;
+					var ws = og.clean(Ext.getCmp('workspace-panel').getActiveWorkspace().name);
+					var tag = og.clean(Ext.getCmp('tag-panel').getSelectedTag().name);
 					if (d.totalCount == 0) {
 						if (tag) {
 							this.fireEvent('messageToShow', lang("no objects with tag message", lang("web pages"), ws, tag));
@@ -62,7 +62,7 @@ og.WebpageManager = function() {
     function renderName(value, p, r) {
 		var result = '';
 		var name = String.format('<a href="" onclick="window.open(\'{1}\'); return false"; title="' 
-			+ lang('open link in new window', value) + '">{0}</a>', htmlentities(value), r.data.url);
+			+ lang('open link in new window', value) + '">{0}</a>', og.clean(value), r.data.url);
 		
 		var projectsString = '';
 	    if (r.data.wsIds != ''){
@@ -118,7 +118,8 @@ og.WebpageManager = function() {
 			id: 'description',
 			header: lang("description"),
 			dataIndex: 'description',
-			width: 120
+			width: 120,
+			renderer: og.clean
 		},{
 			id: 'tags',
 			header: lang("tags"),
@@ -138,12 +139,12 @@ og.WebpageManager = function() {
 			}
 		}),
 		delWebpage: new Ext.Action({
-			text: lang('delete'),
-            tooltip: lang('delete selected webpages'),
-            iconCls: 'ico-delete',
+			text: lang('move to trash'),
+            tooltip: lang('move selected objects to trash'),
+            iconCls: 'ico-trash',
 			disabled: true,
 			handler: function() {
-				if (confirm(lang('confirm delete webpages'))) {
+				if (confirm(lang('confirm move to trash'))) {
 					this.load({
 						action: 'delete',
 						webpages: getSelectedIds()

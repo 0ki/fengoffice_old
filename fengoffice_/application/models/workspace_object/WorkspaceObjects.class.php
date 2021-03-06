@@ -54,6 +54,13 @@ class WorkspaceObjects extends BaseWorkspaceObjects {
 		}
 	} // isObjectInWorkspace
 	
+	
+	static function addObjectToWorkspace($object, $workspace) {
+		$wo = new WorkspaceObject();
+		$wo->setWorkspace($workspace);
+		$wo->setObject($object);
+		$wo->save();
+	}
 } // WorkspaceObjects
 
 ?>

@@ -2,7 +2,7 @@
   set_page_title(lang('assign to project'));
   
   if($contact->canEdit(logged_user())) {
-	add_page_action(lang('update picture'), $contact->getUpdatePictureUrl(), 'ico-picture');
+	add_page_action(lang('edit picture'), $contact->getUpdatePictureUrl(), 'ico-picture');
     add_page_action(lang('edit contact'), $contact->getEditUrl(), 'ico-edit');
   } // if
 
@@ -27,6 +27,7 @@ foreach ($projects as $project) {
 <div class="assignToProject">
 <div class="coInputSeparator"></div>
 <div class="coInputMainBlock adminMainBlock">
+<div class="coInputTitle"><?php echo clean($contact->getDisplayName()) ?></div>
 
 <table style="min-width:400px;margin-top:10px;"><tr>
 	<th></th>
@@ -36,7 +37,7 @@ foreach ($projects as $project) {
 	<tr>
 	<td style="padding: 5px;"></td>
 	<td style="padding: 5px;">
-	<?php echo select_workspaces("ws_ids", $projects, $selected, $genid); ?>
+	<?php echo select_workspaces("ws_ids", null, $selected, $genid); ?>
 	</td>
 	<td style="padding: 5px;">  
 <?php
@@ -52,7 +53,7 @@ foreach ($projects as $project) {
 <?php echo submit_button(lang('update contact')) ?>
 </div>
 </div>
-</div>
+
 
 </form>
 

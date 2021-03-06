@@ -243,6 +243,7 @@ class AccountController extends ApplicationController {
 	          'can_manage_workspaces' => $user->getCanManageWorkspaces(),
 	          'can_manage_configuration' => $user->getCanManageConfiguration(),
 	          'can_manage_contacts' => $user->getCanManageContacts(),
+				'can_manage_templates' => $user->getCanManageTemplates(),
 			); // array			
 		} // if
 
@@ -292,6 +293,7 @@ class AccountController extends ApplicationController {
 				$user->setCanManageConfiguration(false);
 				$user->setCanManageWorkspaces(false);
 				$user->setCanManageContacts(false);
+				$user->setCanManageTemplates(false);
 				$user->setFromAttributes($user_data);
 				$user->save();
 				DB::commit();

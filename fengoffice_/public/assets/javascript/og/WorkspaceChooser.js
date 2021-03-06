@@ -8,6 +8,7 @@ og.WorkspaceChooserTree = function(config) {
 	Ext.applyIf(config, {
 		autoScroll: true,
 		rootVisible: false,
+		loadWorkspacesFrom: false,
 		lines: false,
 		root: new Ext.tree.TreeNode(lang('workspaces')),	
 		collapseFirst: false,
@@ -48,7 +49,17 @@ og.WorkspaceChooserTree = function(config) {
 	);
 	this.workspaces.ws = {id: 0, n: lang('all')};
 	
-	if (workspaces) {
+	if (workspaces || this.loadWorkspacesFrom) {
+		if (this.loadWorkspacesFrom) {
+			workspaces = Ext.getCmp(this.loadWorkspacesFrom).getWsList(0, true);
+			for (var i=0; i < workspaces.length; i++) {
+				workspaces[i].n = workspaces[i].name;
+				workspaces[i].p = workspaces[i].parent;
+				workspaces[i].rp = workspaces[i].realParent;
+				workspaces[i].d = workspaces[i].depth;
+				workspaces[i].c = workspaces[i].color;
+			}
+		}
 		if (typeof workspaces == "string") {
 			workspaces = Ext.util.JSON.decode(workspaces);
 		}
@@ -71,8 +82,6 @@ og.WorkspaceChooserTree = function(config) {
 		'selectionchange' : function(sm, node) {
 			if (node && !this.pauseEvents) {
 				this.fireEvent("wsselected", node.ws);
-				//var tf = this.getTopToolbar().items.get('workspace-filter' + genid);
-				//tf.setValue("");
 				this.clearFilter();
 				node.expand();
 				node.ensureVisible();
@@ -119,7 +128,7 @@ Ext.extend(og.WorkspaceChooserTree, Ext.tree.TreePanel, {
 		}
 		var config = {
 			cls: 'x-tree-noicon',
-			text: ws.n,
+			text: og.clean(ws.n),
 			id: 'ws' + ws.id,
 			checked: false,
 			listeners: {

@@ -24,7 +24,9 @@ var cal_actual_view = 'viewweek';
 // Actual user filter
 var actual_user_filter = '0'; // 0=logged user, -1=all users
 // Actual state filter
-var actual_state_filter = '-1'; // -1=all states
+var actual_state_filter = ' 0 1 3'; // -1=all states
+
+var executing_my_calendar = false; //flag to avoid handler calls when changing the values of checks
 
 function changeView(action, day, month, year, u_filter, s_filter) {
 	var url = og.getUrl('event', action, {
@@ -37,6 +39,16 @@ function changeView(action, day, month, year, u_filter, s_filter) {
 	og.openLink(url, null);
 }
 
+
+function addStateFilter(filter) {
+	actual_state_filter += ' ' + filter;
+}
+
+function removeStateFilter(filter) {
+	actual_state_filter = actual_state_filter.replace('/-1/', '');
+	actual_state_filter = actual_state_filter.replace(' ' + filter, '');
+}
+
 // Filter by Invitation State
 viewActionsState = {
 	all: new Ext.Action({
@@ -47,42 +59,62 @@ viewActionsState = {
 			changeView(cal_actual_view, date.getDate(), date.getMonth() + 1, date.getFullYear(), actual_user_filter, actual_state_filter);
 		}
 	}),
-	pending: new Ext.Action({
-		iconCls: 'ico-mail-mark-unread',
+	pending: {
+		//iconCls: 'ico-mail-mark-unread',
+		id: 'check_inv_pending',
         text: lang('view pending response'),
-		handler: function() {
-			actual_state_filter = 0;
-			var date = calToolbarDateMenu.picker.getValue();
-			changeView(cal_actual_view, date.getDate(), date.getMonth() + 1, date.getFullYear(), actual_user_filter, actual_state_filter);
+		checked: true,
+		checkHandler: function() {
+			if (!executing_my_calendar) {
+				if (this.checked) addStateFilter('0');
+				else removeStateFilter('0');
+				var date = calToolbarDateMenu.picker.getValue();
+				changeView(cal_actual_view, date.getDate(), date.getMonth() + 1, date.getFullYear(), actual_user_filter, actual_state_filter);
+			}
 		}
-	}),
-	yes: new Ext.Action({
-		iconCls: 'ico-complete',
+	},
+	yes: {
+		//iconCls: 'ico-complete',
+        id: 'check_inv_yes',
         text: lang('view will attend'),
-		handler: function() {
-			actual_state_filter = 1;
-			var date = calToolbarDateMenu.picker.getValue();
-			changeView(cal_actual_view, date.getDate(), date.getMonth() + 1, date.getFullYear(), actual_user_filter, actual_state_filter);
+		checked: true,
+		checkHandler: function() {
+			if (!executing_my_calendar) {
+				if (this.checked) addStateFilter('1');
+				else removeStateFilter('1');
+				var date = calToolbarDateMenu.picker.getValue();
+				changeView(cal_actual_view, date.getDate(), date.getMonth() + 1, date.getFullYear(), actual_user_filter, actual_state_filter);
+			}
 		}
-	}),
-	no: new Ext.Action({
-		iconCls: 'ico-delete',
+	},
+	no: {
+		//iconCls: 'ico-delete',
+        id: 'check_inv_no',
         text: lang('view will not attend'),
-		handler: function() {
-			actual_state_filter = 2;
-			var date = calToolbarDateMenu.picker.getValue();
-			changeView(cal_actual_view, date.getDate(), date.getMonth() + 1, date.getFullYear(), actual_user_filter, actual_state_filter);
+		checked: false,
+		checkHandler: function() {
+			if (!executing_my_calendar) {
+				if (this.checked) addStateFilter('2');
+				else removeStateFilter('2');
+				var date = calToolbarDateMenu.picker.getValue();
+				changeView(cal_actual_view, date.getDate(), date.getMonth() + 1, date.getFullYear(), actual_user_filter, actual_state_filter);
+			}
 		}
-	}),
-	maybe: new Ext.Action({
-		iconCls: 'ico-help',
+	},
+	maybe: {
+		//iconCls: 'ico-help',
+        id: 'check_inv_maybe',
         text: lang('view maybe attend'),
-		handler: function() {
-			actual_state_filter = 3;
-			var date = calToolbarDateMenu.picker.getValue();
-			changeView(cal_actual_view, date.getDate(), date.getMonth() + 1, date.getFullYear(), actual_user_filter, actual_state_filter);
+		checked: true,
+		checkHandler: function() {
+			if (!executing_my_calendar) {
+				if (this.checked) addStateFilter('3');
+				else removeStateFilter('3');
+				var date = calToolbarDateMenu.picker.getValue();
+				changeView(cal_actual_view, date.getDate(), date.getMonth() + 1, date.getFullYear(), actual_user_filter, actual_state_filter);
+			}
 		}
-	})
+	}
 };
 
 // Toolbar
@@ -93,6 +125,7 @@ og.CalendarToolbarItems = [
         iconCls: 'ico-new',
         handler: function() {
         	var date = calToolbarDateMenu.picker.getValue();
+        	hideCalendarToolbar();
 			changeView('add', date.getDate(), date.getMonth() + 1, date.getFullYear(), actual_user_filter, actual_state_filter);
 		}
 	}),
@@ -170,6 +203,13 @@ og.CalendarToolbarItems = [
 		        iconCls: 'ico-calendar',
 		        handler: function() {
 					actual_user_filter = 0;
+					actual_state_filter = ' 0 1 3';
+					executing_my_calendar = true; //disable handler executions
+					Ext.getCmp('check_inv_pending').setChecked(true);
+					Ext.getCmp('check_inv_yes').setChecked(true);
+					Ext.getCmp('check_inv_no').setChecked(false);
+					Ext.getCmp('check_inv_maybe').setChecked(true);
+					executing_my_calendar = false; //enable handler executions 
 					var date = calToolbarDateMenu.picker.getValue();
 					changeView(cal_actual_view, date.getDate(), date.getMonth() + 1, date.getFullYear(), actual_user_filter, actual_state_filter);
 				}
@@ -182,9 +222,7 @@ og.CalendarToolbarItems = [
 					viewActionsState.pending,
 					viewActionsState.yes,
 					viewActionsState.no,
-					viewActionsState.maybe,
-					'-',
-					viewActionsState.all
+					viewActionsState.maybe
 				]}
 			}),
 			new Ext.Action({

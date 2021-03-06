@@ -16,12 +16,12 @@
 			foreach($comments as $comment) {
 				$counter++;
 				$options = array();
-				if ($comment->canEdit(logged_user())) {
+				if ($comment->canEdit(logged_user()) && !$__comments_object->isTrashed()) {
 					$options[] = '<a class="internalLink" href="' . $comment->getEditUrl() . '">' . lang('edit') . '</a>';
 					if ($comment->canLinkObject(logged_user(), $comment->getProject()))
 						$options[] = render_link_to_object_2($comment,lang('link objects'));
 				}
-				if ($comment->canDelete(logged_user())) $options[] = '<a class="internalLink" href="' . $comment->getDeleteUrl() . '" onclick="return confirm(\'' . lang('confirm delete comment') . '\')">' . lang('delete') . '</a>';
+				if ($comment->canDelete(logged_user()) && !$__comments_object->isTrashed()) $options[] = '<a class="internalLink" href="' . $comment->getDeleteUrl() . '" onclick="return confirm(\''.lang('confirm move to trash').'\')">' . lang('move to trash') . '</a>';
 ?>
 			<div class="comment <?php echo $counter % 2 ? 'even' : 'odd' ?>" id="comment<?php echo $comment->getId() ?>">
 		<?php 	if($comment->isPrivate()) { ?>
@@ -32,7 +32,7 @@
 				<div class="commentHead">
 					<table style="width:100%"><tr><td>
 					<span><a class="internalLink" href="<?php echo $comment->getViewUrl() ?>" title="<?php echo lang('permalink') ?>">#<?php echo $counter ?></a>:
-					</span> <?php echo lang('comment posted on by', format_datetime($comment->getUpdatedOn()), $comment->getCreatedByCardUrl(), $comment->getCreatedByDisplayName()) ?>
+					</span> <?php echo lang('comment posted on by', format_datetime($comment->getUpdatedOn()), $comment->getCreatedByCardUrl(), clean($comment->getCreatedByDisplayName())) ?>
 					</td>
 		<td style="text-align:right">
 		<?php 		if(count($options)) { ?>
@@ -54,7 +54,7 @@
 		<?php 	} // if ?>
 					<td style="text-align:left">
 						<?php echo nl2br(clean($comment->getText())) ?>
-					</td><?php $object_links_render = render_object_links($comment, $comment->canEdit(logged_user()), true, false);
+					</td><?php $object_links_render = render_object_links($comment, ($comment->canEdit(logged_user()) && !$__comments_object->isTrashed()), true, false);
 						if ($object_links_render != '') { ?><td style="width:173px">
 						<?php echo $object_links_render  ?>
 					</td><?php } ?></tr></table>
@@ -67,6 +67,6 @@
 
 <?php } ?>
 
-<?php if($__comments_object->canComment(logged_user())) { ?>
+<?php if($__comments_object->canComment(logged_user()) && !$__comments_object->isTrashed()) { ?>
 	<?php echo render_comment_form($__comments_object) ?>
 <?php } // if ?>

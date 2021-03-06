@@ -25,7 +25,7 @@ function cal_error($s){
 }
 
 
-function cal_get_ws_color($ws_color, &$ws_style, &$ws_class, &$txt_color){
+function cal_get_ws_color($ws_color, &$ws_style, &$ws_class, &$txt_color, &$border_color){
 	$txt_color = '#fff';
 	if ($ws_color>0 && $ws_color<=12){
 		$ws_style = "";
@@ -38,6 +38,26 @@ function cal_get_ws_color($ws_color, &$ws_style, &$ws_class, &$txt_color){
 		$ws_style = "color: #fff;background-color: #C5C7C1;border-color: #C5C7C1;";
 		$ws_class = "";	
 	}
+	
+	if ($ws_color == 0) $border_color = '#AAAAAA';
+	else {
+		switch ($ws_color % 12) {
+			case 1: $border_color = '#5A6986'; break;
+			case 2: $border_color = '#206CE1'; break;
+			case 3: $border_color = '#0000CC'; break;
+			case 4: $border_color = '#5229A3'; break;
+			case 5: $border_color = '#854F61'; break;
+			case 6: $border_color = '#CC0000'; break;
+			case 7: $border_color = '#EC7000'; break;
+			case 8: $border_color = '#B36D00'; break;
+			case 9: $border_color = '#AB8B00'; break;
+			case 10: $border_color = '#636330'; break;
+			case 11: $border_color = '#64992C'; break;
+			case 0: $border_color = '#006633'; break;
+			default: $border_color = '#333333'; break;
+		}
+	}
+	
 }
 
 

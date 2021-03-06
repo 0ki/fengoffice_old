@@ -4,7 +4,7 @@ og.EventPopUp = function(data,config) {
     og.EventPopUp.superclass.constructor.call(this, Ext.apply(config, {
 		y: 50,
 		width: 350,
-		height: 170,
+		height: 230,
 		id: 'add-event',
 		layout: 'border',
 		modal: true,
@@ -33,7 +33,7 @@ og.EventPopUp = function(data,config) {
 					this.form = new Ext.FormPanel({
 								        labelWidth: 75, // label settings here cascade unless overridden
 								        frame:false,
-								        height: 80,
+								        height: 110,
 								        url: '',
 								        bodyStyle:'padding:20px 20px 0',
 								        defaultType: 'textfield',
@@ -47,6 +47,33 @@ og.EventPopUp = function(data,config) {
 								                allowBlank:false
 								            },
 								            {
+								            	name: 'event[start_time]',
+								                id: 'start_time',
+								                xtype: 'timefield',
+								                width: 80,
+								                fieldLabel: lang('event start time'),
+								                format: data.time_format,
+								                editable: false,
+								                value: data.start_time
+											},
+								            {
+								            	name: 'event[duration]',
+								                id: 'duration',
+								                xtype: 'timefield',
+								                width: 60,
+								                fieldLabel: lang('duration'),
+								                format: 'G:i',
+								                editable: false,
+								                value: data.durationhour + ':' + (data.durationmin < 10 ? '0':'') + data.durationmin
+											},
+											{
+								            	xtype: 'checkbox',
+								                name: 'event[all_day_event]',
+								                id: 'all_day_event',
+								                fieldLabel: lang('all day event'),
+								                value: (data.type_id == 2)
+								            },
+											{
 								            	xtype: 'hidden',
 								                name: 'event[start_day]',
 								                id: 'day',
@@ -102,6 +129,11 @@ og.EventPopUp = function(data,config) {
 								            },
 								            {
 								            	xtype: 'hidden',
+								                id: 'hide_calendar_toolbar',
+								                value: data.hide_calendar_toolbar
+								            },
+								            {
+								            	xtype: 'hidden',
 								                name: 'view',
 								                id: 'view',
 								                value: data.view
@@ -122,8 +154,12 @@ og.EventPopUp = function(data,config) {
 
 Ext.extend(og.EventPopUp, Ext.Window, {
 	accept: function() {		
+		duration_split = Ext.getCmp('duration').getValue().split(':');
+		Ext.getCmp('durationhour').setValue(duration_split[0]);
+		Ext.getCmp('durationmin').setValue(duration_split[1]);
+		
 		this.hide();
-		og.openLink(og.getUrl('event', 'add'),{post:'popup=true&event[start_day]='+Ext.getCmp('day').getValue()+'&event[start_month]='+Ext.getCmp('month').getValue()+'&event[start_year]='+Ext.getCmp('year').getValue()+'&event[hour]='+Ext.getCmp('hour').getValue()+'&event[minute]='+Ext.getCmp('min').getValue()+'&event[type_id]='+Ext.getCmp('type_id').getValue()+'&event[durationhour]='+Ext.getCmp('durationhour').getValue()+'&event[durationmin]='+Ext.getCmp('durationmin').getValue()+'&view='+Ext.getCmp('view').getValue()+'&event[start_value]='+Ext.getCmp('start_value').getValue()+'&event[subject]='+Ext.getCmp('subject').getValue()});
+		og.openLink(og.getUrl('event', 'add'),{post:'popup=true&event[start_day]='+Ext.getCmp('day').getValue()+'&event[start_month]='+Ext.getCmp('month').getValue()+'&event[start_year]='+Ext.getCmp('year').getValue()+'&event[hour]='+Ext.getCmp('hour').getValue()+'&event[minute]='+Ext.getCmp('min').getValue()+'&event[type_id]='+Ext.getCmp('type_id').getValue()+'&event[durationhour]='+Ext.getCmp('durationhour').getValue()+'&event[durationmin]='+Ext.getCmp('durationmin').getValue()+'&view='+Ext.getCmp('view').getValue()+'&event[start_value]='+Ext.getCmp('start_value').getValue()+'&event[start_time]='+Ext.getCmp('start_time').getValue()+'&event[subject]='+Ext.getCmp('subject').getValue()});
 	},
 	
 	cancel: function() {
@@ -146,21 +182,46 @@ og.EventPopUp.show = function(callback, data, scope) {
 	Ext.getCmp('subject').setValue('');
 	Ext.getCmp('durationhour').setValue(data.durationhour);
 	Ext.getCmp('durationmin').setValue(data.durationmin);
-	Ext.getCmp('start_value').setValue(data.start_value);	
-	Ext.getCmp('view').setValue(data.view);	
+	Ext.getCmp('start_value').setValue(data.start_value);
+	Ext.getCmp('start_time').setValue(data.start_time);
+	Ext.getCmp('view').setValue(data.view);
+	Ext.getCmp('hide_calendar_toolbar').setValue(data.hide_calendar_toolbar);
+	Ext.getCmp('duration').setValue(data.durationhour + ':' + (data.durationmin < 10 ? '0':'') + data.durationmin);
 	this.dialog.purgeListeners();
 	this.dialog.show();
 	var pos = this.dialog.getPosition();
 	if (pos[0] < 0) pos[0] = 0;
 	if (pos[1] < 0) pos[1] = 0;
 	this.dialog.setPosition(pos[0], pos[1]);
+	Ext.getCmp('all_day_event').on('check', function(scope, checked) {
+		if (checked) {
+			Ext.getCmp('type_id').setValue('2');
+			Ext.getCmp('start_time').disable();
+			Ext.getCmp('duration').disable();
+		} else {
+			Ext.getCmp('type_id').setValue('1');
+			Ext.getCmp('start_time').enable();
+			Ext.getCmp('duration').enable();
+		}
+	});
+	Ext.getCmp('all_day_event').setValue(data.type_id == 2 ? true : false);	
 	Ext.getCmp('subject').focus();
 }
 
 
 og.EventPopUp.goToEdit = function (){
 	var sub = Ext.getCmp('subject').getValue();	
+	var st_time = Ext.getCmp('start_time').getValue();
+	var ev_type = Ext.getCmp('type_id').getValue();
 	var data = this.the_data;
-	og.openLink(og.getUrl('event', 'add', {subject: sub, day:data.day , month: data.month, year: data.year, hour: data.hour, minute: data.minute, durationhour:data.durationhour, durationmin:data.durationmin, start_value:data.start_value, type_id:data.type_id, view:data.view}), null);
+	
+	if (Ext.getCmp('hide_calendar_toolbar').getValue() == 1) 
+		hideCalendarToolbar();
+		
+	duration_split = Ext.getCmp('duration').getValue().split(':');
+	data.durationhour = duration_split[0];
+	data.durationmin = duration_split[1];
+	
+	og.openLink(og.getUrl('event', 'add', {subject: sub, day:data.day , month: data.month, year: data.year, hour: data.hour, minute: data.minute, durationhour:data.durationhour, durationmin:data.durationmin, start_value:data.start_value, start_time:st_time, type_id:ev_type, view:data.view}), null);
 	this.dialog.hide();	
 }

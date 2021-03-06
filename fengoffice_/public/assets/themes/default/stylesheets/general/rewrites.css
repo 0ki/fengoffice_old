@@ -198,7 +198,7 @@ table.blank th, table.blank td {
 }
 
 .odd {
-  background-color: #e8e8e8;
+  background-color: #eeeef3;
 }
 
 .openTimeslot {
@@ -317,6 +317,6 @@ a.selected {
 }
 
 a.iCalSubscribe {
-  background: url('../../images/icons/icalendar.png') no-repeat;
+  background: url(../../images/icons/icalendar.png) no-repeat;
   padding: 4px 0 0 20px;
 }

@@ -33,7 +33,7 @@ class Project extends BaseProject {
 	 *
 	 * @var array
 	 */
-	protected $searchable_columns = array('name', 'description', 'email');
+	protected $searchable_columns = array('name', 'description');
 	
 	// ---------------------------------------------------
 	//  Parent workspace management
@@ -77,13 +77,7 @@ class Project extends BaseProject {
 			return false;
 		}
 		$depth = $this->getDepth();
-		for ($i = $depth + 1; $i <= 10; $i++) {
-			if ($this->getPID($i) == $workspace->getId()) {
-				return true;
-			}
-		}
-		return false;
-		
+	 	return $workspace->getPID($depth) == $this->getId();
 	}
 	
 	function getParentIds(){
@@ -120,6 +114,16 @@ class Project extends BaseProject {
 		return $result;
 	}
 	
+
+	function getPath(){
+		$path = $this->getName();
+		if ($this->getParentWorkspace() instanceof Project){
+			$path = $this->getParentWorkspace()->getPath() . ' / ' . $path;
+		}
+		
+		return $path;
+	}
+	
 	// ---------------------------------------------------
 	//  Workspace Hierarchy
 	// ---------------------------------------------------
@@ -154,8 +158,13 @@ class Project extends BaseProject {
 	function canSetAsParentWorkspace(Project $workspace){
 		if ($workspace->getDepth() < $this->getDepth())
 			return true;
-		else
+		else {
+			
+			if($this->isParentOf($workspace))
+				return false; 
+
 			return (($workspace->getDepth() - $this->getDepth() + $this->getMaxBranchDepth()) <= 10);
+		}
 	}
 	
 	function setParentWorkspace(Project $workspace = null) {

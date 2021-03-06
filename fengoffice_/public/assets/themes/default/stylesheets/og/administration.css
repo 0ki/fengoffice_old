@@ -32,3 +32,34 @@
 	background-color:white;
 }
 
+/* templates */
+
+.bg-ico {
+	background-repeat: no-repeat;
+	background-position: 10px center;
+	padding-left: 34px;
+}
+
+.og-add-template-object {
+	position: relative;
+	background-repeat: no-repeat;
+	padding-left: 34px;
+	height: 25px;
+	width: 400px;
+	vertical-align:'middle';
+	line-height:25px;
+	background-position: 10px center;
+}
+.og-add-template-object .name {
+	width: 300px;
+	overflow: hidden;
+}
+
+.removeDiv {
+	position: absolute;
+	line-height: 25px;
+	right: 0;
+	top: 0;
+	cursor: pointer;
+}
+

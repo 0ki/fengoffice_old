@@ -50,7 +50,8 @@
   
   // If script is not installed config.php will return false. Othervise it will
   // return NULL. If we get false redirect to install folder
-  if(!include_once(ROOT . '/config/config.php')) {
+  $config_is_set = @include_once(ROOT . '/config/config.php');
+  if(!is_bool($config_is_set) || !$config_is_set) {
     print "OpenGoo is not installed. Please redirect your browser to <a href=\"" . PUBLIC_FOLDER . "/install\">" . PUBLIC_FOLDER . "/install</a> folder and follow installation procedure";
     die();
   } // if
@@ -78,8 +79,6 @@
   define('COOKIE_PATH', '/');
   define('COOKIE_DOMAIN', '');
   define('COOKIE_SECURE', false);
-  
-  define('USE_JS_CACHE', false); //to use this, Apache's mod_rewrite is needed with some rewrites set. Set more options in /library/combinator/combine.php (used for grouping gzip + cache).
   
   define('SLIMEY_PATH', ROOT_URL . '/public/assets/javascript/slimey/');
   

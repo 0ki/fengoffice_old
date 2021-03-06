@@ -78,9 +78,9 @@
 <td align="center">
     <div style="width:150px;display:block; margin-right:10px;margin-bottom:40px">
     <table width="100%" align="center"><tr><td align="center">
-    	<a class="internalLink" href="<?php echo get_url('administration', 'task_templates') ?>"><div class="coViewIconImage ico-large-tasks"></div></a>
-    </td></tr><tr><td align="center"><b><a class="internalLink" href="<?php echo get_url('administration', 'task_templates') ?>"><?php echo lang('task templates') ?></a></b>
-    	<br/><a class="internalLink coViewAction ico-add" href="<?php echo get_url('task','add_task',array('is_template'=>'true')) ?>"><?php echo lang('add task template') ?></a>
+    	<a class="internalLink" href="<?php echo get_url('template', 'index') ?>"><div class="coViewIconImage ico-large-template"></div></a>
+    </td></tr><tr><td align="center"><b><a class="internalLink" href="<?php echo get_url('template', 'index') ?>"><?php echo lang('templates') ?></a></b>
+    	<br/><a class="internalLink coViewAction ico-add" href="<?php echo get_url('template','add') ?>"><?php echo lang('add template') ?></a>
     </td></tr></table>
     </div>
 </td>

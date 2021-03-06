@@ -49,7 +49,11 @@
     
     'config option name upgrade_check_enabled' => 'Habilitar chequeo de actualizaciones',
     'config option desc upgrade_check_enabled' => 'Si escoge esta opción el sistema corroborara una vez al día si hay nuevas versiones disponibles de OpenGoo',
-    
+    'config option name work_day_start_time' => 'Hora de inicio de la jornada laboral',
+	'config option desc work_day_start_time' => 'Especifica la hora de comienzo de la jornada laboral',
+  	'config option name time_format_use_24' => 'Utilizar formato de 24 horas',
+  	'config option desc time_format_use_24' => 'Si está habilitado el formato de hora será \'hh:mm\' desde 00:00 hasta 23:59, sino las horas se utilizarán desde 1 a 12 utilizando AM o PM.',
+	
     // Mailing
     'config option name exchange_compatible' => 'Modo compatibilidad con Microsoft Exchange',
     'config option desc exchange_compatible' => 'Si utiliza el servidor Microsoft Exchange, elija esta opción para evitar algunos conocidos problemas de mailing.',
@@ -96,7 +100,7 @@
     'delete backup desc' => 'Elimina el ultimo respaldo, para que no este disponible para descarga. Se recomienda borrar los respaldos luego de descargarlos.',
     'backup' => 'Respaldo',
     'backup menu' => 'Menú de respaldos',
-   	'last backup' => 'El ultimo respaldo fue creado en',
+   	'last backup' => 'El último respaldo fue creado en',
    	'no backups' => 'No hay respaldos para descargar',
    	'user ws config option name always show unread mail in dashboard' => 'Siempre mostrar correo no leído en la vista de resumen',
    	'user ws config option desc always show unread mail in dashboard' => 'Al seleccionar NO sólo se mostraran los correos del espacio de trabajo activo',
@@ -110,6 +114,33 @@
   	'user ws config option name task panel status' => 'Estado',
   	'user ws config option name task panel filter' => 'Filtrar por',
   	'user ws config option name task panel filter value' => 'Valor del filtro',
+  	
+	'config option name days_on_trash' => 'Días en la papelera',
+    'config option desc days_on_trash' => 'Cuántos días se mantiene un objeto en la papelera antes de ser borrado automaticamente. Si es cero, los objetos no ser borrar automaticamente.',
+    'templates' => 'Plantillas',
+    'add template' => 'Agregar plantilla',
+    'confirm delete template' => 'Está seguro de que desea borrar esta plantilla?',
+    'no templates' => 'No hay plantillas',
+    'template name required' => 'El nombre de la plantilla es requerido',
+    'can manage templates' => 'Puede manejar plantillas',
+    'new template' => 'Nueva plantilla',
+    'edit template' => 'Editar plantilla',
+    'template dnx' => 'La plantilla no existe',
+    'success edit template' => 'Plantilla modificada correctamente',
+    'log add cotemplates' => '{0} agregado',
+    'log edit cotemplates' => '{0} modificado',
+    'success delete template' => 'Plantilla borrada correctamente',
+    'error delete template' => 'Error al borrar la plantilla',
+    'objects' => 'Objetos',
+    'objects in template' => 'Objectos en la plantilla',
+    'no objects in template' => 'No hay objetos en la plantilla',
+    'add to a template' => 'Agregar a plantilla',
+    'add an object to template' => 'Agregar un objeto a esta plantilla',
+    'you are adding object to template' => 'Está agregando {0} \'{1}\' a una plantilla. Elija una plantilla o cree una {0}.',
+    'success add object to template' => 'Objeto correctamente agregado a template',
+    'object type not supported' => 'Este tipo de objeto no está soportado para plantillas',
+    'assign template to workspace' => 'Asignar template a espacio de trabajo',
+
   ); // array
 
 ?>

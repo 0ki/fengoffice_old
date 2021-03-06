@@ -223,7 +223,11 @@
   * @return null
   */
   function force_mkdir($path, $chmod = null) {
-    if(is_dir($path)) return true;
+  	return mkdir($path, $chmod, true);
+  } // force_mkdir
+  
+  function force_mkdir_from_base($base, $path, $chmod = null) {
+    if(is_dir(with_slash($base).$path)) return true;
     $real_path = str_replace('\\', '/', $path);
     $parts = explode('/', $real_path);
    
@@ -233,8 +237,7 @@
         {
               // Skip first on windows
               if($forced_path == '') {
-                $start = substr(__FILE__, 0, 1) == '/' ? '/' : '';
-                $forced_path = $start . $part;
+                $forced_path = with_slash($base) . $part;
               } else {
                 $forced_path .= '/' . $part;
               } // if

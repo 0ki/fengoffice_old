@@ -82,13 +82,13 @@
 }
 .toggle_collapsed {
 	background-repeat: no-repeat;
-	background-image: url(../../images/menu/plus.gif);
+	background-image: url(../../images/16x16/plus.gif);
 	padding-left: 20px;
 	cursor: pointer;
 }
 .toggle_expanded {
 	background-repeat: no-repeat;
-	background-image: url(../../images/menu/minus.gif);
+	background-image: url(../../images/16x16/minus.gif);
 	padding-left: 20px;
 	cursor: pointer;
 }

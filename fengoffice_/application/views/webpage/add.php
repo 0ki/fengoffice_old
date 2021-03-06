@@ -1,8 +1,15 @@
 <?php 
   set_page_title($webpage->isNew() ? lang('add webpage') : lang('edit webpage'));
   $project = $webpage->getProject();
-  if (!$webpage->isNew()) 
-  	add_page_action(lang('delete webpage'), "javascript:if(confirm(lang('confirm delete webpage'))) og.openLink('" . $webpage->getDeleteUrl()."');", 'ico-delete');
+  $genid = gen_id();
+  if (!$webpage->isNew()) { 
+  		if ($webpage->isTrashed()) {
+    		add_page_action(lang('restore from trash'), "javascript:if(confirm(lang('confirm restore objects'))) og.openLink('" . $webpage->getUntrashUrl() ."');", 'ico-restore');
+    		add_page_action(lang('delete permanently'), "javascript:if(confirm(lang('confirm delete permanently'))) og.openLink('" . $webpage->getDeletePermanentlyUrl() ."');", 'ico-delete');
+    	} else {
+    		add_page_action(lang('move to trash'), "javascript:if(confirm(lang('confirm move to trash'))) og.openLink('" . $webpage->getTrashUrl() ."');", 'ico-trash');
+    	}
+  }
 ?>
 
 <form style='height:100%;background-color:white' class="internalForm" action="<?php echo $webpage->isNew() ? get_url('webpage', 'add') : $webpage->getEditUrl() ?>" method="post">
@@ -25,7 +32,7 @@
 		<a href="#" class="option" tabindex=0 onclick="og.toggleAndBolden('add_webpage_select_workspace_div', this)"><?php echo lang('workspace') ?></a> - 
 		<a href="#" class="option" tabindex=0 onclick="og.toggleAndBolden('add_webpage_tags_div', this)"><?php echo lang('tags') ?></a> - 
 		<a href="#" class="option" tabindex=0 onclick="og.toggleAndBolden('add_webpage_description_div', this)"><?php echo lang('description') ?></a> - 
-		<a href="#" class="option" tabindex=0 onclick="og.toggleAndBolden('add_webpage_properties_div', this)"><?php echo lang('properties') ?></a>
+		<a href="#" class="option" tabindex=0 onclick="og.toggleAndBolden('add_webpage_properties_div', this)"><?php echo lang('custom properties') ?></a>
 		<?php if($webpage->isNew() || $webpage->canLinkObject(logged_user(), $project)) { ?> - 
 			<a href="#" class="option" tabindex=0 onclick="og.toggleAndBolden('add_webpage_linked_objects_div', this)"><?php echo lang('linked objects') ?></a>
 		<?php } ?>
@@ -44,7 +51,7 @@
     <fieldset>
     <legend>
     	<?php echo lang('tags') ?></legend>
-    	<?php echo autocomplete_textfield("webpage[tags]", array_var($webpage_data, 'tags'), Tags::getTagNames(), lang("enter tags desc"), array("class" => "long")); ?>
+    	<?php echo autocomplete_tags_field("webpage[tags]", array_var($webpage_data, 'tags')); ?>
 	</fieldset>
 	</div>
 
@@ -58,7 +65,7 @@
   
 	<div id='add_webpage_properties_div' style="display:none">
 	<fieldset>
-	<legend><?php echo lang('properties') ?></legend>
+	<legend><?php echo lang('custom properties') ?></legend>
 		<?php echo render_object_properties('webpage', $webpage); ?>
 	</fieldset>
 	</div>

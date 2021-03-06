@@ -103,8 +103,8 @@ class ReportingController extends ApplicationController {
 		try {
 
 			DB::beginWork();
-			$chart->delete();
-			ApplicationLogs::createLog($chart, $chart->getProject(), ApplicationLogs::ACTION_DELETE);
+			$chart->trash();
+			ApplicationLogs::createLog($chart, $chart->getWorkspaces(), ApplicationLogs::ACTION_TRASH);
 			DB::commit();
 
 			flash_success(lang('success deleted chart', $chart->getTitle()));
@@ -190,7 +190,7 @@ class ReportingController extends ApplicationController {
 		$project_str = " AND `project_id` IN ($pids) ";
 		
 		list($charts, $pagination) = ProjectCharts::paginate(
-			array("conditions" => $tagstr . $permission_str . $project_str ,
+			array("conditions" => '`trashed_by_id` = 0 AND ' . $tagstr . $permission_str . $project_str ,
 	        		'order' => '`title` ASC'),
 			config_option('files_per_page', 10),
 			$page
@@ -268,59 +268,63 @@ class ReportingController extends ApplicationController {
 		$st = DateTimeValueLib::now();
 		$et = DateTimeValueLib::now();
 		switch (array_var($report_data, 'date_type')){
-			case 1:
+			case 1: //Today
 				$now = DateTimeValueLib::now();
 				$st = DateTimeValueLib::make(0,0,0,$now->getMonth(),$now->getDay(),$now->getYear());
 				$et = DateTimeValueLib::make(23,59,59,$now->getMonth(),$now->getDay(),$now->getYear());break;
-			case 2:
+			case 2: //This week
 				$now = DateTimeValueLib::now();
 				$monday = $now->getMondayOfWeek();
 				$nextMonday = $now->getMondayOfWeek()->add('w',1)->add('d',-1);
 				$st = DateTimeValueLib::make(0,0,0,$monday->getMonth(),$monday->getDay(),$monday->getYear());
 				$et = DateTimeValueLib::make(23,59,59,$nextMonday->getMonth(),$nextMonday->getDay(),$nextMonday->getYear());break;
-			case 3:
+			case 3: //Last week
 				$now = DateTimeValueLib::now();
 				$monday = $now->getMondayOfWeek()->add('w',-1);
 				$nextMonday = $now->getMondayOfWeek()->add('d',-1);
 				$st = DateTimeValueLib::make(0,0,0,$monday->getMonth(),$monday->getDay(),$monday->getYear());
 				$et = DateTimeValueLib::make(23,59,59,$nextMonday->getMonth(),$nextMonday->getDay(),$nextMonday->getYear());break;
-			case 4:
+			case 4: //This month
 				$now = DateTimeValueLib::now();
 				$st = DateTimeValueLib::make(0,0,0,$now->getMonth(),1,$now->getYear());
 				$et = DateTimeValueLib::make(23,59,59,$now->getMonth(),1,$now->getYear())->add('M',1)->add('d',-1);break;
-			case 5:
+			case 5: //Last month
 				$now = DateTimeValueLib::now();
 				$now->add('M',-1);
 				$st = DateTimeValueLib::make(0,0,0,$now->getMonth(),1,$now->getYear());
 				$et = DateTimeValueLib::make(23,59,59,$now->getMonth(),1,$now->getYear())->add('M',1)->add('d',-1);break;
-			case 6:
+			case 6: //Date interval
 				$st = getDateValue(array_var($report_data, 'start_value'));
 		       	$st = $st->beginningOfDay();
 				$et = getDateValue(array_var($report_data, 'end_value'));
-		       	$et = $et->endOfDay();
+		       	$et = $et->beginningOfDay()->add('d',1);
 				break;
 		}
 		
 		$st = new DateTimeValue($st->getTimestamp() - logged_user()->getTimezone() * 3600);
 		$et = new DateTimeValue($et->getTimestamp() - logged_user()->getTimezone() * 3600);
-		
+		$timeslotType = array_var($report_data, 'timeslot_type', 0);
 		$group_by = array();
-		if (array_var($report_data, 'group_by_1') != '0')
-			$group_by[] = array_var($report_data, 'group_by_1');
-		if (array_var($report_data, 'group_by_2') != '0')
-			$group_by[] = array_var($report_data, 'group_by_2');
-		if (array_var($report_data, 'group_by_3') != '0')
-			$group_by[] = array_var($report_data, 'group_by_3');
-		
-		$timeslotsArray = Timeslots::getTaskTimeslots($workspace, $user, $workspacesCSV, $st, $et, array_var($report_data, 'task_id', 0), $group_by);
-		if (array_var($report_data, 'include_unworked') == 'checked') {
-			$unworkedTasks = ProjectTasks::getPendingTasks(logged_user(), $workspace);
+		for ($i = 1; $i  <= 3; $i++){
+			if ($timeslotType == 0)
+				$gb = array_var($report_data, 'group_by_' . $i);
+			else
+				$gb = array_var($report_data, 'alt_group_by_' . $i);
+				
+			if ($gb != '0')
+				$group_by[] = $gb;
 		}
 		
+		$timeslotsArray = Timeslots::getTaskTimeslots($workspace, $user, $workspacesCSV, $st, $et, array_var($report_data, 'task_id', 0), $group_by,null,0,0,$timeslotType);
+		$unworkedTasks = null;
+		if (array_var($report_data, 'include_unworked') == 'checked') {
+			$unworkedTasks = ProjectTasks::getPendingTasks(logged_user(), $workspace);
+			tpl_assign('unworkedTasks', $unworkedTasks);
+		}
 		
+		tpl_assign('timeslot_type', $timeslotType);
 		tpl_assign('group_by', $group_by);
 		tpl_assign('timeslotsArray', $timeslotsArray);
-		tpl_assign('unworkedTasks', $unworkedTasks);
 		tpl_assign('workspace', $workspace);
 		tpl_assign('start_time', $st);
 		tpl_assign('end_time', $et);
@@ -338,7 +342,6 @@ class ReportingController extends ApplicationController {
 		$st = DateTimeValueLib::make(0,0,0,1,1,1900);
 		$et = DateTimeValueLib::make(23,59,59,12,31,2036);
 		
-		//$timeslots = Timeslots::getTimeslotsByUserWorkspacesAndDate(null, $task->getProjectId(),$st,$et,'ProjectTasks', get_id());
 		$timeslotsArray = Timeslots::getTaskTimeslots(null,null,null,$st,$et, get_id());
 		
 		tpl_assign('estimate', $task->getTimeEstimate());
@@ -360,8 +363,6 @@ class ReportingController extends ApplicationController {
 		$this->setTemplate('report_printer');
 	}
 
-
-	
 	function total_task_times_vs_estimate_comparison_p(){
 		$users = owner_company()->getUsers();
 		$workspaces = logged_user()->getActiveProjects();
@@ -395,7 +396,7 @@ class ReportingController extends ApplicationController {
 		$st = new DateTimeValue($st->getTimestamp() - logged_user()->getTimezone() * 3600);
 		$et = new DateTimeValue($et->getTimestamp() - logged_user()->getTimezone() * 3600);
 		
-		$timeslots = Timeslots::getTimeslotsByUserWorkspacesAndDate(null,$workspacesCSV,$st,$et,'ProjectTasks', array_var($report_data, 'task_id',0));
+		$timeslots = Timeslots::getTimeslotsByUserWorkspacesAndDate($st,$et,'ProjectTasks',null,$workspacesCSV,array_var($report_data, 'task_id',0));
 		
 		tpl_assign('timeslots', $timeslots);
 		tpl_assign('workspace', $workspace);

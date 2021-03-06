@@ -85,7 +85,7 @@ class MilestoneController extends ApplicationController {
 				DB::beginWork();
 				$milestone->save();
 
-				ApplicationLogs::createLog($milestone, $project, ApplicationLogs::ACTION_ADD);
+				ApplicationLogs::createLog($milestone, $milestone->getWorkspaces(), ApplicationLogs::ACTION_ADD);
 				DB::commit();
 
 				ajx_extra_data(array("milestone" => $this->milestone_item($milestone)));
@@ -219,7 +219,7 @@ class MilestoneController extends ApplicationController {
 			    
 				DB::commit();
 				
-				ApplicationLogs::createLog($milestone, $milestone->getProject(), ApplicationLogs::ACTION_ADD);
+				ApplicationLogs::createLog($milestone, $milestone->getWorkspaces(), ApplicationLogs::ACTION_ADD);
 				
 
 				// Send notification
@@ -300,7 +300,18 @@ class MilestoneController extends ApplicationController {
 			$milestone->setFromAttributes($milestone_data);
 			if(!logged_user()->isMemberOfOwnerCompany()) $milestone->setIsPrivate($old_is_private);
 
-			$milestone->setProjectId(array_var($milestone_data, 'project_id'));
+			$old_project_id = $milestone->getProjectId();
+			$project_id = array_var($milestone_data, 'project_id');
+			if ($old_project_id != $project_id) {
+				$newProject = Projects::findById($project_id);
+				if(!$milestone->canAdd(logged_user(),$newProject)) {
+					flash_error(lang('no access permissions'));
+					ajx_current("empty");
+					return;
+				} // if
+				$milestone->setProjectId($project_id);
+			}
+			
 			$milestone->setAssignedToCompanyId(array_var($assigned_to, 0, 0));
 			$milestone->setAssignedToUserId(array_var($assigned_to, 1, 0));
 
@@ -309,7 +320,7 @@ class MilestoneController extends ApplicationController {
 				$milestone->save();
 				$milestone->setTagsFromCSV(array_var($milestone_data, 'tags'));
 
-				ApplicationLogs::createLog($milestone, $milestone->getProject(), ApplicationLogs::ACTION_EDIT);
+				ApplicationLogs::createLog($milestone, $milestone->getWorkspaces(), ApplicationLogs::ACTION_EDIT);
 				DB::commit();
 
 				// If owner is changed send notification but don't break submission
@@ -361,15 +372,8 @@ class MilestoneController extends ApplicationController {
 
 		try {
 			DB::beginWork();
-			$is_template = $milestone->getIsTemplate();
-			if ($is_template) {
-				$tasks = $milestone->getTasks();
-				foreach ($tasks as $t) {
-					$t->delete();
-				}
-			}
-			$milestone->delete();
-			ApplicationLogs::createLog($milestone, $milestone->getProject(), ApplicationLogs::ACTION_DELETE);
+			$milestone->trash();
+			ApplicationLogs::createLog($milestone, $milestone->getWorkspaces(), ApplicationLogs::ACTION_TRASH);
 			DB::commit();
 
 			if ($is_template) {
@@ -415,7 +419,7 @@ class MilestoneController extends ApplicationController {
 
 			DB::beginWork();
 			$milestone->save();
-			ApplicationLogs::createLog($milestone, $milestone->getProject(), ApplicationLogs::ACTION_CLOSE);
+			ApplicationLogs::createLog($milestone, $milestone->getWorkspaces(), ApplicationLogs::ACTION_CLOSE);
 			DB::commit();
 
 			flash_success(lang('success complete milestone', $milestone->getName()));
@@ -459,7 +463,7 @@ class MilestoneController extends ApplicationController {
 
 			DB::beginWork();
 			$milestone->save();
-			ApplicationLogs::createLog($milestone, $milestone->getProject(), ApplicationLogs::ACTION_OPEN);
+			ApplicationLogs::createLog($milestone, $milestone->getWorkspaces(), ApplicationLogs::ACTION_OPEN);
 			DB::commit();
 
 			flash_success(lang('success open milestone', $milestone->getName()));

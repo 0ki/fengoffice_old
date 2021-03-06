@@ -283,17 +283,17 @@
     'error test mail settings' => 'Failed to send test message',
     'error massmail' => 'Failed to send email',
     'error owner company has all permissions' => 'Owner company has all permissions',
-    'error while saving' => 'An error ocurred while saving the document',
+    'error while saving' => 'An error occurred while saving the document',
     'error delete event type' =>'Failed to delete event type',
-    'error delete mail' => 'An error ocurred while deleting this email',
-    'error delete mail account' => 'An error ocurred while deleting this email account',
-    'error delete contacts' => 'An error has ocurred while deleting these contacts',
+    'error delete mail' => 'An error occurred while deleting this email',
+    'error delete mail account' => 'An error occurred while deleting this email account',
+    'error delete contacts' => 'An error has occurred while deleting these contacts',
   	'error check mail' => 'Error checking account \'{0}\': {1}',
   	'error check out file' => 'Error while checking out file for exclusive use',
     'error checkin file' => 'Error while checking in file',
     'error classifying attachment cant open file' => 'Error classifying attachment: can\'t open file',
   	'error contact added but not assigned' => 'The contact \'{0}\' was added but not assigned successfully to workspace \'{1}\' due to access permissions',
-  	'error cannot set workspace as parent' => 'Cannot set workspace \'{0}\' as parent, too many workspace levels',
+  	'error cannot set workspace as parent' => 'Cannot set workspace \'{0}\' as parent, too many workspace levels or circular reference',
   
     
     // Access or data errors
@@ -339,36 +339,50 @@
     'log add projectmessages' => '\'{0}\' added',
     'log edit projectmessages' => '\'{0}\' updated',
     'log delete projectmessages' => '\'{0}\' deleted',
+  	'log trash projectmessages' => '\'{0}\' moved to trash',
+  	'log untrash projectmessages' => '\'{0}\' restored from trash',
   
   	'log add projectevents' => '\'{0}\' added',
     'log edit projectevents' => '\'{0}\' updated',
     'log delete projectevents' => '\'{0}\' deleted',
+  	'log trash projectevents' => '\'{0}\' moved to trash',
+  	'log untrash projectevents' => '\'{0}\' restored from trash',
     
     'log add comments' => '{0} added',
     'log edit comments' => '{0} updated',
     'log delete comments' => '{0} deleted',
+  	'log trash comments' => '\'{0}\' moved to trash',
+  	'log untrash comments' => '\'{0}\' restored from trash',
     
     'log add projectmilestones' => '\'{0}\' added',
     'log edit projectmilestones' => '\'{0}\' updated',
     'log delete projectmilestones' => '\'{0}\' deleted',
     'log close projectmilestones' => '\'{0}\' finished',
     'log open projectmilestones' => '\'{0}\' reopened',
+  	'log trash projectmilestones' => '\'{0}\' moved to trash',
+  	'log untrash projectmilestones' => '\'{0}\' restored from trash',
     
     'log add projecttasklists' => '\'{0}\' added',
     'log edit projecttasklists' => '\'{0}\' updated',
     'log delete projecttasklists' => '\'{0}\' deleted',
     'log close projecttasklists' => '\'{0}\' closed',
     'log open projecttasklists' => '\'{0}\' opened',
+  	'log trash projecttasklists' => '\'{0}\' moved to trash',
+  	'log untrash projecttasklists' => '\'{0}\' restored from trash',
     
     'log add projecttasks' => '\'{0}\' added',
     'log edit projecttasks' => '\'{0}\' updated',
     'log delete projecttasks' => '\'{0}\' deleted',
     'log close projecttasks' => '\'{0}\' closed',
     'log open projecttasks' => '\'{0}\' opened',
+  	'log trash projecttasks' => '\'{0}\' moved to trash',
+  	'log untrash projecttasks' => '\'{0}\' restored from trash',
     
     'log add projectforms' => '\'{0}\' added',
     'log edit projectforms' => '\'{0}\' updated',
     'log delete projectforms' => '\'{0}\' deleted',
+  	'log trash projectforms' => '\'{0}\' moved to trash',
+  	'log untrash projectforms' => '\'{0}\' restored from trash',
     
     'log add projectfolders' => '\'{0}\' added',
     'log edit projectfolders' => '\'{0}\' updated',
@@ -377,17 +391,22 @@
     'log add projectfiles' => '\'{0}\' uploaded',
     'log edit projectfiles' => '\'{0}\' updated',
     'log delete projectfiles' => '\'{0}\' deleted',
+  	'log trash projectfiles' => '\'{0}\' moved to trash',
+  	'log untrash projectfiles' => '\'{0}\' restored from trash',
     
     'log edit projectfilerevisions' => '{0} updated',
     'log delete projectfilerevisions' => '{0} deleted',
+  	'log trash projectfilerevisions' => '\'{0}\' moved to trash',
+  	'log untrash projectfilerevisions' => '\'{0}\' restored from trash',
     
     'log add projectwebpages' => '\'{0}\' added',
     'log edit projectwebpages' => '\'{0}\' updated',
     'log delete projectwebpages' => '\'{0}\' deleted',
+  	'log trash projectwebpages' => '\'{0}\' moved to trash',
+  	'log untrash projectwebpages' => '\'{0}\' restored from trash',
     
-    'log add contacts' => '\'{0}\' assigned to workspace',
-    'log edit contacts' => '\'{0}\' changed role',
-    'log delete contacts' => '\'{0}\' removed from workspace',
+  	'log trash contacts' => '\'{0}\' moved to trash',
+  	'log untrash contacts' => '\'{0}\' restored from trash',
   
   	'no contacts in company' => 'The company has no contacts.',
   
@@ -402,21 +421,43 @@
   	'log add companies' => '\'{0}\' added',
   	'log edit companies' => '\'{0}\' updated',
   	'log delete companies' => '\'{0}\' deleted',
+  	'log trash companies' => '\'{0}\' moved to trash',
+  	'log untrash companies' => '\'{0}\' restored from trash',
   
   	'log add mailcontents' => '\'{0}\' added',
   	'log edit mailcontents' => '\'{0}\' updated',
   	'log delete mailcontents' => '\'{0}\' deleted',
+  	'log trash mailcontents' => '\'{0}\' moved to trash',
+  	'log untrash mailcontents' => '\'{0}\' restored from trash',
   
   	'log open timeslots' => '\'{0}\' opened',
     'log close timeslots' => '\'{0}\' closed',
     'log delete timeslots' => '\'{0}\' deleted',
+  	'log trash timeslots' => '\'{0}\' moved to trash',
+  	'log untrash timeslots' => '\'{0}\' restored from trash',
   	'error assign workspace' => 'Failed to assign template to workspace',
   	'success assign workspaces' => 'Succeeded to assign template to workspace',
   	'success update config value' => 'Configuration values updated',
   	'view open tasks' => 'Open tasks',
   	'already logged in' => 'You are already logged in',
   
-	'some tasks could not be updated due to permission restrictions' => 'Some tasks could not be updated due to permission restrictions'
+	'some tasks could not be updated due to permission restrictions' => 'Some tasks could not be updated due to permission restrictions',
+  
+  	'success trash object' => 'Object moved to trash successfully',
+  	'error trash object' => 'Failed to move object to trash',
+	'success untrash object' => 'Object restored from trash successfully',
+  	'error untrash object' => 'Failed to restore object from trash',
+  	'success trash objects' => '{0} objects moved to trash successfully',
+  	'error trash objects' => 'Failed to move {0} objects to trash',
+	'success untrash objects' => '{0} objects restored from trash successfully',
+  	'error untrash objects' => 'Failed to restore {0} objects from trash',
+	'success delete object' => 'Object deleted successfully',
+  	'error delete object' => 'Failed to delete object',
+  	
+    'log add contacts' => '\'{0}\' added',
+    'log edit contacts' => '\'{0}\' updated',
+    'log delete contacts' => '\'{0}\' deleted',
+
   ); // array
 
 ?>

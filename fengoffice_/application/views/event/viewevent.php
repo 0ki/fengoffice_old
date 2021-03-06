@@ -1,52 +1,54 @@
 <?php
-/*
+
 	
-	Copyright (c) Reece Pegues
-	sitetheory.com
-
-    Reece PHP Calendar is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or 
-	any later version if you wish.
-
-    You should have received a copy of the GNU General Public License
-    along with this file; if not, write to the Free Software
-    Foundation Inc, 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//	Copyright (c) Reece Pegues
+//	sitetheory.com
+//
+//    Reece PHP Calendar is free software; you can redistribute it and/or modify
+//    it under the terms of the GNU General Public License as published by
+//    the Free Software Foundation; either version 2 of the License, or 
+//	any later version if you wish.
+//
+//    You should have received a copy of the GNU General Public License
+//    along with this file; if not, write to the Free Software
+//    Foundation Inc, 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 	
-*/
-/* @var $event ProjectEvent*/
 
-if (isset($event) && $event) {
+// @var $event ProjectEvent
 
-if($event->canDelete(logged_user())) {
-	add_page_action(lang('delete'), "javascript:if(confirm(lang('confirm delete event'))) og.openLink('" . $event->getDeleteUrl() ."');", 'ico-delete');
-} // if
+if (isset($event) && $event instanceof ProjectEvent) {
+	$user_id = isset($_GET['user_id']) ? $_GET['user_id'] : logged_user()->getId();
+	
+	if (!$event->isTrashed()){
+		if($event->canEdit(logged_user())) {
+			add_page_action(lang('edit'), $event->getEditUrl()."&view=$view&user_id=$user_id", 'ico-edit');
+		}
+	}
+		
+	if($event->canDelete(logged_user())) {
+		if ($event->isTrashed()) {
+	    	add_page_action(lang('restore from trash'), "javascript:if(confirm(lang('confirm restore objects'))) og.openLink('" . $event->getUntrashUrl() ."');", 'ico-restore');
+	    	add_page_action(lang('delete permanently'), "javascript:if(confirm(lang('confirm delete permanently'))) og.openLink('" . $event->getDeletePermanentlyUrl() ."');", 'ico-delete');
+	    } else {
+	    	add_page_action(lang('move to trash'), "javascript:if(confirm(lang('confirm move to trash'))) og.openLink('" . $event->getTrashUrl() ."');", 'ico-trash');
+	    }
+	} // if
 
-$user_id = isset($_GET['user_id']) ? $_GET['user_id'] : logged_user()->getId();
-
-if($event->canEdit(logged_user())) {
-	add_page_action(lang('edit'), $event->getEditUrl()."&view=$view&user_id=$user_id", 'ico-edit');
-}
 	$modified="";
 	$error = "";
-	// get the date requested.
-/*	$day = $_SESSION['day'];
-	$month = $_SESSION['month'];
-	$year = $_SESSION['year'];
-*/	// Do this if we are MODIFYING a form.
+	// Do this if we are MODIFYING a form.
 	$id = $_GET['id'];
 	
     if(!is_numeric($id)) $error = lang('CAL_NO_EVENT_SELECTED');
-	// get event info from database
 	// get user who submitted the event, subject, event description, etc.
-    $username = Users::findById($event->getCreatedById())->getUsername();// $row['created_by_id'];
-    $subject = $event->getSubject();// htmlentities($row['subject']);
-	$private = $event->getIsPrivate();// $row['private'];
-	$alias = Users::findById($event->getCreatedById())->getUsername();//$row['created_by_id'];
-    $desc = $event->getDescription();//htmlentities(nl2br($row['description']));
-    $thetime = $event->getStart();//$row['start_since_epoch'];
-	$mod_username = Users::findById($event->getUpdatedById())->getUsername();//$row['updated_by_id'];
-	$mod_stamp = $event->getUpdatedOn();//$row['updated_on'];
+    $username = clean($event->getCreatedBy()->getUsername());
+    $subject = clean($event->getSubject());
+	$private = $event->getIsPrivate();
+	$alias = clean($event->getCreatedBy()->getUsername());
+    $desc = clean($event->getDescription());
+    $start_time = $event->getStart();
+	$mod_username = clean($event->getUpdatedBy()->getUsername());
+	$mod_stamp = $event->getUpdatedOn();
 	
 	// check username to see if it's anonymous or not
 	if($username=="") $username = lang('CAL_ANONYMOUS');
@@ -56,29 +58,23 @@ if($event->canEdit(logged_user())) {
 	// if the event is private and the user is anonymous, return that the event does not exist.
 	if($private AND cal_anon() AND $error=="") $error = lang('CAL_DOESNT_EXIST');
 	
-	// begin organizing the event's time and date for display.
-    $hour = date('G', $thetime->getTimestamp());
-    $minute = date('i', $thetime->getTimestamp());
-    $month = date('n', $thetime->getTimestamp());
-    $year = date('Y', $thetime->getTimestamp());
-    $day = date('j', $thetime->getTimestamp());
-    $durtime = $event->getDuration()->getTimestamp() - $thetime->getTimestamp();//$row['end_since_epoch'] - $thetime;
+    $durtime = $event->getDuration()->getTimestamp() - $start_time->getTimestamp();
     $durmin = ($durtime / 60) % 60;     //seconds per minute
     $durhr  = ($durtime / 3600) % 24;   //seconds per hour
     $durday = floor($durtime / 86400);  //seconds per day
-	// organize time according to either 12 or 24 hour clock
-    if(!cal_option("hours_24")) {
-    	if($hour >= 12) {
-        	$hour = $hour - 12;
-			$extra = " PM";
-      	} else $extra = " AM";
-    } else $extra = "";
-	$time = $hour.":".$minute.$extra;
+
+	if(config_option('time_format_use_24')) $timeformat = 'G:i';
+	else $timeformat = 'g:i A';
+	$time = date($timeformat, $start_time->getTimestamp());
+	
 	// organize duration of event
-	$duration = $durhr." ";
+	$duration = '';
+	if ($durday > 0) $duration .= $durday . ' '.lang('days').($durhr!="1" ? ', ' : ' ');
+	$duration .= $durhr . ' ';
 	if($durhr!="1") $duration .= lang('CAL_HOURS');
 	else $duration .= lang('CAL_HOUR');
 	if($durmin!="0") $duration .= ", ". $durmin. " ". lang('CAL_MINUTES_SHORT');
+	
 	// organize other time options for the event
     $typeofevent = $event->getTypeId();
 	if($typeofevent=="2") $duration = lang('CAL_FULL_DAY');
@@ -89,20 +85,19 @@ if($event->canEdit(logged_user())) {
 	elseif($typeofevent=="4") $duration = lang('CAL_NOT_SPECIFIED');
 	
 	$permission = ProjectEvents::findById($id)->canEdit(logged_user());
-	//echo cal_navmenu(true,$day,$month,$year);
 	
 ?>
-<div style="padding:7px">
-<div class="event">
+<div style="padding:7px;">
+<div class="event" style="height:100%;">
 
 <?php
 	
-	$title = Localization::instance()->formatDescriptiveDate($event->getStart());
-	$description = lang('CAL_TIME').": $time";
+	$title = Localization::instance()->formatDescriptiveDate($event->getStart()) . ' - ' . clean($event->getSubject());
+	$description = $event->getTypeId() == 2 ? lang('CAL_FULL_DAY') : lang('CAL_TIME').": $time" ;
   	tpl_assign('description', $description);
 
 	$att_form = '';
-  	if (!$event->isNew()) {
+  	if (!$event->isNew() && !$event->isTrashed()) {
 		$event_inv = EventInvitations::findById(array('event_id' => $event->getId(), 'user_id' => $user_id));
 		if ($event_inv != null) {
 			$event->addInvitation($event_inv);
@@ -125,6 +120,34 @@ if($event->canEdit(logged_user())) {
 		} //if
 	} // if
 
+	$otherInvitationsTable = '';
+	if (!$event->isNew()) {
+		$otherInvitations = EventInvitations::findAll(array ('conditions' => 'event_id = ' . $event->getId() . ' AND user_id <> ' . $user_id));
+		if (isset($otherInvitations) && is_array($otherInvitations)) {
+			$otherInvitationsTable .= '<div class="coInputMainBlock adminMainBlock" style="width:70%;">';
+			$otherInvitationsTable .= '<table style="width:100%;"><col width="50%" /><col width="50%" />';
+			$otherInvitationsTable .= '<tr><th><b>' . lang('name') . '</b></th><th><b>' . lang('participate') . '</b></th></tr>';
+			$isAlt = false;
+			$cant = 0;
+			foreach ($otherInvitations as $inv) {
+				$inv_user = Users::findById($inv->getUserId());
+				if ($inv_user->hasProjectPermission($event->getProject(), ProjectUsers::CAN_READ_EVENTS)) {
+					$state_desc = lang('pending response');
+					if ($inv->getInvitationState() == 1) $state_desc = lang('yes');
+					else if ($inv->getInvitationState() == 2) $state_desc = lang('no');
+					else if ($inv->getInvitationState() == 3) $state_desc = lang('maybe');
+					$otherInvitationsTable .= '<tr'.($isAlt ? ' class="altRow"' : '').'><td>' . $inv_user->getDisplayName() . '</td><td>' . $state_desc . '</td></tr>';
+					$isAlt = !$isAlt;
+					$cant++;
+				}
+			}
+			if ($cant > 0) $otherInvitationsTable .= '</table></div>';
+			else $otherInvitationsTable = lang('no invitations to this event');
+		} else {
+			$otherInvitationsTable = lang('no invitations to this event');
+		}
+	}
+	
 	$variables = array();
 	$variables['username'] = $username;
 	if (isset($modtimeformat))
@@ -133,18 +156,18 @@ if($event->canEdit(logged_user())) {
 	$variables['time'] = $time;
 	if (!$event->isNew()) {
 		$variables['attendance'] = $att_form;
+		$variables['other_invitations'] = $otherInvitationsTable;
 	}
 	$variables['duration'] = $duration;
 	$variables['desc'] = $desc;
 	
 	
-		
 	
 	tpl_assign("variables", $variables);
 	tpl_assign("content_template", array('view_event', 'event'));
 	tpl_assign('object', $event);
 	tpl_assign('title', $title);
-	tpl_assign('iconclass', 'ico-large-event');
+	tpl_assign('iconclass', $event->isTrashed()? 'ico-large-event-trashed' :  'ico-large-event');
 
 	$this->includeTemplate(get_template_path('view', 'co'));
 ?>

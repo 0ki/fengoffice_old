@@ -164,9 +164,8 @@ class CompanyController extends ApplicationController {
 				}
 
 //				$company->save_properties($message_data);
-				foreach ($validWS as $w) {
-					ApplicationLogs::createLog($company, $w, ApplicationLogs::ACTION_ADD);
-				}	
+				ApplicationLogs::createLog($company, $validWS, ApplicationLogs::ACTION_ADD);
+					
 //				ApplicationLogs::createLog($company, null, ApplicationLogs::ACTION_ADD);
 				DB::commit();
 
@@ -257,7 +256,7 @@ class CompanyController extends ApplicationController {
 					$company->addToWorkspace($w);
 				}
 				/* </multiples workspaces> */
-				ApplicationLogs::createLog($company, null, ApplicationLogs::ACTION_EDIT);
+				ApplicationLogs::createLog($company, $company->getWorkspaces(), ApplicationLogs::ACTION_EDIT);
 				DB::commit();
 
 				flash_success(lang('success edit client', $company->getName()));
@@ -293,8 +292,9 @@ class CompanyController extends ApplicationController {
 
 		try {
 			DB::beginWork();
-			$company->delete();
-			ApplicationLogs::createLog($company, null, ApplicationLogs::ACTION_DELETE);
+			$company->trash();
+			$ws = $company->getWorkspaces();
+			ApplicationLogs::createLog($company, $ws, ApplicationLogs::ACTION_TRASH);
 			DB::commit();
 
 			flash_success(lang('success delete client', $company->getName()));
@@ -410,7 +410,7 @@ class CompanyController extends ApplicationController {
 					throw new InvalidUploadError($avatar, lang('error edit company logo'));
 				} // if
 
-				ApplicationLogs::createLog($company, null, ApplicationLogs::ACTION_EDIT);
+				ApplicationLogs::createLog($company, $company->getWorkspaces(), ApplicationLogs::ACTION_EDIT);
 
 				DB::commit();
 
@@ -460,7 +460,7 @@ class CompanyController extends ApplicationController {
 			DB::beginWork();
 			$company->deleteLogo();
 			$company->save();
-			ApplicationLogs::createLog($company, null, ApplicationLogs::ACTION_EDIT);
+			ApplicationLogs::createLog($company, $company->getWorkspaces(), ApplicationLogs::ACTION_EDIT);
 			DB::commit();
 
 			flash_success(lang('success delete company logo'));

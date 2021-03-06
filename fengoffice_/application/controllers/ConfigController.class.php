@@ -61,9 +61,10 @@ class ConfigController extends ApplicationController {
 			foreach($options as $option) {
 				$new_value = array_var($submited_values, $option->getName());
 				if(is_null($new_value) || ($new_value == $option->getValue())) continue;
-
+				
 				$option->setValue($new_value);
 				$option->save();
+				evt_add("config ".$option->getName()." changed", $option->getValue());
 			} // foreach
 			flash_success(lang('success update config category', $category->getDisplayName()));
 			ajx_current("back");

@@ -38,8 +38,8 @@ Ext.extend(og.EmailAccountMenu, Ext.menu.Menu, {
 			return;
 		};
 		var item = new Ext.menu.Item({
-			text: account.name,
-            tooltip: account.email,
+			text: og.clean(account.name),
+            tooltip: og.clean(account.email),
 			handler: function() {
 				this.fireEvent('accountselect', account.id);
 			},

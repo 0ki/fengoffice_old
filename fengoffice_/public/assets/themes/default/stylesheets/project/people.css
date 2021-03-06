@@ -2,7 +2,7 @@
   margin: 10px 0;
   padding: 10px;
   border: 1px solid #ccc;
-  background: #fff url('') no-repeat 10px 10px;
+  background: #fff url() no-repeat 10px 10px;
   min-height: 50px;
 }
 

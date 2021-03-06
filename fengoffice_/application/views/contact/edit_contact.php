@@ -3,7 +3,7 @@
 if (!$contact->isNew())
 {
 	if($contact->canEdit(logged_user())) {
-		add_page_action(lang('update picture'), $contact->getUpdatePictureUrl(), 'ico-picture');
+		add_page_action(lang('edit picture'), $contact->getUpdatePictureUrl(), 'ico-picture');
 		add_page_action(lang('assign to project'), $contact->getAssignToProjectUrl(), 'ico-workspace');
 	} //if
 } // if
@@ -40,6 +40,7 @@ if (!$contact->isNew())
 		<?php if (isset($isAddProject) && $isAddProject) { ?>
 			<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_contact_role_div', this)"><?php echo lang('role') ?></a> - 
 		<?php } ?>
+		<a href="#" class="option" tabindex=0 onclick="og.toggleAndBolden('<?php echo $genid ?>add_contact_add_tags_div', this)"><?php echo lang('tags') ?></a> - 
 		<a href="#" class="option" style="font-weight:bold" onclick="og.toggleAndBolden('<?php echo $genid ?>add_contact_work', this)"><?php echo lang('work') ?></a> - 
 		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_contact_email_and_im', this)"><?php echo lang('email and instant messaging') ?></a> - 
 		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_contact_home', this)"><?php echo lang('home') ?></a> - 
@@ -343,12 +344,19 @@ if (!$contact->isNew())
 	</div>
 	<?php } // if ?>
 	
+	
+	<div id="<?php echo $genid ?>add_contact_add_tags_div" style="display:none">
+	<fieldset><legend><?php echo lang('tags')?></legend>
+		<?php echo autocomplete_tags_field("contact[tags]", array_var($contact_data, 'tags')); ?>
+	</fieldset>
+	</div>
+	
 	<?php if (isset($isAddProject) && $isAddProject)
 	{
 		?>
 		<div id="<?php echo $genid ?>add_contact_role_div" style="display:none">
 		<fieldset>
-			<legend> <?php echo label_tag(lang('role in project', active_project()->getName()), $genid.'profileFormRole')?></legend>
+			<legend> <?php echo label_tag(lang('role in project', clean(active_project()->getName())), $genid.'profileFormRole')?></legend>
 			<?php echo text_field('contact[role]', array_var($contact_data, 'role'), array('class' => 'long', 'id' => $genid.'profileFormRole') ) ?>
 		</fieldset>
 		</div>

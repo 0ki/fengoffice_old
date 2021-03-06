@@ -79,5 +79,8 @@ return array(
  	'task has been modified' => 'La tarea "{0}" en el espacio "{1}" ha sido modificada.',
 	'task modified' => 'Tarea modificada',
 	'view task' => 'Ver tarea',
+
+	'original message' => 'Mensaje original',
+	'mail sent' => 'Enviado',
     ); // array
 ?>

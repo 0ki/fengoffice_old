@@ -170,10 +170,10 @@ class ContactController extends ApplicationController {
 							if (isset($contact) && $contact->canDelete(logged_user())){
 								try{
 									DB::beginWork();
-									$contact->deletePicture();
-									$contact->delete();
+									$contact->trash();
 									DB::commit();
 									$resultMessage = lang("success delete objects", '');
+									ApplicationLogs::createLog($contact, $contact->getWorkspaces(), ApplicationLogs::ACTION_TRASH);
 								} catch(Exception $e){
 									DB::rollback();
 									$resultMessage .= $e->getMessage();
@@ -188,17 +188,22 @@ class ContactController extends ApplicationController {
 							
 						case "company":
 							$company = Companies::findById($id);
-							if (isset($company) && $company->canDelete(logged_user())){
-								try{
-									DB::beginWork();
-									$company->deleteLogo();
-									$company->delete();									
-									DB::commit();
-									$resultMessage = lang("success delete objects", '');
-								} catch(Exception $e){
-									DB::rollback();
-									$resultMessage .= $e->getMessage();
-									$resultCode = $e->getCode();
+							if (isset($company)) {
+								if ($company->canDelete(logged_user())) {
+									try{
+										DB::beginWork();
+										$company->trash();									
+										DB::commit();
+										$resultMessage = lang("success delete objects", '');
+										ApplicationLogs::createLog($company, $company->getWorkspaces(), ApplicationLogs::ACTION_TRASH);
+									} catch(Exception $e){
+										DB::rollback();
+										$resultMessage .= $e->getMessage();
+										$resultCode = $e->getCode();
+									}
+								} else {
+									$resultMessage .= lang('no access permissions');
+									$resultCode = 2;
 								}
 							};
 							break;
@@ -392,7 +397,6 @@ class ContactController extends ApplicationController {
 				TABLE_PREFIX . "tags.tag = '".$tag."' and " . TABLE_PREFIX . "tags.rel_object_manager ='Contacts' ) > 0 ";
 		}
 		
-		
 		/**
 		 * If logged user cannot manage contacts, only contacts which belong to a project where the user can manage contacts are displayed.
 		 */
@@ -408,7 +412,7 @@ class ContactController extends ApplicationController {
 		}
 		
 		$res = DB::execute("SELECT `id`, TRIM(CONCAT(' ', `lastname`, `firstname`, `middlename`)) AS `display_name`,`lastname`, `firstname`, `middlename`, 'Contacts' AS manager FROM " . TABLE_PREFIX. "contacts WHERE " . 
-			$tagstr . $permission_str . " ORDER BY `display_name` ");
+			"`trashed_by_id` = 0 AND " . $tagstr . $permission_str . " ORDER BY `display_name` ");
 			
 		if(!$res) return null;
 		return $res->fetchAll();
@@ -453,43 +457,11 @@ class ContactController extends ApplicationController {
 			$permissions =' ';
 		}
 		$res = DB::execute("SELECT id, name, 'Companies' as manager, `updated_on` as comp_date FROM " . TABLE_PREFIX. "companies WHERE " . 
-			$contactConditions . $tagstr . $permissions . " ORDER BY name");
+			"`trashed_by_id` = 0 AND " . $contactConditions . $tagstr . $permissions . " ORDER BY name");
 			
 		if(!$res) return null;
 		return $res->fetchAll();
 	}
-
-	private function do_delete_contacts($ids)
-	{
-		$err = 0;
-		try
-		{
-			DB::beginWork();
-			foreach ($ids as $id)
-			{
-				$contact = Contacts::findById($id);
-				if ($contact instanceof Contact && $contact->canDelete(logged_user())){
-					$roles = $contact->getRoles();
-					if (isset($roles))
-					foreach ($roles as $role){
-						$role->delete();
-					}
-					$contact->delete();
-				}
-				else {
-					throw new Exception(lang('error delete contact'));					
-				}
-			}
-			DB::commit();
-		}
-		catch (Exception $e)
-		{
-			DB::rollback();
-			$err = $e->getCode();
-		}
-		return $err;
-	}
-
 
 
 	/**
@@ -585,6 +557,7 @@ class ContactController extends ApplicationController {
 					$company->setClientOfId(1);
 					
 					$company->save();
+					ApplicationLogs::createLog($company, null, ApplicationLogs::ACTION_ADD);
 					$newCompany = true;
 				}
 				
@@ -594,8 +567,10 @@ class ContactController extends ApplicationController {
 
 				if($newCompany)
 					$contact->setCompanyId($company->getId());
-				
+				$contact->setIsPrivate(false);
 				$contact->save();
+				ApplicationLogs::createLog($contact, null, ApplicationLogs::ACTION_ADD);
+				$contact->setTagsFromCSV(array_var($contact_data, 'tags'));
 				
 				foreach($im_types as $im_type) {
 					$value = trim(array_var($contact_data, 'im_' . $im_type->getId()));
@@ -637,7 +612,8 @@ class ContactController extends ApplicationController {
 					DB::beginWork();
 					$pc->save();
 					DB::commit();
-					ApplicationLogs::createLog($contact, active_project(), ApplicationLogs::ACTION_ADD);
+//					ApplicationLogs::createLog($contact, $contact->getWorkspaces(), ApplicationLogs::ACTION_ADD);
+
 				}
 
 				// Error...
@@ -689,6 +665,7 @@ class ContactController extends ApplicationController {
 		
 		$contact_data = array_var($_POST, 'contact');
 		if(!is_array($contact_data)) {
+			$tag_names = $contact->getTagNames();
 			$contact_data = array(
           	'firstname' => $contact->getFirstName(),
           	'lastname' => $contact->getLastName(),
@@ -737,7 +714,9 @@ class ContactController extends ApplicationController {
           	'notes' => $contact->getNotes(),
           	'is_private' => $contact->getIsPrivate(),
           	'company_id' => $contact->getCompanyId(),
-      	    'role' => $role
+      	    'role' => $role,
+      	    'tags' => is_array($tag_names) ? implode(', ', $tag_names) : '',
+      	    
       	    ); // array
 
       	    if(is_array($im_types)) {
@@ -759,20 +738,14 @@ class ContactController extends ApplicationController {
 				DB::beginWork();
 				
 				$newCompany = false;
-				if (array_var($contact_data, 'isNewCompany') == 'true' && trim(array_var($contact_data, 'new_company_name')) != ''){
+				if (array_var($contact_data, 'isNewCompany') == 'true' && is_array(array_var($_POST, 'company'))){
+					$company_data = array_var($_POST, 'company');
 					$company = new Company();
-					$company->setAddress(array_var($contact_data, 'w_address'));
-					$company->setCity(array_var($contact_data, 'w_city'));
-					$company->setState(array_var($contact_data, 'w_state'));
-					$company->setPhoneNumber(array_var($contact_data, 'w_phone_number'));
-					$company->setZipcode(array_var($contact_data, 'w_zipcode'));
-					$company->setCountry(array_var($contact_data, 'w_country'));
-					$company->setHomepage(array_var($contact_data, 'w_webpage'));
-					$company->setFaxNumber(array_var($contact_data, 'w_fax_number'));
-					$company->setName(array_var($contact_data, 'new_company_name'));
+					$company->setFromAttributes($company_data);
 					$company->setClientOfId(1);
 					
 					$company->save();
+					ApplicationLogs::createLog($company, null, ApplicationLogs::ACTION_ADD );
 					$newCompany = true;
 				}
 				
@@ -794,6 +767,8 @@ class ContactController extends ApplicationController {
 					$contact->setCompanyId($company->getId());
 
 				$contact->save();
+				ApplicationLogs::createLog($contact, null, ApplicationLogs::ACTION_EDIT );
+				$contact->setTagsFromCSV(array_var($contact_data, 'tags'));
 				$contact->clearImValues();
 
 				foreach($im_types as $im_type) {
@@ -828,7 +803,8 @@ class ContactController extends ApplicationController {
 					DB::beginWork();
 					$pc->save();
 					DB::commit();
-					ApplicationLogs::createLog($contact, active_project(), ApplicationLogs::ACTION_ADD);
+//					ApplicationLogs::createLog($contact, $contact->getWorkspaces(), ApplicationLogs::ACTION_ADD);
+
 				}
 
 				flash_success(lang('success edit contact', $contact->getDisplayName()));
@@ -892,7 +868,7 @@ class ContactController extends ApplicationController {
 					throw new InvalidUploadError($avatar, lang('error edit picture'));
 				} // if
 
-				//ApplicationLogs::createLog($contact, null, ApplicationLogs::ACTION_EDIT);
+				ApplicationLogs::createLog($contact, null, ApplicationLogs::ACTION_EDIT);
 				DB::commit();
 
 				if(is_file($old_file)) {
@@ -946,7 +922,7 @@ class ContactController extends ApplicationController {
 			DB::beginWork();
 			$contact->deletePicture();
 			$contact->save();
-			ApplicationLogs::createLog($contact, null, ApplicationLogs::ACTION_EDIT);
+			ApplicationLogs::createLog($contact, $contact->getWorkspaces(), ApplicationLogs::ACTION_EDIT);
 
 			DB::commit();
 
@@ -984,7 +960,9 @@ class ContactController extends ApplicationController {
 		try {
 
 			DB::beginWork();
-			$contact->delete();
+			$contact->trash();
+			ApplicationLogs::createLog($contact, null, ApplicationLogs::ACTION_TRASH );
+
 			DB::commit();
 
 			flash_success(lang('success delete contact', $contact->getDisplayName()));
@@ -1053,7 +1031,7 @@ class ContactController extends ApplicationController {
 								$pc->setRole($role);
 								$pc->save();
 
-								ApplicationLogs::createLog($contact, $project, ApplicationLogs::ACTION_EDIT);
+//								ApplicationLogs::createLog($contact, $project, ApplicationLogs::ACTION_EDIT);
 							} //if
 						} else {
 							$pc = new ProjectContact();
@@ -1061,10 +1039,11 @@ class ContactController extends ApplicationController {
 							$pc->setContactId($contact->getId());
 							$pc->setRole($role);
 							$pc->save();
-							ApplicationLogs::createLog($contact, $project, ApplicationLogs::ACTION_ADD);
+//							ApplicationLogs::createLog($contact, $project, ApplicationLogs::ACTION_EDIT);
 						}//if else
 					}//if else
 				}//foreach
+				ApplicationLogs::createLog($contact, null, ApplicationLogs::ACTION_EDIT );
 				DB::commit();
 
 				flash_success(lang('success edit contact', $contact->getDisplayName()));
@@ -1080,6 +1059,181 @@ class ContactController extends ApplicationController {
 		tpl_assign('contact_data', $contact_data);
 		tpl_assign('projects', $projects);
 	} // assign_to_project
+	
+	
+	function import_from_csv_file() {
+		if (isset($_SESSION['history_back'])) {
+			if ($_SESSION['history_back'] > 0) $_SESSION['history_back'] = $_SESSION['history_back'] - 1;
+			if ($_SESSION['history_back'] == 0) unset($_SESSION['history_back']);
+			ajx_current("back");
+		} else {
+			
+			if(!Contact::canAdd(logged_user(), active_or_personal_project())) {
+				flash_error(lang('no access permissions'));
+				ajx_current("empty");
+				return;
+			} // if
+	
+			$this->setTemplate('csv_import');
+			
+			$filedata = array_var($_FILES, 'csv_file');
+			if (is_array($filedata) && !is_array(array_var($_POST, 'select_contact'))) {
+				
+				$filename = $filedata['tmp_name'].'.csv';
+				copy($filedata['tmp_name'], $filename);
+				
+				$first_record_has_names = array_var($_POST, 'first_record_has_names', false);
+				$delimiter = array_var($_POST, 'delimiter', ',');
+				
+				$titles = $this->read_csv_file($filename, $delimiter, true);
+				
+				tpl_assign('titles', $titles);
+				$_SESSION['delimiter'] = $delimiter;
+				$_SESSION['csv_import_filename'] = $filename;
+				$_SESSION['first_record_has_names'] = $first_record_has_names;
+			}
+			
+			if (array_var($_GET, 'calling_back', false)) {
+				$filename = $_SESSION['csv_import_filename'];
+				$delimiter = $_SESSION['delimiter'];
+				$first_record_has_names = $_SESSION['first_record_has_names'];
+				
+				$titles = $this->read_csv_file($filename, $delimiter, true);
+	
+				unset($_GET['calling_back']);
+				tpl_assign('titles', $titles);
+			}
+			
+			if (is_array(array_var($_POST, 'select_contact'))) {
+				
+				$filename = $_SESSION['csv_import_filename'];
+				$delimiter = $_SESSION['delimiter'];
+				$first_record_has_names = $_SESSION['first_record_has_names'];
+				
+				$registers = $this->read_csv_file($filename, $delimiter);
+				
+				$import_result = array('import_ok' => array(), 'import_fail' => array());
+				
+				$i = $first_record_has_names ? 1 : 0;
+				while ($i < count($registers)) {
+					try {
+						DB::beginWork();
+						$contact_data = $this->buildContactData(array_var($_POST, 'select_contact'), array_var($_POST, 'check_contact'), $registers[$i]);
+						$contact = new Contact();
+						$contact->setFromAttributes($contact_data);
+						$contact->save();
+						ApplicationLogs::createLog($contact, null, ApplicationLogs::ACTION_ADD);
+						$contact->setTagsFromCSV(array_var($_POST, 'tags'));
+						
+						if(active_project() instanceof Project)
+						{
+							$pc = new ProjectContact();
+							$pc->setContactId($contact->getId());
+							$pc->setProjectId(active_project()->getId());
+							$pc->setRole(array_var($contact_data,'role'));
+							$pc->save();
+						}
+						DB::commit();
+						
+						$import_result['import_ok'][] = $contact_data;
+					} catch (Exception $e) {
+						$contact_data['fail_message'] = substr($e->getMessage(), strpos($e->getMessage(), "\r\n"));
+						DB::rollback();
+						$import_result['import_fail'][] = $contact_data;
+					}		
+					$i++;
+				}
+				unlink($_SESSION['csv_import_filename']);
+				unset($_SESSION['csv_import_filename']);
+				unset($_SESSION['delimiter']);
+				unset($_SESSION['first_record_has_names']);
+				
+				$_SESSION['history_back'] = 2;
+				tpl_assign('import_result', $import_result);
+			}
+		}
+	} // import_from_csv_file
+
+		
+	function read_csv_file($filename, $delimiter, $only_first_record = false) {
+		$handle = fopen($filename, 'rb');
+		if (!$handle) {
+			flash_error(lang('file not exists'));
+			ajx_current("empty");
+			return;
+		}
+		
+		if ($only_first_record) {
+			$result = fgetcsv($handle, null, $delimiter);
+			$aux = array();
+			foreach ($result as $title) $aux[] = utf8_encode($title);
+			$result = $aux;			
+		} else {
+			$result = array();
+			while ($fields = fgetcsv($handle, null, $delimiter)) {
+				$aux = array();
+				foreach ($fields as $field) $aux[] = utf8_encode($field);
+				$result[] = $aux;
+			}
+		}
+		
+		fclose($handle);
+		return $result;
+	} //read_csv_file
+	
+	
+function buildContactData($position, $checked, $fields) {
+		$contact_data = array();
+		if (isset($checked['firstname']) && $checked['firstname']) $contact_data['firstname'] = array_var($fields, $position['firstname']);
+		if (isset($checked['lastname']) && $checked['lastname']) $contact_data['lastname'] = array_var($fields, $position['lastname']);
+		if (isset($checked['middlename']) && $checked['middlename']) $contact_data['middlename'] = array_var($fields, $position['middlename']);
+		if (isset($checked['department']) && $checked['department']) $contact_data['department'] = array_var($fields, $position['department']);
+		if (isset($checked['job_title']) && $checked['job_title']) $contact_data['job_title'] = array_var($fields, $position['job_title']);
+		if (isset($checked['email']) && $checked['email']) $contact_data['email'] = array_var($fields, $position['email']);
+		
+		if (isset($checked['email2']) && $checked['email2']) $contact_data['email2'] = array_var($fields, $position['email2']);
+		if (isset($checked['email3']) && $checked['email3']) $contact_data['email3'] = array_var($fields, $position['email3']);
+		if (isset($checked['w_web_page']) && $checked['w_web_page']) $contact_data['w_web_page'] = array_var($fields, $position['w_web_page']);
+		if (isset($checked['w_address']) && $checked['w_address']) $contact_data['w_address'] = array_var($fields, $position['w_address']);
+		if (isset($checked['w_city']) && $checked['w_city']) $contact_data['w_city'] = array_var($fields, $position['w_city']);
+		if (isset($checked['w_state']) && $checked['w_state']) $contact_data['w_state'] = array_var($fields, $position['w_state']);
+		if (isset($checked['w_zipcode']) && $checked['w_zipcode']) $contact_data['w_zipcode'] = array_var($fields, $position['w_zipcode']);
+		if (isset($checked['w_country']) && $checked['w_country']) $contact_data['w_country'] = array_var($fields, $position['w_country']);
+		if (isset($checked['w_phone_number']) && $checked['w_phone_number']) $contact_data['w_phone_number'] = array_var($fields, $position['w_phone_number']);
+		if (isset($checked['w_phone_number2']) && $checked['w_phone_number2']) $contact_data['w_phone_number2'] = array_var($fields, $position['w_phone_number2']);
+		if (isset($checked['w_fax_number']) && $checked['w_fax_number']) $contact_data['w_fax_number'] = array_var($fields, $position['w_fax_number']);
+		if (isset($checked['w_assistant_number']) && $checked['w_assistant_number']) $contact_data['w_assistant_number'] = array_var($fields, $position['w_assistant_number']);
+		if (isset($checked['w_callback_number']) && $checked['w_callback_number']) $contact_data['w_callback_number'] = array_var($fields, $position['w_callback_number']);
+		
+		if (isset($checked['h_web_page']) && $checked['h_web_page']) $contact_data['h_web_page'] = array_var($fields, $position['h_web_page']);
+		if (isset($checked['h_address']) && $checked['h_address']) $contact_data['h_address'] = array_var($fields, $position['h_address']);
+		if (isset($checked['h_city']) && $checked['h_city']) $contact_data['h_city'] = array_var($fields, $position['h_city']);
+		if (isset($checked['h_state']) && $checked['h_state']) $contact_data['h_state'] = array_var($fields, $position['h_state']);
+		if (isset($checked['h_zipcode']) && $checked['h_zipcode']) $contact_data['h_zipcode'] = array_var($fields, $position['h_zipcode']);
+		if (isset($checked['h_country']) && $checked['h_country']) $contact_data['h_country'] = array_var($fields, $position['h_country']);
+		if (isset($checked['h_phone_number']) && $checked['h_phone_number']) $contact_data['h_phone_number'] = array_var($fields, $position['h_phone_number']);
+		if (isset($checked['h_phone_number2']) && $checked['h_phone_number2']) $contact_data['h_phone_number2'] = array_var($fields, $position['h_phone_number2']);
+		if (isset($checked['h_fax_number']) && $checked['h_fax_number']) $contact_data['h_fax_number'] = array_var($fields, $position['h_fax_number']);
+		if (isset($checked['h_mobile_number']) && $checked['h_mobile_number']) $contact_data['h_mobile_number'] = array_var($fields, $position['h_mobile_number']);
+		if (isset($checked['h_pager_number']) && $checked['h_pager_number']) $contact_data['h_pager_number'] = array_var($fields, $position['h_pager_number']);
+		
+		if (isset($checked['o_web_page']) && $checked['o_web_page']) $contact_data['o_web_page'] = array_var($fields, $position['o_web_page']);
+		if (isset($checked['o_address']) && $checked['o_address']) $contact_data['o_address'] = array_var($fields, $position['o_address']);
+		if (isset($checked['o_city']) && $checked['o_city']) $contact_data['o_city'] = array_var($fields, $position['o_city']);
+		if (isset($checked['o_state']) && $checked['o_state']) $contact_data['o_state'] = array_var($fields, $position['o_state']);
+		if (isset($checked['o_zipcode']) && $checked['o_zipcode']) $contact_data['o_zipcode'] = array_var($fields, $position['o_zipcode']);
+		if (isset($checked['o_country']) && $checked['o_country']) $contact_data['o_country'] = array_var($fields, $position['o_country']);
+		if (isset($checked['o_phone_number']) && $checked['o_phone_number']) $contact_data['o_phone_number'] = array_var($fields, $position['o_phone_number']);
+		if (isset($checked['o_phone_number2']) && $checked['o_phone_number2']) $contact_data['o_phone_number2'] = array_var($fields, $position['o_phone_number2']);
+		if (isset($checked['o_fax_number']) && $checked['o_fax_number']) $contact_data['o_fax_number'] = array_var($fields, $position['o_fax_number']);
+		if (isset($checked['o_birthday']) && $checked['o_birthday']) $contact_data['o_birthday'] = array_var($fields, $position['o_birthday']);
+		if (isset($checked['notes']) && $checked['notes']) $contact_data['notes'] = array_var($fields, $position['notes']);
+		          
+		$contact_data['is_private'] = false;
+		$contact_data['timezone'] = logged_user()->getTimezone();
+
+		return $contact_data;
+	} // buildContactData
 
 } // ContactController
 

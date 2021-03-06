@@ -357,7 +357,7 @@ class Company extends BaseCompany {
     * @return boolean
     */
     function canDelete(User $user) {
-      return $user->isAccountOwner() || $user->isAdministrator();
+      return ($user->isAccountOwner() || $user->isAdministrator()) && !$this->isOwner();
     } // canDelete
     
     /**

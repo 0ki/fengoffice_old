@@ -6,6 +6,8 @@
  * @author Carlos Palma <chonwil@gmail.com>
  */
 abstract class BaseMailContent extends ProjectDataObject {
+  
+  	protected $objectTypeIdentifier = 'mc';
 
 	// -------------------------------------------------------
 	//  Access methods
@@ -476,6 +478,50 @@ abstract class BaseMailContent extends ProjectDataObject {
     function setCreatedById($value) {
       return $this->setColumnValue('created_by_id', $value);
     } // setCreatedById() 
+
+    /** Return value of 'trashed_on' field
+    *
+    * @access public
+    * @param void
+    * @return DateTimeValue 
+    */
+    function getTrashedOn() {
+      return $this->getColumnValue('trashed_on');
+    } // getTrashedOn()
+    
+    /**
+    * Set value of 'trashed_on' field
+    *
+    * @access public   
+    * @param DateTimeValue $value
+    * @return boolean
+    */
+    function setTrashedOn($value) {
+      return $this->setColumnValue('trashed_on', $value);
+    } // setTrashedOn() 
+    
+    /**
+    * Return value of 'trashed_by_id' field
+    *
+    * @access public
+    * @param void
+    * @return integer 
+    */
+    function getTrashedById() {
+      return $this->getColumnValue('trashed_by_id');
+    } // getTrashedById()
+    
+    /**
+    * Set value of 'trashed_by_id' field
+    *
+    * @access public   
+    * @param integer $value
+    * @return boolean
+    */
+    function setTrashedById($value) {
+      return $this->setColumnValue('trashed_by_id', $value);
+    } // setTrashedById()
+    
     
 	/**
 	 * Return manager instance

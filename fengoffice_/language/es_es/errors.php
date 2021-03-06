@@ -137,6 +137,7 @@
 	'error create backup folder' => 'Error al crear carpeta de respaldo. No se puede completar el respaldo',
 	'error delete backup' => 'Error al borrar el ultimo respaldo',
 	'success delete backup' => 'Respaldo borrado',
+    'name must be unique' => 'El nombre del contacto ya está en uso',
   ); // array
 
 ?>

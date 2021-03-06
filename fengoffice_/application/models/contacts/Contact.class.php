@@ -559,8 +559,16 @@ class Contact extends BaseContact {
       // Validate username if present
       if(!$this->validatePresenceOf('lastname') && !$this->validatePresenceOf('firstname')) {
         $errors[] = lang('contact identifier required');
-      } // if
+      } 
+      if (!$this->validateUniquenessOf('firstname','lastname' )) { // if
+      	$errors[] = lang('name must be unique');
+      }
       
+      //if email address is entered, it must be unique
+		if($this->validatePresenceOf('email')) {
+			if(!$this->validateFormatOf('email', EMAIL_FORMAT)) $errors[] = lang('invalid email address');
+			if(!$this->validateUniquenessOf('email')) $errors[] = lang('email address must be unique');
+		}
     } // validate
     
     /**
@@ -863,6 +871,14 @@ class Contact extends BaseContact {
     		$updated_on =($this->getObjectCreationTime())? $this->getObjectCreationTime()->getTimestamp(): lang('n/a');
     	}
     	
+    	$deletedOn = $this->getTrashedOn() ? $this->getTrashedOn()->getTimestamp() : lang('n/a');
+    	$deletedBy = Users::findById($this->getTrashedById());
+    	if ($deletedBy instanceof User) {
+    		$deletedBy = $deletedBy->getDisplayName();
+    	} else {
+    		$deletedBy = lang("n/a");
+    	}
+    	
     	return array(
 				"id" => $this->getObjectTypeName() . $this->getId(),
 				"object_id" => $this->getId(),
@@ -877,7 +893,10 @@ class Contact extends BaseContact {
 				"dateUpdated" => $updated_on,
 				"wsIds" => $wsIds,
 				"url" => $this->getObjectUrl(),
-				"manager" => get_class($this->manager())
+				"manager" => get_class($this->manager()),
+    			"deletedById" => $this->getTrashedById(),
+    			"deletedBy" => $deletedBy,
+    			"dateDeleted" => $deletedOn
 			);
     }
     

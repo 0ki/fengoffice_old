@@ -13,7 +13,13 @@ abstract class BaseWorkspaceTemplates extends DataManager {
 	 * @var array
 	 * @static
 	 */
-	static private $columns = array('workspace_id' => DATA_TYPE_INTEGER, 'object_manager' => DATA_TYPE_STRING, 'template_id' => DATA_TYPE_INTEGER, 'include_subws'=> DATA_TYPE_BOOLEAN, 'created_on' => DATA_TYPE_DATETIME, 'created_by_id' => DATA_TYPE_INTEGER);
+	static private $columns = array(
+		'workspace_id' => DATA_TYPE_INTEGER,
+		'template_id' => DATA_TYPE_INTEGER,
+		'include_subws'=> DATA_TYPE_BOOLEAN,
+		'created_on' => DATA_TYPE_DATETIME,
+		'created_by_id' => DATA_TYPE_INTEGER,
+	);
 
 	/**
 	 * Construct

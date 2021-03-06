@@ -1,3 +1,17 @@
+
+<?php $genid = gen_id();
+
+	$assign_type = 0; //All
+	if ($assigned_to_user_filter > 0){
+		$assigned_to = Users::findById($assigned_to_user_filter);
+		$assigned_to_me = $assigned_to->getId() == logged_user()->getId();
+		$assign_type = $assigned_to_me? 1 : 2;
+	} else if ($assigned_to_company_filter > 0){
+		$assigned_to = Companies::findById($assigned_to_company_filter);
+		$assign_type = 3;
+	}
+?>
+
 <script type="text/javascript">
 	var cant_tips = 0;
 	var tips_array = [];
@@ -12,20 +26,23 @@
 		});
 	}
 </script>
-<?php $genid = gen_id() ?>
 
 
-<div id="<?php echo $genid ?>-db" style="padding:7px;width:97%;">
-<div class="dashboard">
+<div id="<?php echo $genid ?>-db" style="padding:7px;">
+<div class="dashboard" style="width:100%;">
 
 <div class="dashWorkspace">
 <span class="name">
 <?php 
 if(active_project() instanceof Project) 
-	echo active_project()->getName();
+	echo clean(active_project()->getName());
 else 
 	echo lang('all projects');
 	
+	$use_24_hours = config_option('time_format_use_24');
+	if($use_24_hours) $timeformat = 'G:i';
+	else $timeformat = 'g:i A';
+									
 	$tags = active_tag();
 	
 	$hasPendingTasks = isset($dashtasks) && is_array($dashtasks) && count($dashtasks) > 0;
@@ -110,57 +127,10 @@ else
 	<tr><td class="coViewRight" rowspan=2 colspan=2 ></td></tr>
 	
 		<tr><td colspan=2>
-			<script type="text/javascript">
-			/*
-			function cancel (evt) {//cancel clic event bubbling. used to cancel opening a New Event window when clicking an object
-			    var e=(evt)?evt:window.event;
-			    if (window.event) {
-			        e.cancelBubble=true;
-			    } else {
-			        e.stopPropagation();
-			    }
-			    return true;
-			}
-			
-			var ob=true;
-
-			function hide_tooltip(elem){
-				jQuery(elem).parent().trigger('mouseout');
-			}
-			
-			//disable showing the tooltip. 
-			function disable_overlib(){
-				ob = false;
-			}
-			jQuery.noConflict();//YUI redefines $, so we need to set jQuery to non-conflict mode	
-			
-		  	for (var i = 0; i <= 24; i++){
-			  	jQuery('span.cluetip' + i).cluetip({		
-				    splitTitle: '|', 
-				    cluetipClass: 'color' + i + ' cluetip-event',
-				    width: 'auto',
-				    fx: {             
-			              open:       'fadeIn', 
-			              openSpeed:  ''
-				    },
-				    hoverIntent: {    
-			              sensitivity:  3,
-			              interval:     50,
-			              timeout:      0
-				    }, 
-				    topOffset:        8,       
-			    	leftOffset:       8,
-			    	onActivate: function(e) {//to prevent keeping the tooltip after moving away from the page
-					    return ob;
-					  },
-				    showTitle: false 
-			  	});
-		  	}*/
-		</script>
   <?php
   
   $startday = date("d",mktime()) - (date("N", mktime()) %7);
-  $endday = $startday +14;
+  $endday = $startday + 7;
   $currentday = date("j");
   $currentmonth = date("n");
   $currentyear = date("Y");
@@ -170,7 +140,7 @@ else
   $milestones = ProjectMilestones::getRangeMilestonesByUser($date_start,$date_end,logged_user(), $tags, active_project());
   $tasks = ProjectTasks::getRangeTasksByUser($date_start,$date_end,logged_user(), $tags, active_project());
 	
- 
+
 	// load the day we are currently viewing in the calendar
 
 	$output ='';
@@ -208,10 +178,8 @@ else
 			$i = $week_index * 7 + $day_of_week;
 			$day_of_month = $i + $startday;
 			// see what type of day it is
-			$today_text = "";	
 			if($currentyear == $year && $currentmonth == $month && $currentday == $day_of_month){
 				$daytitle = 'todaylink';
-				$today_text = "Today ";
 			}else $daytitle = 'daylink';
 			
 			// if weekends override do this
@@ -252,7 +220,8 @@ else
 			}elseif($day_of_month < 1){
 				$p = cal_getlink("index.php?action=viewdate&day=$day_of_month&month=$month&year=$year");
 				$t = cal_getlink("index.php?action=add&day=$day_of_month&month=$month&year=$year");
-				$w = "&nbsp;";
+				//$w = "&nbsp;";
+				$w = idate('d', mktime(0, 0, 0, $month, 0, $year)) + $day_of_month;
 				$dtv = DateTimeValueLib::make(0,0,0,$month,$day_of_month,$year);  
 			}else{
 				if($day_of_month==$lastday+1){
@@ -273,9 +242,10 @@ else
 			} else {
 				$start_value = $dtv->getDay()."+'/'+".$dtv->getMonth()."+'/'+".$dtv->getYear();
 			}
-			$output .= "><div style='z-index:0; height:100%;cursor:pointer' onclick=\"og.EventPopUp.show(null, {caller:'overview-panel', day:'".$dtv->getDay()."', month:'".$dtv->getMonth()."', year:'".$dtv->getYear()."', type_id:1, hour:'9', minute:'0', durationhour:1, durationmin:0, start_value: ".$start_value.", title:'".$loc->dateByLocalization('l, j F', $dtv->getTimestamp()) ."', view: 'week'},'');\") >
+			$popupTitle = lang('add event');
+			$output .= "><div style='z-index:0; min-height:100px; height:100%;cursor:pointer' onclick=\"og.EventPopUp.show(null, {caller:'overview-panel', day:'".$dtv->getDay()."', month:'".$dtv->getMonth()."', year:'".$dtv->getYear()."', type_id:1, hour:'9', minute:'0', durationhour:1, durationmin:0, start_value: ".$start_value.", start_time:'9:00', title:'".format_datetime($dtv, 'l, j F', logged_user()->getTimezone()) ."', view: 'week', title: '$popupTitle', time_format: '$timeformat', hide_calendar_toolbar: 0},'');\") >
 			<div class='$daytitle' style='text-align:right'>";
-			if($day_of_month >= 1){
+			//if($day_of_month >= 1){
 				$output .= "<a class='internalLink' href=\"$p\" onclick=\"stopPropagation(event);\"  style='color:#5B5B5B' >$w</a>";				
 				// only display this link if the user has permission to add an event
 				if(!active_project() || ProjectEvent::canAdd(logged_user(),active_project())){
@@ -286,13 +256,11 @@ else
 						
 				}
 				
-			}else $output .= "&nbsp;";
+			//}else $output .= "&nbsp;";
 			$output .= "</div>";
 			// This loop writes the events for the day in the cell
-			if (is_numeric($w)){ //if it is a day after the first of the month
-				$day_tmp = is_numeric($w) ? $w : 0;
-				$date = new DateTimeValue(mktime(0,0,0,$month,$day_tmp,$year)); 
-				$result = ProjectEvents::getDayProjectEvents($date, $tags, active_project()); 
+			if (is_numeric($w)){
+				$result = ProjectEvents::getDayProjectEvents($dtv, $tags, active_project(), logged_user()->getId(), ' 0 1 3'); 
 				if(!$result)
 					$result = array();
 				if($milestones)
@@ -309,7 +277,7 @@ else
 						$color = "000000"; // default color
 						if($event instanceof ProjectEvent ){
 							$count++;
-							$subject =   $event->getSubject();
+							$subject =   clean($event->getSubject());
 							$typeofevent = $event->getTypeId(); 
 							$private = $event->getIsPrivate(); 
 							$eventid = $event->getId(); 
@@ -319,8 +287,6 @@ else
 							$overlib_time = lang('CAL_UNKNOWN_TIME');
 							switch($typeofevent) {
 								case 1:
-									if(!cal_option("hours_24")) $timeformat = 'g:i A';
-									else $timeformat = 'G:i';
 									$event_time = date($timeformat, $event->getStart()->getTimestamp()); 
 									$overlib_time = "@ $event_time";
 									break;
@@ -336,54 +302,56 @@ else
 							} 
 							
 							// build overlib text
-							$overlib_text = "<strong>$overlib_time</strong><br>" . truncate($event->getDescription(),195);
+							$overlib_text = "<strong>$overlib_time</strong><br>" . truncate(clean($event->getDescription()),195);
 							// make the event subjects links or not according to the variable $whole_day in gatekeeper.php
 							if(!$private && $count <= 3){
 								if($event->getEventTypeObject() && $event->getEventTypeObject()->getTypeColor()=="") $output .= '<div class="event_block">';
 								else $output .= "<div class='event_block'   style='z-index:1000;border-left-color: #$color;'>";
 								if($subject=="") $subject = "[".lang('CAL_NO_SUBJECT')."]";
 								$output .= "<span id='o_ev_div_" . $event->getId() . "'>";			
-								$output .="<img src=" . image_url('/16x16/calendar.png') . " align='absmiddle'>";
-								$output .= "<a style='vertical-align:bottom;' href='".cal_getlink("index.php?action=viewevent&amp;id=".$event->getId())."' class='internalLink' onclick=\"stopPropagation(event);\" >".$subject."</a>";
+								$output .= "<a style='vertical-align:bottom;' href='".cal_getlink("index.php?action=viewevent&amp;id=".$event->getId())."' class='internalLink' onclick=\"stopPropagation(event);\" >";
+								$output .= "<img src=" . image_url('/16x16/calendar.png') . " align='absmiddle'>";
+								$output .= $subject."</a>";
 								$output .= '</span>';
 								$output .= "</div>";
 								
-								$tip_text = str_replace("\r", '', $event->getTypeId() == 2 ? lang('CAL_FULL_DAY') : $event->getStart()->format('h:i') .' - '. $event->getDuration()->format('h:i') . (trim($event->getDescription()) != '' ? '<br><br>' . $event->getDescription() : ''));
+								$tip_text = str_replace("\r", '', $event->getTypeId() == 2 ? lang('CAL_FULL_DAY') : $event->getStart()->format($use_24_hours ? 'G:i' : 'g:i A') .' - '. $event->getDuration()->format($use_24_hours ? 'G:i' : 'g:i A') . (trim(clean($event->getDescription())) != '' ? '<br><br>' . clean($event->getDescription()) : ''));
 								$tip_text = str_replace("\n", '<br>', $tip_text);
 								if (strlen($tip_text) > 200) $tip_text = substr($tip_text, 0, strpos($tip_text, ' ', 200)) . ' ...';
 								?>
 								<script type="text/javascript">
-									addTip('o_ev_div_<?php echo $event->getId() ?>', '<i>' + lang('event') + '</i> - <?php echo $event->getSubject() ?>', '<?php echo $tip_text;?>');
+									addTip('o_ev_div_<?php echo $event->getId() ?>', '<i>' + lang('event') + '</i> - '+<?php echo json_encode(clean($event->getSubject())) ?>, <?php echo json_encode($tip_text);?>);
 								</script>
 								<?php
 							}
 						} elseif($event instanceof ProjectMilestone ){
 							$milestone=$event;
 							$due_date=$milestone->getDueDate();
-							if (mktime(0,0,0,$month,$day_tmp,$year) == mktime(0,0,0,$due_date->getMonth(),$due_date->getDay(),$due_date->getYear())) {	
+							if ($dtv->getTimestamp() == mktime(0,0,0,$due_date->getMonth(),$due_date->getDay(),$due_date->getYear())) {	
 								$count++;
 								if ($count<=3){
-									$overlib_text = truncate($milestone->getDescription(),195)."<br>";
+									$overlib_text = truncate(clean($milestone->getDescription()),195)."<br>";
 									
 									if ($milestone->getAssignedTo() instanceof ApplicationDataObject) { 
 										$overlib_text .= 'Assigned to:'. clean($milestone->getAssignedTo()->getObjectName());
 									} else $overlib_text .= 'Assigned to: None';
 									
-									$subject = "&nbsp;". $milestone->getName()." - <i>Milestone</i>";
-									$cal_text = $milestone->getName();
+									$subject = "&nbsp;". clean($milestone->getName())." - <i>Milestone</i>";
+									$cal_text = clean($milestone->getName());
 									$output .= '<div class="event_block" style="border-left-color: #'.$color.';">';
 									$output .= "<span id='o_ms_div_" . $milestone->getId() . "'>";
+									$output .= "<a style='vertical-align:bottom;' href='".$milestone->getViewUrl()."' class='internalLink' onclick=\"stopPropagation(event);\" >";
 									$output .= "<img src=" . image_url('/16x16/milestone.png') . " align='absmiddle'>";
-									$output .= "<a style='vertical-align:bottom;' href='".$milestone->getViewUrl()."' class='internalLink' onclick=\"stopPropagation(event);\" >".$cal_text."</a>";
+									$output .= $cal_text."</a>";
 									$output .= '</span>';
 									$output .= "</div>";
 									
-									$tip_text = str_replace("\r", '', lang('assigned to') .': '. $milestone->getAssignedToName() . (trim($milestone->getDescription()) == '' ? '' : '<br><br>'. $milestone->getDescription()));
+									$tip_text = str_replace("\r", '', lang('assigned to') .': '. clean($milestone->getAssignedToName()) . (trim(clean($milestone->getDescription())) == '' ? '' : '<br><br>'. clean($milestone->getDescription())));
 									$tip_text = str_replace("\n", '<br>', $tip_text);
 									if (strlen($tip_text) > 200) $tip_text = substr($tip_text, 0, strpos($tip_text, ' ', 200)) . ' ...';
 									?>
 									<script type="text/javascript">
-										addTip('o_ms_div_<?php echo $milestone->getId() ?>', '<i>' + lang('milestone') + '</i> - <?php echo $milestone->getTitle() ?>', '<?php echo $tip_text?>');
+										addTip('o_ms_div_<?php echo $milestone->getId() ?>', '<i>' + lang('milestone') + '</i> - '+<?php echo json_encode(clean($milestone->getTitle())) ?>, <?php echo json_encode($tip_text)?>);
 									</script>
 									<?php
 								}//if count
@@ -394,31 +362,31 @@ else
 							$task=$event;
 							$start_date=$task->getStartDate();
 							$due_date=$task->getDueDate();
-							$now = mktime(0,0,0,$month,$day_tmp,$year);
-							if ($now == mktime(0,0,0,$due_date->getMonth(),$due_date->getDay(),$due_date->getYear())) {	
+							if ($dtv->getTimestamp() == mktime(0,0,0,$due_date->getMonth(),$due_date->getDay(),$due_date->getYear())) {	
 								$count++;
 								if ($count<=3){
-									$overlib_text = "&nbsp;".truncate($task->getText(),195,'','UTF-8',true,true)."<br>";
+									$overlib_text = "&nbsp;".truncate(clean($task->getText()),195,'','UTF-8',true,true)."<br>";
 									if ($task->getAssignedTo() instanceof ApplicationDataObject) { 
 										$overlib_text .= 'Assigned to:'. clean($task->getAssignedTo()->getObjectName());
 									} else $overlib_text .= 'Assigned to: None';
 									
-									$subject = $task->getTitle().'- <i>Task</i>';
-									$cal_text = $task->getTitle();
+									$subject = clean($task->getTitle()).'- <i>Task</i>';
+									$cal_text = clean($task->getTitle());
 									
 									$output .= '<div class="event_block" style="border-left-color: #'.$color.';">';
 									$output .= "<span id='o_ta_div_" . $task->getId() . "'>";
+									$output .= "<a style='vertical-align:bottom;' href='".$task->getViewUrl()."' class='internalLink' onclick=\"stopPropagation(event);\" >";
 									$output .= "<img src=" . image_url('/16x16/tasks.png') . " align='absmiddle'>";
-									$output .= "<a style='vertical-align:bottom;' href='".$task->getViewUrl()."' class='internalLink' onclick=\"stopPropagation(event);\" >".$cal_text."</a>";
+									$output .= $cal_text."</a>";
 									$output .= '</span>';
 									$output .= "</div>";
 									
-									$tip_text = str_replace("\r", '', lang('assigned to') .': '. $task->getAssignedToName() . (trim($task->getText()) == '' ? '' : '<br><br>'. $task->getText()));
+									$tip_text = str_replace("\r", '', lang('assigned to') .': '. clean($task->getAssignedToName()) . (trim(clean($task->getText())) == '' ? '' : '<br><br>'. clean($task->getText())));
 									$tip_text = str_replace("\n", '<br>', $tip_text);													
 									if (strlen($tip_text) > 200) $tip_text = substr($tip_text, 0, strpos($tip_text, ' ', 200)) . ' ...';
 									?>
 									<script type="text/javascript">
-										addTip('o_ta_div_' + <?php echo $task->getId() ?>, '<i>' + lang('task') + '</i> - <?php echo $task->getTitle()?>', '<?php echo $tip_text;?>');
+										addTip('o_ta_div_' + <?php echo $task->getId() ?>, '<i>' + lang('task') + '</i> - ' + <?php echo json_encode(clean($task->getTitle()))?>, <?php echo json_encode($tip_text);?>);
 									</script>
 									<?php
 								}//if count
@@ -426,7 +394,7 @@ else
 						}//endif task
 					} // end foreach event writing loop
 					if ($count > 3) {
-						$output .= '<div style="witdh:100%;text-align:center;font-size:9px" ><a href="'.$p.'" class="internalLink"  onclick="stopPropagation(event);nd();">+'.($count-3).' more</a></div>';
+						$output .= '<div style="witdh:100%;text-align:center;font-size:9px" ><a href="'.$p.'" class="internalLink"  onclick="stopPropagation(event);nd();">'.($count-3) . ' ' . lang('more') .'</a></div>';
 					}
 				}
 				
@@ -457,7 +425,13 @@ echo $output . '</table>';
 <?php if (isset($tasks_in_progress) && $tasks_in_progress) { ?>
 <div class="dashTasksInProgress">
 <table style="width:100%"><tr>
-	<td colspan=2 rowspan=2 class="dashHeader"><div class="dashTitle"><?php echo lang('tasks in progress') ?></div></td>
+	<td colspan=2 rowspan=2 class="dashHeader"><div class="dashTitle"><?php 
+		switch($assign_type){
+			case 0: echo lang('tasks in progress'); break;
+			case 1: echo lang('my tasks in progress'); break;
+			case 2: echo lang('tasks in progress for', $assigned_to->getDisplayName()); break;
+			case 3: echo lang('tasks in progress for', $assigned_to->getName()); break;
+		}?></div></td>
 	<td class="coViewTopRight"></td></tr>
 	<tr><td class="coViewRight" rowspan=2></td></tr>
 	
@@ -473,6 +447,7 @@ echo $output . '</table>';
 				$text = ": " . $text;
 			if(strlen($text)>100)
 				$text = substr($text,0,100) . " ...";
+			$text = clean($text);
 			?>
 				<tr class="<?php echo $c % 2 == 1? '':'dashAltRow'?>"><td class="db-ico ico-task"></td><td style="padding-left:5px;padding-bottom:2px">
 			<?php $dws = $task->getWorkspaces(logged_user()->getActiveProjectIdsCSV());
@@ -481,15 +456,26 @@ echo $output . '</table>';
 				$projectLinks[] = '<span class="project-replace">' . $ws->getId() . '</span>';
 			}
 			echo implode('&nbsp;',$projectLinks);?>
-			<a class='internalLink' href='<?php echo $task->getViewUrl() ?>'><?php echo clean($task->getTitle())?><?php echo clean($text) ?></a></td>
-			<td align="right"><?php $timeslot = Timeslots::getOpenTimeslotByObject($task,logged_user());
-				if ($timeslot) { ?>
+			<a class='internalLink' href='<?php echo $task->getViewUrl() ?>'><?php echo clean($task->getTitle())?><?php echo $text ?></a></td>
+			<?php /*<td align="right"><?php $timeslot = Timeslots::getOpenTimeslotByObject($task,logged_user());
+				if ($timeslot) { 
+					if (!$timeslot->isPaused()) {?>
 					<div id="<?php echo $genid . $task->getId() ?>timespan"></div>
 					<script language="JavaScript">
 					og.startClock('<?php echo $genid . $task->getId() ?>', <?php echo $timeslot->getSeconds() ?>);
 					</script>
-				<?php } ?>
-				</td>
+				<?php } else {?>
+					<div id="<?php echo $genid . $task->getId() ?>timespan">
+					<?php $totalSeconds = $timeslot->getSeconds(); 
+				$seconds = $totalSeconds % 60;
+				$minutes = (($totalSeconds - $seconds) / 60) % 60;
+				$hours = (($totalSeconds - $seconds - ($minutes * 60)) / 3600);
+				echo (($hours < 10)? '0':'') . $hours . ':' . (($minutes < 10)? '0':'') . $minutes . ':' . (($seconds < 10)? '0':'') . $seconds;
+				?>
+					</div>
+					
+				<?php }} ?>
+				</td> */?>
 			</tr>
 		<?php } // foreach ?>
 		</table>
@@ -509,7 +495,13 @@ echo $output . '</table>';
 <div class="dashLate">
 <table style="width:100%">
 	<tr>
-	<td colspan=2 rowspan=2 class="dashHeader"><div class="dashTitle"><?php echo lang('late milestones and tasks') ?></div></td>
+	<td colspan=2 rowspan=2 class="dashHeader"><div class="dashTitle"><?php 
+		switch($assign_type){
+			case 0: echo lang('late milestones and tasks'); break;
+			case 1: echo lang('my late milestones and tasks'); break;
+			case 2: echo lang('late milestones and tasks for', $assigned_to->getDisplayName()); break;
+			case 3: echo lang('late milestones and tasks for', $assigned_to->getName()); break;
+		} ?></div></td>
 	<td class="coViewTopRight"></td></tr>
 	<tr><td class="coViewRight" rowspan=2></td></tr>
 	
@@ -632,7 +624,13 @@ echo $output . '</table>';
 <?php if ($hasPendingTasks) { ?>
 <div class="dashPendingTasks">
 <table style="width:100%"><tr>
-	<td colspan=2 rowspan=2 class="dashHeader"><div class="dashTitle"><?php echo lang('pending tasks') ?></div></td>
+	<td colspan=2 rowspan=2 class="dashHeader"><div class="dashTitle"><?php 
+		switch($assign_type){
+			case 0: echo lang('pending tasks'); break;
+			case 1: echo lang('my pending tasks'); break;
+			case 2: echo lang('pending tasks for', $assigned_to->getDisplayName()); break;
+			case 3: echo lang('pending tasks for', $assigned_to->getName()); break;
+		} ?></div></td>
 	<td class="coViewTopRight"></td></tr>
 	<tr><td class="coViewRight" rowspan=2></td></tr>
 	
@@ -648,6 +646,7 @@ echo $output . '</table>';
 				$text = ": " . $text;
 			if(strlen($text)>100)
 				$text = substr($text,0,100) . " ...";
+			$text = clean($text);
 			?>
 				<tr class="<?php echo $c % 2 == 1? '':'dashAltRow'; echo ' ' . ($c > 5? 'dashSMTC':''); ?>" style="<?php echo $c > 5? 'display:none':'' ?>">
 				<td class="db-ico ico-task<?php echo $task->getPriority() == 300? '-high-priority' : ($task->getPriority() == 100? '-low-priority' : '') ?>"></td><td style="padding-left:5px;padding-bottom:2px">
@@ -697,7 +696,7 @@ echo $output . '</table>';
 <?php if ($hasMessages || $hasDocuments || $hasCharts || $hasEmails || $hasComments){ ?>
 <td style="width:<?php echo ($hasPendingTasks || $hasLate || $hasToday)? '330px' : '100%' ?>">
 
-<?php if ($hasEmails && (!defined('HIDE_MAILS_TAB') || HIDE_MAILS_TAB != 1)) { ?>
+<?php if ($hasEmails && (defined('SHOW_MAILS_TAB') && SHOW_MAILS_TAB == 1)) { ?>
 <div class="dashUnreadEmails">
 <table style="width:100%">
 	<col width=12/><col /><col width=12/><tr>
@@ -730,7 +729,7 @@ echo $output . '</table>';
 		<?php } // foreach?>
 			<?php if ($c >= 10) {?>
 				<tr class="dashSMUC" style="display:none"><td></td>
-				<td style="text-align:right"><a href="#" onclick="Ext.getCmp('tabs-panel').activate('messages-panel');"><?php echo lang('show all') ?>...</a>
+				<td style="text-align:right"><a href="#" onclick="Ext.getCmp('tabs-panel').activate('mails-panel');"><?php echo lang('show all') ?>...</a>
 				</td></tr>
 			<?php } ?>
 		</table>
@@ -771,7 +770,7 @@ echo $output . '</table>';
 				}
 				echo implode('&nbsp;',$projectLinks);?>
 			<a class="internalLink" href="<?php echo get_url('message','view', array('id' => $message->getId()))?>"
-				title="<?php echo lang('message posted on by linktitle', format_datetime($message->getCreatedOn()), $message->getCreatedByDisplayName()) ?>">
+				title="<?php echo lang('message posted on by linktitle', format_datetime($message->getCreatedOn()), clean($message->getCreatedByDisplayName())) ?>">
 			<?php echo clean($message->getTitle()) ?>
 			</a></td></tr>
 		<?php } // foreach?>
@@ -811,10 +810,10 @@ echo $output . '</table>';
 			<td class="db-ico ico-comment"></td>
 			<td style="padding-left:5px">
 			<a class="internalLink" href="<?php echo $comment->getViewUrl()?>"
-				title="<?php echo lang('comment posted on by linktitle', format_datetime($comment->getCreatedOn()), $comment->getCreatedByDisplayName()) ?>">
+				title="<?php echo lang('comment posted on by linktitle', format_datetime($comment->getCreatedOn()), clean($comment->getCreatedByDisplayName())) ?>">
 			<?php echo clean($comment->getObject()->getObjectName()) ?>
 			</a>
-			<span class="previewText"><?php echo $comment->getPreviewText(100) ?></span>
+			<span class="previewText"><?php echo clean($comment->getPreviewText(100)) ?></span>
 			</td></tr>
 		<?php } // foreach?>
 			<?php /*if ($c >= 10) {?>
@@ -896,7 +895,7 @@ echo $output . '</table>';
 				}
 				echo '<div style="padding-right:10px;display:inline">' . implode('&nbsp;',$projectLinks) . '</div>';?>
 			<a class="internalLink" href="<?php echo get_url('files','file_details', array('id' => $document->getId()))?>"
-				title="<?php echo lang('message posted on by linktitle', format_datetime($document->getCreatedOn()), $document->getCreatedByDisplayName()) ?>">
+				title="<?php echo lang('message posted on by linktitle', format_datetime($document->getCreatedOn()), clean($document->getCreatedByDisplayName())) ?>">
 			<?php echo clean($document->getFilename())?>
 			</a></td>
 			<td style="text-align:right">

@@ -182,8 +182,23 @@
     'all contacts' => 'Todos los contactos',
     'project contacts' => 'Contactos en {0}', 
     'select' => 'Seleccione',
-  
-  
+
+ 	// Contact import
+ 	'import contacts from csv' => 'Importación de contactos desde archivos .csv',
+	'import' => 'Importar',
+ 	'file not exists' => 'El archivo seleccionado no existe',
+	'field delimiter' => 'Delimitador de campos',
+	'first record contains field names' => 'El primer registro contiene los nombres de los campos',
+	'import contact success' => 'Importación de contactos exitosa.',
+	'contact fields' => 'Campos de contactos',
+	'fields from file' => 'Campos obtenidos del archivo',
+	'you must match the database fields with file fields before executing the import process' => 'Debe asegurarse de que los campos de la base de contactos coincidan con los campos especificados en el archivo.',  
+	'import result' => 'Resultado de la importación',
+	'contacts succesfully imported' => 'Contactos importados exitosamente',
+	'contacts import fail' => 'Importación fallida para los contactos',
+	'contacts import fail help' => 'El proceso de importación pudo haber fallado debido a datos existentes en la base de datos, como nombre, email, etc.',
+	'import fail reason' => 'Motivo del fallo',
+    
   //Webpages
   'add webpage' => 'Agregar página web',
   'delete webpage' => 'Eliminar página web',
@@ -347,7 +362,13 @@
   'success cancel timeslot' => 'Tiempo de trabajo cancelado de forma satisfactoria',
   'success delete timeslot' => 'Tiempo de trabajo eliminado de forma satisfactoria',
   'success edit timeslot' => 'Tiempo de trabajo editado de forma satisfactoria',
-  'open timeslot message' => 'Su trabajo en este objeto comenzó hace:',
+  'open timeslot message' => 'Tiempo de trabajo realizado:',
+  'success pause timeslot' => 'Tiempo de trabajo pausado de forma satisfactoria',
+  'success resume timeslot' => 'Tiempo de trabajo retomado de forma satisfactoria',
+  'paused timeslot message' => 'Tiempo de trabajo pausado, tiempo total: {0}',
+  'time since pause' => 'Tiempo desde la pausa',
+  'pause work' => 'Pausar',
+  'resume work' => 'Retomar',
   'end work description' => 'Finalizar con la descripción del trabajo',
   'add timeslot' => 'Añadir tiempo de trabajo',
   'edit timeslot' => 'Editar tiempo de trabajo',
@@ -380,6 +401,7 @@
   
   'hours' => 'Horas',
   'minutes' => 'Minutos',
+  'seconds' => 'Segundos',
   'days' => 'Días',
   'time estimate' => 'Estimativo de tiempo',
   'work in progress' => 'Trabajo en progreso',
@@ -441,6 +463,34 @@
   'do complete' => 'Completar',
   
   'task data' => 'Datos de tarea',
-  ); // array
+  'search in all workspaces' => 'Buscar en todos los espacios',
+  
+  'total pause time' => 'Tiempo total pausado',
+  'pause time cannot be negative' => 'El tiempo de pausa no puede ser negativo',
+  'pause time cannot exceed timeslot time' => 'El tiempo de pausa no puede exceder el tiempo total de trabajo',
+  'timeslots' => 'Tiempos de trabajo',
+  
+  'task timeslots' => 'Tiempos de trabajo de tareas',
+  'time timeslots' => 'Tiempos de trabajo generales',
+  'all timeslots' => 'Todos los tiempos de trabajo',
+  
+  'print report' => 'Imprimir reporte',
+  
+  'all active tasks' => 'Todas las tareas activas',
+  
+  'unique id' => 'Id único',
+  
+  'my pending tasks' => 'Mis tareas pendientes',
+  'pending tasks for' => 'Tareas pendientes de {0}',
+  'my late milestones and tasks' => 'Mis hitos y tareas atrasadas',
+  'late milestones and tasks for' => 'Hitos y tareas atrasadas de {0}',
+  'my tasks in progress' => 'Mis tareas activas',
+  'tasks in progress for' => 'Tareas activas de {0}',
+  
+  'edit picture' => 'Editar imágen',
+  'deleted by' => 'Eliminado por',
+  
+  'time has to be greater than 0' => 'El tiempo tiene que ser mayor que 0'
+ ); // array
 
 ?>

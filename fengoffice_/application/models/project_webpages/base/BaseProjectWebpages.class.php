@@ -6,7 +6,7 @@
   *
   * @author Carlos Palma <chonwil@gmail.com>
   */
-  abstract class BaseProjectWebpages extends DataManager {
+  abstract class BaseProjectWebpages extends ProjectDataObjects {
   
     /**
     * Column name => Column type map
@@ -24,7 +24,9 @@
     'created_by_id' => DATA_TYPE_INTEGER, 
     'updated_on' => DATA_TYPE_DATETIME,
     'updated_by_id' => DATA_TYPE_INTEGER, 
-    'is_private' => DATA_TYPE_BOOLEAN, 
+    'is_private' => DATA_TYPE_BOOLEAN,
+    'trashed_on' => DATA_TYPE_DATETIME,
+    'trashed_by_id' => DATA_TYPE_INTEGER,
 );
   
     /**

@@ -33,8 +33,8 @@ og.ImageChooser = function(config) {
     };
 	
 	var formatData = function(data) {
-    	data.shortName = data.name.ellipse(15);
-    	data.sizeString = formatSize(data);
+    	data.shortName = og.clean(data.name.ellipse(15));
+    	data.sizeString = og.clean(formatSize(data));
     	data.dateString = new Date(data.lastmod).format("m/d/Y g:i a");
     	this.lookup[data.name] = data;
     	return data;
@@ -45,7 +45,7 @@ og.ImageChooser = function(config) {
 		singleSelect: true,
 		overClass: 'x-view-over',
 		itemSelector: 'div.thumb-wrap',
-		emptyText : '<div style="padding:10px;">No images match the specified filter</div>',
+		emptyText : '<div style="padding:10px;">' + lang('no images match the specified filter') + '</div>',
 		store: this.store,
 		listeners: {
 			'selectionchange': {fn:this.showDetails, scope:this, buffer:100},

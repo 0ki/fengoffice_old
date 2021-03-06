@@ -25,6 +25,7 @@
     	'can_manage_security'=>DATA_TYPE_BOOLEAN,
     	'can_manage_configuration'=>DATA_TYPE_BOOLEAN,
     	'can_manage_contacts'=>DATA_TYPE_BOOLEAN,
+    	'can_manage_templates'=>DATA_TYPE_BOOLEAN,
     );
   
     /**

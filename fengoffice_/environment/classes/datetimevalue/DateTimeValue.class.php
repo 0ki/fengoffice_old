@@ -442,13 +442,14 @@ class DateTimeValue {
 		return $this;
 	}
 	
-	static function FormatTimeDiff(DateTimeValue $dt1, DateTimeValue $dt2=null, $format='yfwdhms', $modulus = 1){
+	static function FormatTimeDiff(DateTimeValue $dt1, DateTimeValue $dt2=null, $format='yfwdhms', $modulus = 1, $subtract = 0){
 		$t1 = $dt1->getTimestamp();
 		if ($dt2)
 			$t2 = $dt2->getTimestamp();
 		else
 			$t2 = time();
 		$s = abs($t2 - $t1);
+		$s -= $subtract;
 		$s = $s - ($s % $modulus);
 		$sign = $t2 > $t1 ? 1 : -1;
 		$out = array();

@@ -19,7 +19,7 @@ class ProjectEvents extends BaseProjectEvents {
 	 * @param String $tags
 	 * @return unknown
 	 */
-	static function getDayProjectEvents(DateTimeValue $date, $tags = '', $project = null, $user = -1, $inv_state = -1){
+	static function getDayProjectEvents(DateTimeValue $date, $tags = '', $project = null, $user = -1, $inv_state = '-1'){
 		$day = $date->getDay();
 		$month = $date->getMonth();
 		$year = $date->getYear();
@@ -31,6 +31,7 @@ class ProjectEvents extends BaseProjectEvents {
 		$year = date("Y",mktime(0,0,1,$month, $day, $year));
 		$month = date("m",mktime(0,0,1,$month, $day, $year));
 		$day = date("d",mktime(0,0,1,$month, $day, $year));
+		$nextday = date("Y-m-d",mktime(0,0,1,$month, $day+1, $year));
 		//permission check
 		$limitation='';
 
@@ -62,8 +63,9 @@ class ProjectEvents extends BaseProjectEvents {
 				-- THIS RETURNS EVENTS ON THE ACTUAL DAY IT'S SET FOR (ONE TIME EVENTS)
 				-- 
 				(
-					duration >= '$year-$month-$day 00:00:00' 
-					AND `start` <= '$year-$month-$day 23:59:59' 
+					`duration` > `start` AND `start` >= '$year-$month-$day 00:00:00' AND `duration` <= '$nextday 00:00:00'
+					OR 
+					`type_id` = 2 AND `start` >= '$year-$month-$day 00:00:00' AND `start` < '$nextday 00:00:00'
 				) 
 				-- 
 				-- THIS RETURNS REGULAR REPEATING EVENTS - DAILY, WEEKLY, MONTHLY, OR YEARLY.
@@ -170,15 +172,14 @@ class ProjectEvents extends BaseProjectEvents {
 				foreach ($result_events as $k => $event) {
 					$conditions = '`event_id` = ' . $event->getId();
 					if ($user != -1) $conditions .= ' AND `user_id` = ' . $user;
-					
 					$inv = EventInvitations::findAll(array ('conditions' => $conditions));
 					if (!is_array($inv)) {
-						if ($inv == null || ($inv_state != -1 && $inv_state != $inv->getInvitationState())) {
+						if ($inv == null || (trim($inv_state) != '-1' && !strstr($inv_state, ''.$inv->getInvitationState()))) {
 							unset($result_events[$k]);
 						}
 					} else {
 						foreach ($inv as $key => $v) {
-							if ($v == null || ($inv_state != -1 && $inv_state != $v->getInvitationState())) {
+							if ($v == null || (trim($inv_state) != '-1' && !strstr($inv_state, ''.$v->getInvitationState()))) {
 								unset($result_events[$k]);
 								break;
 							}	

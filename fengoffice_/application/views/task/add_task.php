@@ -17,6 +17,8 @@
 			} else {
 				echo lang('new task list');
 			}
+		} else if ($task->getIsTemplate()) {
+			echo lang('edit task template');
 		} else {
 			echo lang('edit task list');
 		}
@@ -37,7 +39,7 @@
 		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_task_more_div', this)"><?php echo lang('task data') ?></a> - 
 		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_task_mail_notif_div', this)"><?php echo lang('email notification') ?></a> - 
 		<?php /*<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_task_handins_div', this)"><?php echo lang('handins') ?></a> - */ ?> 
-		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_task_properties_div', this)"><?php echo lang('properties') ?></a>
+		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_task_properties_div', this)"><?php echo lang('custom properties') ?></a>
 		<?php if($task->isNew() || $task->canLinkObject(logged_user())) { ?>  
 			 - <a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_task_linked_objects_div', this)"><?php echo lang('linked objects') ?></a>
 		<?php } ?>
@@ -56,7 +58,7 @@
 	<div id="<?php echo $genid ?>add_task_tags_div" style="display:none">
 	<fieldset>
 	<legend><?php echo lang('tags') ?></legend>
-		<?php echo autocomplete_textfield("task[tags]", array_var($task_data, 'tags'), Tags::getTagNames(), lang("enter tags desc"), array("class" => "long")); ?>
+		<?php echo autocomplete_tags_field("task[tags]", array_var($task_data, 'tags')); ?>
 	</fieldset>
 	</div>
 
@@ -204,7 +206,7 @@
 	
 	<div id='<?php echo $genid ?>add_task_properties_div' style="display:none">
 	<fieldset>
-    <legend><?php echo lang('properties') ?></legend>
+    <legend><?php echo lang('custom properties') ?></legend>
       <?php echo render_object_properties('task',$task); ?>
   	</fieldset>
  	</div>
@@ -228,9 +230,13 @@
 
 	<div>
 		<label><?php echo lang('assign to') ?>:</label> 
-		<?php echo assign_to_select_box("task[assigned_to]", null, array_var($task_data, 'assigned_to')) ?>
-		<br /><?php echo checkbox_field('task[send_notification]', array_var($task_data, 'send_notification', true), array('id' => $genid . 'taskFormSendNotification')) ?> 
-		<label for="<?php echo $genid ?>taskFormSendNotification" class="checkbox"><?php echo lang('send task assigned to notification') ?></label>
+		<table><tr><td><?php echo assign_to_select_box("task[assigned_to]", null, array_var($task_data, 'assigned_to'), array('id' => $genid . 'taskFormAssignedTo', "onchange" => "og.addTaskUserChanged('" . $genid . "')")) ?>
+		</td><td style="padding-left:10px"><div  id="<?php echo $genid ?>taskFormSendNotificationDiv">
+			<?php echo checkbox_field('task[send_notification]', array_var($task_data, 'send_notification'), array('id' => $genid . 'taskFormSendNotification')) ?>
+			<label for="<?php echo $genid ?>taskFormSendNotification" class="checkbox"><?php echo lang('send task assigned to notification') ?></label>
+		</div>
+		</td></tr></table>
+		
 	</div>
 	
 	<?php echo input_field("task[is_template]", array_var($task_data, 'is_template', false), array("type" => "hidden")); ?>

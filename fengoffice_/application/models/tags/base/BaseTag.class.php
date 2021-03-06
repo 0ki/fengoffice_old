@@ -7,6 +7,8 @@
   */
   abstract class BaseTag extends ApplicationDataObject  {
   
+  	protected $objectTypeIdentifier = 'tg';
+  
     // -------------------------------------------------------
     //  Access methods
     // -------------------------------------------------------

@@ -259,6 +259,10 @@ return array(
 	'unworked pending tasks' => 'Tareas pendientes no trabajadas',
 	'email sent by linktitle' => 'Enviado por {1}, {0}',
 	'assign contact to workspace desc' => 'Para signar un contacto a un espacio marque el espacio y luego ingrese el rol en el campo de texto.',
+	'edit task template' => 'Editar planitlla de tarea',
+
+	'cannot change parent workspace' => 'Usted no tiene permisos suficientes para cambiar el padre de este espacio de trabajo.',
+	'cannot change parent workspace description' => 'Este espacio de trabajo puede pertenecer a un espacio al cual ud. no tiene acceso.'
 ); // array
 
 ?>

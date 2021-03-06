@@ -14,7 +14,7 @@
 <div class="coInputSeparator"></div>
 <div class="coInputMainBlock">
   <div class="formAddTimeslotDescription">
-    <?php echo label_tag(lang('end work description'), 'addTimeslotDescription', false) ?>
+    <?php echo label_tag(lang('description'), 'addTimeslotDescription', false) ?>
     <?php echo textarea_field("timeslot[description]", array_var($timeslot_data, 'description'), array('class' => 'short', 'id' => 'addTimeslotDescription')) ?>
   </div>
 	<table>
@@ -79,6 +79,34 @@
 			}
 			?>
 			</select></td>
+		</tr><tr><td>&nbsp;</td></tr>
+		<tr>
+			<td ><b><?php echo lang("total pause time") ?>:&nbsp;</b></td>
+			<td align='left'><b><?php 
+				$totalSeconds = $timeslot->getSubtract();
+				$seconds = $totalSeconds % 60;
+				$minutes = (($totalSeconds - $seconds) / 60) % 60;
+				$hours = (($totalSeconds - $seconds - ($minutes * 60)) / 3600);
+				
+			?><input type="text" style="width:40px;margin-right:3px" name="timeslot[subtract_hours]" value="<?php echo($hours); ?>"/><?php echo lang('hours') ?>,&nbsp;
+			<select name="timeslot[subtract_minutes]" size="1">
+			<?php
+			for($i = 0; $i < 60; $i++) {
+				echo "<option value='$i'";
+				if($minutes == $i) echo ' selected="selected"';
+				echo sprintf(">%02d</option>\n", $i);
+			}
+			?>
+			</select><?php echo lang('minutes') ?>,&nbsp;
+			<select name="timeslot[subtract_seconds]" size="1">
+			<?php
+			for($i = 0; $i < 60; $i++) {
+				echo "<option value='$i'";
+				if($seconds == $i) echo ' selected="selected"';
+				echo sprintf(">%02d</option>\n", $i);
+			}
+			?>
+			</select><?php echo lang('seconds') ?></td>
 		</tr>
 	</table>
 

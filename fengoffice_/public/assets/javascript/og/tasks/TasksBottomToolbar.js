@@ -17,7 +17,8 @@ og.TasksBottomToolbar = function(config) {
     this.groupcombo = new Ext.form.ComboBox({
         store: new Ext.data.SimpleStore({
 	        fields: ['value', 'text'],
-	        data : [['milestone', lang('milestone')]
+	        data : [['nothing', '--' + lang('nothing (groups)') + '--']
+	        	,['milestone', lang('milestone')]
 	        	,['priority',lang('priority')]
 	        	,['workspace', lang('workspace')]
 	        	,['assigned_to', lang('assigned to')]
@@ -70,7 +71,9 @@ og.TasksBottomToolbar = function(config) {
         valueField: 'value',
         listeners: {
         	'select' : function(combo, record) {
+				ogTasks.redrawGroups = false;
 				ogTasks.draw();
+				ogTasks.redrawGroups = true;
         		var url = og.getUrl('account', 'update_user_preference', {name: 'tasksOrderBy', value:record.data.value});
 				og.openLink(url,{doNotShowLoading:true});
         	}
@@ -91,7 +94,9 @@ og.TasksBottomToolbar = function(config) {
         pressed: (userPreferences.showWorkspaces == 1),
         listeners: {
         	'toggle' : function(button,isPressed){
+				ogTasks.redrawGroups = false;
 				ogTasks.draw();
+				ogTasks.redrawGroups = true;
         		var url = og.getUrl('account', 'update_user_preference', {name: 'tasksShowWorkspaces', value:(isPressed?1:0)});
 				og.openLink(url,{doNotShowLoading:true});
         	}
@@ -104,7 +109,9 @@ og.TasksBottomToolbar = function(config) {
         pressed: (userPreferences.showTime == 1),
         listeners: {
         	'toggle' : function(button,isPressed){
+				ogTasks.redrawGroups = false;
 				ogTasks.draw();
+				ogTasks.redrawGroups = true;
         		var url = og.getUrl('account', 'update_user_preference', {name: 'tasksShowTime', value:(isPressed?1:0)});
 				og.openLink(url,{doNotShowLoading:true});
         	}
@@ -117,7 +124,9 @@ og.TasksBottomToolbar = function(config) {
         pressed: (userPreferences.showTags == 1),
         listeners: {
         	'toggle' : function(button,isPressed){
+				ogTasks.redrawGroups = false;
 				ogTasks.draw();
+				ogTasks.redrawGroups = true;
         		var url = og.getUrl('account', 'update_user_preference', {name: 'tasksShowTags', value:(isPressed?1:0)});
 				og.openLink(url,{doNotShowLoading:true});
         	}
@@ -130,14 +139,26 @@ og.TasksBottomToolbar = function(config) {
         pressed: (userPreferences.showDates == 1),
         listeners: {
         	'toggle' : function(button,isPressed){
+				ogTasks.redrawGroups = false;
 				ogTasks.draw();
+				ogTasks.redrawGroups = true;
         		var url = og.getUrl('account', 'update_user_preference', {name: 'tasksShowDates', value:(isPressed?1:0)});
 				og.openLink(url,{doNotShowLoading:true});
         	}
         }
     });
-	
 	//GetFilterByConditions
+	
+    this.add('-');
+    this.add(new Ext.Action({
+			text: lang('print'),
+            tooltip: lang('print all groups'),
+            iconCls: 'ico-print',
+			handler: function() {
+				ogTasks.printAllGroups();
+			},
+			scope: this
+		}));
 };
 
 Ext.extend(og.TasksBottomToolbar, Ext.Toolbar, {

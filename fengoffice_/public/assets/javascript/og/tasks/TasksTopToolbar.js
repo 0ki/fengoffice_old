@@ -19,9 +19,9 @@ og.TasksTopToolbar = function(config) {
 	if (allTemplatesArray && allTemplatesArray.length > 0){
 		for (var i = 0; i < allTemplatesArray.length; i++){
 			allTemplates[allTemplates.length] = {text: allTemplatesArray[i].t,
-				iconCls: 'ico-template-task',
+				iconCls: 'ico-template',
 				handler: function() {
-					var url = og.getUrl('task', 'copy_task', {id: this.id});
+					var url = og.getUrl('template', 'instantiate', {id: this.id});
 					og.openLink(url);
 				},
 				scope: allTemplatesArray[i]
@@ -46,7 +46,11 @@ og.TasksTopToolbar = function(config) {
 			}
 			var url = og.getUrl('task', 'add_task');
 			og.openLink(url, {post:additionalParams});
-		}},
+		}},/*
+		{text: lang('new task time report'), iconCls: 'ico-reporting', handler: function() {
+			var url = og.getUrl('reporting', 'total_task_times_p');
+			og.openLink(url);
+		}},*/
 		'-'];
 	
 	var projectTemplates = [];
@@ -54,9 +58,9 @@ og.TasksTopToolbar = function(config) {
 	if (projectTemplatesArray && projectTemplatesArray.length > 0){
 		for (var i = 0; i < projectTemplatesArray.length; i++){
 			projectTemplates[projectTemplates.length] = {text: projectTemplatesArray[i].t,
-				iconCls: 'ico-template-task',
+				iconCls: 'ico-template',
 				handler: function() {
-					var url = og.getUrl('task', 'copy_task', {id: this.id});
+					var url = og.getUrl('template', 'instantiatek', {id: this.id});
 					og.openLink(url);
 				},
 				scope: projectTemplatesArray[i]
@@ -68,7 +72,7 @@ og.TasksTopToolbar = function(config) {
 	
 	menuItems = menuItems.concat([{
 		text: lang('all'),
-		iconCls: 'ico-template-task',
+		iconCls: 'ico-template',
 		cls: 'scrollable-menu',
 		menu: {
 			items: allTemplates
@@ -101,12 +105,12 @@ og.TasksTopToolbar = function(config) {
 			})
 		}),
 		del: new Ext.Action({
-			text: lang('delete'),
-            tooltip: lang('delete selected objects'),
-            iconCls: 'ico-delete',
+			text: lang('move to trash'),
+            tooltip: lang('move selected objects to trash'),
+            iconCls: 'ico-trash',
 			disabled: true,
 			handler: function() {
-				if (confirm(lang('confirm delete object'))) {
+				if (confirm(lang('confirm move to trash'))) {
 					ogTasks.executeAction('delete');
 				}
 			},
@@ -130,7 +134,8 @@ og.TasksTopToolbar = function(config) {
     this.filtercombo = new Ext.form.ComboBox({
         store: new Ext.data.SimpleStore({
 	        fields: ['value', 'text'],
-	        data : [['created_by',lang('created by')]
+	        data : [['no_filter','--' + lang('no filter') + '--']
+	        	,['created_by',lang('created by')]
 	        	,['completed_by', lang('completed by')]
 	        	,['assigned_to', lang('assigned to')]
 	        	,['assigned_by', lang('assigned by')]
@@ -147,6 +152,14 @@ og.TasksTopToolbar = function(config) {
         listeners: {
         	'select' : function(combo, record) {
         		switch(record.data.value){
+        			case 'no_filter':
+        				Ext.getCmp('ogTasksFilterNamesCombo').hide();
+        				Ext.getCmp('ogTasksFilterNamesCompaniesCombo').hide();
+        				Ext.getCmp('ogTasksFilterMilestonesCombo').hide();
+        				Ext.getCmp('ogTasksFilterPriorityCombo').hide();
+						var toolbar = Ext.getCmp('tasksPanelTopToolbarObject');
+        				toolbar.load();
+        				break;
         			case 'milestone':
         				Ext.getCmp('ogTasksFilterNamesCombo').hide();
         				Ext.getCmp('ogTasksFilterNamesCompaniesCombo').hide();
@@ -200,7 +213,7 @@ og.TasksTopToolbar = function(config) {
 		for(j in companiesArray)
 			if (companiesArray[j] && companiesArray[j].id == usersArray[i].cid)
 				companyName = companiesArray[j].name;
-		if (usersArray[i] && !usersArray[i].isCurrent && usersArray[i].cid) 
+		if (usersArray[i] && usersArray[i].cid) 
 			ucsOtherUsers[ucsOtherUsers.length] = [(usersArray[i].cid + ':' + usersArray[i].id), usersArray[i].name + ' : ' + companyName];
 		if (usersArray[i].isCurrent)
 			currentUser = usersArray[i].cid + ':' + usersArray[i].id;
@@ -254,7 +267,7 @@ og.TasksTopToolbar = function(config) {
 	        fields: ['value', 'text'],
 	        data : uData
 	    }),
-	    hidden: (userPreferences.filter == 'milestone' || userPreferences.filter == 'priority' || userPreferences.filter == 'assigned_to'),
+	    hidden: (userPreferences.filter == 'milestone' || userPreferences.filter == 'priority' || userPreferences.filter == 'assigned_to' || userPreferences.filter == 'no_filter'),
         displayField:'text',
         typeAhead: true,
         mode: 'local',
@@ -302,7 +315,7 @@ og.TasksTopToolbar = function(config) {
     
     var milestones = Ext.util.JSON.decode(document.getElementById(config.internalMilestonesHfId).value);
     milestones = milestones.concat(Ext.util.JSON.decode(document.getElementById(config.externalMilestonesHfId).value));
-    milestonesData = [];
+    milestonesData = [[0,"--" + lang('none') + "--"]];
     for (i in milestones){
     	if (milestones[i].id)
     		milestonesData[milestonesData.length] = [milestones[i].id, milestones[i].t];
@@ -327,7 +340,8 @@ og.TasksTopToolbar = function(config) {
         listeners: {
         	'select' : function(combo, record) {
 				var toolbar = Ext.getCmp('tasksPanelTopToolbarObject');
-        		toolbar.load();
+        		if (toolbar.filterMilestonesCombo == this)
+        			toolbar.load();
         	}
         }
     });

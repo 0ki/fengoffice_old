@@ -6,7 +6,7 @@
   *
   * @author Ilija Studen <ilija.studen@gmail.com>
   */
-  abstract class BaseComments extends DataManager {
+  abstract class BaseComments extends ProjectDataObjects {
   
     /**
     * Column name => Column type map
@@ -14,7 +14,23 @@
     * @var array
     * @static
     */
-    static private $columns = array('id' => DATA_TYPE_INTEGER, 'rel_object_id' => DATA_TYPE_INTEGER, 'rel_object_manager' => DATA_TYPE_STRING, 'text' => DATA_TYPE_STRING, 'is_private' => DATA_TYPE_BOOLEAN, 'is_anonymous' => DATA_TYPE_BOOLEAN, 'author_name' => DATA_TYPE_STRING, 'author_email' => DATA_TYPE_STRING, 'author_homepage' => DATA_TYPE_STRING, 'created_on' => DATA_TYPE_DATETIME, 'created_by_id' => DATA_TYPE_INTEGER, 'updated_on' => DATA_TYPE_DATETIME, 'updated_by_id' => DATA_TYPE_INTEGER);
+    static private $columns = array(
+    	'id' => DATA_TYPE_INTEGER,
+    	'rel_object_id' => DATA_TYPE_INTEGER,
+    	'rel_object_manager' => DATA_TYPE_STRING,
+    	'text' => DATA_TYPE_STRING,
+    	'is_private' => DATA_TYPE_BOOLEAN,
+    	'is_anonymous' => DATA_TYPE_BOOLEAN,
+    	'author_name' => DATA_TYPE_STRING,
+    	'author_email' => DATA_TYPE_STRING,
+    	'author_homepage' => DATA_TYPE_STRING,
+    	'created_on' => DATA_TYPE_DATETIME,
+    	'created_by_id' => DATA_TYPE_INTEGER,
+    	'updated_on' => DATA_TYPE_DATETIME,
+    	'updated_by_id' => DATA_TYPE_INTEGER,
+    	'trashed_on' => DATA_TYPE_DATETIME,
+    	'trashed_by_id' => DATA_TYPE_INTEGER,
+    );
   
     /**
     * Construct

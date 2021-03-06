@@ -1,8 +1,8 @@
 
-    About OpenGoo 1.0 
-    =================
+    About OpenGoo 1.1 beta 
+    ======================
 
-    OpenGoo is a free, web based WebOffice, project management and collaboration
+    OpenGoo is a free WebOffice, project management and collaboration
     tool. For license details, see license.txt.
 
     visit:
@@ -17,8 +17,8 @@
     System requirements
     ===================
 
-    OpenGoo requires a web server, PHP (5.0 or greater) and MySQL with InnoDB
-    support. The recommended web server is Apache.
+    OpenGoo requires a web server, PHP (5.0 or greater) and MySQL (InnoDB
+    support recommended). The recommended web server is Apache.
 
     OpenGoo is not PHP4 compatible and it will not run on PHP versions prior
     to PHP5.
@@ -36,7 +36,7 @@
     Alternatively, if you just want to test OpenGoo and you don't care about security
     issues with your files, you can download XAMPP, which includes all that is needed
     by OpenGoo (Apache, PHP 5, MySQL) in a single download.
-    You will need to configure MySQL to support InnoDB, which is done by commenting
+    You can configure MySQL to support InnoDB by commenting or removing
     the line 'skip-innodb' in the file '<INSTALL_DIR>/etc/my.cnf'.
 
         * XAMPP  : http://www.apachefriends.org/en/xampp
@@ -52,39 +52,40 @@
 
     You should be finished in a matter of minutes.
     
-    Warning: Default memory limit por PHP is 8MB. As a new opengoo install consumes about 10 MB,
+    WARNING: Default memory limit por PHP is 8MB. As a new OpenGoo install consumes about 10 MB,
     administrators could get a message similar to "Allowed memory size of 8388608 bytes exhausted".
     This can be solved by setting "memory_limit=32" in php.ini.    
     
     
-    Upgrade from 0.8 and older
-    ==========================
-	In order to upgrade to version 1.0 you must first upgrade to 0.9. 
-	Example: Suppose you have OpenGoo 0.7, you should run the upgrade procedure 3 times.
-	First time from 0.7 to 0.8, second time from 0.8 to 0.9 and finally from 0.9 to 1.0.
+    Upgrading OpenGoo
+    =================
+	Each new release of OpenGoo upgrades only from the previous release.
+	For example, in order to upgrade to version 1.0 from version 0.8 you must run
+	the upgrade procedure two times, first from 0.8 to 0.9 and then from 0.9 to 1.0. 
     
     
-    Upgrade from 0.9.* and 1.0 RC*
-    ==============================
+    Upgrade instructions from 1.0
+    =============================
     
     1. Backup you current installation (important !)
-    2. Download OpenGoo 1.0 - http://www.opengoo.org/
-    3. Unpack and remove the following folders:
-    	- config (configuration options are stores here)
-    	- upload (uploaded files are stored here)
-    4. Move remaining files and folders to your OpenGoo installation, replacing all files.
-    5. [if upgrading from 0.9.*] In your browser, go to <your_opengoo>/public/upgrade and choose to upgrade from 0.9 to 1.0.
+    2. Download OpenGoo 1.1 beta - http://www.opengoo.org/
+    3. Unpack into your OpenGoo installation, overwriting your previous files and folders,
+    	but keeping your config and upload folders.
+    5. In your browser, go to <your_opengoo>/public/upgrade and choose to upgrade from 1.0 to 1.1.
     6. If necessary, refresh your browser or clear its cache so that the new javascript, css and images load.
+    
+    NOTE: Because of OpenGoo email's BETA status we have chosen to hide email by default. If you want to enable
+    email again in your installation you just need to set SHOW_MAILS_TAB to true in config/config.php.
+    You can do this by adding the following line before the "return true;" line:
+    	define('SHOW_MAILS_TAB', true); 
     
     
 	Open Source Libraries 
 	=====================
 	
 	The following open source libraries and applications have been adapted to work with OpenGoo:
-
 	- ActiveCollab 0.7.1 - http://www.activecollab.com
 	- ExtJs - http://www.extjs.com
-	- JQuery - http://www.jquery.com
 	- Reece Calendar - http://sourceforge.net/projects/reececalendar
 	- Swift Mailer - http://www.swiftmailer.org
 	- Open Flash Chart - http://teethgrinder.co.uk/open-flash-chart
@@ -97,177 +98,115 @@
 	Changelog
 	=========
 	
-	Since 1.0 RC3
-	-------------
+	Since 1.0
+	---------
 
-	- Bugfix: Trying adding an event in two weeks and a day would add it today.	
-	- Bugfix: A user should always have permission to edit his preferences.		
-	- Bugfix: Some calendar views aren't displayed correctly on Safari and Firefox 2
-	- Bugfix: When entering data in the quick add task and then going to "All options" you lose what you have entered.
-	- Bugfix: Some texts in the calendar weren't translatable.
-	- Bugfix: It wasn't possible to delete mails from the mail view.
-	- Bugfix: It wasn't possible to quickly add tasks in groups other than milestones.
-	- Bugfix: Calendar tooltips weren't displayed correctly when the event description had line breaks.
-	- The option to save a milestone as a template was removed.
-	- The warning in the installation that said that the product is in beta was removed.
-	- Bugfix: An event created for "All day" in the weekly view is always added today.
-	- Bugfix: "unterminated string literal" when showing the monthly view in the calendar.
-	- Bugfix: Changing a parent workspace would break the workspace hierarchy for the children.
-	- Bugfix: Escape html entities on workspace path divs.
-	- Several translations changed from "project" to "workspace" in en_us and from "proyecto" and "espacio" to "área de trabajo" in es_es.
-	- Bugfix: invalid argument in foreach() in Comments::getSUbscriberComments()
-	- Disabled by default the automatic upgrade check.
-	
-	Since 1.0 RC2
-	-------------
+	feature: Trash can. Object's can now be moved to the trash can, so that you don't lose them permanently when deleting them.
+	feature: COs now have an autogenerated unique id to identify them.
+	feature: Import contacts from a CSV file.
+	feature: New Time tracking tab, to track time independently of tasks.
+	feature: Quick edit for tasks in the Tasks interface.
+	feature: Allow to pause tasks.
+	feature: Print views for tasks and task listings.
+	feature: In search results there's a new option to search in all workspaces.
+	feature: New webservices API.
+	feature: A set of tools in the 'public/tools' folder, including a web interface for translating OpenGoo.
 
-	- Bugfix: allow a non admin user to link contacts that have an associated user.
-	- Bugfix: contacts aren't displayed in alphabetical order	
-	- Bugfix: 'show dates' doesn't work on tasks interface	
-	- Missing lang: 'edit event details' for the calendar	
-	- Missing lang: 'user ws config option name tasksGroupBy'	
-	- Missing lang: 'user ws config option name tasksOrderBy'	
-	- Use a DateField to choose the end date for repeating events.	
-	- Bugfix: Adding an event on IE would return an error when reloading the weekly view	
-	- Bugfix: It wasn't possible to instantiate task templates, even if it was assigned to the current workspace.	
-	- Bugfix: When deleting a workspace it first returns a success message and then an error message.	
-	- Bugfix: When changing workspace it always displayed the weekly view and not the currently selected view.	
-	- Bugfix: When editing an event it is saved into the log as a new event action.	
-	- Bugfix: Fix the workspace chooser on the quick add task interface.	
-	- Remove unimplemented features from FCKEditor, like browsing the server.	
-	- Bugfix: Searching emails doesn't work correctly	 	
-	- Bugfx: CAL_ENDING_DATE_ERROR when trying to modify the date and time of an event	
-	- Bugfix: CAL_ENDING_DATE_ERROR constant not defined	
-	- Change the "More" category on the "New task" interface for something more descriptive	
-	- Bugfix: Email, "Unread" is not translatable. 	
-	- Bugfix: If DEBUG is defined as false and DEBUG_DB is true OpenGoo doesn't work.	
-	- When adding an event, when unchecking "All day", the duration of the event is by default 0 hours. Change to 1 hour and change default time to 9 AM	.
-	- Bugfix: when you can't manage contacts, contacts are listed on the Object Picker anyway	
-	- When adding a subtask it should inherit the parent task's milestone. 	
-	- The order of company_id:user_id when selecting a user or company from a combobox isn't consistent across the application.	
-	- Bugfix: Current day is not displayed correctly on the calendar (October 31st is displayed as October 1st)	
-	- Bugfix: The 'ungrouped' text in one of the upper comboboxes in the calendar view.	
-	- Bugfix: The text that reads 'completo' should say 'completar' in spanish translations.	
-	- Remove the feature that automatically completes a parent task when completing all subtasks.	
-	- Bugfix: On IE, when saving an HTML document a message pops up asking if the user wants to leave the page.	
-	- Bugfix: permission problems when linking a contact to a message.	
-	- Bugfix: error 500 when trying to view an object's history	
-	- estaba en vista semanal y le di para avanzar dos meses y termine en vista mensual dentro de tres meses	
-	- Bugfix: IE throws several errors when starting OpenGoo.	
-	- Bugfix: IE throws an error when hovering workspace choosers 	
-	- Improve the workspace chooser to resemble a combobox.	
-	- Improve the format of notification emails.	
-	- Missing lang: view milestone.	
-	- Missing langs in tasks (es_es)	
-	- Bugfix: the 'quick assign to' is not working in Chrome	
-	- Bugfix: search for file content is not working.	
-	- Bugfix: The invitations panel isn't visible in Chrome	
-	- Sort alphabetically the 'assigned to' of the 'quick add' 	
-	- Make the 'assigned to' combobox the same value as the current tasks filter 'assigned to' when adding a task from the tasks interface.	
-	- Don't notify myself by default when creating or editing an event.
-	- Don't show template subtasks when listing task templates.		
-	- Don't display 'notify by mail' when assigning a task to a company.	
-	- Bugfix: A user with read permissions can delete documents and weblinks
-	- Fix the upgrade notification mechanism	
-	- Mail notification's subject is 'Agregar Comentario' instead of 'Comentario agregado' in spanish translations.	
-	- 'Vincular estos objetos' doesn't seem the right translation.	
-	- Bugfix: Tooltips in calendar duplicate when moving the mouse.	
-	- Wrong translations on repeating events: Days/Weeks/Months/Years
-	
-	Since 1.0 RC1
-	-------------
-	
-	- Bugfix: Some workspaces in the workspace panel remained highlighted after the mouse left the panel.
-	- Bugfix: Telephone numbers weren't shown on a Company's view.	
-	- Bugfix: Removed some duplicate http get paremeters in urls.	
-	- Allow to edit the role of a contact in the current workspace when editing the contact.	
-	- Localization of the datepicker	
-	- Bugfix: Email addresses were displayed incorrectly on emails. 	
-	- Bugfix: Calendar scrolls screen down, leaving the header of the page inaccessible	
-	- Bugfix: When deleting an object in listsings, the checkbox for the next object is checked.	
-	- Allow me to see only stuff related to me in the dashboard.	
-	- added 'email' in the 'new' menu in the 'view as list' dashboard.	
-	- Bugfix: Error 500 when going to 'More'->'Properties' in 'Documents'	
-	- Aesthetically improved some ugly interfaces, most in 'administration'	
-	- Bugfix: When editing a company's permissions the workspaces that the company can access aren't shown as checked.	
-	- Bugfix: In the calendar, the weekly view's title says "From X/Y to (X+7)/Y" but it should say "From X/Y to (X+6)/Y"	
-	- Bugfix: Event editions are saved as event creations on the history.	
-	- Bugfix: An event from 10 am to 11 am and an event from 11 am to 12 pm are both split in half even though there's no need to do so.	
-	- Bugfix: Search doesn't find events.	
-	- Bugfix: When entering data to the quick add event and then going to "Edit event details" the entered data isn't kept.	
-	- Bugfix: New events are notified as Changed.	
-	- Bugfix: The date in the "pick a date" menu should be synchronized wuth the currently selected date/view.	
-	- Bugfix: Combobox to confirm attendance to an event doesn't work on Chrome.	
-	- Warn the user when he tries to set a task's due date later than the start date.
-	- Bugfix: When a filename contains non-ascii characters the name checking priort to uploading a file doesn't work.	
-	- Bugfix: In the dashboard's calendar, events are always added "today"	
-	- Bugfix: adding an event 12 am adds it at 12 pm	
-	- Bugfix: Firefox doesn't show correctly the green progress bars in milestones	
-	- Bugfix: IE 7 doesn't display user accounts when editing a workspace's permissions unless you scroll down. 	
-	
-	Since 0.9.2
-	-----------
+	system: Implemented a PDO_SQL backend to access the database.
+	system: The help folder was moved to the public folder, because 'public' is the only folder that has to be accessible from a browser.
+	system: Moved 'library/combinator' to the 'public' folder because it needs public access.
+	system: Now it's possible to choose the database engine, between InnoDB and MyISAM, so that OpenGoo can be used on databases that don't support InnoDB.
+	system: Installation now tries to create the database if it doesn't exist.
 
-	- Greatly improved tasks module.
-		- Better organization
-			- Now you can filter tasks not only by assignee but also by assigner, priority, milestone,
-				creator or completer as well as completness status.
-			- Besides filtering your tasks you can also group them by milestone, priority, workspace, assignee,
-				due date, start date, create date, cretor, completer, status and tag. Once grouped you can choose
-				to hide all groups but one, so that you can better focus in what you are working on.
-			- Finally, to further organize your tasks, you can also order them by priority, workspace, name,
-				due date, create date, assignee and start date.
-		- More information
-			- You can now see much more information about your tasks on a single view. Tags, workspaces,
-				time tracking, dates, all of them displayed on the same view. Is this too much information? Don't
-				worry, you can easily configure what you see and what you don't in the toolbar.
-		- More usable
-			- The left checkbox of the tasks module is now used for selecting tasks rather than completing them,
-				to match the criteria used in other listings. This also allows you to select many tasks and tag,
-				delete, or complete them with just one click. Also assigning, time tracking and adding subtasks
-				is easier than before with shortcuts for it on every task.
-		- Better look and feel
-			- The tasks module now looks much nicer and better ressembles the look and feel of the rest of OpenGoo.
-	- Also improved the calendar module.
-		- It now fits more space. Actions were moved to the top toolbar.
-		- You can now invite users to events and confirm assistance to an event.
-		- The default view is the "My calendar" view, that shows you only events related to you.
-		- You can also filter by event state and by users or just show all events.
-	- Messages are now called Notes.
-	- Object Subscriptions
-		- Now you can subscribe to Documents, Notes, Contacts and all Content Objects (COs) so that you are notified by
-			email when a comment is posted on that CO. This allows you to easily trace conversations within your team
-			related to a CO. You are automatically subscribed to every CO you create but can easily unsubscribe if you
-			widh in the CO's view.
-		- Besides receiving an email, you can also see the newest comments listed in your Overview panel.
-	- When your session expires you can now easily log back in with a popup dialog that prompts you for your username
-		and password, without the need to refresh the page. This allows you to comfortably continue working in OpenGoo
-		as if your session had never expired.
-	- Easily backup your OpenGoo installation from the Administration panel.
-	- Several configuration options added, accessible through Account / Edit preferences, including for example, choosing
-		what widgets you see on the dashboard and choosing whether to show information about all users or only you.
-	- Improved workspace selection controls throughout OpenGoo.
-	- Improved date selection controls throughout OpenGoo.
-	- Improved the tag input control.
-	- Images are now displayed in the CO view.
-	- Bugfix: Emails are listed correctly on the Emails panel.
-	- Bugfix: Editing Company details would make the user not able to log in.
-	- Bugfix: Total task time report fixed.
-	- Bugfix: Adding users on PHP lower than 5.2 fixed.
-	- Bugfix: Editing a user without changing his workspace permissions would take away all his workspace permissions.
-	- Bugfix: Assigning a task template to a workspace fixed.
-	- Bugfix: It is not checked whether a contact is already assigned to a workspace.	
-	- Bugfix: If a document contains inline CSS it corrupts OpenGoo's style when viewing the document's view.	
-	- Bugfix: ObjectPicker resizes wrongly.	
-	- Clicking a workspace in search results selects it.
-	- When assigning a task to a user assign also its subtasks.	
-	- Bugfix: Refreshing tags would leave the "loading" sign after fetching the tags.	
-	- Bugfix: Some objects didn't appear when linking objects.	
-	- A big preview of an image is shown on the image's view.	
-	- Bugfix: search results showed HTML code when there were no results.	
-	- Confirm before leaving a presentation with changes.	
-	- Changed the class used for encoding/decoding JSON in PHP lower than 5.2	
-	- Warn about memory usage	
-	- Bugfix: several issues with the tasks time report.	
-	- The email dashboard widget now only shows email from the currently selected workspace.		
+	usability: Defined content for help panel.
+	usability: When selecting a user in the tasks interface, your name is shown with the rest of the users, as well as the Me shortcut.
+	usability: Aligned text to checkboxes on message and task notifications.
+	usability: The notification checkbox is unchecked when assigning a task to yourself.
+	usability: Improved notification checkbox behaviour on "add task" form.
+	usability: Added a text filter for workspace choosers.
+	usability: Changed the workspace selection in the "New workspace" view for the new workspace chooser.
+	usability: Put a 'Tags' title on a CO's properties.
+	usability; The dashboard now tells you what you are filtering by (e.g. 'My tasks' vs 'All tasks', 'My calendar' vs 'All calendars', etc.).
+	usability: The tasks toolbar now always remain visible, ignoring the scroll.
+	usability: If a task is assigned to someone, a new subtask is assigned to the same person by default.
+	usability: You can now get to the CO edition screen with the press of a button from all listings.
+	usability: The "Hide others" option in the tasks interface is now remembered.
+	usability: Now you are warned that you are deleting all invitations when deleting an event.
+	usability: Start time and duration of events can now be defined in the "Add Event" popup.
+	usability: The calendar's toolbar isn't displayed when not displaying the calendar.
+	usability: Contacts can now be tagged through the contacts edition screen and tags are shown on the contact's properties.
+	usability: A list of Invited users to an event, including each one's response, was added to the event's view.
+	usability: The event's title is now shown on the event's view.
+	usability: Now you can tell the email of a person by the From field of an email in the email's view or the email list.
+	usability: The contact's name is now shown when assigning roles.
+	usability: Options in the View -> By state menu in the calendar, are now checkbox options. All options but rejected invitations are checked by default.
+	usability: Renamed "Properties" to "Custom properties".
+	usability: Now you can assign a company when creating a user.
+	usability: Uniformized icons for Word and Excel documents.
+	usability: Modified the Document's toolbar to allow for fast editing and downloading.
+	usability: Now you can configure AM/PM vs 24 hour times in the calendar.
+	usability; Quick adding a task now takes as default the group tag and the filter tag.
+	usability: Now it is possible to select and deselect all tasks from the tasks interface, on a per group basis.
+
+	performance: Deleted unused libraries and classes.
+	performance: Removed some redundant server requests to fetch data that was already available to the GUI. Tag menues, the ObjectPicker and autocomplete tag controls now fetch tags from the TagPanel. Workspace selection controls fetch workspaces from the Workspace Panel.
+	performance: Added a tool to compress all Javascript and CSS. Once compressed the system can be configured to use it with an option in the config.php file.
+	performance: Optimized PNG images filesize.
+
+	security: Now you are asked for your previous password when changing your password.
+	security: Fixed Cross-Site Scripting (or Javascript injection) vulnerabilities.
+
+	bugfix: When setting a workspace's child as the workspace's parent, though it correctly wasn't being set, no error message was displayed.
+	bugfix: Fixed an error when deleting a workspace: "Fatal error: Call to a member function getIsTemplate() on a non-object".
+	bugfix: Fixed an error when moving a workspace to the root.
+	bugfix: Fixed an error when adding a task to a milestone.
+	bugfix: When creating a user from contact data, the contact was duplicated and the user's name was set to the contact's first and last names concatenated.
+	bugfix: The config option to show everyone's tasks in the tasks view wasn't working. It was for the old tasks interface so it was removed.
+	bugfix: Fixed an 'ico is undefined' error when editing a workspace.
+	bugfix: Contact's history wasn't recorder correctly.	
+	bugfix: Several "undefined variable" error messages in the log were corrected.
+	bugfix: Contacts were sometimes assigned twice to a workspace.
+	bugfix: New company wasn't being saved when created from the New contact interface.
+	bugfix: Companies' city was not shown in a contact's view.
+	bugfix: Saving a slideshow created a new copy.
+	bugfix: Linking objects when creating an object didn't work.
+	bugfix: Renaming when checking in a file didn't work.
+	bugfix: When session expires and the Popup Login dialog shows, if logging in as a different user the whole page is refreshed, to avoid inconsistencies in the GUI.
+	bugfix: The 'loading...' sign is no longer hidden by success and error messages.
+	bugfix: A CO could be assigned to a workspace to which the user didn't have permissions.
+	bugfix: When deleting a workspace, all subworkspaces were deleted without checking for permissions.
+	bugfix: When editing a task, the default dates values were 1/1/1970.
+	bugfix: When filtering tasks by milestone and grouping by complete date, pending tasks were grouped under "undefined".
+	bugfix: Uploading a JPG image and then replacing it for an XML produced an error.
+	bugfix: Fixed styling of the "quick add" button.
+	bugfix: When adding a subtask, it didn't inherit the parent's task workspace.
+	bugfix: Fixed time tracking watches on active tasks. Added functionality to pause and resume the task on the dashboard.
+	bugfix: On a task's edit view, the "task estimate" field wasn't being loaded with the tasks value.
+	bugfix: All users were listed on the "assign to" comboboxes, even users from other companies.	
+	bugfix: The workspace paths control didn't escape HTML special characters.
+	bugfix: Tabbing in and out of the workspace filter in the Workspace Panel would hide all workspaces.
+	bugfix: IE would show a text selection mouse cursor when hovering the "Close" button in a CO's view.
+	bugfix: Some searches weren't working correctly.
+	bugfix: Tag filtering wasn't working correctly on the tasks interface.
+	bugfix: When changing a task filter the group by choice would be reset.
+	bugfix: If a workspace's name was changed it wasn't updated on the "workspace paths control".
+	bugfix: For events that last less than an hour the subject was being displayed outside of the block.
+	bugfix: The timezones weren't correctly handled when adding events.
+	bugfix: After checking in a file it now returns to the previous view.
+	bugfix: In IE the cursor blinked when over a calendar tooltip.
+	bugfix: Contact's birthdate, as well as creation and modification dates of CO weren't localized.
+	bugfix: Fixed an "unterminated string literal" error when an event had line breaks on it's description.
+	bugfix: Clicking on a saved draft now takes you to the email edition screen and not to the email view.
+	bugfix: Color chooser when adding a workspace didn't work on Safari.
+	bugfix: Saving an email draft twice would lose its body.
+	bugfix: Sent emails row height on email listings has been fixed.
+	bugfix: Fixed a bug on the tag autocomplete combobox, that would delete the last entered tag when choosing a new tag if there wasn't a comma at the end.
+	bugfix: When editing a sub workspace of a workspace you didn't have access to, an error message 'parent is null' appeared
+	bugfix: Fixed many issues when objects had HTML tags in its name.
+
+	lang: "Origianal message" was corrected.
+	lang: "country", in contact's work address was missing.
+	lang: "Add work", "hours" and "total time" in a task's view weren't translatable.
+	lang: The "+X more" sign in the Calendar's monthly view and dashboard wasn't translatable.
+
 	

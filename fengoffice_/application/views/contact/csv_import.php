@@ -1,0 +1,176 @@
+<?php
+	$submit_url = get_url('contact', 'import_from_csv_file');
+	$genid = gen_id();
+?>
+
+<script type="text/javascript">
+function submitCsv(genid) {
+	fname = document.getElementById(genid + 'filenamefield');
+	if (fname.value != '') {
+		form = document.getElementById(genid + 'csvimport');
+		og.submit(form, {
+			callback: og.getUrl('contact', 'import_from_csv_file', {calling_back: 1})
+		});
+	}
+}
+</script>
+
+<form style="height:100%;background-color:white" id="<?php echo $genid ?>csvimport" name="<?php echo $genid ?>csvimport" class="internalForm" action="<?php echo $submit_url ?>" method="post" enctype="multipart/form-data">
+
+<div class="file">
+<div class="coInputHeader">
+<div class="coInputHeaderUpperRow">
+<div class="coInputTitle">
+	<table style="width:535px"><tr><td><?php echo isset($import_result) ? lang('import result') : lang('import contacts from csv');?></td>
+<?php if (isset($titles)) { ?>
+	<td style="text-align:right"><?php echo submit_button(lang('import'), 's', array('style'=>'margin-top:0px;margin-left:10px','id' => $genid.'csv_import_submit1')) ?></td>
+<?php } ?>
+	</tr></table>
+</div>
+</div>
+
+<?php if (!isset($titles) && !isset($import_result)) { ?>
+	<div id="<?php echo $genid ?>selectFileControlDiv">
+        <?php echo label_tag(lang('file'), $genid . 'filenamefield', true) ?>
+        <?php echo file_field('csv_file', null, array('id' => $genid . 'filenamefield', 'class' => 'title', 'size' => '88', "onclick" => 'javascript:submitCsv(\'' . $genid .'\')')) ?>
+    </div>
+    <div id="<?php echo $genid ?>delimiter_div">
+    	<table><tr><td><?php echo label_tag(lang('field delimiter'), $genid . 'delimiter') ?></td>
+    	<td style="padding-left:10px;">
+    	<?php echo text_field('delimiter', ',', array('id' => $genid.'delimiter', 'style' => 'width:10px;')) ?></td></tr></table>
+    </div>
+    <div id="<?php echo $genid ?>first_record_has_names_div">
+    	<table><tr><td><?php echo label_tag(lang('first record contains field names'), $genid . 'first_record_has_names') ?></td>
+    	<td style="padding-left:10px;">
+    	<?php echo yes_no_widget('first_record_has_names', $genid.'first_record_has_names', true, lang('yes'), lang('no')) ?></td></tr></table>
+    </div>
+<?php } //if ?>
+<?php if (isset($titles)) { ?>
+	<div>
+	<p><b><?php echo lang('you must match the database fields with file fields before executing the import process') ?></b></p>
+	<a href="#" class="option" tabindex=0 onclick="og.toggleAndBolden('<?php echo $genid ?>import_contact_add_tags_div', this)"><?php echo lang('tags') ?></a>
+	</div>
+<?php }//if ?>
+</div>
+<?php if (isset($titles)) { ?>
+	
+	<div id="<?php echo $genid ?>import_contact_add_tags_div" style="display:none">
+	<fieldset><legend><?php echo lang('tags')?></legend>
+		<?php echo autocomplete_tags_field("tags", array_var($contact_data, 'tags')); ?>
+	</fieldset>
+	</div>
+	
+	<div class="coInputMainBlock adminMainBlock">
+	
+	<table><tr><th></th><th><?php echo lang('contact fields'); ?></th><th><?php echo lang('fields from file'); ?></th></tr>
+	
+	<?php
+		$contact_fields = array('contact[firstname]' => lang('first name'),
+			'contact[lastname]' => lang('last name'), 
+			'contact[email]' => lang('email address'),
+
+			'contact[w_web_page]' => lang('website'), 
+			'contact[w_address]' => lang('address'),
+			'contact[w_city]' => lang('city'),
+			'contact[w_state]' => lang('state'),
+			'contact[w_zipcode]' => lang('zipcode'),
+			'contact[w_country]' => lang('country'),
+			'contact[w_phone_number]' => lang('phone'),
+			'contact[w_phone_number2]' => lang('phone 2'),
+			'contact[w_fax_number]' => lang('fax'),
+			'contact[w_assistant_number]' => lang('assistant'),
+			'contact[w_callback_number]' => lang('callback'),
+			
+			'contact[h_web_page]' => lang('website'),
+			'contact[h_address]' => lang('address'),
+			'contact[h_city]' => lang('city'),
+			'contact[h_state]' => lang('state'),
+			'contact[h_zipcode]' => lang('zipcode'),
+			'contact[h_country]' => lang('country'),
+			'contact[h_phone_number]' => lang('phone'),
+			'contact[h_phone_number2]' => lang('phone 2'),
+			'contact[h_fax_number]' => lang('fax'),
+			'contact[h_mobile_number]' => lang('mobile'),
+			'contact[h_pager_number]' => lang('pager'),
+			
+			'contact[o_web_page]' => lang('website'),
+			'contact[o_address]' => lang('address'),
+			'contact[o_city]' => lang('city'),
+			'contact[o_state]' => lang('state'),
+			'contact[o_zipcode]' => lang('zipcode'),
+			'contact[o_country]' => lang('country'),
+			'contact[o_phone_number]' => lang('phone'),
+			'contact[o_phone_number2]' => lang('phone 2'),
+			'contact[o_fax_number]' => lang('fax'),
+			'contact[o_birthday]' => lang('birthday'),
+			'contact[email2]' => lang('email address 2'),
+			'contact[email3]' => lang('email address 3'),
+			'contact[job_title]' => lang('job title'),
+			'contact[department]' => lang('department'), 
+			'contact[middlename]' => lang('middle name'), 
+			'contact[notes]' => lang('notes') 
+		);
+		$isAlt = false;
+		$i = 0; $label_w = $label_h = $label_o = false;
+		foreach ($contact_fields as $c_field => $c_label) {
+			if (str_starts_with($c_field, 'contact[w') && !$label_w) {
+				?><tr><td colspan="3" style="text-align:center;"><b><?php echo lang('work')?></b></td></tr> <?php
+				$label_w = true;
+			} else if (str_starts_with($c_field, 'contact[h') && !$label_h) {
+				?><tr><td colspan="3" style="text-align:center;"><b><?php echo lang('home')?></b></td></tr> <?php
+				$label_h = true;
+			} else if (str_starts_with($c_field, 'contact[o') && !$label_o) {
+				?><tr><td colspan="3" style="text-align:center;"><b><?php echo lang('other')?></b></td></tr> <?php
+				$label_o = true;
+			}
+			
+			$isAlt = !$isAlt;
+			$options = array(option_tag('', -1));
+			foreach ($titles as $k => $t) $options[] = option_tag($t, $k, $k == $i ? array('selected' => 'selected') : null);
+			$i++;
+	?>	
+				<tr<?php echo ($isAlt ? ' class="altRow"': '') ?>>
+				<td><?php echo checkbox_field('check_'.$c_field, true) ?></td><td><?php echo $c_label ?></td><td><?php echo select_box('select_'.$c_field, $options); ?></td></tr>	
+	<?php	
+		} //foreach	?>
+	</table>
+	
+	<div><table style="width:535px">
+		<tr><td><?php echo submit_button(isset($titles) ? lang('import') : lang('read file'), 's', array('style'=>'margin-top:0px;margin-left:10px','id' => $genid.'csv_import_submit1')) ?></td></tr></table>
+	</div>
+	
+	</div>
+<?php } //if?>
+	<div class="coInputMainBlock adminMainBlock">
+<?php if (isset($import_result)) {
+		if (count($import_result['import_ok'])) {
+			$isAlt = false;
+?>
+	<br><table><tr><th colspan="2" style="text-align:center"><?php echo lang('contacts succesfully imported') ?></th></tr>
+<?php 		foreach ($import_result['import_ok'] as $reg) { ?>
+				<tr<?php echo ($isAlt ? ' class="altRow"': '') ?>>
+				<td style="padding-left:10px;"><?php echo array_var($reg, 'firstname') . ' ' . array_var($reg, 'lastname') ?></td>
+				<td style="padding-left:10px;"><?php echo array_var($reg, 'email') ?></td></tr>
+<?php 			$isAlt = !$isAlt;
+			} ?>
+	</table>
+<?php 	} //if
+		if (count($import_result['import_fail'])) {
+			$isAlt = false;
+?>
+	<br><table><tr><th colspan="2" style="text-align:center"><?php echo lang('contacts import fail') ?></th>
+				   <th style="text-align:center"><?php echo lang('import fail reason') ?></th></tr>
+<?php 		foreach ($import_result['import_fail'] as $reg) { ?>
+				<tr<?php echo ($isAlt ? ' class="altRow"': '') ?>>
+				<td style="padding-left:10px;"><?php echo array_var($reg, 'firstname') . ' ' . array_var($reg, 'lastname') ?></td>
+				<td style="padding-left:10px;"><?php echo array_var($reg, 'email') ?></td>
+				<td style="padding-left:10px;"><?php echo array_var($reg, 'fail_message') ?></td></tr>
+<?php 			$isAlt = !$isAlt;
+			} ?>
+	</table>
+<!-- 	<br><div><p><b><?php echo lang('contacts import fail help') ?></b></p></div>  -->
+<?php 	}
+	} //if?>
+	</div>
+</div>
+</form>

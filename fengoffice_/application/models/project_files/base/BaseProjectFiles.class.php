@@ -6,7 +6,7 @@
   *
   * @author Ilija Studen <ilija.studen@gmail.com>
   */
-  abstract class BaseProjectFiles extends DataManager {
+  abstract class BaseProjectFiles extends ProjectDataObjects {
   
     /**
     * Column name => Column type map
@@ -31,7 +31,9 @@
 	    'updated_by_id' => DATA_TYPE_INTEGER,
 	    'checked_out_on' => DATA_TYPE_DATETIME,
 	    'checked_out_by_id' => DATA_TYPE_INTEGER,
-	    'was_auto_checked_out' => DATA_TYPE_BOOLEAN
+	    'was_auto_checked_out' => DATA_TYPE_BOOLEAN,
+    	'trashed_on' => DATA_TYPE_DATETIME,
+     	'trashed_by_id' => DATA_TYPE_INTEGER,
 	 );
   
     /**

@@ -7,7 +7,10 @@ og.QuickAdd = function() {
 		text: lang('new'),
 		renderTo: 'quickAdd',
         tooltip: lang('create an object'),
-        iconCls: 'ico-add',
+        cls: 'quickAddButton',
+        height:18,
+        style:'padding-left:18px',
+        overCls:'quickAddButtonHover',
 		menu: {items: [
 			{text: lang('contact'), iconCls: 'ico-contact', handler: function() {
 				var url = og.getUrl('contact', 'add');

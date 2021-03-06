@@ -79,23 +79,23 @@
 	overflow: hidden;
 }
 .og-milestone-delete {
-	background-image: url('../../images/16x16/delete_task.png');
+	background-image: url(../../images/16x16/delete_task.png);
 	background-repeat: no-repeat;
 	padding-right:2px;
 }
 .og-milestone-move-down {
-	background-image: url('../../images/16x16/lower_task.png');
+	background-image: url(../../images/16x16/lower_task.png);
 	background-repeat: no-repeat;
 	padding-left:1px;
 	padding-right:1px;
 }
 .og-milestone-checkbox {
-	background-image: url('../../images/16x16/chkoff.png');
+	background-image: url(../../images/16x16/chkoff.png);
 	background-repeat: no-repeat;
 	background-position:1px 2px;
 }
 .og-milestone-completed > table > tbody > tr > td > .og-milestone-checkbox {
-	background-image: url('../../images/16x16/chkon.png');
+	background-image: url(../../images/16x16/chkon.png);
 	background-repeat: no-repeat;
 	background-position:1px 2px;
 }

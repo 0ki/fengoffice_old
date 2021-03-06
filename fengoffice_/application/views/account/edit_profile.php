@@ -61,21 +61,22 @@
       </div>
       
 <?php if($company->isOwner()) { ?>
+     <?php if($user->getId() != 1) /* System admin cannot change admin status */ {?>
       <fieldset>
         <legend><?php echo lang('options') ?></legend>
         
-        <?php if($user->getId() != 1) /* System admin cannot change admin status */ {?>
 	        <div>
 	          <?php echo label_tag(lang('is administrator'), null, true) ?>
 	          <?php echo yes_no_widget('user[is_admin]', 'userFormIsAdmin', array_var($user_data, 'is_admin'), lang('yes'), lang('no'), '2200') ?>
-	        </div>
+	        </div>     
+	         </fieldset>
         <?php } ?>
         
         <!-- div>
           <?php echo label_tag(lang('is auto assign'), null, true) ?>
           <?php echo yes_no_widget('user[auto_assign]', 'userFormAutoAssign', array_var($user_data, 'auto_assign'), lang('yes'), lang('no'), '2300') ?>
         </div -->
-      </fieldset>
+
 <?php } else { ?>
       <input type="hidden" name="user[is_admin]" value="0" />
       <input type="hidden" name="user[auto_assign]" value="0" />

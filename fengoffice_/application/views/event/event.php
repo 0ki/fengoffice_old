@@ -1,30 +1,28 @@
 <script type="text/javascript">
-
-	
-function changeRepeat() {
-	cal_hide("cal_extra1");
-	cal_hide("cal_extra2");
-	cal_hide("cal_extra3");
-	if(document.getElementById("daily").selected){
-		document.getElementById("word").innerHTML = '<?php echo lang("days")?>';
-		cal_show("cal_extra1");
-		cal_show("cal_extra2");
-	} else if(document.getElementById("weekly").selected){
-		document.getElementById("word").innerHTML =  '<?php echo lang("weeks")?>';
-		cal_show("cal_extra1");
-		cal_show("cal_extra2");
-	} else if(document.getElementById("monthly").selected){
-		document.getElementById("word").innerHTML =  '<?php echo lang("months")?>';
-		cal_show("cal_extra1");
-		cal_show("cal_extra2");
-	} else if(document.getElementById("yearly").selected){
-		document.getElementById("word").innerHTML =  '<?php echo lang("years")?>';
-		cal_show("cal_extra1");
-		cal_show("cal_extra2");
-	} else if(document.getElementById("holiday").selected){
-		cal_show("cal_extra3");
+	function changeRepeat() {
+		cal_hide("cal_extra1");
+		cal_hide("cal_extra2");
+		cal_hide("cal_extra3");
+		if(document.getElementById("daily").selected){
+			document.getElementById("word").innerHTML = '<?php echo lang("days")?>';
+			cal_show("cal_extra1");
+			cal_show("cal_extra2");
+		} else if(document.getElementById("weekly").selected){
+			document.getElementById("word").innerHTML =  '<?php echo lang("weeks")?>';
+			cal_show("cal_extra1");
+			cal_show("cal_extra2");
+		} else if(document.getElementById("monthly").selected){
+			document.getElementById("word").innerHTML =  '<?php echo lang("months")?>';
+			cal_show("cal_extra1");
+			cal_show("cal_extra2");
+		} else if(document.getElementById("yearly").selected){
+			document.getElementById("word").innerHTML =  '<?php echo lang("years")?>';
+			cal_show("cal_extra1");
+			cal_show("cal_extra2");
+		} else if(document.getElementById("holiday").selected){
+			cal_show("cal_extra3");
+		}
 	}
-}
 </script>
 
 
@@ -52,6 +50,8 @@ $year =  array_var($event_data, 'year');
 
 $filter_user = isset($_GET['user_id']) ? $_GET['user_id'] : logged_user()->getId();
 
+$use_24_hours = config_option('time_format_use_24');
+
 	// get dates
 	$setlastweek='';
 	$pm = 0;
@@ -66,7 +66,7 @@ $filter_user = isset($_GET['user_id']) ? $_GET['user_id'] : logged_user()->getId
 		else $hour = 18;
 		// organize time by 24-hour or 12-hour clock.
 		$pm = 0;
-		if(!cal_option("hours_24")) {
+		if(!$use_24_hours) {
 			if($hour >= 12) {
 				$hour = $hour - 12;
 				$pm = 1;
@@ -115,7 +115,7 @@ $filter_user = isset($_GET['user_id']) ? $_GET['user_id'] : logged_user()->getId
 		<a href='#' class='option' onclick="og.toggleAndBolden('<?php echo $genid ?>add_event_tags_div', this)"><?php echo lang('tags')?></a> - 
 		<a href='#' class='option' onclick="og.toggleAndBolden('<?php echo $genid ?>add_event_description_div', this)"><?php echo lang('description')?></a> - 
 		<a href='#' class='option' onclick="og.toggleAndBolden('<?php echo $genid ?>event_repeat_options_div', this)"><?php echo lang('CAL_REPEATING_EVENT')?></a> -
-		<a href='#' class='option' onclick="og.toggleAndBolden('<?php echo $genid ?>add_event_properties_div', this)"><?php echo lang('properties')?></a> - 
+		<a href='#' class='option' onclick="og.toggleAndBolden('<?php echo $genid ?>add_event_properties_div', this)"><?php echo lang('custom properties')?></a> - 
 		<a href='#' class='option' onclick="og.toggleAndBolden('<?php echo $genid ?>add_event_linked_objects_div', this)"><?php echo lang('linked objects')?></a> - 
 		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_event_invitation_div', this)"><?php echo lang('event invitations') ?></a>
 		</div></div>
@@ -133,7 +133,7 @@ $filter_user = isset($_GET['user_id']) ? $_GET['user_id'] : logged_user()->getId
 		<div id="<?php echo $genid ?>add_event_tags_div" style="display:none">
 		<fieldset>
 			<legend><?php echo lang('tags')?></legend>
-			<?php echo autocomplete_textfield("event[tags]", array_var($event_data, 'tags'), Tags::getTagNames(), lang("enter tags desc"), array("class" => "long")); ?>
+			<?php echo autocomplete_tags_field("event[tags]", array_var($event_data, 'tags'), "event[tags]"); ?>
 		</fieldset>
 		</div>
 		
@@ -243,7 +243,7 @@ $filter_user = isset($_GET['user_id']) ? $_GET['user_id'] : logged_user()->getId
 			
 	<div id="<?php echo $genid ?>add_event_properties_div" style="display:none">
 	<fieldset>
-	<legend><?php echo lang('properties')?></legend>
+	<legend><?php echo lang('custom properties')?></legend>
 		<?php echo render_object_properties('event',isset($event)?$event:null);?>
 	</fieldset>
 	</div>
@@ -269,7 +269,7 @@ $filter_user = isset($_GET['user_id']) ? $_GET['user_id'] : logged_user()->getId
 		<label for="eventFormSendNotification" class="checkbox"><?php echo lang('send new event notification') ?></label>
 
 		<?php
-		$project = active_or_personal_project(); 
+		$project = $event->getProject() instanceof Project ? $event->getProject() : active_or_personal_project(); 
 		if ($project instanceof Project) {
 			$companies = $project->getCompanies();
 		} else {
@@ -356,7 +356,7 @@ $filter_user = isset($_GET['user_id']) ? $_GET['user_id'] : logged_user()->getId
 <fieldset><legend><?php echo lang('CAL_TIME_AND_DURATION') ?></legend>
 <table>
 	<tr style="padding-bottom:4px">
-		<td align="right" style="padding-right:6px;padding-bottom:4px;padding-top:2px"><?php echo lang('CAL_DATE') ?></td>
+		<td align="right" style="padding-right:10px;padding-bottom:6px;padding-top:2px"><?php echo lang('CAL_DATE') ?></td>
 		<td align='left'><?php
 				$dv_start = new DateTimeValue(time());
 				$dv_start->setDay($day);
@@ -366,87 +366,56 @@ $filter_user = isset($_GET['user_id']) ? $_GET['user_id'] : logged_user()->getId
 				echo pick_date_widget2('event[start_value]', $event->getStart(), $genid); ?>
 		</td>
 	</tr>
+
 	<tr style="padding-bottom:4px">
-		<td align="right" style="padding-right:6px;padding-bottom:4px;padding-top:2px">
+		<td align="right" style="padding-right:10px;padding-bottom:6px;padding-top:2px">
 			<?php echo lang('CAL_TIME') ?>
 		</td>
-		<td align='left'>
-			<span id='row_time'>			
-			<select name="event[hour]" size="1">
+		<td>
+		<?php
+			$hr = array_var($event_data, 'hour');
+		 	$minute = array_var($event_data, 'minute');
+			$is_pm = array_var($event_data, 'pm');
+			$time_val = "$hr:" . str_pad($minute, 2, '0') . ($use_24_hours ? '' : ' '.($is_pm ? 'PM' : 'AM'));
+			echo pick_time_widget2('event[start_time]', $time_val, $genid);
+		?>
+		</td>
+	</tr>
+	<!--   begin printing the duration options-->
+	<tr>
+		<td align="right" style="padding-right:10px;padding-bottom:6px;padding-top:2px"><?php echo lang('CAL_DURATION') ?></td>
+		<td align="left">
+		<div id="<?php echo $genid ?>ev_duration_div">
+			<select name="event[durationhour]" size="1">
+			<?php
+			for($i = 0; $i < 24; $i++) {
+				echo "<option value='$i'";
+				if(array_var($event_data, 'durationhour')== $i) echo ' selected="selected"';
+				echo ">$i</option>\n";
+			}
+			?>
+			</select> <?php echo lang('CAL_HOURS') ?> <select
+				name="event[durationmin]" size="1">
 				<?php
-				if(!cal_option("hours_24")) {
-					$hr = array_var($event_data, 'hour');
-					for($i = 1; $i <= 12; $i++) {
-						echo '<option value="' . $i % 12 . '"';
-						if($hr == $i || ($hr == 0 && $i == 12)) {
-							echo ' selected="selected"';
-						}
-						echo ">$i</option>\n";
-					}
-				}else{
-					for($i = 0; $i < 24; $i++) {
-						echo "<option value=\"$i\"";
-						if(array_var($event_data, 'hour') == $i) echo ' selected="selected"';
-						echo ">$i</option>\n";
-					}
-				}
-				?>
-					</select> <b>:</b> <select name="event[minute]" size="1">
-				<?php
-				$minute = array_var($event_data, 'minute');
-				for($i = 0; $i < 60; $i = $i + 15) {
+				// print out the duration minutes drop down
+				$durmin = array_var($event_data, 'durationmin');
+				for($i = 0; $i <= 59; $i = $i + 15) {
 					echo "<option value='$i'";
-					if($minute >= $i && $i > $minute - 15) echo ' selected="selected"';
+					if($durmin >= $i && $i > $durmin - 15) echo ' selected="selected"';
 					echo sprintf(">%02d</option>\n", $i);
 				}
 				?>
-			</select> <?php
-				// print out the PM/AM option (only if using 12-hour clock)
-				if(!cal_option("hours_24")) {
-					echo '<select name="event[pm]" size="1"><option value="0"';
-					if(array_var($event_data, 'pm'))echo ' selected="selected"';
-					echo '>AM</option><option value="1"';
-					if(array_var($event_data, 'pm')) echo ' selected="selected"';
-					echo ">PM</option></select>\n";
-				}
-				?>
-			</span>
+			</select> 
+		</div>
 		</td>
 	</tr>
 	<tr style="padding-bottom:4px">
-		<td align="right" style="padding-right:6px;padding-bottom:4px;padding-top:2px">&nbsp;</td>
+		<td align="right" style="padding-right:10px;padding-bottom:6px;padding-top:2px">&nbsp;</td>
 		<td align='left'>
 			<?php
-			echo checkbox_field('event[type_id]',array_var($event_data, 'typeofevent') == 2, array('id' => 'format_html','value' => '2', 'onchange'=>"toggleDiv('row_time')"));
+			echo checkbox_field('event[type_id]',array_var($event_data, 'typeofevent') == 2, array('id' => 'format_html','value' => '2', 'onchange' => 'toggleDiv(\''.$genid.'event[start_time]\'); toggleDiv(\''.$genid.'ev_duration_div\');'));
 			echo lang('CAL_FULL_DAY');
 			?>
-		</td>
-	</tr>
-	
-	<!--   begin printing the duration options-->
-	<tr>
-		<td align="right" style="padding-right:6px;padding-bottom:4px;padding-top:2px"><?php echo lang('CAL_DURATION') ?></td>
-		<td align="left"><select name="event[durationhour]" size="1">
-		<?php
-		for($i = 0; $i < 15; $i++) {
-			echo "<option value='$i'";
-			if(array_var($event_data, 'durationhour')== $i) echo ' selected="selected"';
-			echo ">$i</option>\n";
-		}
-		?>
-		</select> <?php echo lang('CAL_HOURS') ?> <select
-			name="event[durationmin]" size="1">
-			<?php
-			// print out the duration minutes drop down
-			$durmin = array_var($event_data, 'durationmin');
-			for($i = 0; $i <= 59; $i = $i + 15) {
-				echo "<option value='$i'";
-				if($durmin >= $i && $i > $durmin - 15) echo ' selected="selected"';
-				echo sprintf(">%02d</option>\n", $i);
-			}
-			?>
-		</select> 
-		
 		</td>
 	</tr>
 
@@ -469,15 +438,6 @@ $filter_user = isset($_GET['user_id']) ? $_GET['user_id'] : logged_user()->getId
 
 
 <script type="text/javascript">
-function cal_toggle(id) {
-	obj = document.getElementById(id);
-	if(obj.style.display=="none"){
-		obj.style.display = "block";
-	}else{
-		obj.style.display = "none";
-	}
-}
-
 function cal_hide(id) {
 	document.getElementById(id).style.display = "none";
 }
@@ -489,27 +449,11 @@ function cal_show(id) {
 function toggleDiv(div_id){
 	var theDiv = document.getElementById(div_id);
 	dis = !theDiv.disabled;
-    var theFields = theDiv.getElementsByTagName('select');
+    var theFields = theDiv.getElementsByTagName('*');
     for (var i=0; i < theFields.length;i++) theFields[i].disabled=dis;
     theDiv.disabled=dis;
 }
 
-var allTags = [<?php
-	$coma = false;
-	$tags = Tags::getTagNames();
-	if ($tags){
-		foreach ($tags as $tag) {
-			if ($coma) {
-				echo ",";
-			} else {
-				$coma = true;
-			}
-			echo "'" . $tag . "'";
-		}
-	}
-?>];
-
 Ext.get('eventSubject').focus();
-<?php if (array_var($event_data, 'typeofevent') == 2) echo "toggleDiv('row_time')";?>
-	
+<?php if (array_var($event_data, 'typeofevent') == 2) echo 'toggleDiv(\''.$genid.'event[start_time]\'); toggleDiv(\''.$genid.'ev_duration_div\');'; ?>
 </script>

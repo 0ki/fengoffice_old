@@ -25,7 +25,10 @@
 <?php if(trim($company->getAddress2())) { ?>
       <br /><?php echo clean($company->getAddress2()) ?>
 <?php } // if ?>
-      <br /><?php echo clean($company->getCity()) . ($company->getCity()==null)?',':'' ?> <?php echo clean($company->getState()) ?> <?php echo clean($company->getZipcode()) ?>
+      <br /><?php $city = clean($company->getCity());
+      echo $city;
+      if( trim($city)!='')
+      	echo ',';?> <?php echo clean($company->getState()) ?> <?php echo clean($company->getZipcode()) ?>
 <?php if(trim($company->getCountry())) { ?>
       <br /><?php echo clean($company->getCountryName()) ?>
 <?php } // if ?>

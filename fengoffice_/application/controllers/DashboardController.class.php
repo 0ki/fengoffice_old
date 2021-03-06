@@ -105,13 +105,15 @@ class DashboardController extends ApplicationController {
 			$assigned_to = explode(':', user_config_option('pending tasks widget assigned to filter'));
 			$to_company = array_var($assigned_to, 0,0);
 			$to_user = array_var($assigned_to, 1, 0);
+			tpl_assign('assigned_to_user_filter',$to_user);
+			tpl_assign('assigned_to_company_filter',$to_company);
 		}
 		if($show_pending){
 			$tasks = ProjectTasks::getProjectTasks(active_project(),null,'ASC',null,null,$tag,$to_company,$to_user,null,true);
 			tpl_assign('dashtasks', $tasks);
 		}
 		if($show_in_progress){
-			$tasks_in_progress = ProjectTasks::getOpenTimeslotTasks(logged_user(), active_project(), $tag,$to_company,$to_user);
+			$tasks_in_progress = ProjectTasks::getOpenTimeslotTasks(logged_user(),logged_user(), active_project(), $tag,$to_company,$to_user);
 			tpl_assign('tasks_in_progress', $tasks_in_progress);
 		}
 		if($show_late){

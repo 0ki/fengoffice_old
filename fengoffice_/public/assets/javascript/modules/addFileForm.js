@@ -143,13 +143,13 @@ og.addFileOption = function(table, file, genid){
 			acc += "-";
 		}
 	}
-	var fileLink = "<a style='padding-left:18px;line-height:16px' class=\""+ classes + "\" href=\"" + og.getUrl('files','download_file',{id : file.id}) + "\" title=\"" + lang('download') + "\">" + file.name + "</a>";
+	var fileLink = "<a style='padding-left:18px;line-height:16px' class=\""+ classes + "\" href=\"" + og.getUrl('files','download_file',{id : file.id}) + "\" title=\"" + lang('download') + "\">" + og.clean(file.name) + "</a>";
 	var workspaces = '';
 	
 	if (file.workspace_ids != ''){
 		workspaces = "&nbsp;(";
 		var ids = String(file.workspace_ids).split(',');
-		var names = file.workspace_names.split(',');
+		var names = og.clean(file.workspace_names).split(',');
 		var colors = String(file.workspace_colors).split(',');
 		for (var idi = 0; idi < ids.length; idi++){
 			workspaces +=  "<a href=\"#\" class=\"og-wsname og-wsname-color-" + colors[idi].trim() + "\" onclick=\"Ext.getCmp('workspace-panel').select(" + ids[idi] + ")\">" + names[idi].trim() + "</a>";

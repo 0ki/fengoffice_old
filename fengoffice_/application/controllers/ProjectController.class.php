@@ -294,7 +294,7 @@ class ProjectController extends ApplicationController {
 					$parent = Projects::findById(array_var($project_data, 'parent_id'));
 					if ($parent){
 						if(!$project->canSetAsParentWorkspace($parent)) {
-							flash_error(lang('cannot set workspace as parent', $parent->getName()));
+							flash_error(lang('error cannot set workspace as parent', $parent->getName()));
 							ajx_current("empty");
 							return;
 						}
@@ -474,15 +474,24 @@ class ProjectController extends ApplicationController {
 				return;
 			}
 			
+			if (!isset($project_data['parent_id']))
+				$project_data['parent_id'] = $project->getParentId();
+			
 			$project->setFromAttributes($project_data);
 
 			try {
 				DB::beginWork();
 				if (array_var($project_data, 'parent_id') != $project->getParentId()){
+					if ($project->getParentWorkspace() instanceof Project && !logged_user()->isProjectUser($project->getParentWorkspace())){
+						flash_error(lang('no access permissions'));
+						ajx_current("empty");
+						return;
+					} // if
+					
 					$parent = Projects::findById(array_var($project_data, 'parent_id'));
 					if ($parent){
 						if(!$project->canSetAsParentWorkspace($parent)) {
-							flash_error(lang('cannot set workspace as parent', $parent->getName()));
+							flash_error(lang('error cannot set workspace as parent', $parent->getName()));
 							ajx_current("empty");
 							return;
 						}
@@ -550,14 +559,10 @@ class ProjectController extends ApplicationController {
 				
 				ApplicationLogs::createLog($project, null, ApplicationLogs::ACTION_EDIT, false, true);
 				DB::commit();
-
+				
 				if (logged_user()->isProjectUser($project)) {
-					evt_add("workspace edited", array(
-						"id" => $project->getId(),
-						"name" => $project->getName(),
-						"color" => $project->getColor(),
-						"parent" => $project->getParentId()
-					));
+					$workspace_info = $this->get_workspace_info($project);
+					evt_add("workspace edited", $workspace_info);
 				}
 				
 				flash_success(lang('success edit project', $project->getName()));
@@ -867,6 +872,41 @@ class ProjectController extends ApplicationController {
 		}
 		
 		ajx_extra_data(array('workspaces' => $ws));
+	}
+	
+	function get_workspace_info(Project $workspace, $defaultParent = 0, $all_ws = null){
+		$parent = $defaultParent;
+		if (!$all_ws)
+			$all_ws = logged_user()->getWorkspaces(true);
+			
+		if (!is_array($all_ws)) 
+			$all_ws = array();
+		
+		$wsset = array();
+		foreach ($all_ws as $w) {
+			$wsset[$w->getId()] = true;
+		}
+		$tempParent = $workspace->getParentId();
+		$x = $workspace;
+		while ($x instanceof Project && !isset($wsset[$tempParent])) {
+			$tempParent = $x->getParentId();
+			$x = $x->getParentWorkspace();
+		}
+		if (!$x instanceof Project) {
+			$tempParent = 0;
+		}
+		$workspace_info = array(
+			"id" => $workspace->getId(),
+			"name" => $workspace->getName(),
+			"color" => $workspace->getColor(),
+			"parent" => $tempParent,
+			"realParent" => $workspace->getParentId(),
+			"depth" => $workspace->getDepth()
+		);
+		if (logged_user()->getPersonalProjectId() == $workspace->getId())
+			$workspace_info["isPersonal"] = true;
+			
+		return $workspace_info;
 	}
 	
 	function initial_list_projects() {

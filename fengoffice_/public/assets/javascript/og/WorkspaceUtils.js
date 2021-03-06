@@ -38,7 +38,7 @@ og.getFullWorkspacePath = function(id, includeCurrent){
 	return result;
 }
 
-og.showWsPaths = function(containerItemName, showPath){
+og.showWsPaths = function(containerItemName, showPath, showCurrent){
 	var container = containerItemName != '' ? document.getElementById(containerItemName): null;
 	if (container == null)		//Container name null or container not found
 		container = document;
@@ -48,26 +48,27 @@ og.showWsPaths = function(containerItemName, showPath){
 		if (list[i].className == 'project-replace'){
 			list[i].className = '';
 			var id = list[i].innerHTML.replace(/^\s*([\S\s]*?)\s*$/, '$1');
-			list[i].innerHTML = og.renderWsPath(id,showPath);
+			list[i].innerHTML = og.renderWsPath(id,showPath, showCurrent);
 		}
 };
 
-og.renderWsPath = function(id,showPath){
+og.renderWsPath = function(id,showPath, showCurrent){
 	var tree = Ext.getCmp('workspaces-tree');
 	var node = tree.tree.getNodeById('ws' + id);
 	var html = '';
 	
 	if (node != null && node.ws.id != 0){
 		var activews = tree.tree.getActiveWorkspace();
-		if (node.ws.id != activews.id || showPath){
+		if (node.ws.id != activews.id || showPath || showCurrent){
 			var originalNode = node;
 			node = node.parentNode;
-			while (node != null && node.ws.id != 0 && (node.ws.id != activews.id || showPath)){
-				html = '<a class="og-wsname-color-' + originalNode.ws.color + '" href="#"  onclick="Ext.getCmp(\'workspace-panel\').select(' + node.ws.id + ')" name="' + node.ws.name + '">' + og.trimMax(node.ws.name, 4) + "</a>/" + html;
+			while (node != null && node.ws.id != 0 && (node.ws.id != activews.id || showPath || showCurrent)){
+				html = '<a class="og-wsname-color-' + originalNode.ws.color + '" href="#"  onclick="Ext.getCmp(\'workspace-panel\').select(' + node.ws.id + ')" name="' + og.clean(og.clean(node.ws.name)).replace('"', '\\"') + '">' + og.trimMax(node.ws.name, 4) + "</a>/" + html;
+				if (node.ws.id == activews.id && !showPath)
+					break;
 				node = node.parentNode;
 			}
-			
-			html = '<span class="og-wscont og-wsname"><span style="padding-left:1px;padding-right:1px" class="og-wsname-color-' + originalNode.ws.color + '" onmouseover="og.wsPathMouseBehavior(this,true)" onmouseout="og.wsPathMouseBehavior(this,false)">'+ html + '<a href="#" onclick="Ext.getCmp(\'workspace-panel\').select(' + originalNode.ws.id + ')" name="' + originalNode.ws.name + '" class="og-wsname-color-' + originalNode.ws.color + '">' + og.trimMax(originalNode.ws.name, 12) + "</a></span></span>";
+			html = '<span class="og-wscont og-wsname"><span style="padding-left:1px;padding-right:1px" class="og-wsname-color-' + originalNode.ws.color + '" onmouseover="og.wsPathMouseBehavior(this,true)" onmouseout="og.wsPathMouseBehavior(this,false)">'+ html + '<a href="#" onclick="Ext.getCmp(\'workspace-panel\').select(' + originalNode.ws.id + ')" name="' + og.clean(og.clean(originalNode.ws.name)).replace('"', '\\"') + '" class="og-wsname-color-' + originalNode.ws.color + '">' + og.trimMax(originalNode.ws.name, 12) + "</a></span></span>";
 		}
 	}
 	return html;
@@ -113,7 +114,7 @@ og.trimMax = function(str, size, append){
 		append = '&hellip;';
 	var result = str.replace(/^\s*/, "").replace(/\s*$/, ""); //Trims the input string
 	if (result.length > size + 1){
-		result = result.substring(0,size).replace(/^\s*/, "").replace(/\s*$/, "") + append;
+		result = og.clean(result.substring(0,size).replace(/^\s*/, "").replace(/\s*$/, "")) + append;
 	}
 	return result;
 };
@@ -140,7 +141,8 @@ og.showSubWsMenu = function(node){
 	var html = "";
 	for (var i = 0; i < node.childNodes.length; i++){
 		var cn = node.childNodes[i];
-		html += "<div class=\"subwscrumbs\"><a class=\"ico-color" + cn.ws.color + "\" style=\"padding-bottom:2px;padding-top:1px;padding-left:18px;background-repeat:no-repeat!important\" href=\"#\" onclick=\"Ext.getCmp('workspace-panel').select(" + cn.ws.id + ");og.clearSubWsCrumbs()\">" + cn.ws.name + "</a></div>";
+		if (cn.id != 'trash')
+			html += "<div class=\"subwscrumbs\"><a class=\"ico-color" + cn.ws.color + "\" style=\"padding-bottom:2px;padding-top:1px;padding-left:18px;background-repeat:no-repeat!important\" href=\"#\" onclick=\"Ext.getCmp('workspace-panel').select(" + cn.ws.id + ");og.clearSubWsCrumbs()\">" + cn.ws.name + "</a></div>";
 	}
 		
 	var expander = document.getElementById('subWsExpander');
@@ -219,12 +221,12 @@ og.updateWsCrumbsTag = function(newTag) {
 //----------------------------------------
 
 
-og.drawWorkspaceSelector = function(renderTo, workspaceId, name){
+og.drawWorkspaceSelector = function(renderTo, workspaceId, name, allowNone){
 	var container = document.getElementById(renderTo);
 	if (container){
 		var tree = Ext.getCmp('workspaces-tree');
 		var ws;
-		if (workspaceId)
+		if (workspaceId || workspaceId == 0)
 			ws = tree.tree.getNodeById('ws' + workspaceId).ws;
 		else
 			ws = tree.tree.getActiveOrPersonalWorkspace();
@@ -232,24 +234,25 @@ og.drawWorkspaceSelector = function(renderTo, workspaceId, name){
 		var html = "<input type='hidden' id='" + renderTo + "Value' name='" + name + "' value='" + ws.id + "'/>";
 		html +="<div class='x-form-field-wrap'><table><tr><td><div id='" + renderTo + "Header' class='og-ws-selector-header'>";
 		var path = og.getFullWorkspacePath(ws.id,true);
-		html += "<div class='coViewAction ico-color" + ws.color + " og-ws-selector-input' onclick='og.ShowWorkspaceSelector(\"" + renderTo + "\"," + ws.id + ")' title='" + path + "'>" + path + "</div>";
-		html +="</div></td><td><img class='x-form-trigger x-form-arrow-trigger og-ws-selector-arrow' onclick='og.ShowWorkspaceSelector(\"" + renderTo + "\"," + ws.id + ")' src='s.gif'/></td></tr></table><div id='" + renderTo + "Panel'></div></div>";
+		if (path == '')
+			path = lang('none');
+		html += "<div class='coViewAction ico-color" + ws.color + " og-ws-selector-input' onclick='og.ShowWorkspaceSelector(\"" + renderTo + "\"," + ws.id + ", " + (allowNone? 'true':'false') + ")' title='" + path + "'>" + path + "</div>";
+		html +="</div></td><td><img class='x-form-trigger x-form-arrow-trigger og-ws-selector-arrow' onclick='og.ShowWorkspaceSelector(\"" + renderTo + "\"," + ws.id + ", " + (allowNone? 'true':'false') + ")' src='s.gif'/></td></tr></table><div id='" + renderTo + "Panel'></div></div>";
 		
 		container.innerHTML = html;
 	}
 }
 
-og.ShowWorkspaceSelector = function(controlName, workspaceId){
+og.ShowWorkspaceSelector = function(controlName, workspaceId, allowNone){
 	if (document.getElementById(controlName + 'Panel').style.display == 'block')
 		document.getElementById(controlName + 'Panel').style.display = 'none';
 	else {
 		if (document.getElementById(controlName + 'Panel').innerHTML == ''){
 			var tree = Ext.getCmp('workspace-panel');
 			var wsList = tree.getWsList();
-			var newTree = tree.cloneConfig({
-				id: (controlName + 'Tree'),
+			var newTree = new og.WorkspaceTree({
+				id: controlName + 'Tree',
 				renderTo: controlName + 'Panel',
-				tbar:[],
 				root:[],
 				workspaces: wsList,
 				isInternalSelector: true,
@@ -257,8 +260,9 @@ og.ShowWorkspaceSelector = function(controlName, workspaceId){
 				height:250,
 				selectedWorkspaceId: workspaceId,
 				controlName: controlName,
+				allowNone: allowNone,
 				style: 'border:1px solid #99BBE8'
-			});	
+			});
 		}
 		document.getElementById(controlName + 'Panel').style.display = 'block';
 	}
@@ -267,7 +271,9 @@ og.ShowWorkspaceSelector = function(controlName, workspaceId){
 
 og.WorkspaceSelected = function(controlName, workspace){
 	var path =og.getFullWorkspacePath(workspace.id,true);
-	document.getElementById(controlName + 'Header').innerHTML = "<div class='coViewAction ico-color" + workspace.color + " og-ws-selector-input' onclick='og.ShowWorkspaceSelector(\"" + controlName + "\"," + workspace.id + ")' title='" + path + "'>" + path + "</div>";
+	if (path == '')
+		path = lang('none');
+	document.getElementById(controlName + 'Header').innerHTML = "<div class='coViewAction ico-color" + workspace.color + " og-ws-selector-input' onclick='og.ShowWorkspaceSelector(\"" + controlName + "\"," + workspace.id + ")'>" + og.clean(path) + "</div>";
 	document.getElementById(controlName + 'Panel').style.display = 'none';
 	document.getElementById(controlName + 'Header').style.display = 'block';
 	document.getElementById(controlName + 'Value').value = workspace.id;	

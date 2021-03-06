@@ -431,8 +431,8 @@ class POP3
         $count = 1;
         foreach( $arrMsgNums as $intMsgNum )
         {
-        	$arrMsgs[$intMsgNum] = utf8_encode(trim($this->getMsg($intMsgNum)));
-            if ($count++ >= 75) break;
+        	$arrMsgs[$intMsgNum] = $this->getMsg($intMsgNum);
+        	if ($count++ >= 5000) break;
         }
         return $arrMsgs;
     }

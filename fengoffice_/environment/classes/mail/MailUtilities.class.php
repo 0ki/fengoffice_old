@@ -15,8 +15,7 @@ class MailUtilities
 		if (isset($accounts)){
 			foreach($accounts as $account){
 				try{
-					do {
-						sleep(1);
+				//	do {
 						$accId = $account->getId();
 						$emails = array();
 						if (!$account->getIsImap())
@@ -25,16 +24,20 @@ class MailUtilities
 								$emails[$accId] = self::getNewPOP3Mails($account);
 						}
 						
-						if (isset($emails[$accId]) && isset($emails[$accId]['downloads'])) 
-							for ($i = 0; $i < count($emails[$accId]['downloads']); $i++)
+						$received = 0;
+						if (isset($emails[$accId]) && isset($emails[$accId]['downloads']) && is_array($emails[$accId]['downloads'])) { 
+							$cant = count($emails[$accId]['downloads']);
+							for ($i = 0; $i < $cant; $i++)
 							{
 								$email = $emails[$accId];
 								self::SaveMail($email['downloads'][$email['messages'][$i]],
 							 					$account, $email['uidls'][$i]);
+							 	$received++;
 							 	$mailsReceived ++;
 							}
+						}
 						$succ++;
-					} while ($mailsReceived > 0);
+				//	} while ($received > 0);
 				}
 				catch(Exception $e)
 				{
@@ -69,11 +72,11 @@ class MailUtilities
 	
 	private function SaveMail($content, MailAccount $account, $uidl)
 	{
+		// apps like antivirus may write before this header, and mail cant be parsed
+		if (strpos($content, '+OK ') > 0) $content = substr($content, strpos($content, '+OK '));
 		self::parseMail($content, $decoded, $parsedMail, $warnings);
 		
-		if (isset($parsedMail['Subject'])) {
-		//if (!isset($parsedMail['Subject'])) $parsedMail['Subject'] = '';
-		//if (!isset($parsedMail['HeaderPositions'])) $parsedMail['HeaderPositions'] = array();
+		if (!isset($parsedMail['Subject'])) $parsedMail['Subject'] = '';
 		
 		$mail = new MailContent();
 		$mail->setAccountId($account->getId());
@@ -101,7 +104,7 @@ class MailUtilities
 		if ($uid[0]== '<')
 			$uid = substr($uid,1,strlen($uid)-2);
 		$mail->setUid($uid);
-		
+
 		switch($parsedMail['Type'])
 		{
 			case 'html': $mail->setBodyHtml(iconv(array_var($parsedMail,'Encoding','UTF-8'),'UTF-8',$parsedMail['Data'])); break;
@@ -128,7 +131,7 @@ class MailUtilities
 		{
 			DB::rollback();
 		}
-		}
+		
 	}
 
 	function parseMail($message, &$decoded, &$results, &$warnings)
@@ -186,7 +189,6 @@ class MailUtilities
 		$messagesToGet = self::getPOP3MessageList($pop3, $account);
 		if(!empty($messagesToGet["messages"]))
 			$messagesToGet['downloads'] = $pop3->getMails($messagesToGet["messages"]);
-		
 		$pop3->quit();
 
 		return $messagesToGet;
@@ -227,13 +229,13 @@ class MailUtilities
 		return $result;
 	}
 	
-	public function displayMultipleAddresses($addresses)
+	public function displayMultipleAddresses($addresses, $clean = true)
 	{
 		$list = explode(',', $addresses);
 		$result = "";
 		foreach($list as $address){
 			$address = trim($address);
-			$link = self::getPersonLinkFromEmailAddress($address);
+			$link = self::getPersonLinkFromEmailAddress($address, $clean);
 			if ($result != "")
 				$result .= ', ';
 			$result .= $link;
@@ -267,20 +269,20 @@ class MailUtilities
     RETURN $Str_Encrypted_Message; 
 } //end function 
 	
-	private static function getPersonLinkFromEmailAddress($email)
+	private static function getPersonLinkFromEmailAddress($email, $clean = true)
 	{
 		$name = $email;
 		$url = "";
 		
 		$user = Users::getByEmail($email);
 		if ($user instanceof User && $user->canSeeUser(logged_user())){
-			$name = $user->getDisplayName();
+			$name = $clean ? clean($user->getDisplayName()) : $user->getDisplayName();
 			$url = $user->getCardUrl();
 		} else {
 			$contact = Contacts::getByEmail($email);
 			if ($contact instanceof Contact && $contact->canView(logged_user()))
 			{
-				$name = $contact->getDisplayName();
+				$name = $clean ? clean($contact->getDisplayName()) : $contact->getDisplayName();
 				$url = $contact->getCardUrl();
 			}
 		}

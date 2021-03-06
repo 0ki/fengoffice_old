@@ -1,7 +1,7 @@
 <div class="history" style="height:100%;background-color:white">
 <div class="coInputHeader">
 	<div class="coInputHeaderUpperRow">
-	<div class="coInputTitle"><?php echo lang('view history for') . ' ' . $object->getObjectName(); ?></div>
+	<div class="coInputTitle"><?php echo lang('view history for') . ' ' . clean($object->getObjectName()); ?></div>
 	</div>
 </div>
 <div class="coInputSeparator"></div>
@@ -14,19 +14,21 @@
 </tr>
 <?php
 $isAlt = true;
-foreach ($logs as $log) {
-	$isAlt = !$isAlt;
-	echo '<tr' . ($isAlt? ' class="altRow"' : '') .  '><td>';
-	if ($log->getCreatedOn()->getYear() != DateTimeValueLib::now()->getYear())
-		$date = format_time($log->getCreatedOn(), "M d Y, H:i");
-	else{
-		if ($log->isToday())
-			$date = lang('today') . format_time($log->getCreatedOn(), ", H:i:s");
-		else
-			$date = format_time($log->getCreatedOn(), "M d, H:i");
+if (is_array($logs)) {
+	foreach ($logs as $log) {
+		$isAlt = !$isAlt;
+		echo '<tr' . ($isAlt? ' class="altRow"' : '') .  '><td  style="padding-right:10px;">';
+		if ($log->getCreatedOn()->getYear() != DateTimeValueLib::now()->getYear())
+			$date = format_time($log->getCreatedOn(), "M d Y, H:i");
+		else{
+			if ($log->isToday())
+				$date = lang('today') . format_time($log->getCreatedOn(), ", H:i:s");
+			else
+				$date = format_time($log->getCreatedOn(), "M d, H:i");
+		}
+		echo $date . ' </td><td style="padding-right:10px;"><a class="internalLink" href="' . $log->getTakenBy()->getCardUrl() . '">'  . clean($log->getTakenByDisplayName()) . '</a></td><td style="padding-right:10px;"> ' . clean($log->getText());
+		echo '</td></tr>';
 	}
-	echo $date . ' </td><td><a class="internalLink" href="' . $log->getTakenBy()->getCardUrl() . '">'  . $log->getTakenByDisplayName() . '</a></td><td> ' . $log->getText();
-	echo '</td></tr>';
 }
 
 ?>

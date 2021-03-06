@@ -1,13 +1,13 @@
 <?php
 	$genid = gen_id();
-	$project_id = null;
+	$project_id = 0;
 	$report_data = array_var($_SESSION, 'total_task_times_report_data', array());
 	if (array_var($report_data, "project_id") != null) {
 		$project_id = array_var($report_data, "project_id", 0);
 	} else if (active_project() instanceof Project) {
 		$project_id = active_project()->getId();
 	}
-	if (!$report_data['date_type'])
+	if (!array_var($report_data, 'date_type'))
 		$report_data['date_type'] = 1;
 ?>
 <form style='height:100%;background-color:white' class="internalForm" action="<?php echo get_url('reporting', 'total_task_times') ?>" method="post" enctype="multipart/form-data">
@@ -33,8 +33,18 @@
 					option_tag(lang('last week'),3, array_var($report_data, "date_type") == 3? array('selected' => 'selected'):null),
 					option_tag(lang('this month'),4, array_var($report_data, "date_type") == 4? array('selected' => 'selected'):null),
 					option_tag(lang('last month'),5, array_var($report_data, "date_type") == 5? array('selected' => 'selected'):null),
-					option_tag(lang('select dates...'),6, array_var($report_data, "date_type") == 6? array('selected' => 'selected'):null),
+					option_tag(lang('select dates...'),6, array_var($report_data, "date_type") == 6? array('selected' => 'selected'):null)
 				), array('onchange' => 'og.dateselectchange(this)'));
+			?></td>
+		</tr>
+		<tr style='height:30px;'>
+			<td><b><?php echo lang("timeslots") ?>:&nbsp;</b></td>
+			<td align='left'><?php 
+				echo select_box('report[timeslot_type]', array(
+					option_tag(lang('task timeslots'),0, array_var($report_data, "timeslot_type") == 0? array('selected' => 'selected'):null),
+					option_tag(lang('time timeslots'),1, array_var($report_data, "timeslot_type") == 1? array('selected' => 'selected'):null),
+					option_tag(lang('all timeslots'),2, array_var($report_data, "timeslot_type") == 2? array('selected' => 'selected'):null)
+				), array('onchange' => 'og.timeslotTypeSelectChange(this, \'' . $genid . '\')'));
 			?></td>
 		</tr>
 		<?php
@@ -72,44 +82,40 @@
 		</tr>
 		<tr style='height:30px;'>
 			<td><b><?php echo lang("workspace") ?>:&nbsp;</b></td>
-			<td align='left'>
-				<?php echo select_project('report[project_id]', $workspaces,$project_id,null,true);
-					echo checkbox_field('report[include_subworkspaces]', array_var($report_data, "include_subworkspaces", true), array('id' => 'report[include_subworkspaces]' )) ?> 
+			<td align='left'><table><tr><td>
+				<?php echo select_project2('report[project_id]', $project_id, $genid, true);?></td><td style="padding-left:25px">
+				<?php echo checkbox_field('report[include_subworkspaces]', array_var($report_data, "include_subworkspaces", true), array('id' => 'report[include_subworkspaces]' )) ?>
 	      <label for="<?php echo 'report[include_subworkspaces]' ?>" class="checkbox"><?php echo lang('include subworkspaces') ?></label>
+				</td></tr></table> 
 			</td>
 		</tr>
-		<tr style='height:30px;'>
+		<tr style='height:30px;' id="<?php echo $genid ?>repGroupBy">
 			<td><b><?php echo lang("group by") ?>:&nbsp;</b></td>
 			<td align='left'>
-				<span style="display:inline" id="<?php echo $genid ?>gbspan1">
-					<select id="<?php echo  $genid ?>group_by_1" name="report[group_by_1]" )">
-						<option value="0"<?php if (array_var($report_data, "group_by_1") == null) echo ' selected="selected"' ?>>-- None --</option>
-						<option value="id"<?php if (array_var($report_data, "group_by_1") == "id") echo ' selected="selected"' ?>><?php echo lang('task')?></option>
-						<option value="user_id"<?php if (array_var($report_data, "group_by_1") == "user_id") echo ' selected="selected"' ?>><?php echo lang('user')?></option>
-						<option value="project_id"<?php if (array_var($report_data, "group_by_1") == "project_id") echo ' selected="selected"' ?>><?php echo lang('workspace')?></option>
-						<option value="priority"<?php if (array_var($report_data, "group_by_1") == "priority") echo ' selected="selected"' ?>><?php echo lang('priority')?></option>
-						<option value="milestone_id"<?php if (array_var($report_data, "group_by_1") == "milestone_id") echo ' selected="selected"' ?>><?php echo lang('milestone')?></option>
+				<span id="<?php echo $genid ?>gbspan" style="<?php echo array_var($report_data, "timeslot_type") == 0 ? 'display:inline':'display:none' ?>">
+					<?php for ($i = 1; $i <= 3; $i++){ 
+						$gbVal = array_var($report_data, "group_by_$i");
+						?>
+					<select id="<?php echo $genid ?>group_by_<?php echo $i ?>" name="report[group_by_<?php echo $i ?>]" )">
+						<option value="0"<?php if ($gbVal == null) echo ' selected="selected"' ?>>-- None --</option>
+						<option value="id"<?php if ($gbVal == "id") echo ' selected="selected"' ?>><?php echo lang('task')?></option>
+						<option value="user_id"<?php if ($gbVal == "user_id") echo ' selected="selected"' ?>><?php echo lang('user')?></option>
+						<option value="project_id"<?php if ($gbVal == "project_id") echo ' selected="selected"' ?>><?php echo lang('workspace')?></option>
+						<option value="priority"<?php if ($gbVal == "priority") echo ' selected="selected"' ?>><?php echo lang('priority')?></option>
+						<option value="milestone_id"<?php if ($gbVal == "milestone_id") echo ' selected="selected"' ?>><?php echo lang('milestone')?></option>
 					</select>
+					<?php } // for ?>
 				</span>
-				<span style="display:inline" id="<?php echo  $genid ?>gbspan2">
-					<select id="<?php echo  $genid ?>group_by_2" name="report[group_by_2]" )">
-						<option value="0"<?php if (array_var($report_data, "group_by_2") == null) echo ' selected="selected"' ?>>-- None --</option>
-						<option value="id"<?php if (array_var($report_data, "group_by_2") == "id") echo ' selected="selected"' ?>><?php echo lang('task')?></option>
-						<option value="user_id"<?php if (array_var($report_data, "group_by_2") == "user_id") echo ' selected="selected"' ?>><?php echo lang('user')?></option>
-						<option value="project_id"<?php if (array_var($report_data, "group_by_2") == "project_id") echo ' selected="selected"' ?>><?php echo lang('workspace')?></option>
-						<option value="priority"<?php if (array_var($report_data, "group_by_2") == "priority") echo ' selected="selected"' ?>><?php echo lang('priority')?></option>
-						<option value="milestone_id"<?php if (array_var($report_data, "group_by_2") == "milestone_id") echo ' selected="selected"' ?>><?php echo lang('milestone')?></option>
+				<span id="<?php echo $genid ?>altgbspan" style="<?php echo array_var($report_data, "timeslot_type") == 0 ? 'display:none':'display:inline' ?>">
+					<?php for ($i = 1; $i <= 3; $i++){ 
+						$gbVal = array_var($report_data, "alt_group_by_$i");
+						?>
+					<select id="<?php echo $genid ?>alt_group_by_<?php echo $i ?>" name="report[alt_group_by_<?php echo $i ?>]" )">
+						<option value="0"<?php if ($gbVal == null) echo ' selected="selected"' ?>>-- None --</option>
+						<option value="user_id"<?php if ($gbVal == "user_id") echo ' selected="selected"' ?>><?php echo lang('user')?></option>
+						<option value="project_id"<?php if ($gbVal == "project_id") echo ' selected="selected"' ?>><?php echo lang('workspace')?></option>
 					</select>
-				</span>
-				<span style="display:inline" id="<?php echo  $genid ?>gbspan3">
-					<select id="<?php echo  $genid ?>group_by_3" name="report[group_by_3]" )">
-						<option value="0"<?php if (array_var($report_data, "group_by_3") == null) echo ' selected="selected"' ?>>-- None --</option>
-						<option value="id"<?php if (array_var($report_data, "group_by_3") == "id") echo ' selected="selected"' ?>><?php echo lang('task')?></option>
-						<option value="user_id"<?php if (array_var($report_data, "group_by_3") == "user_id") echo ' selected="selected"' ?>><?php echo lang('user')?></option>
-						<option value="project_id"<?php if (array_var($report_data, "group_by_3") == "project_id") echo ' selected="selected"' ?>><?php echo lang('workspace')?></option>
-						<option value="priority"<?php if (array_var($report_data, "group_by_3") == "priority") echo ' selected="selected"' ?>><?php echo lang('priority')?></option>
-						<option value="milestone_id"<?php if (array_var($report_data, "group_by_3") == "milestone_id") echo ' selected="selected"' ?>><?php echo lang('milestone')?></option>
-					</select>
+					<?php } // for ?>
 				</span>
 			</td>
 		</tr>

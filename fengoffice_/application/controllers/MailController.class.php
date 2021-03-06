@@ -62,7 +62,7 @@
 				}
 				
 				$arr_body=preg_split("/<body.*>/i",$re_body);
-				$re_body = "----- Origianal Message -----\nFrom: ".$original_mail->getFrom()."\nTo: ".$original_mail->getTo()."\nSent:".$original_mail->getDate()."\nSubject:".$original_mail->getSubject()."\n\n";
+				$re_body = "----- ".lang('original message')."-----\n".lang('mail from').": ".$original_mail->getFrom()."\n".lang('mail to').": ".$original_mail->getTo()."\n".lang('mail sent').":".Localization::instance()->formatDateTime($original_mail->getSentDate(), logged_user()->getTimezone())."\n".lang('mail subject').":".$original_mail->getSubject()."\n\n";
      			
      			if (count($arr_body)>1)
 	     			$re_body = $arr_body[0].$re_body.$arr_body[1];			
@@ -133,11 +133,8 @@
 			$to = explode(",",$to);
 			$to = $utils->parse_to($to);
 			
-//			$assigned_to = explode(':', array_var($mail_data, 'assigned_to', ''));
-//			$mail->setAssignedToCompanyId(array_var($assigned_to, 0, 0));
-//			$mail->setAssignedToUserId(array_var($assigned_to, 1, 0));
-//			$mail->setProjectId(active_or_personal_project()->getId());
-//			$mail->setIsPrivate($mail_list->getIsPrivate());
+			if ($body == '') $body.=' ';
+
 			try {
 				
 				$from = logged_user()->getDisplayName() . " <" . $account->getEmailAddress() . ">";
@@ -162,11 +159,12 @@
 						$mail->setTagsFromCSV(array_var($mail_data, 'tags'));
 	//					$mail_list->attachmail($mail);
 	//			  		$mail->save_properties($mail_data);
-				 	 	ApplicationLogs::createLog($mail, active_or_personal_project(), ApplicationLogs::ACTION_ADD);
+				 	 	ApplicationLogs::createLog($mail, $mail->getWorkspaces(), ApplicationLogs::ACTION_ADD);
 			  		DB::commit();
 			  		
 			  		if ($isDraft){
 			  			flash_success(lang('success save mail'));
+			  			ajx_current("back");
 			  			/*if ($isNew){
 			  				$mail_data["id"] = $mail->getId();
 			  				tpl_assign('mail_data', $mail_data);
@@ -264,13 +262,12 @@
     	try
     	{
     		DB::beginWork();
-    		$email->deleteContents();
-    		$email->save();
-    		DB::commit();
-    		
-        	flash_success(lang('success delete email'));
-        	
+    		$email->trash();
+    		ApplicationLogs::createLog($email, $email->getWorkspaces(), ApplicationLogs::ACTION_TRASH);
+        	DB::commit();
+    		flash_success(lang('success delete email'));
         	ajx_current("back");
+        	
     	} catch(Exception $e) {
     		DB::rollback();
         	flash_error(lang('error delete email'));
@@ -344,6 +341,12 @@
 	      		$project_id = $classification_data["project_id"];
 	      		$project = Projects::findById($project_id);
 	      		$email->setProjectId($project_id);
+	      		if (!$email->canAdd(logged_user(),$project)){
+					flash_error(lang('no access permissions'));
+					ajx_current("empty");
+					return;
+				} // if
+				
 	      		DB::beginWork();
 	      		$email->save();
 	      		DB::commit();
@@ -393,7 +396,7 @@
 	      					
 	      					$revision = $file->handleUploadedFile($fileToSave, true); // handle uploaded file
 	      					$email->linkObject($file);
-	      					ApplicationLogs::createLog($file, $project, ApplicationLogs::ACTION_ADD);
+	      					ApplicationLogs::createLog($file, $email->getWorkspaces(), ApplicationLogs::ACTION_ADD);
 	      					// Error...
 	      				} catch(Exception $e) {
 	      					DB::rollback();
@@ -474,14 +477,16 @@
     
     
     function checkmail(){
+    	
+    	ini_set("max_execution_time", ini_get("max_execution_time") * 10);
     	$accounts = MailAccounts::findAll(array(
     		"conditions" => "`user_id` = " . logged_user()->getId()
     	));
     	
     	if ($accounts && count($accounts) > 0){
-    		MailUtilities::getmails($accounts, $err, $succ, $errAccounts, $mailsReceived);
-	    	
-	        $errMessage = lang('success check mail', $mailsReceived);
+   			MailUtilities::getmails($accounts, $err, $succ, $errAccounts, $mailsReceived);
+
+   			$errMessage = lang('success check mail', $mailsReceived);
 	    	if ($err > 0){
 	    		foreach($errAccounts as $error) {
 	        		$errMessage .= '<br/><br/>' . lang('error check mail', $error["accountName"], $error["message"]);
@@ -491,6 +496,9 @@
     		$err = 1;
     		$errMessage = lang('no mail accounts set for check');
     	}
+    	
+    	ini_set("max_execution_time", ini_get("max_execution_time") / 10);
+    	ajx_current("reload");
     	
     	return array($err, $errMessage);
     }
@@ -725,8 +733,8 @@
 		
      	if(!is_array($mail_data)) {     
      		$fwd_subject = str_starts_with($original_mail->getSubject(),'Fwd:')?$original_mail->getSubject():'Fwd: '.$original_mail->getSubject();
-	       		     		
-     		$fwd_body = "----- Origianal Message -----\nFrom: ".$original_mail->getFrom()."\nTo: ".$original_mail->getTo()."\nSent:".$original_mail->getDate()."\nSubject:".$original_mail->getSubject()."\n\n";
+
+     		$fwd_body = "----- ".lang('original message')."-----\n".lang('mail from').": ".$original_mail->getFrom()."\n".lang('mail to').": ".$original_mail->getTo()."\n".lang('mail sent').":".Localization::instance()->formatDateTime($original_mail->getSentDate(), logged_user()->getTimezone())."\n".lang('mail subject').":".$original_mail->getSubject()."\n\n";
      		$body = $original_mail->getBodyHtml()==''?$original_mail->getBodyPlain():$original_mail->getBodyHtml();
      		$arr_body=preg_split("/<body.*>/i",$body);
      		if (count($arr_body)>1)
@@ -939,10 +947,9 @@
 	
 	
 		$res = DB::execute("SELECT `id`, 'MailContents' as manager, `sent_date` as comp_date from " . TABLE_PREFIX. "mail_contents where " . 
-			$projectConditions . " AND " . $tagstr . " AND " . $classified . " AND " . $readed  . " AND ". $state ." AND `is_deleted` = 0 " . $permissions 
+			"`trashed_by_id` = 0 AND " . $projectConditions . " AND " . $tagstr . " AND " . $classified . " AND " . $readed  . " AND ". $state ." AND `is_deleted` = 0 " . $permissions 
 			. " ORDER BY `sent_date` DESC");
 			
-		
 		if(!$res) return null;
 		return $res->fetchAll();
 	
@@ -991,7 +998,8 @@
 							"userName" => $msg->getAccount()->getOwner()->getDisplayName(),
 							"tags" => project_object_tags($msg),
 							"isRead" => $msg->getIsRead(logged_user()->getId()),
-							"from" => $msg->getFromName()!=''?$msg->getFromName():$msg->getFrom(),							
+							"from" => $msg->getFromName()!=''?$msg->getFromName():$msg->getFrom(),
+							"from_email" => $msg->getFrom(),
 							"isDraft" => $msg->getIsDraft(),							
 							"isSent" => $msg->getIsSent()							
 							
@@ -1026,9 +1034,9 @@
 							$email = MailContents::findById($id);
 							if (isset($email) && $email->canDelete(logged_user())){
 								try{
-									$email->deleteContents();
 									DB::beginWork();
-									$email->save();
+									$email->trash();
+									ApplicationLogs::createLog($email, $email->getWorkspaces(), ApplicationLogs::ACTION_TRASH);
 									DB::commit();
 									$resultMessage = lang("success delete objects", '');
 								} catch(Exception $e){

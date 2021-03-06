@@ -1,5 +1,5 @@
 <?php
-  set_page_title(lang('update picture'));
+  set_page_title(lang('edit picture'));
   
   if($contact->canEdit(logged_user())) {
     add_page_action(lang('edit contact'), $contact->getEditUrl(), 'ico-edit');
@@ -32,7 +32,7 @@
 <?php } // if ?>
   </div>
   
-  <?php echo submit_button(lang('update picture')) ?>
+  <?php echo submit_button(lang('save')) ?>
  
  </div>
  </div>

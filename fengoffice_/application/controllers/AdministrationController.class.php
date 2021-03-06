@@ -130,42 +130,7 @@ class AdministrationController extends ApplicationController {
 		tpl_assign('task_templates', ProjectTasks::getAllTaskTemplates());
 	} // tools
 	
-	/**
-	 * Lists all workspaces, so the user can select in which ones to use the task template
-	 *
-	 */
-	function assign_task_template_to_ws(){
-		$task_template_id=get_id(); 
-		$selected = WorkspaceTemplates::getWorkspacesByTemplate('ProjectTasks', $task_template_id);
-		tpl_assign('workspaces', logged_user()->getWorkspaces());		
-		tpl_assign('selected', $selected);			
-		tpl_assign('task', ProjectTasks::findById($task_template_id));
-		$checked = array_var($_POST, 'ws_ids');
-		if ($checked != null) {
-			try {
-				DB::beginWork();
-				WorkspaceTemplates::deleteByTemplate($task_template_id, 'ProjectTasks');
-				$wss = Projects::findByCSVIds($checked);
-				foreach ($wss as $ws){
-					$obj = new WorkspaceTemplate();
-					$obj->setWorkspaceId($ws->getId());
-					$obj->setTemplateId($task_template_id);
-					$obj->setObjectManager('ProjectTasks');
-					$obj->setInludeSubWs(false);
-					$obj->save();
-				}
-				DB::commit();
-				flash_success(lang('success assign workspaces'));
-				ajx_current("back");
-			}
-			catch (Exception $exc){
-				flash_error(lang('error assign workspace') . $exc->getMessage());
-				ajx_current("empty");									
-			}
-			tpl_assign('task_templates', ProjectTasks::getAllTaskTemplates());
-			$this->setTemplate('task_templates');
-		}
-	}
+	
 	/**
 	 * Show upgrade page
 	 *

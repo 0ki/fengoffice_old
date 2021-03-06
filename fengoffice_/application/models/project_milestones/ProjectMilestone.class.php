@@ -500,7 +500,13 @@ class ProjectMilestone extends BaseProjectMilestone {
 	 * @return boolean
 	 */
 	function delete() {
-
+		$is_template = $this->getIsTemplate();
+		if ($is_template) {
+			$tasks = $this->getTasks();
+			foreach ($tasks as $t) {
+				$t->delete();
+			}
+		}
 		try {
 			DB::execute("UPDATE " . ProjectMessages::instance()->getTableName(true) . " SET `milestone_id` = '0' WHERE `milestone_id` = " . DB::escape($this->getId()));
 			DB::execute("UPDATE " . ProjectTasks::instance()->getTableName(true) . " SET `milestone_id` = '0' WHERE `milestone_id` = " . DB::escape($this->getId()));

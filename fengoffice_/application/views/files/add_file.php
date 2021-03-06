@@ -22,13 +22,13 @@
   <input id="<?php echo $genid ?>hfFileIsNew" type="hidden" value="<?php echo $file->isNew()?>">
   <input id="<?php echo $genid ?>hfAddFileAddType" name='file[add_type]' type="hidden" value="regular">
   <input id="<?php echo $genid ?>hfFileId" name='file[file_id]' type="hidden" value="<?php echo array_var($file_data, 'file_id') ?>">
-  <input id="<?php echo $genid ?>hfEditFileName" name='file[edit_name]' type="hidden" value="<?php echo array_var($file_data, 'edit_name') ?>">
+  <input id="<?php echo $genid ?>hfEditFileName" name='file[edit_name]' type="hidden" value="<?php echo clean(array_var($file_data, 'edit_name')) ?>">
     
 
 <div class="file">
 <div class="coInputHeader">
 <div class="coInputHeaderUpperRow">
-<div class="coInputTitle"><table style="width:535px"><tr><td><?php echo $file->isNew() ? lang('upload file') : (isset($checkin) ? lang('checkin file') : lang('file properties')) ?>
+<div class="coInputTitle"><table style="width:535px"><tr><td><?php echo $file->isNew() ? lang('upload file') : (isset($checkin) ? lang('checkin file') : lang('edit file properties')) ?>
 	</td><td style="text-align:right"><?php echo submit_button($file->isNew() ? lang('add file') : (isset($checkin) ? lang('checkin file') : lang('save changes')),'s',array("onclick" => 'javascript:submitMe(\'' . $genid .'\')', 'style'=>'margin-top:0px;margin-left:10px','id' => $genid.'add_file_submit1')) ?></td></tr></table>
 	</div>
 	</div>
@@ -58,7 +58,7 @@
   		<?php if(logged_user()->isMemberOfOwnerCompany()) { ?>
 			<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_file_options_div',this)"><?php echo lang('options') ?></a> -
 		<?php } ?>
-		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_file_properties_div',this)"><?php echo lang('properties') ?></a>
+		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_file_properties_div',this)"><?php echo lang('custom properties') ?></a>
   		<?php if($file->isNew() || $file->canLinkObject(logged_user())) { ?> -
 			<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_file_linked_objects_div',this)"><?php echo lang('linked objects') ?></a>
 		<?php } ?>
@@ -138,9 +138,9 @@
  <fieldset >
     <legend><?php echo lang('workspace') ?></legend>
 	  <?php if ($file->isNew()) {
-			echo select_workspaces('ws_ids', $projects, array($project), $genid.'ws_ids');
+			echo select_workspaces('ws_ids', null, array($project), $genid.'ws_ids');
 		} else {
-			echo select_workspaces('ws_ids', $projects, $file->getWorkspaces(), $genid.'ws_ids');
+			echo select_workspaces('ws_ids', null, $file->getWorkspaces(), $genid.'ws_ids');
 		} ?>
 	  
 	  <?php if (!$file->isNew()) {?>
@@ -158,7 +158,7 @@
   <div id="<?php echo $genid ?>add_file_tags_div" style="display:none">
   <fieldset>
     <legend><?php echo lang('tags') ?></legend>
-    <?php echo autocomplete_textfield("file[tags]", array_var($file_data, 'tags'), Tags::getTagNames(), lang("enter tags desc"), array("class" => "long")); ?>
+    <?php echo autocomplete_tags_field("file[tags]", array_var($file_data, 'tags')); ?>
   </fieldset> 
   </div>
   
@@ -204,7 +204,7 @@
 
   <div id="<?php echo $genid ?>add_file_properties_div" style="display:none">
   <fieldset>
-    <legend><?php echo lang('properties') ?></legend>
+    <legend><?php echo lang('custom properties') ?></legend>
       <?php echo render_object_properties('file',$file); ?>
   </fieldset>
   </div>

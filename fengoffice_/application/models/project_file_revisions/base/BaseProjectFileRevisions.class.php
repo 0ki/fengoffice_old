@@ -6,7 +6,7 @@
   *
   * @author Ilija Studen <ilija.studen@gmail.com>
   */
-  abstract class BaseProjectFileRevisions extends DataManager {
+  abstract class BaseProjectFileRevisions extends ProjectDataObjects {
   
     /**
     * Column name => Column type map
@@ -27,7 +27,10 @@
     	'created_on' => DATA_TYPE_DATETIME, 
     	'created_by_id' => DATA_TYPE_INTEGER, 
     	'updated_on' => DATA_TYPE_DATETIME, 
-    	'updated_by_id' => DATA_TYPE_INTEGER);
+    	'updated_by_id' => DATA_TYPE_INTEGER,
+    	'trashed_on' => DATA_TYPE_DATETIME,
+     	'trashed_by_id' => DATA_TYPE_INTEGER,
+    );
   
     /**
     * Construct

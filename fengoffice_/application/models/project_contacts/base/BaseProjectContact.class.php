@@ -7,6 +7,8 @@
   */
   abstract class BaseProjectContact extends ProjectDataObject {
   
+  	protected $objectTypeIdentifier = 'ro';
+  
     // -------------------------------------------------------
     //  Access methods
     // -------------------------------------------------------
