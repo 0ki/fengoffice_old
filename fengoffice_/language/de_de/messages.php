@@ -525,5 +525,6 @@
 	'log edit users' => 'Benutzer {0} editiert',
 	'log delete users' => 'Benutzer {0} gelöscht',
 	'log add users' => 'Benutzer {0} hinzugefügt',
-	'recipient must be specified' => 'Email-Empfänger muß angegeben werden',
+	'recipient must be specified' => 'Email-Empfänger muss angegeben werden',
+	'ie browser outdated' => 'Der verwendete Internet-Browser wird nicht unterstützt. Bitte den Browser aktualisieren.',
 ); ?>

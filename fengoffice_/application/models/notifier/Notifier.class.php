@@ -35,14 +35,14 @@ class Notifier {
 			if ($object instanceof Comment) {
 				self::newObjectComment($object);
 			} else {
-				self::objectNotification($object, $subscribers, $object->getCreatedBy(), 'new');
+				self::objectNotification($object, $subscribers, logged_user(), 'new');
 			}
 		} else if ($action == ApplicationLogs::ACTION_EDIT) {
-			self::objectNotification($object, $subscribers, $object->getUpdatedBy(), 'modified');
+			self::objectNotification($object, $subscribers, logged_user(), 'modified');
 		} else if ($action == ApplicationLogs::ACTION_TRASH) {
-			self::objectNotification($object, $subscribers, Users::findById($object->getTrashedById()), 'deleted');
+			self::objectNotification($object, $subscribers, logged_user(), 'deleted');
 		} else if ($action == ApplicationLogs::ACTION_CLOSE) {
-			self::objectNotification($object, $subscribers, $object->getCompletedBy(), 'closed');
+			self::objectNotification($object, $subscribers, logged_user(), 'closed');
 		}
 	}
 	function shareObject(ProjectDataObject $object, $people) {
@@ -138,7 +138,7 @@ class Notifier {
 				$subscribers[] = $subscriber;
 			} // of
 		} // foreach
-		self::objectNotification($comment, $subscribers, $comment->getCreatedBy(), 'new', "new comment posted", array($object->getObjectName()), $properties);
+		self::objectNotification($comment, $subscribers, logged_user(), 'new', "new comment posted", array($object->getObjectName()), $properties);
 	} // newObjectComment
 	
 	/**

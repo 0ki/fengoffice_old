@@ -78,6 +78,7 @@ class ObjectController extends ApplicationController {
 		$managerName = array_var($_GET, 'object_manager');
 		$object = get_object_by_manager_and_id($objectId,$managerName);
 		$this->add_subscribers($object);
+		ApplicationLogs::createLog($object, $object->getWorkspaces(), ApplicationLogs::ACTION_EDIT);
 		flash_success(lang('subscription modified successfully'));
 	}
 	
@@ -109,7 +110,7 @@ class ObjectController extends ApplicationController {
 		$enteredWS = Projects::findByCSVIds($ids);
 		$validWS = array();
 		foreach ($enteredWS as $ws) {
-			if (ProjectMessage::canAdd(logged_user(), $ws)) {
+			if ($object->canAdd(logged_user(), $ws)) {
 				$validWS[] = $ws;
 			}
 		}

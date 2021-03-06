@@ -48,40 +48,44 @@ class TemplateController extends ApplicationController {
 				$propValueOperation = array_var($_POST, 'propValueOperation');
 				$propValueAmount = array_var($_POST, 'propValueAmount');
 				$propValueUnit = array_var($_POST, 'propValueUnit');
-				foreach($objectPropertyValues as $objInfo => $propertyValues){
-					foreach($propertyValues as $property => $value){
-						$split = split(":", $objInfo);
-						$object_id = $split[1];
-						$templateObjPropValue = new TemplateObjectProperty();
-						$templateObjPropValue->setTemplateId($cotemplate->getId());
-						$templateObjPropValue->setObjectId($object_ids[$objInfo]);
-						$templateObjPropValue->setObjectManager($split[0]);
-						$templateObjPropValue->setProperty($property);
-						$propValue = '';
-						if(isset($propValueParams[$objInfo][$property])){
-							$param = $propValueParams[$objInfo][$property];
-							$operation = $propValueOperation[$objInfo][$property];
-							$amount = $propValueAmount[$objInfo][$property];
-							$unit = $propValueUnit[$objInfo][$property];
-							$propValue = '{'.$param.'}'.$operation.$amount.$unit;
-						}else{
-							if(is_array($value)){
-								$propValue = $value[0];
+				if (is_array($objectPropertyValues)) {
+					foreach($objectPropertyValues as $objInfo => $propertyValues){
+						foreach($propertyValues as $property => $value){
+							$split = split(":", $objInfo);
+							$object_id = $split[1];
+							$templateObjPropValue = new TemplateObjectProperty();
+							$templateObjPropValue->setTemplateId($cotemplate->getId());
+							$templateObjPropValue->setObjectId($object_ids[$objInfo]);
+							$templateObjPropValue->setObjectManager($split[0]);
+							$templateObjPropValue->setProperty($property);
+							$propValue = '';
+							if(isset($propValueParams[$objInfo][$property])){
+								$param = $propValueParams[$objInfo][$property];
+								$operation = $propValueOperation[$objInfo][$property];
+								$amount = $propValueAmount[$objInfo][$property];
+								$unit = $propValueUnit[$objInfo][$property];
+								$propValue = '{'.$param.'}'.$operation.$amount.$unit;
 							}else{
-								$propValue = $value;
+								if(is_array($value)){
+									$propValue = $value[0];
+								}else{
+									$propValue = $value;
+								}
 							}
+							$templateObjPropValue->setValue($propValue);
+							$templateObjPropValue->save();
 						}
-						$templateObjPropValue->setValue($propValue);
-						$templateObjPropValue->save();
 					}
 				}
 				$parameters = array_var($_POST, 'parameters');
-				foreach($parameters as $parameter){
-					$newTemplateParameter = new TemplateParameter();
-					$newTemplateParameter->setTemplateId($cotemplate->getId());
-					$newTemplateParameter->setName($parameter['name']);
-					$newTemplateParameter->setType($parameter['type']);
-					$newTemplateParameter->save();
+				if (is_array($parameters)) {
+					foreach($parameters as $parameter){
+						$newTemplateParameter = new TemplateParameter();
+						$newTemplateParameter->setTemplateId($cotemplate->getId());
+						$newTemplateParameter->setName($parameter['name']);
+						$newTemplateParameter->setType($parameter['type']);
+						$newTemplateParameter->save();
+					}
 				}
 				$wss = Projects::findByCSVIds(array_var($_POST, "ws_ids"));
 				WorkspaceTemplates::deleteByTemplate($cotemplate->getId());
@@ -178,41 +182,45 @@ class TemplateController extends ApplicationController {
 				$propValueOperation = array_var($_POST, 'propValueOperation');
 				$propValueAmount = array_var($_POST, 'propValueAmount');
 				$propValueUnit = array_var($_POST, 'propValueUnit');
-				foreach($objectPropertyValues as $objInfo => $propertyValues){
-					foreach($propertyValues as $property => $value){
-						$split = split(":", $objInfo);
-						$object_id = $split[1];
-						$templateObjPropValue = new TemplateObjectProperty();
-						$templateObjPropValue->setTemplateId($cotemplate->getId());
-						$templateObjPropValue->setObjectId($object_ids[$objInfo]);
-						$templateObjPropValue->setObjectManager($split[0]);
-						$templateObjPropValue->setProperty($property);
-						$propValue = '';
-						if(isset($propValueParams[$objInfo][$property])){
-							$param = $propValueParams[$objInfo][$property];
-							$operation = $propValueOperation[$objInfo][$property];
-							$amount = $propValueAmount[$objInfo][$property];
-							$unit = $propValueUnit[$objInfo][$property];
-							$propValue = '{'.$param.'}'.$operation.$amount.$unit;
-						}else{
-							if(is_array($value)){
-								$propValue = $value[0];
+				if (is_array($objectPropertyValues)) {
+					foreach($objectPropertyValues as $objInfo => $propertyValues){
+						foreach($propertyValues as $property => $value){
+							$split = split(":", $objInfo);
+							$object_id = $split[1];
+							$templateObjPropValue = new TemplateObjectProperty();
+							$templateObjPropValue->setTemplateId($cotemplate->getId());
+							$templateObjPropValue->setObjectId($object_ids[$objInfo]);
+							$templateObjPropValue->setObjectManager($split[0]);
+							$templateObjPropValue->setProperty($property);
+							$propValue = '';
+							if(isset($propValueParams[$objInfo][$property])){
+								$param = $propValueParams[$objInfo][$property];
+								$operation = $propValueOperation[$objInfo][$property];
+								$amount = $propValueAmount[$objInfo][$property];
+								$unit = $propValueUnit[$objInfo][$property];
+								$propValue = '{'.$param.'}'.$operation.$amount.$unit;
 							}else{
-								$propValue = $value;
+								if(is_array($value)){
+									$propValue = $value[0];
+								}else{
+									$propValue = $value;
+								}
 							}
+							$templateObjPropValue->setValue($propValue);
+							$templateObjPropValue->save();
 						}
-						$templateObjPropValue->setValue($propValue);
-						$templateObjPropValue->save();
 					}
 				}
 				TemplateParameters::deleteParametersByTemplate(get_id());
 				$parameters = array_var($_POST, 'parameters');
-				foreach($parameters as $parameter){
-					$newTemplateParameter = new TemplateParameter();
-					$newTemplateParameter->setTemplateId($cotemplate->getId());
-					$newTemplateParameter->setName($parameter['name']);
-					$newTemplateParameter->setType($parameter['type']);
-					$newTemplateParameter->save();
+				if (is_array($parameters)) {
+					foreach($parameters as $parameter){
+						$newTemplateParameter = new TemplateParameter();
+						$newTemplateParameter->setTemplateId($cotemplate->getId());
+						$newTemplateParameter->setName($parameter['name']);
+						$newTemplateParameter->setType($parameter['type']);
+						$newTemplateParameter->save();
+					}
 				}
 				DB::commit();
 				ApplicationLogs::createLog($cotemplate, null, ApplicationLogs::ACTION_EDIT);
@@ -356,6 +364,7 @@ class TemplateController extends ApplicationController {
 			$wsId = array_var($_POST, 'project_id', active_or_personal_project()->getId());
 			$copy->addToWorkspace(Projects::findById($wsId));
 			$copy->setTagsFromCSV(array_var($_POST, 'tags'));
+			$copy->setProject(active_or_personal_project());
 			if ($copy instanceof ProjectTask) {
 				ProjectTasks::copySubTasks($object, $copy, false);
 				$manager = new ProjectTask();

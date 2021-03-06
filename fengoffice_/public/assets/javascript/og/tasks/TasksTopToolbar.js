@@ -72,8 +72,19 @@ og.TasksTopToolbar = function(config) {
 			projectTemplates[projectTemplates.length] = {text: projectTemplatesArray[i].t,
 				iconCls: 'ico-template',
 				handler: function() {
-					var url = og.getUrl('template', 'instantiate', {id: this.id});
-					og.openLink(url);
+					var tid = this.id;
+					og.openLink(og.getUrl('template', 'template_parameters', {id: this.id}), {
+						callback: function(success, data) {
+							if (success) {
+								if (data.parameters.length == 0) {
+									var url = og.getUrl('template', 'instantiate', {id: tid});
+									og.openLink(url);
+								} else {
+									og.openLink(og.getUrl('template', 'instantiate_parameters', {id: tid}));
+								}
+							}
+						}
+					});
 				},
 				scope: projectTemplatesArray[i]
 			};

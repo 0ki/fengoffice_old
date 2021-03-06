@@ -1774,7 +1774,7 @@ class FilesController extends ApplicationController {
 			if (php_config_value_to_bytes($old_memory_limit) < 96*1024*1024) {
 				ini_set('memory_limit', '96M');
 			}
-			set_time_limit(0);
+			@set_time_limit(0);
 			session_commit();
 			$content = $file->getLastRevision()->getFileContent();
 			$filepath = ROOT.'/tmp/'.rand().'.zip';

@@ -50,7 +50,7 @@ class ToolController extends ApplicationController {
 			echo "Done!<br>\n";
 		}
 
-		echo "Writing to file 'min.js' ... ";
+		echo "Writing to file 'ogmin.js' ... ";
 		file_put_contents("public/assets/javascript/ogmin.js", $jsmin);
 		echo "Done!<br>";
 		
@@ -88,7 +88,7 @@ class ToolController extends ApplicationController {
 		echo "Writing to file 'ogmin.css' ... ";
 		file_put_contents("public/assets/themes/default/stylesheets/ogmin.css", $cssmin);
 		echo "Done!<br>";
-
+		die();
 	}
 	
 	private function load_languages($dir, $from) {
@@ -323,7 +323,6 @@ class ToolController extends ApplicationController {
 			$files = array();
 			$this->load_language_files($files, LANG_DIR . "/$from");
 			foreach ($files as $file) {
-				echo "[$file]";
 				if (is_file(LANG_DIR . "/$to/$file")) {
 					$missing[$file] = array();
 					$ft = $this->load_file_translations($from, $file);

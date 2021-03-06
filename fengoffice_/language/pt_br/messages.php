@@ -525,4 +525,6 @@
 	'log edit users' => 'usuário {0} editado',
 	'log delete users' => 'usuário {0} excluído',
 	'log add users' => 'usuário {0} adicionado',
+	'recipient must be specified' => 'Endereço de Email deve ser especificado',
+	'ie browser outdated' => 'Seu navegador não é oficialmente suportado. Para uma melhor experiência recomendamos atualizar seu navegador.',
 ); ?>

@@ -34,7 +34,7 @@ og.LinkedObjectManager = function(config) {
 					'name', 'object_id', 'type', 'tags', 
 					'createdBy', 'createdById', 'dateCreated',
 					'updatedBy', 'updatedById',	'dateUpdated',
-					'icon', 'wsIds', 'manager', 'mimeType', 'url'
+					'icon', 'wsIds', 'manager', 'mimeType', 'url', 'ix'
 				]
 			}),
 			remoteSort: true,
@@ -60,6 +60,10 @@ og.LinkedObjectManager = function(config) {
 	}
 	this.store = og.LinkedObjectManager.store;
 	this.store.addListener({messageToShow: {fn: this.showMessage, scope: this}});
+
+	function renderDragHandle(value, p, r) {
+		return '<div class="img-grid-drag" onmousedown="Ext.getCmp(\'linked-objects-manager\').getSelectionModel().selectRow('+r.data.ix+', true);"></div>';
+	}
 
 	function renderName(value, p, r) {
 		var projectsString = String.format('<span class="project-replace">{0}</span>&nbsp;', r.data.wsIds);
@@ -153,6 +157,15 @@ og.LinkedObjectManager = function(config) {
 		});
 	var cm = new Ext.grid.ColumnModel([
 		sm,{
+			id: 'draghandle',
+			header: '&nbsp;',
+			width: 18,
+        	renderer: renderDragHandle,
+        	fixed:true,
+        	resizable: false,
+        	hideable:false,
+        	menuDisabled: true
+		},{
         	id: 'icon',
         	header: '&nbsp;',
         	dataIndex: 'icon',
@@ -330,7 +343,7 @@ og.LinkedObjectManager = function(config) {
 		cm: cm,
 		stripeRows: true,
 		closable: true,
-		/*style: "padding:7px;",*/
+		id: 'linked-objects-manager',
 		bbar: new og.PagingToolbar({
 			pageSize: og.pageSize,
 			store: this.store,
@@ -419,10 +432,28 @@ Ext.extend(og.LinkedObjectManager, Ext.grid.GridPanel, {
 	},
 	
 	moveObjects: function(ws) {
+		var selections = this.getSelectionModel().getSelections();
+		var allItemsAreTasksOrMilestones = true;
+		for (i=0; i<selections.length; i++) {
+			if (selections[i].data.manager != 'ProjectTasks' && selections[i].data.manager != 'ProjectMilestones') {
+				allItemsAreTasksOrMilestones = false;
+				break;
+			}
+		}
+		// Tasks and events does not keep ws, only move
+		if (allItemsAreTasksOrMilestones) {
+			this.moveObjectsToWsOrMantainWs(false, ws);
+		} else {
+			og.moveToWsOrMantainWs(this.id, ws);
+		}
+	},
+	
+	moveObjectsToWsOrMantainWs: function(mantain, ws) {
 		this.load({
 			action: 'move',
 			objects: this.getSelectedIds(),
-			moveTo: ws
+			moveTo: ws,
+			mantainWs: mantain
 		});
 	},
 	

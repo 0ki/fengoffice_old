@@ -18,14 +18,16 @@
   <ul>
 	  <li> &bull; <?php  echo lang('user') . ': <b>' . $user->getUsername() . '</b>' ?></li>
 	  <?php
-	  $project = $user->getPersonalProject(); 
-	  $users_with_perosnal_project = Users::GetByPersonalProject($project->getId());
-	  if (is_array($users_with_perosnal_project)&& count($users_with_perosnal_project) == 1){ 
-	  ?> 
-	  	<li> &bull; <input style="width: 10px;padding-top: 2px;" type="checkbox" name="delete_user_ws" value="1"> <?php echo lang('user personal workspace', $project->getName())?></li>
-	  <?php }else{?>
-	  	<li> &bull; <input type="hidden" name="delete_user_ws" value="0"><?php echo lang('other user personal workspace', $project->getName()) ?></li>
-	  	<?php }//if?>
+	  $project = $user->getPersonalProject();
+	  if ($project->canDelete(logged_user())) { 
+		  $users_with_perosnal_project = Users::GetByPersonalProject($project->getId());
+		  if (is_array($users_with_perosnal_project)&& count($users_with_perosnal_project) == 1) {  ?> 
+			<li> &bull; <input style="width: 10px;padding-top: 2px;" type="checkbox" name="delete_user_ws" value="1"> <?php echo lang('user personal workspace', $project->getName())?></li>
+		  <?php }else{?>
+			<li> &bull; <input type="hidden" name="delete_user_ws" value="0"><?php echo lang('other user personal workspace', $project->getName()) ?></li>
+		  <?php }//if
+	  }
+	  ?>
   </ul>
 <br>
 	<?php echo submit_button(lang('delete user'), 's', array('tabindex' => '2')) ?>

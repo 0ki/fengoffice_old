@@ -89,18 +89,6 @@
 	'new account step actions' => 'Paso {0}: Comience a gestionar su oficina online',
 	'new account step actions info' => 'Seleccione el espacio de trabajo en el que quiera comenzar a trabajar y <b>Agregue</b>:<br/>',
 
-	'new account step1' => 'Paso 1: Cree el perfil de su propia Empresa',
-	'new account step1 info' => 'Ingrese los datos de su Empresa y agregue a sus miembros como usuarios desde la opción Administración que se encuentra arriba a la derecha de la pantalla.',
-
-	'new account step2' => 'Paso 2: Agregue miembros a su equipo',
-    'new account step2 info' => 'Usted puede <a class="internalLink" href="{0}">crear nuevas cuentas de usuarios</a> para todos los miembros de su equipo. Cada miembro obtendrá un nombre de usuario y una contraseña, que utilizará para acceder al sistema',
-    
-    'new account step3' => 'Paso 3: Agregue empresas clientes y sus miembros',
-    'new account step3 info' => 'Ahora <a class="internalLink" href="{0}">defina una empresa cliente</a>. Al finalizar puede agregar sus miembros o dejar que el encargado de ese grupo se encargue. Estos miembros son muy similares a los de su empresa, sólo que tienen acceso limitado a algunos contenidos y funciones (pueden establecerse distintos niveles de acceso a cada espacio o miembro)',
-    
-    'new account step4' => 'Paso 4: Crear un espacio',
-    'new account step4 info' => 'Definir un <a class="internalLink" href="{0}"> nuevo espacio</a> es muy fácil: establezca un nombre y descripción (opcional) e ingrese los datos. A continuación podrá establecer los permisos de los miembros de su equipo y sus cientes.',
-
 	'application log details column name' => 'Detalles',
 	'application log project column name' => 'Área de trabajo',
 	'application log taken on column name' => 'Adoptadado en relación con',

@@ -69,7 +69,7 @@ addLangs({
 	'cancel': 'Cancela',
 	'company': 'Empresa',
 	'email': 'Email',
-	'email tab': 'Email (BETA)',
+	'email tab': 'Email',
 	'add new contact': 'Criar novo Contato',
 	'displaying contacts of': 'Exibindo Contatos {0} to {1} of {2}',
 	'no contacts to display': 'Sem contatos para mostrar',
@@ -604,5 +604,6 @@ addLangs({
 	'apply milestone to subtasks': 'Aplicar Marco a Subtarefas',
 	'apply workspace to subtasks': 'Aplicar Espaço de Trabalho a Subtarefas',
 	'edit selected event': 'Editar evento selecionado',
-	'click here to download the csv file': 'Clique aqui para baixar o arquivo csv.'
+	'click here to download the csv file': 'Clique aqui para baixar o arquivo csv.',
+	'confirm inherit permissions': 'Deseja herdar todas as permissões do espaço de trabalho pai?'
 });

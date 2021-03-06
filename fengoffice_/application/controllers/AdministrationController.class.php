@@ -517,6 +517,7 @@ class AdministrationController extends ApplicationController {
 						$this->parseTime($data['time'], $hour, $minute);
 						$date->add("m", $minute);
 						$date->add("h", $hour);
+						$date = new DateTimeValue($date->getTimestamp() - logged_user()->getTimezone() * 3600);
 						$event->setDate($date);
 					}
 					$delay = $data['delay'];

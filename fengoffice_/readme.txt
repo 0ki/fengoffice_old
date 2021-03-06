@@ -1,5 +1,5 @@
 
-    About OpenGoo 1.5.1
+    About OpenGoo 1.5.2
     ===================
 
     OpenGoo is a free and open source WebOffice, project management and collaboration
@@ -61,11 +61,11 @@
     ====================
     
     1. Backup you current installation (important!)
-    2. Download OpenGoo 1.5.1 - http://www.opengoo.org/
+    2. Download OpenGoo 1.5.2 - http://www.opengoo.org/
     3. Unpack into your OpenGoo installation, overwriting your previous files and folders,
     	but keeping your config and upload folders.
     5. Go to <your_opengoo>/public/upgrade in your browser and choose to upgrade
-    	from your current version to 1.5.1
+    	from your current version to 1.5.2
     6. Refresh your browser or clear its cache to load new javascript, css and images.   
 
     
@@ -86,6 +86,29 @@
 
 	Changelog
 	=========
+	
+	Since 1.5.1
+	-----------
+	- bugfix: Tags permissions rollbacked. It caused errors in some mysql settings.
+	- bugfix: Document editor toolbar not shown correctly.
+	- bugfix: Invited users to an event weren't being shown when editing the event.
+	- bugfix: When subscribing users to an object through the object's view, the users were not being notified.
+	- bugfix: When editing an object, selected subscribers were reset after changing the object's workspace.
+	- bugfix: When instantiating a milestone template it's subtasks were not added to the same workspace.
+	- bugfix: Fixed performance issues when changing a workspace's parent on the GUI.
+	- bugfix: Notes listing showed creator as last updater.
+	- bugfix: Cron events view wasn't converting times to user's timezone.
+	- bugfix: When filtering email by tag some extra email was shown.
+	- bugfix: Creating a template in IE wouldn't let you edit it's properties.
+	- bugfix: Dragging a task in the calendar would throw an error. 
+	- bugfix: "Can't open file" error when classifying email.
+	- bugfix: Linked objects listing was missing the drag handle.
+	- bugfix: Workspaces for classfied Emails were not being shown on dashboard viewed as list.
+	- bugfix: Error when deleting trashed emails from cron.
+	- bugfix: Error when instantiating templates with parameters assigned to a project.
+	- bugfix: Instantiated template objects were not assigned to the current workspace. 
+	- langs: Added missing langs for tasks report fields.
+	- langs: Updated langs.
 	
 	Since 1.5
 	---------

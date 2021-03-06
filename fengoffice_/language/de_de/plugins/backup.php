@@ -14,13 +14,14 @@ return array(
 	'backup config warning' => 'Vorsicht: die Ordner config und tmp werden nicht gesichert.', 
 	'cron event name cron_backup' => 'OpenGoo sichern', 
 	'cron event desc cron_backup' => 'Diese Zeitsteuerung sichert OpenGoo regelmäßig. Der Administrator wird Sicherungen über den Administrations-Bereich herunterladen können. Die Sicherungen werden als zip-Datei im Verzeichnis tmp/backup gespeichert',
-
 	'error db backup' => 'Fehler bei der Erstellung des Datenbank-Backups. Überprüfen Sie die Variable MYSQLDUMP_COMMAND.', 
+	'backup command failed' => 'Backup-Befehl fehlgeschlagen. Überprüfe MYSQLDUMP_COMMAND Variable.',
+	'success db backup' => 'Backup wurde erfolgreich erstellt.', 
 	'error create backup folder' => 'Fehler bei der Erstellung des Backup-Ordners. Das Backup kann nicht fertiggestellt werden.', 
 	'error delete backup' => 'Fehler beim Löschen des Datenbank-Backups.', 
 	'success delete backup' => 'Das Backup wurde gelöscht.', 
-	'success db backup' => 'Backup wurde erfolgreich erstellt.', 
-	'backup command failed' => 'Backup-Befehl fehlgeschlagen. Überprüfe MYSQLDUMP_COMMAND Variable.',
 	'return code' => 'Return-Code: {0}', 
+	'success install backup plugin' => 'Backup-Plugin erfolgreich installiert',
+	'error install backup plugin' => 'Fehler während der Installation vom Backup-Plugin: {0}',
 );
 ?>

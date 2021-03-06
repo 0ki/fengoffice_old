@@ -1202,7 +1202,7 @@ class ContactController extends ApplicationController {
 	
 	
 	function import_from_csv_file() {
-		set_time_limit(0);
+		@set_time_limit(0);
 		ini_set('auto_detect_line_endings', '1');
 		if (isset($_GET['from_menu']) && $_GET['from_menu'] == 1) unset($_SESSION['history_back']);
 		if (isset($_SESSION['history_back'])) {

@@ -1,4 +1,14 @@
-<?php return array(
+<?php
+/* 
+Translated into Russian for OpenGoo
+Last update:  see readme_rus.txt
+
+http://code.google.com/p/opengooru/
+   
+*/
+
+ return array(
+  // Objects
 	'user' => 'Пользователь',
 	'group' => 'Группа',
 	'groups' => 'Группы',
@@ -8,7 +18,7 @@
 	'company' => 'Компания',
 	'companies' => 'Компании',
 	'client' => 'Клиент',
-	'clients' => 'Клиенты',
+	'clients' => 'Компании',
 	'package' => 'Пакет',
 	'project' => 'Проект',
 	'projects' => 'Проекты',
@@ -16,8 +26,8 @@
 	'messages' => 'Заметки',
 	'comment' => 'Комментарий',
 	'comments' => 'Комментарии',
-	'milestone' => 'Отметка',
-	'milestones' => 'Отметки',
+	'milestone' => 'Этап',
+	'milestones' => 'Этапы',
 	'task' => 'Задача',
 	'subtasks' => 'Подзадачи',
 	'tasks' => 'Задачи',
@@ -44,8 +54,17 @@
 	'handin' => 'Ручная правка',
 	'handins' => 'Ручные правки',
 	'emailunclassified' => 'Email',
-	'owner company' => 'Основная организация',
-	'client companies' => 'Дочерние компании',
+
+    'load file'=> 'Файл загружен',
+    'time' => 'Время',
+  	'reporting' => 'Отчет',
+	
+  // Variations
+  'modify object subscribers' => 'Изменить подписчиков',
+  'subscription modified successfully' => 'Подписчики успешно изменены',  
+	'owner company' => 'Моя организация',
+	'client companies' => 'Компании',
+	
 	'open milestone' => 'Открыть этап',
 	'open milestones' => 'Открыть этап',
 	'completed milestone' => 'Завершенный этап',
@@ -64,16 +83,22 @@
 	'finished projects' => 'Закрытый проекты',
 	'linked object' => 'Связанный объект',
 	'linked objects' => 'Связанные объекты',
+	
 	'important message' => 'Важное сообщение',
 	'important messages' => 'Важные сообщения',
 	'important file' => 'Важный файл',
 	'important files' => 'Важные файлы',
 	'parent task' => 'Исходная задача',
+	
 	'private message' => 'Личное сообщение',
 	'private milestone' => 'Личный этап',
 	'private task list' => 'Личные задачи',
 	'private comment' => 'Частный комментарий',
 	'private file' => 'Личный файл',
+	
 	'object reminders' => 'Напоминания',
 	'add object reminder' => 'Добавить напоминание',
+	
+  	'create document' => 'Создать документ',
+  	'create presentation' => 'Создать презентацию',	
 ); ?>

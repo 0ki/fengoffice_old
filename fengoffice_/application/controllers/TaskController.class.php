@@ -716,6 +716,7 @@ class TaskController extends ApplicationController {
 				'start_date' => getDateValue(array_var($_POST, 'task_start_date', '')),
 				'due_date' => getDateValue(array_var($_POST, 'task_due_date', '')),
 				'is_template' => array_var($_POST, "is_template", array_var($_GET, "is_template", false)),
+				'tags' => array_var($_POST, "tags", ''),
 				'send_notification' => array_var($_POST, 'notify') && array_var($_POST, 'notify') == 'true'
 			); // array
 		} // if
@@ -1562,15 +1563,18 @@ class TaskController extends ApplicationController {
 	  
 		$tochange = array_var($_GET, 'tochange', '');
 	  
-		$year = array_var($_GET, 'year', $task->getDueDate()->getYear());
-		$month = array_var($_GET, 'month', $task->getDueDate()->getMonth());
-		$day = array_var($_GET, 'day', $task->getDueDate()->getDay());
-		$new_date = new DateTimeValue(mktime(0, 0, 0, $month, $day, $year));
-	  
 		if (($tochange == 'both' || $tochange == 'due') && $task->getDueDate() instanceof DateTimeValue ) {
+			$year = array_var($_GET, 'year', $task->getDueDate()->getYear());
+			$month = array_var($_GET, 'month', $task->getDueDate()->getMonth());
+			$day = array_var($_GET, 'day', $task->getDueDate()->getDay());
+			$new_date = new DateTimeValue(mktime(0, 0, 0, $month, $day, $year));
 			$task->setDueDate($new_date);
 		}
 		if (($tochange == 'both' || $tochange == 'start') && $task->getStartDate() instanceof DateTimeValue ) {
+			$year = array_var($_GET, 'year', $task->getStartDate()->getYear());
+			$month = array_var($_GET, 'month', $task->getStartDate()->getMonth());
+			$day = array_var($_GET, 'day', $task->getStartDate()->getDay());
+			$new_date = new DateTimeValue(mktime(0, 0, 0, $month, $day, $year));
 			$task->setStartDate($new_date);
 		}
 	  
@@ -1635,6 +1639,10 @@ class TaskController extends ApplicationController {
 
 		if(isset($jump) && $jump) {
 			if(!is_numeric($jump) || $jump < 1 || $jump > 1000) throw new Exception(lang('repeat period must be a valid number between 1 and 1000'));
+		} else {
+			$occurrance = array_var($task_data, 'occurance');
+			if ($occurrance && $occurrance != 1)
+				return lang('repeat period must be a valid number between 1 and 1000');
 		}
 
 		// check for repeating options

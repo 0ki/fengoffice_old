@@ -174,6 +174,13 @@ return array(
 	'field ProjectTasks assigned_to_company_id' => 'Assigned to company',		
 	'field ProjectTasks assigned_to_user_id' => 'Assigned to user',
 	'field ProjectTasks completed_by_id' => 'Completed by',
+	'field ProjectTasks repeat_by' => 'Repeat by',
+	'field ProjectTasks repeat_end' => 'Repeat end',
+    'field ProjectTasks repeat_num' => 'Repeat number',
+	'field ProjectTasks repeat_forever' => 'Repeat forever',
+    'field ProjectTasks repeat_d' => 'Repeat day',
+    'field ProjectTasks repeat_m' => 'Repeat month',
+    'field ProjectTasks repeat_y' => 'Repeat year',
 
 	// User fields
     'field Users username' => 'Username', 

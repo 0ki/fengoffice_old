@@ -371,16 +371,17 @@ class UserController extends ApplicationController {
 			DB::beginWork();
 			$project = $user->getPersonalProject();
 			$user->delete();
-			if ($project instanceof Project && $delete_ws == 1) {
+			if ($project instanceof Project && $delete_ws == 1 && $project>canDelete(logged_user())) {
 								
 				$pid = $project->getId();
 				
 				$users_with_perosnal_project = Users::GetByPersonalProject($project->getId());
 				if (is_array($users_with_perosnal_project)&& count($users_with_perosnal_project) <= 0){
-						if ($project->delete()){
+					if ($project->delete()) {
 						evt_add("workspace deleted", array(
 							"id" => $pid
 			  			));
+			  			ApplicationLogs::createLog($project, null, ApplicationLogs::ACTION_DELETE);
 					}
 				}
 			}

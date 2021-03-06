@@ -59,7 +59,7 @@ if (is_array($properties) && count($properties) > 0){ ?>
 	<table class="og-custom-properties">
 	<?php foreach ($properties as $prop) {?>
 		<tr>
-			<td class="name" title="<?php echo $prop->getPropertyName() ?>">- <?php echo $prop->getPropertyName() ?>:&nbsp;</td>
+			<td class="name" title="<?php echo $prop->getPropertyName() ?>"><?php echo $prop->getPropertyName() ?>:&nbsp;</td>
 			<td title="' . $prop->getPropertyValue() . '"><?php echo $prop->getPropertyValue() ?></td>
 		</tr>
 	<?php } // foreach ?>

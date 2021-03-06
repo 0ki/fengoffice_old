@@ -13,7 +13,7 @@ class MailContents extends BaseMailContents {
 	
 	static function mailRecordExists($account_id, $uid, $folder = null) {
 		$folder_cond = is_null($folder) ? '' : " AND `imap_folder_name` = '$folder'";
-		$sql = "SELECT `id` FROM `". TABLE_PREFIX ."mail_contents` WHERE `account_id` = $account_id AND `uid` = '$uid' $folder_cond LIMIT 1";
+		$sql = "SELECT `id` FROM `". TABLE_PREFIX ."mail_contents` WHERE `account_id` = $account_id AND `uid` = '".mysql_real_escape_string($uid)."' $folder_cond LIMIT 1";
 		$rows = DB::executeAll($sql);
 		return is_array($rows) && count($rows) > 0;
 	}
@@ -54,9 +54,7 @@ class MailContents extends BaseMailContents {
 				}
 				Logger::log("Mails deleted: $count --- errors: $err");
 			}
-			$sql = "UPDATE ".self::instance()->getTableName(true)." SET `is_deleted` = 1 WHERE $condition";
-			return DB::executeAll($sql);
-			//return parent::delete($condition);
+			return parent::delete($condition);
 		} else {
 			return MailContents::instance()->delete($condition);
 		}
@@ -117,7 +115,7 @@ class MailContents extends BaseMailContents {
 		} else if ($state == "sent") {
 			$stateConditions = "AND (`state` = '1' OR `state` = '3' OR `state` = '5')";
 		} else if ($state == "received") {
-			$stateConditions = "AND `state` = '0' OR `state` = '5'";
+			$stateConditions = "AND (`state` = '0' OR `state` = '5')";
 		} else {
 			$stateConditions = "";
 		}

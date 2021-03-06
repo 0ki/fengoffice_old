@@ -36,8 +36,12 @@
 				<?php } // if ?>
 			</td>
 			<td class="cronEventsDate">
-				<table><tbody><tr><td><?php echo pick_date_widget2('cron_events['.$event->getId().'][date]', $event->getDate(), null, false) ?>
-				</td><td><?php echo pick_time_widget2('cron_events['.$event->getId().'][time]', $event->getDate()) ?>
+				<?php if ($event->getDate() instanceof DateTimeValue) 
+						$date = new DateTimeValue($event->getDate()->getTimestamp() + logged_user()->getTimezone() * 3600);
+					 else $date = null;
+				?>
+				<table><tbody><tr><td><?php echo pick_date_widget2('cron_events['.$event->getId().'][date]', $date, null, false) ?>
+				</td><td><?php echo pick_time_widget2('cron_events['.$event->getId().'][time]', $date) ?>
 				</td></tr></tbody></table>
 							
 			</td>

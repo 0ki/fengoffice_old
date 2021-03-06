@@ -531,4 +531,7 @@
 
 	'recipient must be specified' => 'Debe especificar el destinatario del correo',
 	'ie browser outdated' => 'Su navegador no está soportado. Para una mejor experiencia por favor actualícelo',
+
+	'some objects could not be linked' => 'No se pudo vincular {0} objetos por falta de permisos.',
+    'user cannot link objects' => 'Notiene permisos para vincular objetos a este objeto.',
 ); ?>

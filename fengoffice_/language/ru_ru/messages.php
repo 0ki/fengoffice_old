@@ -1,4 +1,14 @@
-<?php return array(
+<?php
+/* 
+Translated into Russian for OpenGoo
+Last update:  see readme_rus.txt
+
+http://code.google.com/p/opengooru/
+   
+*/
+
+ return array(
+  // Empty, dnx et
 	'no mail accounts set' => 'Не определена учетная запись Email, с которой можно было бы послать почту, пожалуйста, сначала создайте её',
 	'no mail accounts set for check' => 'У Вас нет учетной записи Email, пожалуйста, сначала создайте её',
 	'email dnx' => 'Запрошенное сообщение не существует',
@@ -36,7 +46,8 @@
 	'no new objects in project since last visit' => 'Со времени Вашего последнего посещения в этом проекте не появилось новых объектов',
 	'no clients in company' => 'В вашей компании нет зарегистрированных клиентов',
 	'no users in company' => 'В этой компании нет новых пользователей',
-	'client dnx' => 'Выбранная дочерняя организация не существует',
+	'client dnx' => 'Выбранный контакт не существует',
+  'company dnx' => 'Выбранная компания не существует',
 	'user dnx' => 'Запрошенный пользователь не найден в базе данных',
 	'avatar dnx' => 'Аватар не существует',
 	'no current avatar' => 'Аватар не загружен',
@@ -65,33 +76,42 @@
 	'config category dnx' => 'Запрошенная категория настроек не существует',
 	'config category is empty' => 'Выбранная категория настроек пустая',
 	'email address not in use' => '{0} не используется',
-	'no прикреплен objects' => 'С этим объектом не связаны никакие другие объекты',
-	'object not прикреплен to object' => 'Между выбранными объектами нет связей',
+	'no linked objects' => 'С этим объектом не связаны никакие другие объекты',
+	'object not linked to object' => 'Между выбранными объектами нет связей',
 	'no objects to link' => 'Выберите, пожалуйста, объекты, которые надо связать',
 	'no administration tools' => 'В базе данных нет зарегистрированных инструментов администратора ',
 	'administration tool dnx' => 'Инструмент администратора  "{0}" не существует',
+	'document checked out' => 'Документ уже заблокирован другим пользователем',
+	
+  // Success
 	'success add contact' => 'Контакт \'{0}\' успешно создан',
 	'success edit contact' => 'Контакт \'{0}\' успешно обновлён',
 	'success delete contact' => 'Контакт \'{0}\' удалён',
 	'success edit picture' => 'Картинка успешно обновлена',
 	'success delete picture' => 'Картинка удалена',
+	
 	'success add project' => 'Проект {0} успешно добавлен',
 	'success edit project' => 'Проект {0} успешно обновлён',
 	'success delete project' => 'Проект {0} удалён',
 	'success complete project' => 'Проект {0} завершён',
 	'success open project' => 'Проект {0} заново открыт',
+	
 	'success add milestone' => 'Этап \'{0}\' успешно создан',
 	'success edit milestone' => 'Этап \'{0}\' успешно обновлён',
 	'success deleted milestone' => 'Этап \'{0}\' удалён',
+	
 	'success add message' => 'Заметка {0} успешно создана',
 	'success edit message' => 'Заметка {0} успешно обновлена',
 	'success deleted message' => 'Заметка \'{0}\' и все комментарии к ней удалены',
+	
 	'success add comment' => 'Комментарий успешно записан',
 	'success edit comment' => 'Комментарий успешно обновлён',
 	'success delete comment' => 'Комментарий удалён',
+	
 	'success add task list' => 'Задача \'{0}\' добавлена',
 	'success edit task list' => 'Задача \'{0}\' обновлена',
 	'success delete task list' => 'Задача \'{0}\' удалена',
+	
 	'success add task' => 'Выбранная задача добавлена',
 	'success edit task' => 'Выбранная задача обновлена',
 	'success delete task' => 'Выбранная задача удалена',
@@ -99,35 +119,48 @@
 	'success open task' => 'Выбранная задача открыта заново',
 	'success n tasks updated' => '{0} задач обновлено',
 	'success add mail' => 'Сообщение успешно послано',
-	'success add client' => 'Дочерняя организация {0} добавлена',
-	'success edit client' => 'Дочерняя организация {0} обновлена',
-	'success delete client' => 'Дочерняя организация {0} удалена',
+  'success autosave draft' => 'Сообщение автоматически сохранено в черновиках',	
+
+	'success add client' => 'Компания {0} добавлена',
+	'success edit client' => 'Компания {0} обновлена',
+	'success delete client' => 'Компания {0} удалена',
+	
 	'success add group' => 'Группа {0} добавлена',
 	'success edit group' => 'Группа {0} обновлена',
 	'success delete group' => 'Группа {0} удалена',
+	
 	'success edit company' => 'Данные о компании обновлены',
 	'success edit company logo' => 'Логотип компании обновлён',
 	'success delete company logo' => 'Логотип компании удалён',
+	
 	'success add user' => 'Пользователь {0} успешно добавлен',
 	'success edit user' => 'Данные пользователя {0} успешно обновлены',
 	'success delete user' => 'Пользователь {0} удалён',
+	
 	'success update project permissions' => 'Полномочия проекта спешно обновлены',
 	'success remove user from project' => 'Пользователь удалён из проекта',
 	'success remove company from project' => 'Компания удалена из проекта',
+	
 	'success update profile' => 'Профиль обновлён',
 	'success edit avatar' => 'Аватар успешно обновлён',
 	'success delete avatar' => 'Аватар удалён',
+	
 	'success hide welcome info' => 'Приветствие спрятано',
+	
 	'success complete milestone' => 'Этап \'{0}\' завершён',
 	'success open milestone' => 'Этап \'{0}\' открыт заново',
+	
 	'success subscribe to object' => 'Вы успешно подписались на этот объект',
 	'success unsubscribe to object' => 'Вы  отказались от подписки на этот объект',
+	
 	'success add project form' => 'Форма \'{0}\' добавлена',
 	'success edit project form' => 'Форма \'{0}\' обновлена',
 	'success delete project form' => 'Форма \'{0}\' удалена',
+	
 	'success add folder' => 'Папка \'{0}\' добавлена',
 	'success edit folder' => 'Папка \'{0}\' обновлена',
 	'success delete folder' => 'Папка \'{0}\' удалена',
+	
 	'success add file' => 'Файл \'{0}\' добавлен',
 	'success save file' => 'Файл \'{0}\' сохранён',
 	'success edit file' => 'Файл \'{0}\' обновлён',
@@ -135,53 +168,77 @@
 	'success delete files' => '{0} файл(ов) удалено',
 	'success tag files' => '{0} файл(ов) отмечено',
 	'success tag contacts' => '{0} контакт(ов) отмечено',
+	
 	'success add handis' => 'Передачи обновлены',
+	
 	'success add properties' => 'Свойства обновлены',
+	
 	'success edit file revision' => 'Версия обновлена',
 	'success delete file revision' => 'Версия файла удалена',
+	'success trash file revision' => 'Версия файла удалена',
+	 
 	'success link objects' => '{0} объект(ов) успешно связаны',
 	'success unlink object' => 'Связь объекта удалена',
+	
 	'success update config category' => '{0} значений конфигурации успешно обновлено',
 	'success forgot password' => 'Ваш пароль отправлен Вам по почте',
+	
 	'success test mail settings' => 'Тестовое сообщение успешно послано',
 	'success massmail' => 'Сообщение послано',
+	
 	'success update company permissions' => 'Полномочия компании успешно обновлены. {0} записей обновлено',
 	'success user permissions updated' => 'Полномочия пользователя обновлены',
+	
 	'success add event' => 'Событие добавлено',
 	'success edit event' => 'Событие обновлено',
 	'success delete event' => 'Событие удалено',
+	
 	'success add event type' => 'Тип события добавлен',
 	'success delete event type' => 'Тип события удалён',
+	
 	'success add webpage' => 'Ссылка добавлена',
 	'success edit webpage' => 'Ссылка обновлена',
 	'success deleted webpage' => 'Ссылка удалена',
+	
 	'success add chart' => 'Диаграмма добавлена',
 	'success edit chart' => 'Диаграмма обновлена',
 	'success delete chart' => 'Диаграмма удалена',
 	'success delete charts' => 'Выбранные диаграммы удалены',
+	
 	'success delete contacts' => 'Выбранные контакты удалены',
+	
 	'success classify email' => 'Сообщение успешно классифицировано',
 	'success delete email' => 'Сообщение удалено',
+  	'success unclassify email' => 'Сообщение успешно неклассифицировано',
+  	'error unclassify email' => 'Ошибка обработки сообщения',	
+	
 	'success delete mail account' => 'Учетная запись Email удалена',
 	'success add mail account' => 'Учетная запись Email успешно создана',
 	'success edit mail account' => 'Учетная запись Email успешно обновлена',
+	
 	'success link object' => 'Объект успешно привязан',
+	
 	'success check mail' => 'Завершено получение почты: получено {0} сообщений.',
+	
 	'success delete objects' => '{0} объект(ов) удалено',
 	'success tag objects' => '{0} объект(ов) успешно помечено',
 	'error delete objects' => 'Не удалось удалить {0} объект(ов)',
 	'error tag objects' => 'Не удалось пометить {0} объект(ов)',
 	'success move objects' => '{0} объект(ов) успешно перемещено',
 	'error move objects' => 'Не удалось переместить {0} объект(ов)',
-	'success checkout file' => 'Файл успешно синхронизирован с сервера',
-	'success checkin file' => 'Файл успешно синхронизирован на сервер',
-	'success undo checkout file' => 'Синхронизация файла с сервера успешно отменена',
+	
+	'success checkout file' => 'Файл успешно заблокирован на сервере',
+	'success checkin file' => 'Файл успешно разблокирован на сервере',
+	'success undo checkout file' => 'Блокировка файла на сервера успешно отменена',
 	'success extracting files' => 'Извлечено файлов: {0}',
 	'success compressing files' => 'Файлы успешно сжаты',
+	
 	'success add billing category' => 'Категория биллинга успешно добавлена',
 	'success delete billing category' => 'Категория биллинга успешно удалена',
 	'success edit billing category' => 'Категория биллинга успешно обновлена',
 	'success assign user billing categories' => 'Категории биллинга успешно присвоены пользователям',
+	
+  // Failures
 	'error edit timeslot' => 'Не удалось сохранить интервал времени',
 	'error delete timeslot' => 'Не удалось удалить указанный интервал времени',
 	'error add timeslot' => 'Не удалось добавить интервал времени',
@@ -200,7 +257,7 @@
 	'error delete project' => 'Ошибка при удалении указанного проекта',
 	'error complete project' => 'Не удалось завершить указанный проект',
 	'error open project' => 'Не удалось открыть заново указанный проект',
-	'error delete client' => 'Ошибка при удалении выбранной дочерней организации',
+	'error delete client' => 'Ошибка при удалении выбранной компании',
 	'error delete group' => 'Ошибка при удалении выбранной группы',
 	'error delete user' => 'Ошибка при удалении указанного пользователя',
 	'error update project permissions' => 'Не удалось обновить полномочия проекта',
@@ -232,27 +289,32 @@
 	'error delete task list' => 'Ошибка при удалении выбранных задач',
 	'error delete task' => 'Ошибка при удалении указанной задачи',
 	'error check for upgrade' => 'Ошибка при проверке новой версии программы',
+	'error link object' => 'Не удалось выполнить привязку объекта(ов)',	
 	'error unlink object' => 'Не удалось отменить привязку объекта(ов)',
 	'error link objects max controls' => 'Вы не можете больше добавлять связи объекта. Максимальное количество связей - {0}',
 	'error test mail settings' => 'Не удалось послать проверочное сообщение',
 	'error massmail' => 'Не удалось послать сообщение',
 	'error owner company has all permissions' => 'Основная компания обладает всеми полномочиями',
-	'error while saving' => 'Ошибка при поытке сохранения документа',
+	'error while saving' => 'Ошибка при попытке сохранения документа',
 	'error delete event type' => 'Ошибка при удалении типа события',
 	'error delete mail' => 'Ошибка при удалении этого сообщения',
 	'error delete mail account' => 'Ошибка при удалении этой учётной записи',
 	'error delete contacts' => 'Ошибка при удалении этих контактов',
-	'error check mail' => 'Не удалось проверить аккаунт \'{0}\': {1}',
+	'error check mail' => 'Не удалось проверить почту \'{0}\': {1}',
 	'error check out file' => 'Ошибка синхронизации файла на локальный компьютер: файл открыт',
 	'error checkin file' => 'Ошибка синхронизации файла на сервер',
 	'error classifying attachment cant open file' => 'Ошибка классификации вложения: невозможно открыть файл',
 	'error contact added but not assigned' => 'Контакт \'{0}\' был добавлен, но не привязан к проекту \'{1}\' из-за отсутствия полномочий',
 	'error cannot set workspace as parent' => 'Невозможно установить проект \'{0}\' как родительский, слишком много уровней вложений',
+	
+  // Access or data errors
 	'no access permissions' => 'У Вас нет прав доступа к запрошенной странице',
 	'invalid request' => 'Неверный запрос!',
-	'confirm delete billing category' => 'Вы уверены что хотите удалить выбранную категорию?',
+
+  // Confirmation	
+	'confirm delete billing category' => 'Вы уверены, что хотите удалить выбранную категорию?',
 	'confirm cancel work timeslot' => 'Вы уверены, что хотите отменить данный интервал времени?',
-	'confirm delete mail account' => 'Предупреждение: все сообщения, принадлежащие этой учетной записи будут также удалены! Вы уверены, что хотите её удалить?',
+	'confirm delete mail account' => 'Предупреждение: все сообщения, принадлежащие этой учетной записи будут удалены! Вы уверены, что хотите её удалить?',
 	'confirm delete message' => 'Вы уверены, что хотите удалить эту заметку?',
 	'confirm delete milestone' => 'Вы уверены, что хотите удалить этот этап?',
 	'confirm delete task list' => 'Вы уверены, что хотите удалить эту задачу и все подзадачи?',
@@ -261,7 +323,7 @@
 	'confirm delete project' => 'Вы уверены, что хотите удалить этот проект и все связанные с ним данные (заметки, задачи, этапы, файлы...)?',
 	'confirm complete project' => 'Вы уверены, что хотите пометить этот проект. как закрытый? Все действия с проектом будут заблокированы',
 	'confirm open project' => 'Вы уверены, что хотите пометить этот проект. как открытый? Все действия с проектом будут разблокированы',
-	'confirm delete client' => 'Вы уверены, что хотите удалить выбранную дочернюю организацию и всех её пользователей?\nПерсональные проекты пользователей будут также удалены.',
+	'confirm delete client' => 'Вы уверены, что хотите удалить выбранную компанию и всех её пользователей?\nПерсональные проекты пользователей будут также удалены.',
 	'confirm delete contact' => 'Вы уверены, что хотите удалить выбранный контакт?',
 	'confirm delete user' => 'Вы уверены, что хотите удалить запись этого пользователя?\nПерсональный проект пользователя также будет удалён.',
 	'confirm reset people form' => 'Вы уверены, что хотите отменить редактирование формы? Все изменения, которые Вы сделали, будут утеряны!',
@@ -280,8 +342,12 @@
 	'confirm reset form' => 'Вы уверены, что хотите  отменить редактирование этой формы?',
 	'confirm delete contacts' => 'Вы уверены, что хотите удалить эти контакты?',
 	'confirm delete group' => 'Вы уверены, что хотите удалить эту группу?',
+	
+  // Errors
 	'system error message' => 'Приносим извинения, фатальная ошибка не позволяет OpenGoo выполнить Ваш запрос. Отчет об ошибке послан администратору.',
 	'execute action error message' => 'Извините, в настоящий момент OpenGoo не в состоянии выполнить Ваш запрос. Отчет об ошибке послан администратору.',
+	
+  // Log
 	'log add projectmessages' => '\'{0}\' добавлено',
 	'log edit projectmessages' => '\'{0}\' обновлено',
 	'log delete projectmessages' => '\'{0}\' удалено',
@@ -293,9 +359,10 @@
 	'log tag projectmessages' => '\'{0}\' был отмечен тегом',
 	'log link projectmessages' => '\'{0}\' прикреплен',
 	'log unlink projectmessages' => '\'{0}\' откреплен',
-	'log tag projectmessages data' => '\'{0}\' был отмечен тегом as \'{1}\'',
+	'log tag projectmessages data' => '\'{0}\' был отмечен тегом как \'{1}\'',
 	'log link projectmessages data' => '\'{0}\' прикреплен к {1}',
 	'log unlink projectmessages data' => '\'{0}\' откреплен от  {1}',
+	
 	'log add projectevents' => '\'{0}\' добавлено',
 	'log edit projectevents' => '\'{0}\' обновлено',
 	'log delete projectevents' => '\'{0}\' удалено',
@@ -307,9 +374,10 @@
 	'log tag projectevents' => '\'{0}\' был отмечен тегом',
 	'log link projectevents' => '\'{0}\' прикреплен',
 	'log unlink projectevents' => '\'{0}\' откреплен',
-	'log tag projectevents data' => '\'{0}\' был отмечен тегом as \'{1}\'',
+	'log tag projectevents data' => '\'{0}\' был отмечен тегом как \'{1}\'',
 	'log link projectevents data' => '\'{0}\' прикреплен к {1}',
 	'log unlink projectevents data' => '\'{0}\' откреплен от  {1}',
+	
 	'log add comments' => '{0} добавлено',
 	'log edit comments' => '{0} обновлено',
 	'log delete comments' => '{0} удалено',
@@ -324,6 +392,7 @@
 	'log tag comments data' => '\'{0}\' был отмечен тегом как \'{1}\'',
 	'log link comments data' => '\'{0}\' прикреплен к {1}',
 	'log unlink comments data' => '\'{0}\' откреплен от  {1}',
+	
 	'log add projectmilestones' => '\'{0}\' добавлено',
 	'log edit projectmilestones' => '\'{0}\' обновлено',
 	'log delete projectmilestones' => '\'{0}\' удалено',
@@ -337,9 +406,11 @@
 	'log tag projectmilestones' => '\'{0}\' был отмечен тегом',
 	'log link projectmilestones' => '\'{0}\' прикреплен',
 	'log unlink projectmilestones' => '\'{0}\' откреплен',
-	'log tag projectmilestones data' => '\'{0}\' был отмечен тегом as \'{1}\'',
+	
+	'log tag projectmilestones data' => '\'{0}\' был отмечен тегом как \'{1}\'',
 	'log link projectmilestones data' => '\'{0}\' прикреплен к {1}',
 	'log unlink projectmilestones data' => '\'{0}\' откреплен от  {1}',
+	
 	'log add projecttasklists' => '\'{0}\' добавлено',
 	'log edit projecttasklists' => '\'{0}\' обновлено',
 	'log delete projecttasklists' => '\'{0}\' удалено',
@@ -353,9 +424,10 @@
 	'log tag projecttasklists' => '\'{0}\' был отмечен тегом',
 	'log link projecttasklists' => '\'{0}\' прикреплен',
 	'log unlink projecttasklists' => '\'{0}\' откреплен',
-	'log tag projecttasklists data' => '\'{0}\' был отмечен тегом as \'{1}\'',
+	'log tag projecttasklists data' => '\'{0}\' был отмечен тегом как \'{1}\'',
 	'log link projecttasklists data' => '\'{0}\' прикреплен к {1}',
 	'log unlink projecttasklists data' => '\'{0}\' откреплен от  {1}',
+	
 	'log add projecttasks' => '\'{0}\' добавлено',
 	'log edit projecttasks' => '\'{0}\' обновлено',
 	'log delete projecttasks' => '\'{0}\' удалено',
@@ -372,6 +444,7 @@
 	'log tag projecttasks data' => '\'{0}\' был отмечен тегом как \'{1}\'',
 	'log link projecttasks data' => '\'{0}\' прикреплен к {1}',
 	'log unlink projecttasks data' => '\'{0}\' откреплен от  {1}',
+	
 	'log add projectforms' => '\'{0}\' добавлено',
 	'log edit projectforms' => '\'{0}\' обновлено',
 	'log delete projectforms' => '\'{0}\' удалено',
@@ -386,6 +459,7 @@
 	'log tag projectforms data' => '\'{0}\' был отмечен тегом как \'{1}\'',
 	'log link projectforms data' => '\'{0}\' прикреплен к {1}',
 	'log unlink projectforms data' => '\'{0}\' откреплен от  {1}',
+	
 	'log add projectfolders' => '\'{0}\' добавлено',
 	'log edit projectfolders' => '\'{0}\' обновлено',
 	'log delete projectfolders' => '\'{0}\' удалено',
@@ -398,6 +472,7 @@
 	'log tag projectfolders data' => '\'{0}\' был отмечен тегом как \'{1}\'',
 	'log link projectfolders data' => '\'{0}\' прикреплен к {1}',
 	'log unlink projectfolders data' => '\'{0}\' откреплен от  {1}',
+	
 	'log add projectfiles' => '\'{0}\' загружено',
 	'log edit projectfiles' => '\'{0}\' обновлено',
 	'log delete projectfiles' => '\'{0}\' удалено',
@@ -412,6 +487,7 @@
 	'log tag projectfiles data' => '\'{0}\' был отмечен тегом как \'{1}\'',
 	'log link projectfiles data' => '\'{0}\' прикреплен к {1}',
 	'log unlink projectfiles data' => '\'{0}\' откреплен от  {1}',
+	
 	'log edit projectfilerevisions' => '{0} обновлено',
 	'log delete projectfilerevisions' => '{0} удалено',
 	'log trash projectfilerevisions' => 'Перемещено в корзину: \'{0}\'',
@@ -425,6 +501,7 @@
 	'log tag projectfilerevisions data' => '\'{0}\' был отмечен тегом как \'{1}\'',
 	'log link projectfilerevisions data' => '\'{0}\' прикреплен к {1}',
 	'log unlink projectfilerevisions data' => '\'{0}\' откреплен от  {1}',
+	
 	'log add projectwebpages' => '\'{0}\' добавлено',
 	'log edit projectwebpages' => '\'{0}\' обновлено',
 	'log delete projectwebpages' => '\'{0}\' удалено',
@@ -439,6 +516,7 @@
 	'log tag projectwebpages data' => '\'{0}\' был отмечен тегом как \'{1}\'',
 	'log link projectwebpages data' => '\'{0}\' прикреплен к {1}',
 	'log unlink projectwebpages data' => '\'{0}\' откреплен от  {1}',
+	
 	'log add contacts' => '\'{0}\' привязан к проекту',
 	'log edit contacts' => '\'{0}\' изменена роль',
 	'log delete contacts' => '\'{0}\' удалено из проекта',
@@ -453,13 +531,17 @@
 	'log tag contacts data' => '\'{0}\' был отмечен тегом как \'{1}\'',
 	'log link contacts data' => '\'{0}\' прикреплен к {1}',
 	'log unlink contacts data' => '\'{0}\' откреплен от  {1}',
+	
 	'no contacts in company' => 'У компании нет контактов.',
+	
 	'session expired error' => 'Сессия закрыта. Пожалуйста, перезагрузите страницу и зайдите снова.',
 	'admin cannot be removed from admin group' => 'Первый пользователь не может быть удалён из группы администраторов',
 	'open this link in a new window' => 'Открыть эту ссылку в новом окне',
+	
 	'confirm delete template' => 'Вы уверены, что хотите удалить этот шаблон?',
 	'success delete template' => 'Шаблон \'{0}\' удалён',
 	'success add template' => 'Шаблон добавлен',
+	
 	'log add companies' => '\'{0}\' добавлено',
 	'log edit companies' => '\'{0}\' обновлено',
 	'log delete companies' => '\'{0}\' удалено',
@@ -474,6 +556,7 @@
 	'log tag companies data' => '\'{0}\' был отмечен тегом как \'{1}\'',
 	'log link companies data' => '\'{0}\' прикреплен к {1}',
 	'log unlink companies data' => '\'{0}\' откреплен от  {1}',
+	
 	'log add mailcontents' => '\'{0}\' добавлено',
 	'log edit mailcontents' => '\'{0}\' обновлено',
 	'log delete mailcontents' => '\'{0}\' удалено',
@@ -487,17 +570,28 @@
 	'log unlink mailcontents' => '\'{0}\' откреплен',
 	'log tag mailcontents data' => '\'{0}\' был отмечен тегом как \'{1}\'',
 	'log link mailcontents data' => '\'{0}\' прикреплен к {1}',
+	'log unlink mailcontents data' => '\'{0}\' откреплен от {1}',
+	
 	'log open timeslots' => '\'{0}\' открыто',
 	'log close timeslots' => '\'{0}\' закрыто',
 	'log delete timeslots' => '\'{0}\' удалено',
 	'log trash timeslots' => 'Перемещено в корзину: \'{0}\'',
 	'log untrash timeslots' => 'Восстановлено из корзины: \'{0}\'',
+
+ 	'log login users data' => 'пользователь {0} вошел с IP: {1}',
+  	'log login users' => 'пользователь {0} вошел',
+    'log edit users' => 'пользователь {0} отредактирован',
+  	'log delete users' => 'пользователь {0} удален',
+  	'log add users' => 'пользователь {0} добавлен',
+
 	'error assign workspace' => 'Не удалось установить шаблон для проекта',
 	'success assign workspaces' => 'Шаблон для проекта успешно установлен',
 	'success update config value' => 'Конфигурация обновлена',
 	'view open tasks' => 'Открытые задачи',
 	'already logged in' => 'Вы уже зашли в систему',
+	
 	'some tasks could not be updated due to permission restrictions' => 'Некоторые задачи не удалось обновить в связи с ограничением полномочий',
+	
 	'success trash object' => 'Объект успешно перемещен в корзину',
 	'error trash object' => 'Ошибка перемещения объекта в корзину',
 	'success untrash object' => 'Объект успешно восстановлен из корзины',
@@ -508,13 +602,19 @@
 	'error untrash objects' => 'Ошибка восстановления {0} объектов из корзины',
 	'success delete object' => 'Объект успешно удалён',
 	'error delete object' => 'Ошибка удаления объекта',
+	
+  'recipient must be specified' => 'Должны быть указаны получатели Emailа',
 	'copied from file' => 'Скопировано из файла {0} ({1})',
-	'check file name advice' => 'После того как имя файла было изменено, нажмите TAB для проверки имени файла, и кнопка "Сохранить" станет доступной.',
+	
+'check file name advice' => 'После того как имя файла было изменено, нажмите TAB для проверки имени файла, и кнопка "Сохранить" станет доступной.',
 	'filename already exists' => 'Это имя файла уже используется',
+
 	'success purging trash' => 'Удалено объектов: {0}.',
 	'success sending reminders' => 'Послано напоминаний: {0}.',
 	'failed to assign contact due to permissions' => 'Вы не имеете прав для записи контактов для этих проектов: {0}',
+
 	'weblink dnx' => 'Запрошенная web-ссылка не существует.',
-	'no linked objects' => 'Нет этому объекту нет прикрепленных объектов ',
-	'object not linked to object' => 'Между выбранными объектами не существует связи',
+  'ie browser outdated' => 'Ваш браузер не поддерживается. Обновите или используетй другой браузер.',
+//	'no linked objects' => 'Нет прикрепленных объектов ',
+//	'object not linked to object' => 'Между выбранными объектами не существует связи',
 ); ?>

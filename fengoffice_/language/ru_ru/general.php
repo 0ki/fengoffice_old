@@ -1,4 +1,13 @@
-<?php return array(
+<?php
+/* 
+Translated into Russian for OpenGoo
+Last update:  see readme_rus.txt
+
+http://code.google.com/p/opengooru/
+   
+*/
+
+ return array(
 	'username' => 'Имя пользователя',
 	'password' => 'Пароль',
 	'password again' => 'Повтор пароля',
@@ -15,10 +24,13 @@
 	'view' => 'Посмотреть',
 	'edit' => 'Изменить',
 	'delete' => 'Удалить',
-	'save' => 'Сохранить',
+	'empty trash can' => 'Очистить корзину',
+  'save' => 'Сохранить',
+  'add' => 'Добавить',
 	'update' => 'Обновить',
 	'submit' => 'Подтвердить',
 	'reset' => 'Сбросить',
+  'change' => 'Изменить',
 	'name' => 'Имя',
 	'title' => 'Название',
 	'description' => 'Описание',
@@ -59,8 +71,9 @@
 	'dates' => 'Даты',
 	'permission' => 'Разрешение',
 	'permissions' => 'Разрешения',
+	'reset' => 'Сброс',	
 	'owner' => 'Владелец',
-	'instant messengers' => 'IM',
+	'instant messengers' => 'IM/ICQ',
 	'value' => 'Значение',
 	'phone number' => 'Номер телефона',
 	'phone numbers' => 'Номера телефонов',
@@ -104,8 +117,10 @@
 	'events' => 'События',
 	'Event' => 'Событие',
 	'Events' => 'События',
+	
 	'project calendar' => '{0} календарь',
 	'user calendar' => 'календарь {0}',
+	
 	'month 1' => 'Январь',
 	'month 2' => 'Февраль',
 	'month 3' => 'Март',
@@ -118,6 +133,7 @@
 	'month 10' => 'Октябрь',
 	'month 11' => 'Ноябрь',
 	'month 12' => 'Декабрь',
+	
 	'monday' => 'Понедельник',
 	'tuesday' => 'Вторник',
 	'wednesday' => 'Среда',
@@ -125,6 +141,7 @@
 	'friday' => 'Пятница',
 	'saturday' => 'Суббота',
 	'sunday' => 'Воскресенье',
+	
 	'monday short' => 'Пн',
 	'tuesday short' => 'Вт',
 	'wednesday short' => 'Ср',
@@ -132,6 +149,7 @@
 	'friday short' => 'Пт',
 	'saturday short' => 'Сб',
 	'sunday short' => 'Вс',
+	
 	'copy of' => 'Копия {0}',
 	'task templates' => 'Шаблоны задач',
 	'add task template' => 'Добавить шаблон задачи',
@@ -139,14 +157,19 @@
 	'workspaces' => 'Проекты',
 	'assign to workspace' => 'Присвоить проекту',
 	'assign' => 'Присвоить',
-	'include subworkspaces' => 'Включить субпроекты',
+	'include subworkspaces' => 'Включить подпроекты',
 	'assign task template to workspace' => 'Присвоить шаблон задачи \'{0}\' проекту',
 	'confirm delete task template' => 'Вы уверены, что хотите удалить этот шаблон задачи? Он будет недоступен в системе.',
 	'no task templates' => 'Нет шаблонов задач',
 	'create contact from user' => 'Создать контакт с информацией пользователя',
 	'confirm create contact from user' => 'Вы уверены, что хотите создать контакт с данными пользователя?',
 	'create contact from user desc' => 'Если выбрано "Да", пользователь будет записан в системе, как контакт',
-	'go to contact' => 'Перейти к информации о контакте',
+ 	'use previous personal workspace' =>'Установить как личный проект пользователя?',
+ 	'use previous personal workspace desc' =>'Если да то проект будет выбран как личный проект пользователя',
+ 	'select personal workspace' => 'Выбрать проект',
+  'create personal workspace' => 'Создать новый проект',
+  'use an existing workspace' => 'Использовать существующий проект',
+	'go to contact' => 'Контакты',
 	'show assigned to' => 'Показать, кому присвоено',
 	'timeslot on object' => 'Период времени {0}',
 	'show by status' => 'Показать по статусу',
@@ -154,14 +177,41 @@
 	'task report' => 'Информация о задаче',
 	'priority' => 'Приоритет',
 	'anybody' => 'Любой',
+	
 	'read and write' => 'Чтение и запись',
 	'read only' => 'Только чтение',
 	'none no bars' => 'Нет',
-	'apply to all subworkspaces' => 'Применить права ко всем субпроектам',
+	'apply to all subworkspaces' => 'Применить права ко всем подпроектам',
 	'weblinks' => 'Веб-ссылки',
+  'add work' => 'Добавить работу',
+	
 	'date format' => 'm/d/Y',
 	'date format description' => '(мм/дд/гггг)',
-	'add work' => 'Добавить работу',
 	'confirm move to trash' => 'Вы действительно хотите переместить выделенный объект в корзину?',
-	'add' => 'Добавить',
+	
+	'remove' => 'Удалить',
+	'mime type' => 'MIME тип',
+  	
+  	'default' => 'По умолчанию',
+  	'language' => 'Язык',
+  	'before' => 'до',
+  	'pages' => 'страниц',
+  
+	'repeat by' => 'Повторить по',
+	'repeating task' => 'Повторяющаяся задача',
+  	'this task repeats' => 'Эта задача повторяется',
+  	'forever' => 'всегда',
+	'n times' => '{0} раз',
+	'until x' => 'до {0}',
+	'n days' => '{0} дней',
+	'n months' => '{0} месяцев',
+	'n years' => '{0} лет',
+  	'every' => 'каждый',
+	'generate repetitition' => 'Создать повторяющуюся задачу',
+	'end of task' => 'Конец задачи',
+	'start of task' => 'Начало задачи',
+  	'new task repetition generated' => 'Новая повторяющаяся задача создана',
+
+	'reminders will not apply to repeating events' => 'Предупреждение: на повторяющиеся события, напоминаний не будет.',
+	
 ); ?>

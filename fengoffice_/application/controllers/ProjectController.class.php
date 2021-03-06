@@ -238,13 +238,6 @@ class ProjectController extends ApplicationController {
 		}
 
 		$permissions = ProjectUsers::getNameTextArray();
-		$permissions_array = array();
-		foreach ($permissions as $permission_id => $permission_text) {
-			$permissions_array[] = array(
-				'id' => $permission_id,
-				'text' => $permission_text
-			);
-		}
 		
 		$companies = array(owner_company());
 		$clients = owner_company()->getClientCompanies();
@@ -252,49 +245,12 @@ class ProjectController extends ApplicationController {
 			$companies = array_merge($companies, $clients);
 		} // if
 		
-		$comp_array = array();
-		foreach ($companies as $comp) {
-			$has_checked_users = false;
-			$user_array = array();
-			foreach ($comp->getUsers() as $user) {
-				if (!$has_checked_users && $user->isProjectUser($project)) {
-					$has_checked_users = true;
-				}
-				$user_perm = array();
-				foreach ($permissions as $permission_id => $permission_text) {
-					$user_perm[] = array(
-						'id' => $permission_id,
-						'hasPerm' => $user->hasProjectPermission($project, $permission_id)
-					);
-				}
-				$user_data = array(
-					'id' => $user->getId(),
-					'name' => clean($user->getDisplayName()),
-					'isAdmin' => $user->isAdministrator(),
-					'isProjUser' => $user->isProjectUser($project),
-					'hasAllPerm' => $user->hasAllProjectPermissions($project),
-					'perms' => $user_perm,
-				);
-				$user_array[] = $user_data;
-			}
-
-			$comp_data = array(
-				'id' => $comp->getId(),
-				'name' => clean($comp->getName()),
-				'logoUrl' => $comp->getLogoUrl(),
-				'hasCheckedUsers' => $has_checked_users,
-				'users' => $user_array
-			);
-			$comp_array[] = $comp_data;
-		}
-		
-		$object = array(
-			"companies" => $comp_array,
-			"permissions" => $permissions_array,
-		);
-
-		ajx_extra_data($object);
-		ajx_current("empty");
+		tpl_assign('genid', array_var($_GET, "genid"));
+		tpl_assign('project', $project);
+		tpl_assign('permissions', $permissions);
+		tpl_assign('companies', $companies);
+		$this->setLayout("html");
+		$this->setTemplate("add_ws_permissions");
 	}
 
 	/**

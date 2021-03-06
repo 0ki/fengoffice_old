@@ -1,5 +1,5 @@
 <?php
-set_time_limit(0);
+@set_time_limit(0);
 define('ROOT', '../..');
 define('PRODUCT_NAME', 'OpenGoo');
 define('PRODUCT_URL', 'http://www.opengoo.org');

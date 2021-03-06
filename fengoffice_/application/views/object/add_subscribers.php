@@ -47,7 +47,7 @@ require_javascript('og/modules/addMessageForm.js');
 				<span class="ico-company link-ico"><?php echo clean($theCompany->getName()) ?></span>
 			</label>
 		</div>
-		<div style="padding-left:10px;">
+		<div id="<?php echo $genid . $companyId ?>company_users" style="padding-left:10px;">
 		<?php foreach($users as $user) { ?>
 				<?php
 					$checked = in_array($user->getId(), $subscriberIds);

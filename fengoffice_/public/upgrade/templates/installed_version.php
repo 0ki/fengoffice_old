@@ -1,5 +1,4 @@
-<?php echo "
-<?php
+<?php echo "<?php
 
 /**
   * Return installed version
@@ -13,7 +12,5 @@
 
 return '$version'; 
 
-?>
-
-";
+?>";
 ?>

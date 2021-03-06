@@ -1574,6 +1574,7 @@ class Swift
 	 */
 	private function buildMail($to, $from, $subject, $body, $type='text/plain', $encoding='8bit', $return_data_part=true)
 	{
+		$msg_id = "<" . gen_id() . substr($from, strpos($from, '@')) . (str_ends_with($from, ">")?'':">");
 		$date = date('r'); //RFC 2822 date
 		$return_path = $this->returnPath ? $this->returnPath : $this->getAddress($from);
 		$ret = array("MAIL FROM: ".$return_path."\r\n"); //Always
@@ -1584,7 +1585,8 @@ class Swift
 		$data = "From: ".$this->safeEncodeHeader($from)."\r\n".
 			"Reply-To: ".$this->safeEncodeHeader($reply_to)."\r\n".
 			"Subject: ".$this->safeEncodeHeader($subject)."\r\n".
-			"Date: $date\r\n";
+			"Date: $date\r\n".
+			"Message-ID: $msg_id\r\n";
 		if ($this->readReceipt) $data .= "Disposition-Notification-To: ".$this->safeEncodeHeader($from)."\r\n";
 		
 		if (!$to) //Only need one mail if no address was given

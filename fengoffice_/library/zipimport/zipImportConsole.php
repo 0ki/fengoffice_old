@@ -15,7 +15,7 @@ require_once APP_ROOT . '/library/zipimport/ZipImport.class.php';
 require_once APP_ROOT . '/library/zipimport/ImportLogger.class.php';
 
 ini_set('memory_limit', '256M');
-set_time_limit(0);
+@set_time_limit(0);
 
 if(!isset($argv) || !is_array($argv)) {
 //	die('There is no input arguments');

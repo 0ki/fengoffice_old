@@ -77,19 +77,41 @@ App.modules.addMessageForm = {
   	var ids = "";
   	var notcomp = Ext.getDom(genid + 'notify_companies');
   	if (notcomp) {
-	  	var cos = notcomp.notify_companies;
-	  	for (var k in cos) {
-	  		var company_details = cos[k];
-	  		if(!company_details) continue;
-	  		for(var i=0; i < company_details.users.length; i++) {
-	      		if (Ext.getDom(genid + company_details.users[i].checkbox_id).checked) {
-	      			if (ids != "") ids += ",";
-	      			ids += company_details.users[i].id;
-	      		}
-	    	}
-	  	}
+  		var companies_divs = new Array();
+  		for (var i=0;i<notcomp.childNodes.length;i++){
+  			if (notcomp.childNodes[i].id){
+  				companies_divs.push(notcomp.childNodes[i]);
+  			}
+  		}
+  		users_div = companies_divs[0];
+  		if (! users_div){
+  			return null;
+  		}
+  			var p = '';
+  			var usrs_div;
+  			for (var n = 0;n<users_div.childNodes.length;n++){
+  				if (users_div.childNodes[n].id){
+  					var pos = users_div.childNodes[n].id.length;  					
+  					var t = users_div.childNodes[n].id.substring(pos - 13); 
+	  				if( t == 'company_users')
+	  				{
+	  					usrs_div = (users_div.childNodes[n]);
+	  				}
+  				}
+  			}
+  			var ret='';
+  			for (var d=0;d<usrs_div.childNodes.length;d++){
+  				if (usrs_div.childNodes[d].id)
+  				{
+  					if(hu = document.getElementById('hiddenUser' + usrs_div.childNodes[d].id)){
+  						if(hu.value == 'checked'){
+  							ret += (hu.name.substring(17,hu.name.length-1)) + ', ';
+  						}
+  					};
+  				}
+  			}
+  			return ret;
   	}
-    return ids;
   } // emailNotifyClickCompany
   
 };

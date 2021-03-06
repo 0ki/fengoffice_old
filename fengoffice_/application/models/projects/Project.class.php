@@ -257,7 +257,7 @@ class Project extends BaseProject {
 	 */
 	function getSortedChildren($user)
 	{
-		$projects = null;
+		$projects = array();
 		$padres = $this->getSubWorkspacesSorted(false,$user);
 		foreach($padres as $hijo){
 				$projects[] = $hijo;
@@ -1843,7 +1843,7 @@ class Project extends BaseProject {
 	 * @return boolean
 	 */
 	protected function deleteSingle() {
-		set_time_limit(0);
+		@set_time_limit(0);
 		$this->clearMessages();
 		$this->clearTasks();
 		$this->clearMilestones();

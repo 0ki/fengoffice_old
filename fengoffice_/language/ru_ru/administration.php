@@ -1,22 +1,49 @@
-<?php return array(
+<?php
+/* 
+Translated into Russian for OpenGoo
+Last update:  see readme_rus.txt
+
+http://code.google.com/p/opengooru/
+   
+*/
+
+ return array(
+
+  // Administration tools
 	'administration tool name test_mail_settings' => 'Проверка настроек почты',
-	'administration tool desc test_mail_settings' => 'Воспользуйтесь этой утилитой для проверки работоспособности почты OpenGoo',
+	'administration tool desc test_mail_settings' => 'Воспользуйтесь этой утилитой для проверки работоспособности почты',
 	'administration tool name mass_mailer' => 'Почтовая рассылка',
 	'administration tool desc mass_mailer' => 'Утилита для отправки сообщений любой группе пользователей, зарегистрированной в системе.',
+	
+  // Configuration categories and options
 	'configuration' => 'Конфигурация',
+	
 	'mail transport mail()' => 'Настройки PHP',
 	'mail transport smtp' => 'SMTP сервер',
+	
 	'secure smtp connection no' => 'Нет',
 	'secure smtp connection ssl' => 'Использовать SSL',
 	'secure smtp connection tls' => 'Использовать TLS',
+	
 	'file storage file system' => 'Файловая система',
 	'file storage mysql' => 'База данных (MySQL)',
+	
+  // Categories
 	'config category name general' => 'Главное',
-	'config category desc general' => 'Основные настройки OpenGoo',
+	'config category desc general' => 'Основные настройки',
 	'config category name mailing' => 'Почта',
-	'config category desc mailing' => 'Эти настройки определяют, как OpenGoo будет посылать почтовые сообщения. Вы можете использовать настройки, указанные в вашем файле php.ini или установить любой другой SMTP сервер',
+	'config category desc mailing' => 'Эти настройки определяют, как будут отправляться почтовые сообщения. Вы можете использовать настройки, указанные в вашем файле php.ini или установить любой другой SMTP сервер',
 	'config category name modules' => 'Модули',
 	'config category desc modules' => 'Используйте данные настройки для включения и отключения модулей. Отключение модуля только скрывает его графически, также права пользователей на создание/редактирование объектов остаются неизменными.',
+	'config category name passwords' => 'Пароли',
+	'config category desc passwords' => 'Используйте данные настройки для управления параметрами паролей.',
+	
+   // Validate Password
+  'autentify password title'=> 'Проверка пароля',
+  'autentify password desc'=> 'Для входа в панель управления, введите Ваш пароль.',
+  
+  // Options
+  // General
 	'config option name site_name' => 'Название сайта',
 	'config option desc site_name' => 'Это значение будет показано, как название сайта на странице с панелью инструментов',
 	'config option name file_storage_adapter' => 'Файловое хранилище',
@@ -24,9 +51,21 @@
 	'config option name default_project_folders' => 'Папки по умолчанию',
 	'config option desc default_project_folders' => 'Папки, создаваемые при запуске нового проекта . По одному названию на каждой строке. Повторяющиеся и пустые строки будут проигнорированы',
 	'config option name theme' => 'Тема',
-	'config option desc theme' => 'Используя темы, Вы можете изменить внешний вид OpenGoo',
+	'config option desc theme' => 'Используя темы, Вы можете изменить внешний вид',
 	'config option name days_on_trash' => 'Время хранения в корзине',
 	'config option desc days_on_trash' => 'Сколько дней будут храниться объекты, помещенные в корзину, до автоматического удаления. Если указано значение 0, объекты не будут удаляться.',
+	'config option name checkout_notification_dialog' => 'Использовать уведомления в диалоге документов',
+   'config option desc checkout_notification_dialog' => 'Если включено, то пользователю при загрузке файла будет предложено выбрать редактировать или открыть только для чтения',
+  'config option name time_format_use_24' => 'Использовать 24-часовой формат',
+  'config option desc time_format_use_24' => 'Если установлено, будет использоваться 24-часовой формат вместо 12-часового формата',
+  'config option name file_revision_comments_required' => 'Измененному файлу требуется комментарий ',
+  'config option desc file_revision_comments_required' => 'Если установлено, добавив в новый файл изменения необходимо предоставить пользователям новый комментарий для каждого изменения.',
+ 	'config option name show_feed_links' => 'Показать каналы связи',
+  'config option desc show_feed_links' => 'Это позволяет показывать ссылки на RSS-каналы или ICAL для зарегистрированных пользователей в рамках всей системы, так что он может подписаться на них. Внимание: не рекомендуется.',	
+
+  'config option name ask_administration_autentification' => 'Проверка администратора',
+  'config option desc ask_administration_autentification' => 'Требовать ввод пароля для входя в панель управления',
+ 
 	'config option name enable_notes_module' => 'Включить модуль сообщений',
 	'config option name enable_email_module' => 'Включить модуль почты',
 	'config option name enable_contacts_module' => 'Включить модуль контактов',
@@ -36,32 +75,71 @@
 	'config option name enable_weblinks_module' => 'Включить модуль web-ссылок',
 	'config option name enable_time_module' => 'Включить модуль учета времени',
 	'config option name enable_reporting_module' => 'Включить модуль отчетов',
+	
 	'config option name upgrade_check_enabled' => 'Проверять наличие новой версии ',
-	'config option desc upgrade_check_enabled' => 'Ежедневно запрашивать информацию о наличии новой версии OpenGoo',
+	'config option desc upgrade_check_enabled' => 'Ежедневно запрашивать информацию о наличии новой версии ',
 	'config option name work_day_start_time' => 'Начало рабочего дня',
 	'config option desc work_day_start_time' => 'Указывает время начала рабочего дня',
+	
 	'config option name use_minified_resources' => 'Использовать мало ресурсов',
-	'config option desc use_minified_resources' => 'Использует сжатые файлы Javascript и CSS для улучшения производительности. Вам потребуется пересжимать файлы JS и CSS, если вы вручную изменяли их, используя public/tools.',
+	'config option desc use_minified_resources' => 'Использовать сжатые файлы Javascript и CSS для улучшения производительности. Вам потребуется пересжать файлы JS и CSS, если вы вручную изменяли их, используя public/tools.',
+	
+  	'config option name currency_code' => 'Валюта',
+  	'config option desc currency_code' => 'Символ валюты',	
+	
+  // Mailing
 	'config option name exchange_compatible' => 'Режим совместимости с Microsoft Exchange',
 	'config option desc exchange_compatible' => 'Если вы используете Microsoft Exchange Server установите эту опцию для стабильной работы почтовой службы.',
 	'config option name mail_transport' => 'Доставка почты',
 	'config option desc mail_transport' => 'Вы можете использовать настройки PHP, установленные по умолчанию или указать SMTP сервер',
 	'config option name smtp_server' => 'SMTP сервер',
+  	'config option name smtp_address' => 'SMTP адрес отправителя',
+  	'config option desc smtp_address' => 'Опция. Некоторые сервера требуют, чтобы был указан адрес электронной почты для отправки с этого сервера. Оставьте пустым если будет использоваться почтовые адрес пользователя.',
+ 
 	'config option name smtp_port' => 'SMTP порт',
 	'config option name smtp_authenticate' => 'Использовать SMTP аутентификацию',
 	'config option name smtp_username' => 'SMTP логин',
 	'config option name smtp_password' => 'SMTP пароль',
 	'config option name smtp_secure_connection' => 'Использовать безопасное SMTP соединение',
+	'config option name user_email_fetch_count' => 'Установить лимит получения',
+  	'config option desc user_email_fetch_count' => 'Устанавливайте во избежание таймаута при получении большого количество писем (0 нет лимита).',	
+
+  // Passwords
+  	'config option name min_password_length' => 'Минимальная длинна пароля',
+  	'config option desc min_password_length' => 'Минимальное количество символов для пароля',
+  	'config option name password_numbers' => 'Цифр в пароле',
+  	'config option desc password_numbers' => 'Количество цифр необходимых для пароля',
+  	'config option name password_uppercase_characters' => 'Заглавных символов в пароле',
+  	'config option desc password_uppercase_characters' => 'Количество необходимых заглавных символов в пароле',
+  	'config option name password_metacharacters' => 'Метасимволы в пароле',
+  	'config option desc password_metacharacters' => 'Количество метасимволов необходимых в пароле (пример: ., $, *)',
+  	'config option name password_expiration' => 'Срок действия пароля (дней)',
+  	'config option desc password_expiration' => 'Количество дней действия пароля (0 - отключает эту опцию)',
+  	'config option name password_expiration_notification' => 'Уведомлять об истечении срока действия пароля (за сколько дней)',
+  	'config option desc password_expiration_notification' => 'Количество дней за которое начнется уведомление об истечении срока действия пароля (0 - отключает данную опцию)',
+  	'config option name account_block' => 'Блокировка в связи с истечением срока действия пароля',
+  	'config option desc account_block' => 'Блокировка учетной записи пользователя, т.к. срок действия пароля истек (требуется администратор)',
+	'config option name new_password_char_difference' => 'Проверять новый пароль на несовпадение со старыми',
+  	'config option desc new_password_char_difference' => 'Проверить отличие нового пароля от используемых ранее (минимум должно быть изменено 3 символа)',
+    'config option name validate_password_history' => 'Проверять старые пароли',
+  	'config option desc validate_password_history' => 'Проверить, что новый пароль не соответствует ни одному из 10 старых паролей пользователя',
+  	'config option name checkout_for_editing_online' => 'Автоматическая блокировка при редактировании документов',
+  	'config option desc checkout_for_editing_online' => 'Когда пользователь редактирует документ он блокируется, чтобы никто другой не смог изменить его в это же время',
+	
 	'can edit company data' => 'Редактирование информации о компании',
 	'can manage security' => 'Управление безопасностью',
 	'can manage workspaces' => 'Управление проектами',
 	'can manage configuration' => 'Настройка конфигурации',
 	'can manage contacts' => 'Управление контактами',
+	'can manage reports' => 'Управление отчетами',	
 	'group users' => 'Группы пользователей',
+	
 	'user ws config category name dashboard' => 'Настройки панели ',
 	'user ws config category name task panel' => 'Опции задач',
 	'user ws config category name general' => 'Главное',
-	'user ws config option name show pending tasks widget' => 'Показывать предстоящую задачу',
+	'user ws config category name calendar panel' => 'Настройки календаря',
+  'user ws config category name mails panel' => 'Настройки почты',
+  'user ws config option name show pending tasks widget' => 'Показывать предстоящую задачу',
 	'user ws config option name pending tasks widget assigned to filter' => 'Показывать задачу, присвоенную',
 	'user ws config option name show late tasks and milestones widget' => 'Показывать последние задачи и этапы',
 	'user ws config option name show messages widget' => 'Показывать сообщения',
@@ -80,22 +158,38 @@
 	'user ws config option desc time_format_use_24' => 'При включении, время будет отображаться в формате \'чч:мм\', с 00:00 до 23:59, при отключенном состоянии - используется сокращение AM или PM.',
 	'user ws config option name work_day_start_time' => 'Время начала рабочего дня',
 	'user ws config option desc work_day_start_time' => 'Определяет время начала рабочего дня',
+	'user ws config option name show dashboard info widget' => 'Показывать виджет с описание проекта',
+
 	'user ws config option name my tasks is default view' => 'Задачи, присвоенные мне',
 	'user ws config option desc my tasks is default view' => 'Если выбрано - отображаются только назначенные вам задачи, иначе по умолчанию будут выводиться все задачи',
 	'user ws config option name show tasks in progress widget' => 'Показывать  состояние \'Задачи в процессе\'',
 	'user ws config option name can notify from quick add' => 'Уведомление при быстром добавлении',
 	'user ws config option desc can notify from quick add' => 'Пометить, чтобы после быстрого добавления задачи уведомлять пользователей, которым она присвоена',
-	'backup process desc' => 'Резервная копия сохраняет текущее состояние всего приложения в сжатую папку. Эту опцию можно использовать, чтобы сохранить всю установку OpenGoo. <br> На создание резерва базы данных и файловой системы может потребоваться больше, чем пара секунд, поэтому процесс разделен на три этапа: <br>1.- Запуск, <br>2.- Загрузка резерва. <br> 3.- Также, резервную копию можно вручную удалить и она станет недоступна. <br> ',
-	'start backup' => 'Запустить создание резервной копии',
-	'start backup desc' => 'Запуск процесса создания резервной копии предполагает удаление предыдущих копий и создание новой.',
-	'download backup' => 'Скачать резервную копию',
-	'download backup desc' => 'Чтобы загрузить резервную копию, нужно сначала ее создать.',
-	'delete backup' => 'Удалить резервную копию',
-	'delete backup desc' => 'Удаляет последнюю резервную копию. Настоятельно рекомендуется удалить резервную копию после ее загрузки.',
-	'backup' => 'Резервное копирование',
-	'backup menu' => 'Меню резервного копирования',
-	'last backup' => 'Последняя резервная копия создана: ',
-	'no backups' => 'Резервные копии отсутствуют',
+	'user ws config option name show_tasks_context_help' => 'Показывать подсказки',
+  	'user ws config option desc show_tasks_context_help' => 'Если включено, то показывает подсказки во время работы',
+ 	'user ws config option name start_monday' => 'Начало недели в понедельник',
+	'user ws config option desc start_monday' => 'Календарная неделя будет начинаться с понедельника.',
+  	'user ws config option name show_week_numbers' => 'Показывать номер недели',
+	'user ws config option desc show_week_numbers' => 'Показывает номера недель в календаре.',
+  
+  	'user ws config option name date_format' => 'Формат даты',
+  	'user ws config option desc date_format' => 'Шаблоны формата даты.',
+  	'user ws config option name descriptive_date_format' => 'Описание формата даты',
+  	'user ws config option desc descriptive_date_format' => 'Шаблоны описывающие формат даты.',
+
+  	'user ws config option name show_context_help' => 'Показывать контекстные подсказки',
+  	'user ws config option desc show_context_help' => 'Если включено, то показывает подсказки во время работы',
+  'user ws config option name view deleted accounts emails' => 'Показывать сообщения удаленных аккаунтов',
+  'user ws config option desc view deleted accounts emails' => 'Позволяет Вам просматривать сообщения удаленных аккаунтов (если сообщения не были удалены при удалении аккаунта)',
+	'user ws config option name block_email_images' => 'Не показывать изображения в почте',
+	'user ws config option desc block_email_images' => 'Отключает просмотр изображений в теле сообещния.',
+	'user ws config option name draft_autosave_timeout' => 'Интервал автосохранения в черновиках',
+	'user ws config option desc draft_autosave_timeout' => 'Автосохранение в черновиках, через указанное количество секунд  (0 не сохранять)',
+   	
+	'show context help always' => 'Всегда',
+	'show context help never' => 'Никогда',
+	'show context help until close' => 'Закрывать вручную',	
+	
 	'user ws config option name always show unread mail in dashboard' => 'Всегда показывать непрочитанную почту на панели инструментов',
 	'user ws config option desc always show unread mail in dashboard' => 'Когда выбрано "Нет", будут показаны почтовые сообщения из активного проекта',
 	'workspace emails' => 'Почтовые сообщения проекта',
@@ -108,13 +202,15 @@
 	'user ws config option name task panel status' => 'Статус',
 	'user ws config option name task panel filter' => 'Фильтровать по',
 	'user ws config option name task panel filter value' => 'Маска фильтра',
+	
 	'templates' => 'Шаблоны',
 	'add template' => 'Добавить шаблон',
 	'confirm delete template' => 'Вы действительно хотите удалить этот шаблон?',
 	'no templates' => 'Нет шаблонов',
 	'template name required' => 'Требуется имя шаблона',
-	'can manage templates' => 'Можно управлять шаблонами',
-	'new template' => 'Новый шаблон',
+	'can manage templates' => 'Управление шаблонами',
+	'can manage time' => 'Управление временем',
+  'new template' => 'Новый шаблон',
 	'edit template' => 'Редактировать шаблон',
 	'template dnx' => 'Шаблон не найден',
 	'success edit template' => 'Шаблон успешно изменен',
@@ -131,9 +227,11 @@
 	'success add object to template' => 'Объект успешно добавлен в шаблон',
 	'object type not supported' => 'Данный тип объекта не поддерживается для шаблонов',
 	'assign template to workspace' => 'Назначить шаблон для рабочей области',
+	'parameters' => 'Параметры',
+
 	'cron events' => 'Планировщик',
 	'about cron events' => 'Информация о планировщике...',
-	'cron events info' => 'Планировщик позволяет выполнять задачи с заданным периодом, без вашего входа в систему. Для включения планировщика OpenGoo вам нужно настроить периодичный запуск файла "cron.php" системным планировщиком (Cron). Периодичность выполнения планировочных задач напрямую зависит от настроек системного планировщика Cron. Например, настроив запуск системного планировщика на каждые пять минут, и указав проверку обновлений системы для планировщика OpenGoo каждую минуту, проверка будет проходить только по истечении пяти минут . Для получения информации о настройке сис. планировщика Cron обратитесь к вашему системному администратору или к тех. поддержке вашей хостинг компании.',
+	'cron events info' => 'Планировщик позволяет выполнять задачи с заданным периодом, без вашего входа в систему. Для включения планировщика вам нужно настроить периодичный запуск файла "cron.php" системным планировщиком (Cron). Периодичность выполнения планировочных задач напрямую зависит от настроек системного планировщика Cron. Например, настроив запуск системного планировщика на каждые пять минут, и указав проверку обновлений системы для планировщика каждую минуту, проверка будет проходить только по истечении пяти минут . Для получения информации о настройке сис. планировщика Cron обратитесь к вашему системному администратору или к тех. поддержке вашей хостинг компании.',
 	'cron event name check_mail' => 'Проверка почты',
 	'cron event desc check_mail' => 'Проверяет наличие новой почты во всех почтовых аккаунтах системы.',
 	'cron event name purge_trash' => 'Очистка корзины',
@@ -141,17 +239,42 @@
 	'cron event name send_reminders' => 'Высылать напоминания',
 	'cron event desc send_reminders' => 'Высылает напоминания на e-mail',
 	'cron event name check_upgrade' => 'Проверка обновлений',
-	'cron event desc check_upgrade' => 'Проверяет наличие новой версии OpenGoo.',
-	'cron event name create_backup' => 'Создание резервной копии',
-	'cron event desc create_backup' => 'Создает резервную копию данных, которую можно скачать из секции \'Резервное копирования\' раздела \'Администрирование\'.',
-	'next execution' => 'Период',
+	'cron event desc check_upgrade' => 'Проверяет наличие новой версии.',
+  'cron event name backup' => 'Резервное копирование',
+  'cron event desc backup' => 'Если используется это событие, то система будет автоматически делать резервное копирование. Архивы хранятся в ZIP-файлах в папке \'tmp/backup\'.',
+ 	'cron event name create_backup' => 'Создание резервной копии',
+	'cron event desc create_backup' => 'Создает резервную копию данных, которую можно скачать из секции \'Резервное копирование\' раздела \'Администрирование\'.',
+  	'cron event name send_notifications_through_cron' => 'Отправить уведомление через планировщик (Cron)',
+  	'cron event desc send_notifications_through_cron' => 'Используйте для уведомлений через планировщик (Cron).',
+ 	'next execution' => 'Следующий запуск',
 	'delay between executions' => 'Задержка между выполнением',
 	'enabled' => 'Включен',
-	'no cron events to display' => 'Нет планировочных заданий для отображения',
-	'success update cron events' => 'Планировочные задания обновлены',
+	'no cron events to display' => 'Нет запланированных событий/заданий для отображения',
+	'success update cron events' => 'Запланировочные события/задания обновлены',
+	
 	'manual upgrade' => 'Ручное обновление',
 	'manual upgrade desc' => 'Для ручного обновления вам нужно скачать новую версию OpenGoo, извлечь ее на место старой установки и перейти на страницу обновления <a href="public/upgrade">\'public/upgrade\'</a>  для запуска процесса обновления..',
 	'automatic upgrade' => 'Автоматическое обновление',
-	'automatic upgrade desc' => 'Автоматическое обновление позволяет системе самой скачать и распаковать файлы, затем запустить процесс обновления. Web-серверу требуются права на запись во все каталоги системы OpenGoo.',
+	'automatic upgrade desc' => 'Автоматическое обновление позволяет системе самой скачать и распаковать файлы, затем запустить процесс обновления. Web-серверу требуются права на запись во все каталоги системы',
 	'start automatic upgrade' => 'Начать автоматическое обновление',
+	
+  	'select object type' => 'Выбор типа объекта',
+  	'select one' => 'Выберите...',
+  	'email type' => 'Email',
+  	'custom properties updated' => 'Дополнительные параметры обновлены',
+  	'user ws config option name noOfTasks' => 'Установить число задач по умолчанию',	
+
+
+  	'user ws config option name amount_objects_to_show' => 'Количество отображаемых связанных объектов',
+  	'user ws config option desc amount_objects_to_show' => 'Устанавливает количество отображаемых связанных объектов в подробном просмотре объектов',
+   	'user ws config option name show_two_weeks_calendar' => 'Показывать виджет календаря для двух недель',
+  	'user ws config option desc show_two_weeks_calendar' => 'Устанавливает виджет календаря с двумя неделями',
+	'user ws config option name attach_docs_content' => 'Припреплять файлы к содержимому',
+	'user ws config option desc attach_docs_content' => 'Если этот параметр установлен "Да", то файлы будут прикрепляться к содержимому как обычное вложение к письму, иначе будет отправлена ссылка на файл.',
+  	'edit default user preferences' => 'Редактировать настройки пользователя по умолчанию',
+  	'default user preferences' => 'Настройки пользователя по умолчанию',
+  	'default user preferences desc' => 'Устанавливает настроики пользователя по умолчанию. Как при первом входе в системы.',
+
+'user ws config option name show getting started widget' =>'Показывать виджет начала работы с ситемой',  
+
 ); ?>

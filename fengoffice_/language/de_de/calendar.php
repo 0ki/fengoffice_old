@@ -138,7 +138,7 @@
 	'copy this url in your calendar client software' => 'Kopiere diese URL in deine Kalender-Software, um aus diesem Kalender Ereignisse zu importieren',
 	'import events from third party software' => 'Import Ereignisse aus Software von Drittanbietern',
 	'subws' => 'Sub-Ab.',
-	'check to include sub ws' => 'Überprüfe dies um Sub-Arbeitsbereiche in der Url einzuschließen',
+	'check to include sub ws' => 'Überprüfe dies um Sub-Arbeitsbereiche in der URL einzuschließen',
 	'week short' => 'Woche',
 	'week number x' => 'Woche {0}',
 	'accept or reject invitation help, click on one of the links below' => 'Zum Annehmen oder Ablehnen der Einladung klicke auf einen der Links unten',

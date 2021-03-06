@@ -6,35 +6,36 @@
 <?php echo lang('welcome to new account info', '<a target="_blank" href="'.ROOT_URL.'">'. ROOT_URL . '</a>') ?><br/><br/>
 
 <?php if(logged_user()->isAccountOwner()){
-		$step++;
-		if(owner_company()->isInfoUpdated()) { ?>
-  <p><b><?php echo '<a class="internalLink dashboard-link" href="'. get_url('company', 'edit_client', array('id' => owner_company()->getId())) .'">' . lang('new account step1 owner'). '</a>'?></b><img src="<?php echo image_url('16x16/complete.png');?>"/></p>
-  <?php echo lang('new account step1 owner info')?><br/><br/>
-<?php 	} else { ?>
-  <p><b><?php echo '<a class="internalLink dashboard-link" href="'. get_url('company', 'edit_client', array('id' => owner_company()->getId())) .'">' . lang('new account step1 owner'). '</a>'?></b></p>
-  <?php echo lang('new account step1 owner info')?><br/><br/>
-<?php } // if 
-}?>
-
-<?php 
-	if(logged_user()->isInfoUpdated()) { ?>
-  <p><b><?php echo '<a class="internalLink dashboard-link" href="'.get_url('account','index').'">'. lang('new account step update account', $step).'</a>'?></b><img src="<?php echo image_url('16x16/complete.png');?>"/></p>
-  <?php echo lang('new account step update account info') ?><br/><br/>
-<?php } else { ?>
-  <b><?php echo '<a class="internalLink dashboard-link" href="'.get_url('account','index').'">'. lang('new account step update account', $step).'</a>' ?></b><br/>
-  <?php echo lang('new account step update account info') ?><br/><br/>
-<?php } // if
-	$step++;
-?>
-
-<?php if (count(Projects::count('`created_by_id` = ' . logged_user()->getId())) > 0) { ?>
-  <p><b><?php echo '<a class="internalLin dashboard-link" href="' . get_url('project', 'add') . '">' . lang('new account step start workspace', $step) . '</a>' ?></b><img src="<?php echo image_url('16x16/complete.png');?>"/></p>
-  <?php echo lang('new account step start workspace info', '<img src="'.image_url('16x16/add.png').'" />', logged_user()->getPersonalProject()->getName()) ?><br/><br/>
-<?php } else { ?>
-  <b><?php echo '<a class="internalLink dashboard-link" href="' . get_url('project', 'add') . '">' . lang('new account step start workspace', $step) . '</a>' ?></b><br/>
-  <?php echo lang('new account step start workspace info', '<img src="'.image_url('16x16/add.png').'" />', logged_user()->getPersonalProject()->getName()) ?><br/><br/>
+		$step++; ?>
+  <p>
+  	<b><?php echo '<a class="internalLink dashboard-link" href="'. get_url('company', 'edit_client', array('id' => owner_company()->getId())) .'">' . lang('new account step1 owner'). '</a>'?></b>
+  	<?php if(owner_company()->isInfoUpdated()) { ?>
+  	<img src="<?php echo image_url('16x16/complete.png');?>"/>
+  	<?php } ?>
+  </p>
+  <?php echo lang('new account step1 owner info')?><br/><br/> 
 <?php } ?>
+
+
+  <p>
+  	<b><?php echo '<a class="internalLink dashboard-link" href="'.get_url('account','index').'">'. lang('new account step update account', $step).'</a>'?></b>
+  	<?php if(logged_user()->isInfoUpdated()) { ?>
+  	<img src="<?php echo image_url('16x16/complete.png');?>"/>
+  	<?php } ?>
+  </p>
+  <?php echo lang('new account step update account info') ?><br/><br/>
+<?php $step++; ?>
+
+
+  <p>
+  	<b><?php echo '<a class="internalLin dashboard-link" href="' . get_url('project', 'add') . '">' . lang('new account step start workspace', $step) . '</a>' ?></b>
+  	<?php if (count(Projects::count('`created_by_id` = ' . logged_user()->getId())) > 0) { ?>
+  	<img src="<?php echo image_url('16x16/complete.png');?>"/>
+  	<?php } ?>
+  </p>
+  <?php echo lang('new account step start workspace info', '<img src="'.image_url('16x16/add.png').'" />', logged_user()->getPersonalProject()->getName()) ?><br/><br/>
 <?php $step++ ?>  
+
 
 <b><?php echo lang('new account step actions',$step) ?></b>
 	<?php 

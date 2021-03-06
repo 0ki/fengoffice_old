@@ -1,4 +1,13 @@
-<?php return array(
+<?php
+/* 
+Translated into Russian for OpenGoo
+Last update:  see readme_rus.txt
+
+http://code.google.com/p/opengooru/
+   
+*/
+
+ return array(
 	'country us' => 'США',
 	'country ca' => 'Канада',
 	'country af' => 'Афганистан',
@@ -60,7 +69,7 @@
 	'country dj' => 'Джибути',
 	'country dm' => 'Доминика',
 	'country do' => 'Доминиканская республика',
-	'country tl' => 'Восточный Тимор',
+	'country tp' => 'Восточный Тимор',
 	'country ec' => 'Эквадор',
 	'country eg' => 'Египет',
 	'country sv' => 'Сальвадор',
@@ -235,7 +244,7 @@
 	'country wf' => 'Острова Уоллис и Футуна',
 	'country eh' => 'Западная Сахара',
 	'country ye' => 'Йемен',
-	
+	'country zr' => 'Заир',
 	'country zm' => 'Замбия',
 	'country zw' => 'Зимбабве',
 ); ?>

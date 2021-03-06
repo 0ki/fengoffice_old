@@ -19,7 +19,7 @@
 			} // foreach
 		?>
 				<div class="downloadLinks"><strong><?php echo lang('manual upgrade') ?>:</strong> <?php echo implode(' | ', $download_links) ?><div class="desc"><?php echo lang("manual upgrade desc") ?></div></div>
-				<div class="downloadLinks"><strong><?php echo lang('automatic upgrade') ?>:</strong> <a href="<?php echo 'public/upgrade/auto.php?url=' . urlencode($version->getDownloadLinkByFormat("zip")->getUrl()) . '&version=' . urlencode($version->getVersionNumber()) ?>"><?php echo lang("start automatic upgrade") ?></a><div class="desc"><?php echo lang("automatic upgrade desc") ?></div></div>
+				<div class="downloadLinks"><strong><?php echo lang('automatic upgrade') ?>:</strong> <a target="_self" href="<?php echo 'public/upgrade/auto.php?url=' . urlencode($version->getDownloadLinkByFormat("zip")->getUrl()) . '&version=' . urlencode($version->getVersionNumber()) ?>"><?php echo lang("start automatic upgrade") ?></a><div class="desc"><?php echo lang("automatic upgrade desc") ?></div></div>
 			</div>
 <?php } // foreach ?>
 	</div>

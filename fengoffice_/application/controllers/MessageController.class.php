@@ -239,6 +239,8 @@ class MessageController extends ApplicationController {
 						"userId" => $msg->getCreatedById(),
 						"userName" => $msg->getCreatedByDisplayName(),
 						"tags" => project_object_tags($msg),
+						"updaterId" => $msg->getUpdatedById() ? $msg->getUpdatedById() : $msg->getCreatedById(),
+						"updaterName" => $msg->getUpdatedById() ? $msg->getUpdatedByDisplayName() : $msg->getCreatedByDisplayName(),
 					);
     			}
 			}

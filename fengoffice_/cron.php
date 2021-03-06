@@ -8,7 +8,7 @@ include APPLICATION_PATH . "/cron_functions.php";
 header("Content-type: text/plain");
 
 session_commit(); // we don't need sessions
-set_time_limit(0); // don't limit execution of cron, if possible
+@set_time_limit(0); // don't limit execution of cron, if possible
 
 $events = CronEvents::getDueEvents();
 

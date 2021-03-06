@@ -94,9 +94,6 @@
 
   	'welcome to new account' => '{0}, Welcome to your new account',
     'welcome to new account info' => 'From now on you can access your account on {0} ( We recommend you bookmark this link ).<br/> Start using Feng Office by following these steps:',
-    
-  	'new account step1' => 'Step 1: Create your own company profile ',
-  	'new account step1 info' => 'To enter your company data and the members you work with click on the Administration link located at the top right of the page.',
   
   	'new account step1 owner' => 'Step 1: Create your own company profile',
     'new account step1 owner info' => 'To enter your company data and the members you work with click on the Administration link located at the top right of the page.',
@@ -120,10 +117,9 @@
   	'new account step profile info' => 'Update your <a class="internalLink" href="{0}">user profile</a>',
   	'new account step preferences' => 'Step {0}: Update user preferences',
   	'new account step preferences info' => 'Update your <a class="internalLink" href="{0}">user preferences</a> such as general preferences, dashboard options and task options',
-  	'new account step actions' => 'Step {0}: Actions',
   	'getting started' => 'Getting Started',
   	
-  	'new account step actions' => 'Step {0}: Assume the complete management of your online office',
+  	'new account step actions' => 'Step {0}: Start managing your online office',
   	'new account step actions info' => 'Create documents and tasks in your company workspaces to share with the company users.<br>
 										Click on the workspace you want to work with and <b>Add a new:</b><br/>',
   

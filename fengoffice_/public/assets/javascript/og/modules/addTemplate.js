@@ -148,13 +148,20 @@ og.addTemplateObjectProperty = function(obj_id, manager, count, property, value)
 				var propSelection = '';
 				if(data.properties.length > 0){
 					var select = document.getElementById('objectProperties[' + manager + ':' + obj_id + '][' + total + ']');
-					propSelection += '<option value="">Select one</option>';
+					select.innerHTML = "";
+					var option = document.createElement('option');
+					option.value = "";
+					option.innerHTML = '-- ' + lang('select') + ' --';
+					select.appendChild(option);
 					for(var j=0; j < data.properties.length; j++){
 						var prop = data.properties[j];
-						propSelection += '<option class="' + prop.type + '" value="' + prop.id + '" ' + (prop.id == property ? "selected" : "") + '>' + prop.name + '</option>';
+						option = document.createElement('option');
+						option.className = prop.type;
+						option.value = prop.id;
+						if (prop.id == property) option.selected = "selected";
+						option.innerHTML = prop.name;
+						select.appendChild(option);
 					}
-					propSelection += '</select>';
-					select.innerHTML = propSelection;
 					select.style.display = '';
 					og.objectPropertyChanged(obj_id, manager, total, value);
 				}

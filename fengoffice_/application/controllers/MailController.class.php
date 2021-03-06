@@ -626,7 +626,7 @@ class MailController extends ApplicationController {
 			if (isset($classification_data["att_".$c]) && $classification_data["att_".$c]) {
 				$att = $parsedEmail["Attachments"][$c];
 				$fName = iconv_mime_decode($att["FileName"], 0, "UTF-8");
-				$tempFileName = ROOT ."/tmp/saveatt/". logged_user()->getId()."x".$fName;
+				$tempFileName = ROOT ."/tmp/". logged_user()->getId()."x".$fName;
 				$fh = fopen($tempFileName, 'w') or die("Can't open file");
 				fwrite($fh, $att["Data"]);
 				fclose($fh);
@@ -742,7 +742,7 @@ class MailController extends ApplicationController {
 			{
 				$att = $parsedEmail["Attachments"][$c];
 				$fName = iconv_mime_decode($att["FileName"], 0, "UTF-8");
-				$tempFileName = ROOT ."/tmp/saveatt/". logged_user()->getId()."x".$fName;
+				$tempFileName = ROOT ."/tmp/". logged_user()->getId()."x".$fName;
 				$fh = fopen($tempFileName, 'w');
 				if (!$fh){
 					return false;
@@ -757,7 +757,7 @@ class MailController extends ApplicationController {
 
 
 	function checkmail() {
-		set_time_limit(0);
+		@set_time_limit(0);
 		$accounts = MailAccounts::getMailAccountsByUser(logged_user());
 
 		session_commit();

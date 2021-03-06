@@ -19,7 +19,7 @@ og.MessageManager = function() {
 				id: 'id',
 				fields: [
 					'object_id', 'type', 'title', 'text', 'date', 'is_today',
-					'wsIds', 'userId', 'userName', 'tags', 'workspaceColors', 'ix'
+					'wsIds', 'userId', 'userName', 'updaterId', 'updaterName', 'tags', 'workspaceColors', 'ix'
 				]
 			}),
 			remoteSort: true,
@@ -84,7 +84,7 @@ og.MessageManager = function() {
 		if (!value) {
 			return "";
 		}
-		var userString = String.format('<a href="#" onclick="og.openLink(\'{1}\')">{0}</a>', og.clean(r.data.userName), og.getUrl('user', 'card', {id: r.data.userId}));
+		var userString = String.format('<a href="#" onclick="og.openLink(\'{1}\')">{0}</a>', og.clean(r.data.updaterName), og.getUrl('user', 'card', {id: r.data.updaterId}));
 	
 		if (!r.data.is_today) {
 			return lang('last updated by on', userString, value);

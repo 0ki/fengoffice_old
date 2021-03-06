@@ -536,6 +536,7 @@ class MailContent extends BaseMailContent {
 				"dateUpdated" => $sentTimestamp,
 				"project" => $this->getWorkspacesNamesCSV(logged_user()->getWorkspacesQuery()),//$project,
 				"projectId" => $this->getWorkspacesIdsCSV(logged_user()->getWorkspacesQuery()),
+    			"wsIds" => $this->getWorkspacesIdsCSV(logged_user()->getWorkspacesQuery()),
     			"workspaceColors" => $this->getWorkspaceColorsCSV(logged_user()->getWorkspacesQuery()),
 				"url" => $this->getObjectUrl(),
 				"manager" => get_class($this->manager()),

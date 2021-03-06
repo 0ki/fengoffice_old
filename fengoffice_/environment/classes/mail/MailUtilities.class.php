@@ -190,7 +190,7 @@ class MailUtilities {
 				$mail->subscribeUser($user);
 			}
 			if ($state == 1 || $state == 5) {
-				$mail->setIsRead(1, logged_user()->getId());
+				$mail->setIsRead(1, $account->getUserId());
 			}
 			DB::commit();
 		} catch(Exception $e) {
@@ -373,6 +373,7 @@ class MailUtilities {
 		
 		// add attachments
  		if (is_array($attachments)) {
+ 			self::adjustBody($mailer, $type, $body);
  			$mailer->addPart($body, $type); // real body
          	foreach ($attachments as $att) {
  				$mailer->addAttachment($att["data"], $att["name"], $att["type"]);
@@ -383,6 +384,26 @@ class MailUtilities {
  		$ok = $mailer->send($to, $from, $subject, $body, $type);
 		$mailer->close();
 		return $ok;
+	}
+	
+	private function adjustBody($mailer, $type, &$body) {
+		// add <html> tag
+		if ($type == 'text/html' && stripos($body, '<html>') === FALSE) {
+			$pre = '<html>';
+			$post = '</html>';
+			if (stripos($body, '<body>') === FALSE) {
+				$pre .= '<body>';
+				$post = '</body>' . $post;
+			}
+			$body = $pre . $body . $post;
+		}
+		
+		// add text/plain alternative part
+		if ($type == 'text/html') {
+ 			$onlytext = preg_replace("/(<br[^>]*>)/i", "\n", $body);
+ 			$onlytext = trim(preg_replace("/(<[\/]?[a-z][a-z0-9\s]*[^>]*>)/i", "", $onlytext));
+ 			$mailer->addPart($onlytext, 'text/plain');
+ 		}
 	}
 
 	function parse_to($to) {

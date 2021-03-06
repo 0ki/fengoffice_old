@@ -139,14 +139,8 @@ class Tables {
 		
 }
 	
-?>
-
-<?php
-
 	$table= new Tables();
 	
 	$table->execute();
 
 ?>
-
-

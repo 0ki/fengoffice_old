@@ -17,7 +17,7 @@ body {
 </style>
 <p>This script allows you to compare translation files in some locale with translation files in english.
 If you are translating to a locale this script can help you detect what translation keys you have missed.</p>
-<p>You can use the <a href="<?php echo get_url('tool', 'translate') ?>">Translate OpenGoo</a> tool (if enabled) to add missing translations.</p>
+<p>You can use the <a href="<?php echo get_url('tool', 'translate') ?>">Translate OpenGoo</a> tool to add missing translations.</p>
 <p>Select a locale from the list below. The following locales have been detected on this installation:</p>
 <ul>  <?php
 foreach ($languages as $language) { ?>
@@ -36,13 +36,13 @@ if (isset($to)) { ?>
 		} else {
 			?><span class="present"><?php echo $file ?></span><?php echo "\n";
 			if (count($data) == 0) {
-				?>    - <span class="ok">File complete</span><?php echo "\n";
+				?>    <span class="ok">File complete</span><?php echo "\n";
 			} else {
 				foreach ($data as $k => $v) {
 					if (substr($file, -4) == '.php') {
-						?>    - '<?php echo $k ?>' => '<?php echo str_replace(array("'"), array("\\'"), clean($v)) . "',\n";
+						?>    '<?php echo $k ?>' => '<?php echo str_replace(array("'"), array("\\'"), clean($v)) . "',\n";
 					} else {
-						?>    - '<?php echo $k ?>' : '<?php echo str_replace(array("'", "\n"), array("\\'", "\\n"), clean($v)) . "',\n";
+						?>    '<?php echo $k ?>' : '<?php echo str_replace(array("'", "\n"), array("\\'", "\\n"), clean($v)) . "',\n";
 					}
 				}
 			}

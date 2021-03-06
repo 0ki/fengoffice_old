@@ -772,6 +772,7 @@ class EventController extends ApplicationController {
 		$actual_user_id = isset($_GET['user']) ? $_GET['user'] : logged_user()->getId();
 		$wspace_id = isset($_GET['ws_id']) ? $_GET['ws_id'] : 0;
 		$ws = Projects::findByCSVIds($wspace_id);
+		$evid = array_var($_GET, 'evid');
 		
 		$companies = Companies::findAll();
 		
@@ -781,9 +782,9 @@ class EventController extends ApplicationController {
 			if (is_array($users)) {
 				
 				foreach ($users as $k => $user) { // removing event creator from notification list
+					$keep = false;
 					foreach ($ws as $w) {
 						$proj_us = ProjectUsers::findById(array('project_id' => $w->getId(), 'user_id' => $user->getId()));
-						$keep = false;
 						if ($proj_us != null && $proj_us->getCanReadEvents()) {
 							$keep = true;
 						}
@@ -805,6 +806,7 @@ class EventController extends ApplicationController {
 							'id' => $user->getId(),
 							'name' => $user->getDisplayName(),
 							'avatar_url'=>$user->getAvatarUrl(),
+							'invited' => $evid == null ? 1 : (EventInvitations::findOne(array('conditions' => "`event_id` = $evid and `user_id` = ".$user->getId())) != null),
 							'mail' => $user->getEmail()
 						);			
 					}
@@ -1030,7 +1032,7 @@ class EventController extends ApplicationController {
  *   copyright            : (C) 2001 The phpBB Group
  *   email                : support@phpbb.com
  *
- *   $Id: EventController.class.php,v 1.94.2.5 2009/07/29 17:33:33 alvarotm01 Exp $
+ *   $Id: EventController.class.php,v 1.94.2.7 2009/08/05 22:26:44 idesoto Exp $
  *
  ***************************************************************************/
 

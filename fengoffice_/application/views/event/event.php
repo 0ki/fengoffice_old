@@ -596,6 +596,8 @@ og.drawInnerHtml = function(companies) {
 						htmlStr += '<input style="display:none;" type="checkbox" class="checkbox" name="event[invite_user_'+usr.id+']" id="<?php echo $genid ?>inviteUser'+usr.id+'" onclick="App.modules.addMessageForm.emailNotifyClickUser('+comp_id+','+usr.id+',\'<?php echo $genid ?>\',\'invite_companies\', \'invitation\')"></input>';
 						htmlStr += '<label style="overflow:hidden; background: transparent url('+usr.avatar_url+') no-repeat;" ><span class="link-ico ico-user" >'+og.clean(usr.name)+'</span> <br> <span style="color:#888888;font-size:90%;font-weight:normal;">'+ usr.mail+ ' </span></label>';
 						script += 'cos.company_' + comp_id + '.users.push({ id:'+usr.id+', checkbox_id : \'inviteUser' + usr.id + '\'});';
+						if (usr.invited)
+							script += 'og.checkUser(document.getElementById(\'div<?php echo $genid ?>inviteUser'+usr.id+'\'));'
 						htmlStr += '</div>';
 	
 					}
@@ -625,7 +627,7 @@ og.drawUserList = function(success, data) {
 
 og.redrawUserList = function(wsVal){
 	if (wsVal != og.eventInvitationsPrevWsVal) {
-		og.openLink(og.getUrl('event', 'allowed_users_view_events', {ws_id:wsVal, user:og.eventInvitationsUserFilter}), {callback:og.drawUserList});
+		og.openLink(og.getUrl('event', 'allowed_users_view_events', {ws_id:wsVal, user:og.eventInvitationsUserFilter, evid:<?php echo $event->isNew() ? 0 : $event->getId()?>}), {callback:og.drawUserList});
 		og.eventInvitationsPrevWsVal = wsVal;
 	}
 };

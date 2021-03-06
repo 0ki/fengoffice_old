@@ -571,6 +571,8 @@ function get_language_name($loc) {
 		'it_it' => 'Italiano',
 		'ja_jp' => '日本語',
 		'ko_kr' => '한국어',
+		'jp_ja' => '日本語',
+		'kr_ko' => '한국어',
 		'nl_nl' => 'Nederlands',
 		'pl_pl' => 'Polski',
 		'pt_br' => 'Português',

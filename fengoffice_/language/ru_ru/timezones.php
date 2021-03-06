@@ -1,4 +1,13 @@
-<?php return array(
+<?php
+/* 
+Translated into Russian for OpenGoo
+Last update:  see readme_rus.txt
+
+http://code.google.com/p/opengooru/
+   
+*/
+
+ return array(
 	'timezone gmt -12' => '(GMT-12:00) Эниветок, Кваджалейн',
 	'timezone gmt -11' => '(GMT-11:00) Самоа',
 	'timezone gmt -10' => '(GMT-10:00) Гавайи',

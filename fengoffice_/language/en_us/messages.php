@@ -617,6 +617,8 @@
   	'failed to assign contact due to permissions' => 'You don\'t have permissions to write contacts on these workspaces: {0}',
   
   	'weblink dnx' => 'Requested weblink doesn\'t exist.',
+  	'some objects could not be linked' => '{0} object(s) could not be linked due to permission restrictions',
+  	'user cannot link objects' => 'You don\'t have enough permissions to link objects to this object',
   	'ie browser outdated' => 'Your browser is not officially supported. For a better experience please upgrade your browser.',
   ); // array
 

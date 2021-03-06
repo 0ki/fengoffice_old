@@ -241,4 +241,6 @@
 	'default user preferences' => 'Preferências padrão do usuário',
 	'default user preferences desc' => 'Escolher os valores padrão de preferências do usuário. Estes valores aplicam-se quando o usuário não tenha ainda escolhido um valor para uma opção.',
 	'can manage time' => 'Permitido gerenciar tempo',
+	'config option name smtp_address' => 'Endereço SMTP',
+	'config option desc smtp_address' => 'Opcional. Alguns servidores exigem que você utilize um endereço de e-mail a partir do servidor para enviar e-mail. Deixar em branco para utilizar o endereço de e-mail do usuário.',
 ); ?>

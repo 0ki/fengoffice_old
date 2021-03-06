@@ -1,9 +1,21 @@
-<?php return array(
+<?php
+/* 
+Translated into Russian for OpenGoo
+Last update:  see readme_rus.txt
+
+http://code.google.com/p/opengooru/
+   
+*/
+
+ return array(
 	'new OpenGoo version available' => 'Доступна новая версия OpenGoo. <a class="internalLink" href="{0}">Подробнее...</a>.',
+
 	'my tasks' => 'Мои задачи',
 	'welcome back' => 'Добро пожаловать, <strong>{0}</strong>',
+	
 	'online users' => 'Пользователей в сети',
 	'online users desc' => 'Активные пользователи за последние 15 минут. ',
+	
 	'charts' => 'Диаграммы',
 	'contacts' => 'Контакты',
 	'dashboard' => 'Панель инструментов',
@@ -13,20 +25,26 @@
 	'documents' => 'Документы',
 	'my projects' => 'Мои проекты',
 	'my projects archive desc' => 'Список закрытых (архивных) проектов. Все действия с этими проектами заблокированы, но Вы можете их просматривать.',
+	
 	'company online' => 'Компания в сети',
+	
 	'enable javascript' => 'Чтобы использовать эту возможность, включите JavaScript в Вашем браузере',
+	
 	'user password generate' => 'Генерировать случайный пароль',
 	'user password specify' => 'Ввести пароль вручную',
 	'is administrator' => 'Администратор',
 	'is auto assign' => 'Привязывать автоматически к новым проектам?',
 	'auto assign' => 'Автоматическая привязка',
 	'administrator update profile notice' => 'Административные настройки (доступны только администраторам!)',
-	'project completed on by' => 'Завершил {1} {0}',
+	
+	'project completed on by' => 'Завершил {1} - {0}',
+	
 	'im service' => 'Сервис',
-	'primary im service' => 'Первичный IM',
-	'primary im description' => 'Все контакты IM, которые Вы введёте, будут перечислены на Вашей визитной странице. На других страницах будет показан только первичный контакт IM (как страница "Люди" в проекте).',
+	'primary im service' => 'Основной IM',
+	'primary im description' => 'Все контакты IM, которые Вы введёте, будут перечислены на Вашей визитной странице. На других страницах будет показан только основной контакт IM.',
 	'contact online' => 'Контакт в сети',
 	'contact offline' => 'Контакт не в сети',
+	
 	'avatar' => 'Аватар',
 	'current avatar' => 'Текущий аватар',
 	'current logo' => 'Текущий логотип',
@@ -34,47 +52,100 @@
 	'new logo' => 'Новый логотип',
 	'new avatar notice' => 'Обратите внимание, что текущий аватар будет заменён новым!',
 	'new logo notice' => 'Текущий логотип будет заменён новым!',
+	
 	'days late' => 'Через {0} дней',
 	'days left' => 'Осталось {0} дней',
+	
 	'user card of' => 'Карта пользователя из {0}',
 	'company card of' => 'Карта компании из {0}',
+
+  // Upgrade	
 	'upgrade is not available' => 'Обновления OpenGoo отсутствуют.',
 	'check for upgrade now' => 'Проверить сейчас',
+	
+  // Forgot password
 	'forgot password' => 'Забыли пароль',
 	'email me my password' => 'Выслать пароль',
+	
+  // Complete installation
 	'complete installation' => 'Завершить установку',
 	'complete installation desc' => 'Финальный этап установки, на котором Вы можете создать учётную запись администратора и ввести информацию о Вашей компании.',
+	
+  // Administration
 	'welcome to administration' => 'Добро пожаловать',
 	'welcome to administration info' => 'Добро пожаловать в панель управления. С её помощью Вы можете изменить данные о своей организации, её членах, клиентах и проектах.',
-	'send new account notification' => 'Послать уведомление по e-mail?',
+	
+	'send new account notification' => 'Отправить уведомление по e-mail?',
 	'send new account notification desc' => 'Если отмечено, пользователь получит e-mail сообщение, содержащее приветствие и параметры входа в систему.',
+	
+   // Tools
 	'administration tools' => 'Инструменты',
+	
 	'test mail recepient' => 'Тест получателя',
 	'test mail message' => 'Тест сообщения',
 	'test mail message subject' => 'Тест темы',
+	
 	'massmailer subject' => 'Тема',
 	'massmailer message' => 'Сообщение',
 	'massmailer recipients' => 'Получатели',
+	
+  // Dashboard
 	'welcome to new account' => 'Добро пожаловать в только что созданную Вами учётную запись!',
-	'welcome to new account info' => '{0}, добро пожаловать в Ваше новое рабочее пространство. С этого момента оно будет доступно по адресу {1} (сделайте закладку!). Очень скоро Вы сможете начать работать, осталось только сделать следующие простые шаги:',
+	'welcome to new account info' => 'Добро пожаловать в Ваше новое рабочее пространство. С этого момента оно будет доступно по адресу {0} (сделайте закладку!). Очень скоро Вы сможете начать работать, осталось только сделать следующие простые шаги:',
+
 	'new account step1' => 'Шаг 1: Информация о компании',
 	'new account step1 info' => '<a class="internalLink" href="{0}">Более подробная информация</a>, такая как номер телефона и факса, адрес, e-mail, сайт и т.д.',
-	'new account step2' => 'Шаг 2: Добавление сотрудников',
-	'new account step2 info' => 'Вы можете <a class="internalLink" href="{0}">создать учётные записи</a> для всех сотрудников (неограниченное кол-во). Каждый сотрудник получит данные в виде имени пользователя и пароля, под которыми он будет заходить в систему',
-	'new account step3' => 'Шаг 3: Добавление дочерней организации и её сотрудников',
-	'new account step3 info' => 'Теперь Вы можете <a class="internalLink" href="{0}">указать дочерние организации</a> (количество неограничено). Затем, Вы можете указать её сотрудников или оставить это действие для руководителей дочерней организации. Учётные записи сотрудников дочерней организации аналогичны записям Ваших сотрудников, за исключением того, что Вы можете изменять им права доступа  (указать их полномочия как в рамках проекта, так и для каждого участника)',
-	'new account step4' => 'Шаг 4: Новый проект',
-	'new account step4 info' => 'Начать <a class="internalLink" href="{0}">новый проект</a> очень легко: введите название проекта и его описание (необязательно) и подтвердите. Второе, что нужно сделать - это установить полномочия для участников и клиентов Вашего проекта.',
+  
+  	'new account step1 owner' => 'Шаг 1: Информация о компании',
+    'new account step1 owner info' => '<a class="internalLink" href="{0}">Более подробная информация</a>, такая как номер телефона и факса, адрес, e-mail, сайт и т.д.',	
+
+	'new account step update account' => 'Шаг {0}: Обновить Ваши персональные данные ',
+    'new account step update account info' => 'Обновить вашу личную информацию и изменить свой пароль, нажав на ссылку Учетная запись в верхней правой части страницы.',	
+
+	'new account step add members' => 'Шаг {0}: Добавить пользователей',
+    'new account step add members info' => 'Вы можете <a class="internalLink" href="{0}">создавать учетные записи пользователей</a> для всей вашей компании. Каждый пользователь получит свой логин и пароль, который они могут использовать для доступа к системе',	
+
+    'new account step start workspace' => 'Шаг {0}: Начальная информация: создание проекта',
+    'new account step start workspace info' => 'Это рабочее информационное пространство, где вы храните и организуете работу вашей компании. <br/>Пользователи могут быть разделены на проекты, подразделения компании или любого другого отдела по классификации используемой системы. <br/> Нажмите {0}, на левой панели для создания нового проекта. <br/> Система автоматически создает личный проект для каждого пользователя ({1}). Вся информация в этом проекте видна только ее владельцу по умолчанию.',
+  	'new account step configuration' => 'Шаг {0}: Конфигурирование/настройка',
+  	'new account step configuration info' => '<a class="internalLink" href="{0}">Управление</a> главными настройками, почтовые настройки, включение/отключение модулей и другие параметры.',	
+	
+  	'new account step profile' => 'Шаг {0}: Обновление профиля',
+  	'new account step profile info' => 'Информация о <a class="internalLink" href="{0}">пользователе</a>',
+	
+  	'new account step preferences' => 'Шаг {0}: Обновление настроек',
+  	'new account step preferences info' => 'Обновите <a class="internalLink" href="{0}">настройки пользователя</a>',	
+
+  	'new account step actions' => 'Шаг {0}: Начать управление вашим офисом',
+  	'new account step actions info' => 'Создавайте документы и задачи в проектах компании.<br>Щелкните на проекте с которым Вы хотите работать и <b>Добавить новый:</ B><br/>',
+
+	'getting started' => 'Начнем',	
+	
+//	'new account step2' => 'Шаг 2: Добавление сотрудников',
+//	'new account step2 info' => 'Вы можете <a class="internalLink" href="{0}">создать учётные записи</a> для всех сотрудников (неограниченное кол-во). Каждый сотрудник получит данные в виде имени пользователя и пароля, под которыми он будет заходить в систему',
+//	'new account step3' => 'Шаг 3: Добавление компании и её сотрудников',
+//	'new account step3 info' => 'Теперь Вы можете <a class="internalLink" href="{0}">добавить компании</a> (количество неограниченно). Затем, Вы можете указать её сотрудников или оставить это действие для руководителей компании. Учётные записи сотрудников компаний аналогичны записям Ваших сотрудников, за исключением того, что Вы можете изменять им права доступа  (указать их полномочия как в рамках проекта, так и для каждого участника)',
+//	'new account step4' => 'Шаг 4: Новый проект',
+//	'new account step4 info' => 'Начать <a class="internalLink" href="{0}">новый проект</a> очень легко: введите название проекта и его описание (необязательно) и подтвердите. Второе, что нужно сделать - это установить полномочия для участников и клиентов Вашего проекта.',
+
+  // Application log
 	'application log details column name' => 'Детали',
 	'application log project column name' => 'Проект',
 	'application log taken on column name' => 'Взято',
+	
+  // RSS
 	'rss feeds' => 'RSS-лента',
 	'recent activities feed' => 'Недавняя активность',
 	'recent project activities feed' => 'Последние активные события в проекте {0}',
-	'update company permissions hint' => 'Проверьте проект -  не забыли ли Вы назначить полномочия для доступа этой компании. Обратите внимание, что Вам необходимо также назначить полномочия тем членам организации, которые должны будут иметь доступ и обслуживать выбранные проекты (Вы можете сделать это на странице "Люди" в проекте или в профилях пользователей).',
+	
+   // Update company permissions
+	'update company permissions hint' => 'Проверьте проект -  не забыли ли Вы назначить полномочия для доступа этой компании. Обратите внимание, что Вам необходимо также назначить полномочия тем членам организации, которые должны будут иметь доступ и обслуживать выбранные проекты (Вы можете сделать это на странице "Группы" или в профилях пользователей).',
+	
 	'footer copy with homepage' => '© {0}  <a class="internalLink" href="{1}">{2}</a>. Все права защищены.',
 	'footer copy without homepage' => '© {0}  {1}. Все права защищены',
 	'footer powered' => 'Под управлением <a target="_blank" href="{0}">{1}</a>',
+
+  // Menu
 	'all documents' => 'Все документы',
 	'created by me' => 'Созданные мной',
 	'by project' => 'По проекту',
@@ -84,7 +155,10 @@
 	'current project' => 'Текущий проект',
 	'show hide menu' => 'Показать/скрыть',
 	'help' => 'Справка',
+	
 	'confirm leave page' => 'Если Вы закроете или перезагрузите страницу, Вы потеряете еще не переданные данные.',
+	
+  // Contacts
 	'add contact' => 'Добавить контакт',
 	'edit contact' => 'Редактировать контакт',
 	'update contact' => 'Изменить контакт',
@@ -115,7 +189,8 @@
 	'personal information' => 'Персональная информация',
 	'home information' => 'Домашняя  информация',
 	'other information' => 'Другая информация',
-	'email and instant messaging' => 'Электронная почта и служба мгновенных сообщений (IM)',
+	
+	'email and instant messaging' => 'E-mail и IM/ICQ',
 	'no contacts in project' => 'В этом проекте нет контактов',
 	'picture' => 'Аватар',
 	'current picture' => 'Текущее изображение',
@@ -123,6 +198,7 @@
 	'confirm delete current picture' => 'Вы уверены что хотите удалить текущее изображение?',
 	'new picture' => 'Новое изображение',
 	'new picture notice' => 'Старое изображение будет замещено новым!',
+	
 	'assign to project' => 'Привязать к проекту',
 	'role' => 'Статус',
 	'contact projects' => 'Проекты контакта',
@@ -132,6 +208,8 @@
 	'all contacts' => 'Все контакты',
 	'project contacts' => 'Контакты проекта {0}',
 	'select' => 'Выбрать',
+	
+  // Contact import
 	'import contacts from csv' => 'Импорт контактов из .csv файла',
 	'import' => 'Импорт',
 	'file not exists' => 'Файл не существует',
@@ -147,16 +225,22 @@
 	'contacts import fail help' => 'Процесс импорта потерпел неудачу из-за существующих данных в базе данных, таких как имя или адрес электронной почты и т.д.',
 	'import fail reason' => 'Причина ошибки',
 	'select a file in order to load its data' => 'Выберите  csv файл для импорта его содержимого',
+	
+  // Contact export
 	'export contacts to csv' => 'Экспорт контактов в .csv файл',
 	'export' => 'Экспорт',
 	'fields to export' => 'Данные для экспорта',
 	'success export contacts' => 'Экспорт контактов успешно завершен',
+	
+  // Company import/export
 	'import companies from csv' => 'Импорт контактов из .csv файла',
 	'company fields' => 'Данные компании',
 	'companies succesfully imported' => 'Импорт компаний успешно завершен',
 	'companies import fail' => 'При импорте компаний произошла ошибка',
 	'export companies to csv' => 'Экспорт контактов в .csv файл',
 	'success export companies' => 'Экспорт контактов успешно завершен',
+	
+  // Webpages
 	'add webpage' => 'Добавить ссылку на веб страницу',
 	'delete webpage' => 'Удалить ссылку на веб страницу',
 	'webpages' => 'Ссылки',
@@ -168,10 +252,12 @@
 	'webpage' => 'Ссылка',
 	'webpage title required' => 'Необходимо ввести заголовок ссылки',
 	'webpage url required' => 'Необходимо ввести адрес (URL) ссылки',
+	
+  // Email
 	'emails' => 'Emails',
 	'add mail account' => 'Добавить почтовую учётную запись',
 	'new mail account' => 'Новый пользователь почты',
-	'no emails in this account' => 'В этой учётная записи нет сообщений',
+	'no emails in this account' => 'В этой учётной записи нет сообщений',
 	'server address' => 'Адрес POP3 сервера',
 	'mail account id' => 'ID учётной записи',
 	'mail account name' => 'Название учётной записи',
@@ -193,6 +279,7 @@
 	'classify' => 'Классифицировать',
 	'classify email' => 'Классифицировать сообщение',
 	'classify email subject' => 'Классифицировать тему сообщения: \'{0}\'',
+   'unclassify' => 'Неклассифицированно',
 	'add attachments to project' => 'Добавить вложения к проекту',
 	'project emails' => 'Учётных записей: {0}',
 	'edit email account' => 'Редактировать {0}',
@@ -206,20 +293,30 @@
 	'after' => 'после',
 	'delete mails from server' => 'Удалить почту с сервера',
 	'mail account delete mails from server description' => 'Включите эту опцию для удаления почты с сервера после заданного времени.',
-	'checkout file' => 'Синхронизировать файл на мой (локальный) компьютер',
-	'checkin file' => 'Синхронизировать файл НА сервер',
+  'show images' => 'Показывать изображения.',
+  'images are blocked' => 'Изображения блокированы',
+  'mail add contacts' => 'Добавить новый контакт',
+  'no contacts to add' => 'Нет контакта для добавления.',
+  'linked attachments' => 'Связанные вложения',	
+
+  // Checkout
+	'checkout file' => 'Заблокировать',
+	'checkin file' => 'Обновить файл на сервере',
+	
 	'new filename' => 'Новое имя файла',
+  'new weblink' => 'Новая web-ссылка',
 	'add as revision' => 'Добавить, как версию',
 	'duplicate filename' => 'Дубликат имени файла',
 	'filename exists' => 'Файлы с таким именем уже существуют. Вы можете ввести другое имя файла или выбрать следующие возможности',
 	'filename exists edit' => 'Файл с таким именем уже существует. Пожалуйста, введите другое имя файла.',
 	'checking filename' => 'Проверки имени файла...',
 	'check' => 'Проверка',
-	'add file check in' => 'Синхронизировать НА сервер, как новую версию этого файла',
+	'add file check in' => 'Загрузить на сервер, как новую версию этого файла',
 	'filters' => 'Фильтры',
+	
 	'permissions for user' => 'Права пользователя {0}',
-	'can read messages' => 'Разрешено читать сообщения',
-	'can write messages' => 'Разрешено писать сообщения',
+	'can read messages' => 'Разрешено читать заметки',
+	'can write messages' => 'Разрешено писать заметки',
 	'can read tasks' => 'Разрешено просматривать список задач',
 	'can write tasks' => 'Разрешено создавать задачи',
 	'can read milestones' => 'Разрешено просматривать этапы',
@@ -236,6 +333,8 @@
 	'can write files' => 'Разрешено создавать файлы',
 	'can read events' => 'Разрешено просматривать список событий',
 	'can write events' => 'Разрешено создавать события',
+	
+	'new mail account' => 'Новая почтовая учетная запись',
 	'new company' => 'Новая компания',
 	'add a new company' => 'Добавить новую компанию',
 	'new workspace' => 'Новый проект',
@@ -243,20 +342,24 @@
 	'new event' => 'Новое событие',
 	'new webpage' => 'Новая ссылка',
 	'new milestone' => 'Новый этап',
-	'new message' => 'Новое сообщение',
+	'new message' => 'Новая заметка',
 	'new group' => 'Новая группа',
 	'new user' => 'Новый пользователь',
 	'add tags' => 'Добавить теги',
 	'save changes' => 'Сохранить изменения',
 	'administrator options' => 'Опции администратора',
+	
 	'system permissions' => 'Системные разрешения',
 	'project permissions' => 'Полномочия проекта',
+	
+  // Search
 	'actions' => 'Действие',
 	'edit properties' => 'Изменить свойства',
 	'you' => 'Вы',
 	'created by' => 'Создал',
 	'modified by' => 'Изменил ',
 	'deleted by' => 'Удалил ',
+  'checked out by' => 'заблокировал',
 	'user date' => '<a class="internalLink" href="{0}" title="Смотреть профиль: {3}">{1}</a>, on {2}',
 	'user date today at' => '<a class="internalLink" href="{0}" title="Посмотреть профиль {3}">{1}</a>, сегодня, в {2}',
 	'today at' => 'Сегодня, в {0}',
@@ -266,13 +369,14 @@
 	'modified by on short' => '<a class="internalLink" href="{0}">{1}</a>, {2}',
 	'time used in search' => 'Поиск выполнен за {0} секунд',
 	'more results' => 'Еще {0} совпадений...',
+	
 	'parent workspace' => 'Исходный (родительский) проект',
 	'close' => 'Закрыть',
 	'all projects' => 'Все проекты',
 	'view as list' => 'В виде списка',
 	'pending tasks' => 'Ожидающие задачи',
 	'my pending tasks' => 'Мои ожидающие задачи',
-	'messages' => 'Сообщения',
+	'messages' => 'Заметки',
 	'complete' => 'Завершено',
 	'incomplete' => 'Не завершено',
 	'complete task' => 'Пометить эту задачу выполненной',
@@ -281,6 +385,7 @@
 	'due in x days' => 'В течении {0} дней',
 	'overdue by x days' => 'На сколько дней опоздание: {0}',
 	'due today' => 'В течении дня',
+	
 	'x years' => '{0} лет',
 	'x months' => '{0} месяцев',
 	'x weeks' => '{0} недель',
@@ -296,7 +401,8 @@
 	'1 minute' => '1 минута',
 	'1 second' => '1 секунда',
 	'x ago' => '{0} назад',
-	'object time slots' => 'Интервал времени объекта',
+	
+	'object time slots' => 'Затраченное временя на объект',
 	'start work' => 'Начать работу',
 	'end work' => 'Закончить работу',
 	'confirm delete timeslot' => 'Вы уверены,  что хотите удалить этот интервал времени?',
@@ -314,21 +420,25 @@
 	'pause work' => 'Приостановить работу',
 	'resume work' => 'Продолжить работу',
 	'end work description' => 'Редактировать описание работы',
-	'add timeslot' => 'Добавить интервал времени',
-	'edit timeslot' => 'Редактировать интервал времени',
+	'add timeslot' => 'Добавить затраченное время',
+	'edit timeslot' => 'Редактировать затраченное время',
 	'start date' => 'Дата начала',
 	'start time' => 'Время начала',
 	'end date' => 'Дата завершения',
 	'end time' => 'Время завершения',
+	
 	'tasks in progress' => 'Задача в процессе выполнения',
 	'upcoming events milestones and tasks' => 'Грядущие события, отметки и задачи',
-	'undo checkout' => 'Отменить синхронизацию файла с сервера на локальный компьютер',
+	
+	'undo checkout' => 'Разблокировать',
+	
 	'search for in project' => 'Результаты поиска для  \'<i>{0}</i>\' в проекте \'{1}\'',
 	'search for' => 'Результаты поиска \'{0}\' во всех проектах',
+	
 	'workspace permamanent delete' => 'Когда проект удаляется, следующее содержимое <b>теряется навсегда</b>',
-	'workspace permamanent delete messages' => ' Все сообщения в проекте',
-	'workspace permamanent delete tasks' => ' Все задачи в проекте',
-	'workspace permamanent delete milestones' => ' Все отметки в проекте',
+	'workspace permamanent delete messages' => ' Все заметки проекта',
+	'workspace permamanent delete tasks' => ' Все задачи проекта',
+	'workspace permamanent delete milestones' => ' Все этапы проекта',
 	'workspace permamanent delete files' => ' Все файлы в проекте',
 	'workspace permamanent delete logs' => ' Все лог-файлы, относящиеся к проекту',
 	'workspace permamanent delete mails' => ' Все почтовые сообщения потеряют привязку к проекту, но останутся в системе.',
@@ -336,16 +446,22 @@
 	'multiples workspace object permanent delete' => 'Объекты, принадлежащие более чем одному проекту, не будут удалены.',
 	'cancel permanent delete' => 'Чтобы отменить удаление, нажмите клавишу "Назад", или закройте эту вкладку.',
 	'confirm permanent delete workspace' => 'Пожалуйста, подтвердите Ваше намерение удалить проект<b>{0}</b>',
+	'user personal workspace' => 'Так же удалить личный проект <b> {0} </b> и все его содержимое',
+'confirm permanent delete user' => 'Пожалуйста, подтвердите Ваше намерение удалить пользователя:',  
+ 'other user personal workspace' => 'Проект назначен пользователю <b>{0}</b>, он не может быть удален',
 	'latest user activity' => 'Последняя активность: ',
+	
 	'hours' => 'Часы',
 	'minutes' => 'Минуты',
 	'seconds' => 'Секунды',
 	'days' => 'Дни',
 	'time estimate' => 'Оценка времени',
 	'work in progress' => 'Идет работа',
-	'total time' => 'Всего времени',
+	'total time' => 'Итого',
+	
 	'upload anyway' => 'Загрузить все равно',
-	'print view' => 'Предпросмотр для печати',
+	
+	'print view' => 'Печать',
 	'activity' => 'Активность',
 	'statistics' => 'Статистика',
 	'time' => 'Время',
@@ -353,18 +469,22 @@
 	'new tasks by user' => 'Новые задачи пользователя',
 	'generate report' => 'Составить отчёт',
 	'task title' => 'Имя задачи',
-	'include subworkspaces' => 'Включая субпроекты',
+ 'total time' => 'Общее время',
+	'include subworkspaces' => 'Включая подпроекты',
 	'print' => 'Печать',
 	'this week' => 'Эта неделя',
 	'last week' => 'Последняя неделя',
 	'this month' => 'Этот месяц',
 	'last month' => 'Последний месяц',
 	'select dates...' => 'Выбрать даты...',
+	
 	'task time report description' => 'Этот отчет показывает общее время выполнения списка задач, с выборкой по дате, пользователю (необязательно) и проекту (необязательный параметр).',
 	'no data to display' => 'Нет даты для отображения',
+	
 	'new company name' => 'Имя новой компании',
 	'checking' => 'Проверка',
 	'country' => 'Страна',
+	
 	'email addresses' => 'Адреса e-mail',
 	'instant messaging' => 'Служба мгновенных сообщений',
 	'phone' => 'Тел.',
@@ -374,42 +494,62 @@
 	'callback' => 'Контакты',
 	'mobile' => 'Мобильный',
 	'pager' => 'Пейджер',
+	
 	'roles' => 'Роли',
 	'last updated by on' => '{0}, на {1}',
 	'updated' => 'Обновлено',
 	'group by' => 'Группировать по',
-	'total' => 'Всего',
+  'last updated by' => 'Последнее изменение',	
+
+	'total' => 'Итого',
 	'enter tags desc' => 'Введите имена тегов, разделённые запятыми...',
+	
 	'user subscribed to object' => 'Вы подписаны на этот объект.',
 	'user not subscribed to object' => 'Вы не подписаны на этот объект.',
+	
 	'tasks updated' => 'Задача(и) успешно обновлена(ы)',
 	'too many tasks to display' => 'Слишком много задач, выводится только 500 последних. Вы можете отфильтровать вывод по проектам, тегам, задачам, или статусу.',
+	
 	'show image in new page' => 'Показывать изображение на новой странице',
 	'no tasks to display' => 'Нет задач к отображению',
 	'do complete' => 'Завершить',
+	
 	'task data' => 'Содержимое задачи',
 	'search in all workspaces' => 'Искать во всех рабочих областях',
+	
+  'paused time' => 'Время приостановлено',
 	'total pause time' => 'Общее время на паузе',
 	'pause time cannot be negative' => 'Временной интервал не может быть отрицательным',
 	'pause time cannot exceed timeslot time' => 'Время паузы не может превышать временной интервал',
-	'timeslots' => 'Временные интервалы',
-	'task timeslots' => 'Временные интервалы задач',
-	'time timeslots' => 'Общие временные интервалы',
-	'all timeslots' => 'Задачи и общие временные интервалы',
+	'timeslots' => 'Затраченное время',
+	
+	'task timeslots' => 'Затраченное время на задачу',
+	'time timeslots' => 'Общее затраченное время',
+	'all timeslots' => 'Общее затраченное время',
+	
 	'print report' => 'Печать отчёта',
+	
 	'all active tasks' => 'Все активные задачи',
-	'unique id' => 'Уникальный номер',
+	
+	'unique id' => 'ID Код',
+	
+	'my pending tasks' => 'Мои активные задачи',
 	'pending tasks for' => 'Активных задач {0}',
 	'my late milestones and tasks' => 'Мои просроченные задания',
 	'late milestones and tasks for' => 'Окончание задач для {0}',
 	'my tasks in progress' => 'Мои задачи в процессе',
 	'tasks in progress for' => 'Прогресс задач для {0}',
+	
 	'time has to be greater than 0' => 'Время должно быть больше 0',
+	
 	'release notes' => 'Примечания к выпуску',
+	
 	'remember last' => 'Помнить последний',
 	'auto' => 'Авто',
 	'print all groups' => 'Печать всех групп',
 	'shared with' => 'Общее с',
+	
+  // Object Sharing
 	'share object desc' => 'Для каждого пользователя будет выслано приглашения для разделения доступа к объекту',
 	'share with' => 'Разделение доступа с',
 	'allow people edit object' => 'Разрешить пользователем редактировать объект',
@@ -418,7 +558,8 @@
 	'share this' => 'Общий доступ с ',
 	'success sharing object' => 'Объекту успешно разрешен успешный доступ',
 	'actually sharing with' => 'В настоящее время разделяется с ',
-	'share notification message desc' => '{1} пригласил вас для просмотра/редактирования следующего сообщения: {0}',
+	
+	'share notification message desc' => '{1} пригласил вас для просмотра/редактирования следующей заметки: {0}',
 	'share notification event desc' => '{1} пригласил вас для просмотра/редактирования события: {0}',
 	'share notification task desc' => '{1} пригласил вас для просмотра/редактирования задачи : {0}',
 	'share notification document desc' => '{1} пригласил вас для просмотра/редактирования документа : {0}',
@@ -426,19 +567,27 @@
 	'share notification company desc' => '{1} пригласил вас для просмотра/редактирования информации о компании: {0}',
 	'share notification emailunclassified desc' => '{1} пригласил вас для просмотра/редактирования email: {0}',
 	'share notification email desc' => '{1} пригласил вас для просмотра/редактирования email: {0}',
-	'new share notification message' => 'Выполнено разделение доступа для сообщения \'{0}\'',
-	'new share notification event' => 'Выполнено разделение доступа для события\'{0}\'',
+  'share notification file desc' => '{1} пригласил вас для просмотра/редактирования файла: {0}',
+  'share notification milestone desc' => '{1} пригласил вас для просмотра/редактирования этапа: {0}',
+  'share notification weblink desc' => '{1} пригласил вас для просмотра/редактирования web-ссылки: {0}',
+  	
+	'new share notification message' => 'Выполнено разделение доступа для заметки \'{0}\'',
+	'new share notification event' => 'Выполнено разделение доступа для события \'{0}\'',
 	'new share notification task' => 'Выполнено разделение доступа для задачи \'{0}\'',
-	'new share notification document' => 'Выполнено разделение доступа для документа\'{0}\'',
-	'new share notification contact' => 'Выполнено разделение доступа для контакта\'{0}\'',
-	'new share notification company' => 'Выполнено разделение доступа для компании\'{0}\'',
+	'new share notification document' => 'Выполнено разделение доступа для документа \'{0}\'',
+	'new share notification contact' => 'Выполнено разделение доступа для контакта \'{0}\'',
+	'new share notification company' => 'Выполнено разделение доступа для компании \'{0}\'',
 	'new share notification emailunclassified' => 'Выполнено разделение доступа для email \'{0}\'',
 	'new share notification email' => 'Выполнено разделение доступа для email \'{0}\'',
+	 'new share notification file' => 'Выполнено разделение доступа для файла \'{0}\'',
+  'new share notification milestone' => 'Выполнено разделение доступа для этапа \'{0}\'',
+  'new share notification weblink' => 'Выполнено разделение доступа для Web-ссылки \'{0}\'',
+  
 	'billing' => 'Биллинг',
 	'category' => 'Категория',
-	'hourly rates' => 'Почасовой учет',
+	'hourly rates' => 'Почасовая оплата',
 	'origin' => 'Источник',
-	'default hourly rates' => 'Почасовой учет по умолчанию',
+	'default hourly rates' => 'Почасовая оплата по умолчанию',
 	'add billing category' => 'Добавить категорию биллинга',
 	'new billing category' => 'Новая категория биллинга',
 	'edit billing category' => 'Редактировать категорию биллинга',
@@ -453,16 +602,32 @@
 	'no billing categories' => 'Нет категорий для биллинга.',
 	'no billing categories desc' => 'Если вы хотите включить поддержку биллинга для временных интервалов и отчета по времени, пожалуйста, добавьте новую категорию биллинга.',
 	'billing support is enabled' => 'Поддержка биллинга включена',
-	'BillingCategory default_value required' => 'Для этой категории требуется почасовой учет',
-	'defined in a parent workspace' => 'Опеределен в родительском проекте',
+	'BillingCategory default_value required' => 'Для этой категории требуется почасовая оплата',
+	'defined in a parent workspace' => 'Определен в родительском проекте',
 	'defined in the current workspace' => 'Определен в текущем проекте',
 	'total billing by user' => 'Всего биллинга',
 	'assign billing categories to users' => 'Назначенные пользователям категории биллинга',
 	'new version notification title' => 'Новая версия',
-	'share notification file desc' => '{1}, вам предлагается смотреть и править этот файл: {0}',
-	'share notification milestone desc' => '{1}, вам предлагается смотреть и править этот этап: {0}',
-	'share notification weblink desc' => '{1}, вам предлагается смотреть и править эту web-ссылку: {0}',
-	'new share notification file' => 'Файл \'{0}\' стал общим',
-	'new share notification milestone' => 'Этап \'{0}\' стал общим',
-	'new share notification weblink' => 'Web-ссылка \'{0}\' стала общей',
+	
+	'workspace contacts' => 'Контакты',
+  'search contact' => 'Поиск контакта',
+  'add new contact' => 'Добавить новый контакт',
+  'no contacts to display' => 'Нет контактов для отображения',
+  'workspace info' => 'Информация о проекте',
+  'workspace description' => 'Описание проекта \'{0}\'',
+  'show all amount' => 'Показать все ({0})',
+  'searching' => 'Поиск',
+  
+  'weblink' => 'WWW-ссылка',
+  
+  'add value' => 'Добавить значение',
+  'remove value' => 'Удалить значение',
+	
+  'hide options' => 'Скрытые опции',
+  
+  'personal workspace name' => '{0} Личный',
+  'personal workspace description' => 'Личный проект',
+  
+  'wiki help link' => 'http://code.google.com/p/opengooru/wiki/Home',
+  'last language' => 'Последний',
 ); ?>

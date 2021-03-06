@@ -75,7 +75,7 @@ class ProjectUsers extends BaseProjectUsers {
 				$users[] = Users::instance()->loadFromRow($row);
 			} // foreach
 		} // if
-		return count($users) ? $users : null;
+		return $users;
 	} // getUsersByProject
 
 	/**

@@ -194,4 +194,11 @@
 	'field Projects created_by_id' => 'Creado por',
 	'field Projects updated_by_id' => 'Actualizado por',
 	'field Projects completed_by_id' => 'Completado por',
+	'field ProjectTasks repeat_by' => 'Repetir por',
+	'field ProjectTasks repeat_end' => 'Fin de repetición',
+    'field ProjectTasks repeat_num' => 'Número de repeticiones',
+	'field ProjectTasks repeat_forever' => 'Repetir para siempre',
+    'field ProjectTasks repeat_d' => 'Día de repetición',
+    'field ProjectTasks repeat_m' => 'Mes de repetición',
+    'field ProjectTasks repeat_y' => 'Año de repetición',
 ); ?>

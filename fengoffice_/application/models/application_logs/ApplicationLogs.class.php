@@ -83,9 +83,9 @@ class ApplicationLogs extends BaseApplicationLogs {
 		} // if
 		
 		// Update is private for this object
-		if($object instanceof ProjectDataObject) {
+		/*if($object instanceof ProjectDataObject) {
 			ApplicationLogs::setIsPrivateForObject($object);
-		} // if
+		} // if*/
 
 		if ($save) {
 			if ($workspaces instanceof Project) {

@@ -26,11 +26,19 @@ class Trash {
 				$prevcount = -1;
 				while ($prevcount != $count) {
 					$prevcount = $count;
-					$objects = $manager->findAll(array(
-							"include_trashed" => true,
-							"conditions" => array("`trashed_by_id` > 0 AND `trashed_on` < ?", $date),
-							"limit" => 100,
-					));
+					if ($manager_class == 'MailContents') {
+						$objects = $manager->findAll(array(
+								"include_trashed" => true,
+								"conditions" => array("`trashed_by_id` > 0 AND `trashed_on` < ? AND `is_deleted` = 0", $date),
+								"limit" => 100,
+						));
+					} else {
+						$objects = $manager->findAll(array(
+								"include_trashed" => true,
+								"conditions" => array("`trashed_by_id` > 0 AND `trashed_on` < ?", $date),
+								"limit" => 100,
+						));
+					}
 					if (is_array($objects)) {
 						// delete one by one because each one knows what else to delete
 						foreach ($objects as $o) {
