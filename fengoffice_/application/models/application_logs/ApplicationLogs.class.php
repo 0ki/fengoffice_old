@@ -76,7 +76,8 @@ class ApplicationLogs extends BaseApplicationLogs {
 			$log->setObjectName($object->getObjectName());
 		}
 		if ($object instanceof Member) {
-			$log->setRelObjectId($object->getId());
+			$log->setMemberId($object->getId());
+			$log->setRelObjectId($object->getObjectId());
 			$log->setObjectName($object->getName());
 		}
 		
@@ -234,10 +235,13 @@ class ApplicationLogs extends BaseApplicationLogs {
 			$members_sql = "rel_object_id IN ($object_ids)";
 		}
 
-		$permissions_sql = "AND rel_object_id IN (
+		$permissions_sql = "AND (rel_object_id IN (
 			SELECT object_id FROM ".TABLE_PREFIX."sharing_table
 			WHERE group_id  IN (SELECT permission_group_id FROM ".TABLE_PREFIX."contact_permission_groups WHERE contact_id = ".logged_user()->getId().")
-		)";
+			) OR ((rel_object_id = 0 AND member_id <> 0) AND member_id IN (
+							SELECT member_id FROM ".TABLE_PREFIX."contact_member_permissions WHERE 
+									permission_group_id IN (SELECT permission_group_id FROM ".TABLE_PREFIX."contact_permission_groups WHERE contact_id = ".logged_user()->getId().")
+									AND member_id = ".TABLE_PREFIX."application_logs.member_id)))";
 
 		$condition = ($members_sql != "" ? $members_sql . " AND " : "") . $extra_conditions . $permissions_sql;
 		return ApplicationLogs::findAll(array(

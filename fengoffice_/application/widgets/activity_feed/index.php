@@ -6,18 +6,21 @@
     $acts = array();
     $acts['data'] = array();
     foreach($activities as $activity){
-        $user = Contacts::findById($activity->getCreatedById());
-        if ($activity->getLogData() == 'member deleted') {
-        	$object = Members::findById($activity->getRelObjectId());
-        	$member_deleted = true;
-        } else {
-        	$object = Objects::findObject($activity->getRelObjectId());
-        }
-        
+    	$user = Contacts::findById($activity->getCreatedById());
+    	if($activity->getMemberId()){
+    		$object = Members::findById($activity->getMemberId());
+    		$key = $activity->getRelObjectId(). "-" .$activity->getId() . "-" . $activity->getCreatedById();
+    	}else{
+    		$key = $activity->getRelObjectId(). "-" . $activity->getCreatedById();
+	    	if ($activity->getLogData() == 'member deleted') {
+	        	$object = Members::findById($activity->getRelObjectId());
+	        	$member_deleted = true;
+	        } else {
+	        	$object = Objects::findObject($activity->getRelObjectId());
+	        }
+    	}
         if($object || $member_deleted){
-            $key = $activity->getRelObjectId() . "-" . $activity->getCreatedById();
-
-            if(count($acts['data']) < ($limit*2)){
+        	if(count($acts['data']) < ($limit*2)){
                 if(!array_key_exists($key, $acts['data'])){
                     $acts['data'][$key] = $object;
                     $acts['created_by'][$key] = $user;

@@ -6,6 +6,7 @@
 	<?php echo link_tag(with_slash(ROOT_URL)."favicon.ico", "rel", "shortcut icon") ?>
 	<?php echo add_javascript_to_page("og/app.js") // loaded first because it's needed for translating?>
 	<?php echo add_javascript_to_page(get_url("access", "get_javascript_translation")); ?>
+	<?php echo add_javascript_to_page(get_url("access", "get_javascript_translation_default")); ?>
 	<!--[if IE 7]>
 	<?php echo stylesheet_tag("og/ie7.css"); ?>
 	<![endif]-->

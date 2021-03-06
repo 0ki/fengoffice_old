@@ -38,6 +38,11 @@ class Contact extends BaseContact {
 		parent::__construct ();
 	} // __construct
 	
+	function getObjectTypeName() {
+		if ($this->getIsCompany()) return 'company';
+		else return 'contact';
+	}
+	
 	/**
 	 * Array of email accounts
 	 *

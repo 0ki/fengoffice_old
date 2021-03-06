@@ -177,17 +177,26 @@ class SearchController extends ApplicationController {
 		
 		$members_sql = "";
 		if(count($members) > 0){
-			$members_sql = "AND (rel_object_id IN (SELECT object_id FROM " . TABLE_PREFIX . "object_members om 
+			$members_sql = "AND (so.rel_object_id IN (SELECT object_id FROM " . TABLE_PREFIX . "object_members om
 					WHERE member_id IN (" . implode ( ',', $members ) . ") GROUP BY object_id HAVING count(member_id) = ".count($members).")
-				OR o.object_type_id = $revisionObjectTypeId AND rel_object_id IN (SELECT fr.object_id FROM " . TABLE_PREFIX . "object_members om 
-					INNER JOIN ".TABLE_PREFIX."project_file_revisions fr ON om.object_id=fr.file_id 
-					WHERE member_id IN (" . implode ( ',', $members ) . ") GROUP BY object_id HAVING count(member_id) = ".count($members)."))";
+								OR so.rel_object_id IN (SELECT fr.object_id FROM " . TABLE_PREFIX . "object_members om
+					INNER JOIN ".TABLE_PREFIX."project_file_revisions fr ON om.object_id=fr.file_id
+					INNER JOIN ".TABLE_PREFIX."objects ob ON fr.object_id=ob.id
+					WHERE ob.object_type_id = $revisionObjectTypeId AND member_id IN (" . implode ( ',', $members ) . ") GROUP BY object_id HAVING count(member_id) = ".count($members)."))";
+			
 			$this->search_dimension = implode ( ',', $members );
 		}else{
 			$this->search_dimension = 0;
 		}
 
 		$listableObjectTypeIds = implode(",",ObjectTypes::getListableObjectTypeIds());
+		
+		$can_see_all_tasks_cond = "";
+		if (!SystemPermissions::userHasSystemPermission(logged_user(), 'can_see_assigned_to_other_tasks')) {
+			$can_see_all_tasks_cond = " AND IF((SELECT ot.name FROM ".TABLE_PREFIX."object_types ot WHERE ot.id=o.object_type_id)='task',
+			 (SELECT t.assigned_to_contact_id FROM ".TABLE_PREFIX."project_tasks t WHERE t.object_id=o.id) = ".logged_user()->getId().",
+			 true)";
+		}
 		
 		if($_POST) {
 			
@@ -297,7 +306,7 @@ class SearchController extends ApplicationController {
 			    		)
 			 		)
 			 	)
-			) " . $where_condiition . $members_sql . " ORDER by o.updated_on DESC
+			) " . $where_condiition . $members_sql . $can_see_all_tasks_cond . " ORDER by o.updated_on DESC
 			LIMIT $start, $limitTest";
 		} else {
 			
@@ -306,28 +315,31 @@ class SearchController extends ApplicationController {
 			$sql = "	
 			SELECT so.rel_object_id AS id
 			FROM ".TABLE_PREFIX."searchable_objects so
-			INNER JOIN  ".TABLE_PREFIX."objects o ON o.id = so.rel_object_id 
-			WHERE (
-				(	
-					o.object_type_id = $revisionObjectTypeId AND  
-					EXISTS ( 
-						SELECT id FROM ".TABLE_PREFIX."sharing_table WHERE object_id  = ( SELECT file_id FROM ".TABLE_PREFIX."project_file_revisions WHERE object_id = o.id ) 
-						AND group_id IN (SELECT permission_group_id FROM ".TABLE_PREFIX."contact_permission_groups WHERE contact_id = $uid )
-					)
-					
-				) 
-				OR (
-					so.rel_object_id IN (
-			    		SELECT object_id FROM ".TABLE_PREFIX."sharing_table WHERE group_id  IN (
-			      			SELECT permission_group_id FROM ".TABLE_PREFIX."contact_permission_groups WHERE contact_id = $uid
-			    		)
-			 		)
-			 	)
-			)" . (($useLike) ? "AND	so.content LIKE '%$search_string%' " : "AND MATCH (so.content) AGAINST ('$search_string' IN BOOLEAN MODE) ") . " 
-			AND o.object_type_id IN ($listableObjectTypeIds) " . $members_sql . "
-			ORDER by o.updated_on DESC
+			WHERE " . (($useLike) ? " so.content LIKE '%$search_string%' " : " MATCH (so.content) AGAINST ('$search_string' IN BOOLEAN MODE) ") . "  
+			AND (so.rel_object_id IN 
+				(SELECT o.id
+				 FROM  ".TABLE_PREFIX."objects o
+				 WHERE	(	
+							 (	o.object_type_id = $revisionObjectTypeId AND  
+								EXISTS ( 
+									SELECT id FROM ".TABLE_PREFIX."sharing_table WHERE object_id  = ( SELECT file_id FROM ".TABLE_PREFIX."project_file_revisions WHERE object_id = o.id ) 
+									AND group_id IN (SELECT permission_group_id FROM ".TABLE_PREFIX."contact_permission_groups WHERE contact_id = $uid )
+								)
+							 ) 
+							OR (
+								o.id IN (
+			    					SELECT object_id FROM ".TABLE_PREFIX."sharing_table WHERE group_id  IN (
+			      					SELECT permission_group_id FROM ".TABLE_PREFIX."contact_permission_groups WHERE contact_id = $uid
+			    					)
+			 					)
+			 				)
+			 		) AND o.object_type_id IN ($listableObjectTypeIds) " . $members_sql . $can_see_all_tasks_cond . "
+				)
+			)			
+			
 			LIMIT $start, $limitTest";
 		}
+		
 		tpl_assign('type_object', $type_object);
 		$db_search_results = array();
 		$search_results_ids = array();

@@ -187,14 +187,6 @@ final class CompanyWebsite {
 	 * @return null
 	 */
 	function logUserIn(Contact $user, $remember = false) {
-		$now = DateTimeValueLib::now() ;
-		$user->setLastLogin($now);
-		if(is_null($user->getLastActivity())) {
-			$user->setLastVisit(DateTimeValueLib::now());
-		} else {
-			$user->setLastVisit($user->getLastActivity());
-		} // if
-		$user->save();
 		$this->setLoggedUser($user, $remember, true);
 	} // logUserIn
 
@@ -269,7 +261,16 @@ final class CompanyWebsite {
 			if (!isset($_SESSION['last_activity_updating']) && (!$last_activity_mod_timestamp || $last_activity_mod_timestamp < time() - 60 * 10)) {
 				$_SESSION['last_activity_updating'] = true;
 				
-				$sql = "UPDATE ".TABLE_PREFIX."contacts SET last_activity = '".DateTimeValueLib::now()->toMySQL()."' WHERE object_id = ".$user->getId();
+				$now = DateTimeValueLib::now() ;
+				if(is_null($user->getLastActivity())) {
+					$last_visit = $now;
+				} else {
+					$last_visit = $user->getLastActivity();
+				}
+				
+				$sql = "UPDATE ".TABLE_PREFIX."contacts SET last_activity = '".$now->toMySQL()."',
+				 		last_visit = '".($last_visit instanceof DateTimeValue ? $last_visit->toMySQL() : EMPTY_DATETIME)."', last_login='".$now->toMySQL()."'
+				 		WHERE object_id = ".$user->getId();
 				DB::execute($sql);
 				
 				$_SESSION['last_activity_mod_timestamp'] = time();

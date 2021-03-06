@@ -342,5 +342,5 @@ return array(
 	'Guest Customer' => 'Guest Customer',
 	'Guest' => 'Guest',
 	'Non-Exec Director' => 'Non executive Director',
-	'permissions for unclassified objects' => 'Permissions for unclassified objects',
+	'permissions for unclassified objects' => 'Permissions for objects without classification',
 );

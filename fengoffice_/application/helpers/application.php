@@ -200,7 +200,9 @@ function allowed_users_to_assign($context = null) {
 	}
 	
 	foreach ($contacts as $contact) { /* @var $contact Contact */
-		if ( TabPanelPermissions::instance()->count( array( "conditions" => "permission_group_id = ".$contact->getPermissionGroupId(). " AND tab_panel_id = 'tasks-panel' " ))){
+		$pg_ids = implode(',', $contact->getPermissionGroupIds());
+		if ($pg_ids == "") $pg_ids = "0";
+		if ( TabPanelPermissions::instance()->count( array( "conditions" => "permission_group_id IN ($pg_ids) AND tab_panel_id = 'tasks-panel' " ))){
 			$comp_array[$contact->getCompanyId()]['users'][] = array('id' => $contact->getId(), 'name' => $contact->getObjectName(), 'isCurrent' => $contact->getId() == logged_user()->getId());
 		}
 	}
@@ -242,7 +244,9 @@ function allowed_users_to_assign_all_mobile($member_id = null) {
 	}
 	
 	foreach ($contacts as $contact) { /* @var $contact Contact */
-		if ( TabPanelPermissions::instance()->count( array( "conditions" => "permission_group_id = ".$contact->getPermissionGroupId(). " AND tab_panel_id = 'tasks-panel' " ))){
+		$pg_ids = implode(',', $contact->getPermissionGroupIds());
+		if ($pg_ids == "") $pg_ids = "0";
+		if ( TabPanelPermissions::instance()->count( array( "conditions" => "permission_group_id IN ($pg_ids) AND tab_panel_id = 'tasks-panel' " ))){
 			$comp_array[$contact->getCompanyId()]['users'][] = array('id' => $contact->getId(), 'name' => $contact->getObjectName(), 'isCurrent' => $contact->getId() == logged_user()->getId());
 		}
 	}

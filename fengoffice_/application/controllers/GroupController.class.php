@@ -89,7 +89,7 @@ class GroupController extends ApplicationController {
 			$group->setFromAttributes($group_data);
 			try {
 				DB::beginWork();
-                                $group->setType('user_groups');
+				$group->setType('user_groups');
 				$group->setContactId(0);
 				$group->save();
 				

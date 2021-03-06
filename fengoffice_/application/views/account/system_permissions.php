@@ -1,12 +1,12 @@
 
-<?php if (can_manage_security(logged_user())) { ?>
+<?php if (can_manage_security(logged_user()) && logged_user()->isAdminGroup()) { ?>
 <table style="width:100%;"><tr><td style="padding-right:10px;width:50%;">
 <fieldset class=""><legend class="toggle_expanded" onclick="og.toggle('<?php echo $genid ?>userSystemPermissions',this)"><?php echo lang("system permissions") ?></legend>
 	<div id="<?php echo $genid ?>userSystemPermissions" style="display:block">
 	
 		<?php
 			$columns = SystemPermissions::instance()->getColumns();
-			$hidden_cols = array('permission_group_id', 'can_manage_billing', 'can_view_billing', 'can_task_assignee');
+			$hidden_cols = array('permission_group_id', 'can_view_billing', 'can_task_assignee');
 			foreach ($columns as $column_name) :
 				if (in_array($column_name, $hidden_cols)) continue;
 		?>
@@ -52,65 +52,7 @@
 		<?php endif; ?>
 	
 
-<?php if (config_option('let_users_create_objects_in_root') && ($user instanceof Contact && ($user->isAdminGroup() || $user->isExecutive() || $user->isManager())) ){ ?>
-  <hr style="margin:15px 0; border-color:#eee;"/>
-  <h1 onclick="og.toggle('<?php echo $genid ?>root_permissions')" style="cursor:pointer;"><?php echo lang('permissions for unclassified objects');?></h1>
-  <div id="<?php echo $genid ?>root_permissions">
-  <table style="width:100%;">
-  <tr style="border-bottom:1px solid #888;margin-bottom:5px"><td></td>
-  	<td align=center style="padding-left:10px;padding-right:10px;width:120px;"><a href="#" class="internalLink radio-title-3" onclick="og.ogRootPermSetLevel('<?php echo $genid ?>', 3);return false;"><?php echo lang('read write and delete') ?></a></td>
-  	<td align=center style="padding-left:10px;padding-right:10px;width:120px;"><a href="#" class="internalLink radio-title-2" onclick="og.ogRootPermSetLevel('<?php echo $genid ?>', 2);return false;"><?php echo lang('read and write') ?></a></td>
-  	<td align=center style="padding-left:10px;padding-right:10px;width:120px;"><a href="#" class="internalLink radio-title-1" onclick="og.ogRootPermSetLevel('<?php echo $genid ?>', 1);return false;"><?php echo lang('read only') ?></a></td>
-  	<td align=center style="padding-left:10px;padding-right:10px;width:120px;"><a href="#" class="internalLink radio-title-0" onclick="og.ogRootPermSetLevel('<?php echo $genid ?>', 0);return false;"><?php echo lang('none no bars') ?></a></td>
-  </tr>
-<?php 
-	$all_object_types = ObjectTypes::instance()->findAll(array('conditions' => "type IN ('content_object', 'located') AND type NOT IN ('comment') AND name <> 'file revision' AND 
-		(plugin_id IS NULL OR plugin_id = 0 OR plugin_id IN (SELECT id FROM ".TABLE_PREFIX."plugins WHERE is_activated > 0 AND is_installed > 0))"));
-	$row_cls = "";
-	$root_object_types = array();
-	$root_permissions = $permission_parameters['root_permissions'];
-	foreach ($all_object_types as $ot) {
-		if ($ot->getName() == 'mail' || $ot->getName() == 'template') continue;
-		$row_cls = $row_cls == "" ? "altRow" : "";
-		$id_suffix = "root_" . $ot->getId();
-		$root_object_types[] = $ot->getId();
-		$root_perm_actual_info = array_var($root_permissions, $ot->getId());
-		
-		$can_delete = false; $can_write = false; $can_read = false; $none = false;
-		if (array_var($root_perm_actual_info, 'd') == 1) {
-			$can_delete = true;
-		} else if (array_var($root_perm_actual_info, 'w') == 1) {
-			$can_write = true;
-		} else if (array_var($root_perm_actual_info, 'r') == 1) {
-			$can_read = true;
-		} else {
-			$none = true;
-		}
-		$can_delete = array_var($root_perm_actual_info, 'd') == 1;
-		$can_write = array_var($root_perm_actual_info, 'd') == 0 && array_var($root_perm_actual_info, 'w') == 1;
-		$can_read = array_var($root_perm_actual_info, 'd') == 0 && array_var($root_perm_actual_info, 'w') == 0 && array_var($root_perm_actual_info, 'r') == 1;
 
-?><tr class="<?php echo $row_cls?>">
-  	<td style="padding:0 20px"><span id="<?php echo $genid.'obj_type_label'.$id_suffix?>"><?php echo lang($ot->getName()) ?></span></td>
-  	<td align=center><?php echo radio_field($genid .'rg_'.$id_suffix, $can_delete, array('value' => '3')) ?></td>
-  	<td align=center><?php echo radio_field($genid .'rg_'.$id_suffix, $can_write, array('value' => '2')) ?></td>
-  	<td align=center><?php echo radio_field($genid .'rg_'.$id_suffix, $can_read, array('value' => '1')) ?></td>
-  	<td align=center><?php echo radio_field($genid .'rg_'.$id_suffix, $none, array('value' => '0')) ?></td>
-  </tr>
-<?php } ?>
-  </table>
-  <input type="hidden" name="root_perm_genid" value="<?php echo $genid?>" />
-  </div>
-<script>
-og.perm_root_object_type_ids = Ext.util.JSON.decode('<?php echo json_encode($root_object_types)?>');
-og.ogRootPermSetLevel = function (genid, level) {
-	for (i=0; i<og.perm_root_object_type_ids.length; i++) {
-		var ot = og.perm_root_object_type_ids[i];
-		og.ogSetCheckedValue(document.getElementsByName(genid + "rg_root_" + ot), level);
-	}
-}
-</script>
-<?php }?>
 </div>
 </fieldset>
 
@@ -160,3 +102,67 @@ og.ogRootPermSetLevel = function (genid, level) {
 	
 	$this->includeTemplate(get_template_path('user_permissions_control', 'account'));
 ?>
+
+<?php if (config_option('let_users_create_objects_in_root') && ($user instanceof Contact && ($user->isAdminGroup() || $user->isExecutive() || $user->isManager())) ){ ?>
+
+<fieldset><legend><span class="og-task-expander toggle_expanded" style="padding-left:20px;" 
+	onclick="og.toggle('<?php echo $genid ?>root_permissions'); if ($(this).hasClass('toggle_expanded')){$(this).removeClass('toggle_expanded');$(this).addClass('toggle_collapsed');} else {$(this).removeClass('toggle_collapsed');$(this).addClass('toggle_expanded');}">
+	<?php echo lang('permissions for unclassified objects');?></span></legend>
+	 
+  <div id="<?php echo $genid ?>root_permissions" style="width:600px;">
+  <table style="width:100%;">
+  <tr style="border-bottom:1px solid #888;margin-bottom:5px"><td></td>
+  	<td align=center style="padding-left:10px;padding-right:10px;width:120px;"><a href="#" class="internalLink radio-title-3" onclick="og.ogRootPermSetLevel('<?php echo $genid ?>', 3);return false;"><?php echo lang('read write and delete') ?></a></td>
+  	<td align=center style="padding-left:10px;padding-right:10px;width:120px;"><a href="#" class="internalLink radio-title-2" onclick="og.ogRootPermSetLevel('<?php echo $genid ?>', 2);return false;"><?php echo lang('read and write') ?></a></td>
+  	<td align=center style="padding-left:10px;padding-right:10px;width:120px;"><a href="#" class="internalLink radio-title-1" onclick="og.ogRootPermSetLevel('<?php echo $genid ?>', 1);return false;"><?php echo lang('read only') ?></a></td>
+  	<td align=center style="padding-left:10px;padding-right:10px;width:120px;"><a href="#" class="internalLink radio-title-0" onclick="og.ogRootPermSetLevel('<?php echo $genid ?>', 0);return false;"><?php echo lang('none no bars') ?></a></td>
+  </tr>
+<?php 
+	$all_object_types = ObjectTypes::instance()->findAll(array('conditions' => "type IN ('content_object', 'located') AND type NOT IN ('comment') AND name <> 'file revision' AND 
+		(plugin_id IS NULL OR plugin_id = 0 OR plugin_id IN (SELECT id FROM ".TABLE_PREFIX."plugins WHERE is_activated > 0 AND is_installed > 0))"));
+	$row_cls = "";
+	$root_object_types = array();
+	$root_permissions = $permission_parameters['root_permissions'];
+	foreach ($all_object_types as $ot) {
+		if ($ot->getName() == 'mail' || $ot->getName() == 'template') continue;
+		$row_cls = $row_cls == "" ? "altRow" : "";
+		$id_suffix = "root_" . $ot->getId();
+		$root_object_types[] = $ot->getId();
+		$root_perm_actual_info = array_var($root_permissions, $ot->getId());
+		
+		$can_delete = false; $can_write = false; $can_read = false; $none = false;
+		if (array_var($root_perm_actual_info, 'd') == 1) {
+			$can_delete = true;
+		} else if (array_var($root_perm_actual_info, 'w') == 1) {
+			$can_write = true;
+		} else if (array_var($root_perm_actual_info, 'r') == 1) {
+			$can_read = true;
+		} else {
+			$none = true;
+		}
+		$can_delete = array_var($root_perm_actual_info, 'd') == 1;
+		$can_write = array_var($root_perm_actual_info, 'd') == 0 && array_var($root_perm_actual_info, 'w') == 1;
+		$can_read = array_var($root_perm_actual_info, 'd') == 0 && array_var($root_perm_actual_info, 'w') == 0 && array_var($root_perm_actual_info, 'r') == 1;
+
+?><tr class="<?php echo $row_cls?>">
+  	<td style="padding:0 20px"><span id="<?php echo $genid.'obj_type_label'.$id_suffix?>"><?php echo lang($ot->getName()) ?></span></td>
+  	<td align=center><?php echo radio_field($genid .'rg_'.$id_suffix, $can_delete, array('value' => '3')) ?></td>
+  	<td align=center><?php echo radio_field($genid .'rg_'.$id_suffix, $can_write, array('value' => '2')) ?></td>
+  	<td align=center><?php echo radio_field($genid .'rg_'.$id_suffix, $can_read, array('value' => '1')) ?></td>
+  	<td align=center><?php echo radio_field($genid .'rg_'.$id_suffix, $none, array('value' => '0')) ?></td>
+  </tr>
+<?php } ?>
+  </table>
+  <input type="hidden" name="root_perm_genid" value="<?php echo $genid?>" />
+  </div>
+</fieldset>
+<script>
+og.perm_root_object_type_ids = Ext.util.JSON.decode('<?php echo json_encode($root_object_types)?>');
+og.ogRootPermSetLevel = function (genid, level) {
+	for (i=0; i<og.perm_root_object_type_ids.length; i++) {
+		var ot = og.perm_root_object_type_ids[i];
+		og.ogSetCheckedValue(document.getElementsByName(genid + "rg_root_" + ot), level);
+	}
+}
+</script>
+<?php }?>

@@ -1,8 +1,8 @@
 <?php 
 $current_member = current_member();
-$member = 0;
-if($current_member){
-   $member = $current_member->getId();
+$member_id = 0;
+if($current_member instanceof Member){
+   $member_id = $current_member->getId();
 }
 ?>
 
@@ -11,7 +11,7 @@ if($current_member){
 	<div class="widget-header dashHeader">
             <div style="overflow:hidden; float: left; width: 90%;" onclick="og.dashExpand('<?php echo $genid?>');"><?php echo (isset($widget_title)) ? $widget_title : lang("activity");?></div>                
 			<div class="dash-expander ico-dash-expanded" id="<?php echo $genid; ?>expander" onclick="og.dashExpand('<?php echo $genid?>');"></div>
-            <div style="z-index:1; width:16px; float: right; margin-right: 5px; margin-top: 1px;" id="<?php echo $genid; ?>configFilters" onclick="og.quickForm({ type: 'configFilter', genid: '<?php echo $genid; ?>', members:'<?php echo $member ?>'});">
+            <div style="z-index:1; width:16px; float: right; margin-right: 5px; margin-top: 1px;" id="<?php echo $genid; ?>configFilters" onclick="og.quickForm({ type: 'configFilter', genid: '<?php echo $genid; ?>', members:'<?php echo $member_id ?>'});">
             	<img src="public/assets/themes/default/images/16x16/administration.png"/>
             </div>
 	</div>
@@ -27,8 +27,12 @@ if($current_member){
             if ($activity instanceof Contact && $activity->isUser() || (isset($member_deleted) && $member_deleted)) {
             	$crumbOptions = "";
             } else {
-            	$crumbOptions = json_encode($activity->getMembersToDisplayPath());
-            }
+            	if ($activity instanceof Member){
+            		$crumbOptions = "";
+            	}else{
+					$crumbOptions = json_encode($activity->getMembersToDisplayPath());
+            	}
+			}
             $crumbJs = " og.getCrumbHtml($crumbOptions) ";
             $class = "";
             $style = "";

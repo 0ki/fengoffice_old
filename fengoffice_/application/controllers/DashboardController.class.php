@@ -10,7 +10,7 @@ class DashboardController extends ApplicationController {
 	/**
 	 * Construct controller and check if we have logged in user
 	 *
-	 * @param voidnetaractivi
+	 * @param void
 	 * @return null
 	 */
 	function __construct() {

@@ -1119,3 +1119,7 @@ span.member-path span a:hover {
 	opacity: 0.70;
 	filter: alpha(opacity=70);
 }
+
+.cursor-pointer {
+	cursor: pointer;
+}

@@ -631,9 +631,10 @@ class AccessController extends ApplicationController {
 	function get_javascript_translation() {
 		$content = "/* start */\n";
 		$fileDir = ROOT . "/language/" . Localization::instance()->getLocale();
-		
+					
 		//Get Feng Office translation files
 		$filenames = get_files($fileDir, "js");
+				
 		sort($filenames);
 		foreach ($filenames as $f) {
 			$content .= "\n/* $f */\n";
@@ -641,9 +642,7 @@ class AccessController extends ApplicationController {
 			$content .= file_get_contents($f);
 			$content .= "} catch (e) {}";
 		}
-		
-		
-		
+						
 		$plugins = Plugins::instance ()->getActive ();
 		
 		foreach ( $plugins as $plugin ) {
@@ -653,8 +652,9 @@ class AccessController extends ApplicationController {
 				$files = get_files($plg_dir, 'js');
 				if (is_array ( $files )) {
 					sort ( $files );
+					
 					foreach ( $files as $file ) {
-						$content .= "\n/* $f */\n";
+						$content .= "\n/* $file */\n";
 						$content .= "try {";
 						/**
 						 * The js file can contain PHP code so use include instead of file_get_contents.
@@ -672,10 +672,60 @@ class AccessController extends ApplicationController {
 				}
 			}
 		}
-		
 		$content .= "\n/* end */\n";
 		$this->setLayout("json");
-		$this->renderText($content, true);	
+		$this->renderText($content, true);
+	}
+	
+	function get_javascript_translation_default() {
+		$defaultLang = "en_us";
+		$content = "/* start */\n";		
+		$fileDir = ROOT . "/language/".$defaultLang;
+	
+		//Get Feng Office translation files
+		$filenames = get_files($fileDir, "js");
+			
+		sort($filenames);
+		foreach ($filenames as $f) {
+			$content .= "\n/* $f */\n";
+			$content .= "try {";
+			$content .= file_get_contents($f);
+			$content .= "} catch (e) {}";
+		}
+	
+		$plugins = Plugins::instance ()->getActive ();
+	
+		foreach ( $plugins as $plugin ) {
+			$plg_dir = $plugin->getLanguagePath () . "/" . $defaultLang;
+			if (is_dir ( $plg_dir )) {
+				$files = get_files($plg_dir, 'js');
+				if (is_array ( $files )) {
+					sort ( $files );
+						
+					foreach ( $files as $file ) {
+						$content .= "\n/* $file */\n";
+						$content .= "try {";
+						/**
+						 * The js file can contain PHP code so use include instead of file_get_contents.
+						 * To avoid sending headers, use output buffer.
+						 * This change help to avoid the need of multiple lang files.. javascripts and phps.
+						 * You can create only one php file containing all traslations,
+						 * and this will populate client and server side langs datasorces
+						 */
+						ob_start();
+						include $file ;
+						$content .= ob_get_contents();
+						ob_end_clean(); //!important: Clean output buffer to save memory
+						$content .= "} catch (e) {}";
+					}
+				}
+			}
+		}
+		$content .= "\n/* end */\n";
+		
+		$content = str_replace("addLangs", "addLangsDefault", $content);
+		$this->setLayout("json");
+		$this->renderText($content, true);
 	}
 	
 	function reset_password() {

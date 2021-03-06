@@ -1,5 +1,5 @@
 
-	About Feng Office 2.3.2-rc
+	About Feng Office 2.3.2 rc2
 	================================
 	
 	Feng Office is a Collaboration Platform and Project Management System.
@@ -101,6 +101,30 @@
 	
 	Changelog
 	=========
+	
+	Since 2.3.2-rc
+	----------------
+	
+	bugfix: Show can_manage_billing permission.
+	bugfix: Missing lang on javascript langs. 
+	bugfix: Javascript plugin langs are not loaded.
+	bugfix: When requesting completed tasks for calendar month view, it does not filter by dates and calendar hangs if there are too much tasks.
+	bugfix: Administration / dimensions does not show members for dimensions that don't define permissions.
+	bugfix: Permissions fix when email module is not installed.
+	bugfix: Company object type name fixed.
+	bugfix: Try to reconect to database if not conected when executing a query (if connection is lost while performing other tasks).
+	bugfix: When users cannot see other user's tasks they can view them using the search.
+	bugfix: Group permissions not applied in assigned to combo (when adding or editing tasks).
+	bugfix: Minor bugfixes in 1.7 -> 2.x upgrade.
+	bugfix: Activity widget: logs for members (workspaces, etc.) were not displayed.
+	bugfix: General search sql query improved.
+	bugfix: Don't include context in the user edited notification.
+	bugfix: Don't show worked hours if user doesn't have permissions for it.
+	bugfix: Don't send archived mails.
+	
+	feature: Only administrators can change system permissions.
+	feature: Users can change permissions of users of the same type (only dimension member permissions).
+	feature: Set permissions to executive, manager and admins when creating a new member.
 	
 	Since 2.3.2-beta
 	----------------

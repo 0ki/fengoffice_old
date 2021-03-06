@@ -5,6 +5,21 @@ require_javascript("og/Permissions.js");
 if (!isset($genid)) $genid = gen_id();
 if (!isset($name)) $name = 'permissions';
 
+// reorder dimensions
+$dimension_order = array('customer_project' => 0, 'workspaces' => 1, 'feng_persons' => 2);
+$with_order = array();
+$with_no_order = array();
+foreach ($dimensions as $dim) {
+	if (in_array($dim->getCode(), $dimension_order)) {
+		$with_order[$dimension_order[$dim->getCode()]] = $dim;
+	} else {
+		$with_no_order[] = $dim;
+	}
+}
+ksort($with_order);
+$dimensions = array_merge($with_order, $with_no_order);
+// end reorder dimensions
+
 ?>
 
 <input id="<?php echo $genid ?>hfPerms" type="hidden" value="<?php echo str_replace('"',"'", json_encode($member_permissions));?>"/>
@@ -16,11 +31,13 @@ if (!isset($name)) $name = 'permissions';
 
 <?php foreach ($dimensions as $dimension) {
 		if ( $dimension->getOptions(1) && isset($dimension->getOptions(1)->hidden) && $dimension->getOptions(1)->hidden ) continue;
+		$class = $dimension->getIsManageable() ? 'toggle_expanded' : 'toggle_collapsed';
+		$expand = $dimension->getIsManageable() ? 'false' : 'true';
 ?>
 <fieldset>
-	<legend><span class="og-task-expander toggle_expanded" style="padding-left:20px;" title="<?php echo lang('expand-collapse') ?>" id="<?php echo $genid?>expander<?php echo $dimension->getId()?>"
-				onclick="og.editMembers.expandCollapseDim('<?php echo $genid?>dimension<?php echo $dimension->getId()?>', false);"><?php echo $dimension->getName()?></span></legend>
-	<div id="<?php echo $genid?>dimension<?php echo $dimension->getId()?>">
+	<legend><span class="og-task-expander <?php echo $class?>" style="padding-left:20px;" title="<?php echo lang('expand-collapse') ?>" id="<?php echo $genid?>expander<?php echo $dimension->getId()?>"
+				onclick="og.editMembers.expandCollapseDim('<?php echo $genid?>dimension<?php echo $dimension->getId()?>', <?php echo $expand?>);"><?php echo $dimension->getName()?></span></legend>
+	<div id="<?php echo $genid?>dimension<?php echo $dimension->getId()?>" style="<?php echo $dimension->getIsManageable() ? '' : 'display:none;'?>">
 	<table><tr><td>
   <?php	
   		echo render_single_dimension_tree($dimension, $genid, null, array('all_members' => true, 'select_root' => true));

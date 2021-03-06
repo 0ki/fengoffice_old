@@ -2,9 +2,6 @@
 	//limit to the number of users to be displayed in widgets
 	$limit = 6;
 
-	
-	$current_member = current_member();
-	
 	$active_members = array();
 	$context = active_context();
 	foreach ($context as $selection) {

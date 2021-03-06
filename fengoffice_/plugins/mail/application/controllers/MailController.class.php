@@ -796,6 +796,9 @@ class MailController extends ApplicationController {
 					// Only send mails with pair status
 					if ($mail->getState() % 2 == 1) continue;
 					
+					//if is archived do not send it
+					if($mail->isArchived())continue;
+					
 					// Set impair status, to avoid sending it again when sending it in parallel
 					if (!$mail->addToStatus(1)) continue;
 					
@@ -2764,7 +2767,7 @@ class MailController extends ApplicationController {
 							break;
 
 						default:
-							$resultMessage = lang("Unimplemented type: '" . $type . "'");// if
+							$resultMessage = "Unimplemented type: '" . $type . "'";
 							$resultCode = 2;
 							break;
 					}; // switch
@@ -2809,7 +2812,7 @@ class MailController extends ApplicationController {
 								$count++;
 								break;	
 							default:
-								$resultMessage = lang("Unimplemented type: '" . $type . "'");// if
+								$resultMessage = "Unimplemented type: '" . $type . "'";
 								$resultCode = 2;
 								break;
 						}; // switch
@@ -2849,7 +2852,7 @@ class MailController extends ApplicationController {
 							break;
 
 						default:
-							$resultMessage = lang("Unimplemented type: '" . $type . "'");// if
+							$resultMessage = "Unimplemented type: '" . $type . "'";
 							$resultCode = 2;
 							break;
 					}; // switch
@@ -2903,7 +2906,7 @@ class MailController extends ApplicationController {
 				break;
 			default:
 				if ($action) {
-					$resultMessage = lang("Unimplemented action: '" . $action . "'");// if
+					$resultMessage = "Unimplemented action: '" . $action. "'";
 					$resultCode = 2;
 				}
 				break;

@@ -25,6 +25,7 @@ abstract class BaseApplicationLogs extends DataManager {
     	'is_private' => DATA_TYPE_BOOLEAN,
     	'is_silent' => DATA_TYPE_BOOLEAN,
     	'log_data' => DATA_TYPE_STRING,
+		'member_id' => DATA_TYPE_INTEGER,
 	);
 
 	/**

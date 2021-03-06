@@ -88,6 +88,8 @@
 	'reminder_email' => 'E-mail',
     
 	'the message activity' => 'la nota{0}',
+	'the workspace activity' => 'el espacio{0}',
+	'the company activity' => 'la empresa{0}',
 	'the mail activity' => 'el correo{0}',
 	'the emailunclassified activity' => 'el correo{0}',
 	'the contact activity' => 'la persona{0}',
@@ -105,6 +107,9 @@
 	'the Time activity' => 'un tiempo de trabajo',
     
 	'the message' => 'la nota',
+	'the workspace' => 'el espacio',
+	'the folder' => 'la carpeta',
+	'the tag' => 'la etiqueta',
 	'the mail' => 'el correo',
 	'the emailunclassified' => 'en el correo',
 	'the contact' => 'el contacto',
@@ -117,7 +122,7 @@
 	'the webpage' => 'el enlace',
 	'the comment' => 'el comentario',
 	'the user' => 'el usuario',
-	'the project' => 'el espacio',
+	'the project' => 'el proyecto',
 	'the weblink' => 'el enlace web',
 	'the timeslot' => 'el tiempo de trabajo',
 	'the object' => 'el objeto',

@@ -49,6 +49,7 @@ class  SharingTableController extends ApplicationController {
 		$members = array();
 		$general_condition = '';
 		$read_condition = '';
+		$read_conditions = array();
 		$delete_condition = '';
 		$delete_conditions = array();
 

@@ -269,7 +269,10 @@
     * @throws DBQueryError
     */
     function execute($sql, $arguments = null) {
-      return $this->prepareAndExecute($sql, $arguments);
+    	if (!$this->isConnected()) {
+    		$this->reconnect();
+    	}
+    	return $this->prepareAndExecute($sql, $arguments);
     } // execute
     
     /**

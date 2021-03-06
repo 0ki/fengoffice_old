@@ -17,7 +17,7 @@
 			<span class="footers_links">
 				<span class="created_by"><?php echo $updated_by ?></span> -
 				<span class="updated_on"><?php echo $updated_on ?></span> -
-				<span class="type"><?php echo lang($type) ?></span> 
+				<span class="type"><?php echo lang($type) . (isset($additional_type) ? " - $additional_type" : '') ?></span> 
 			</span>
 		</div>
 	</div>

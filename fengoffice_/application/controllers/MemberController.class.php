@@ -120,7 +120,7 @@ class MemberController extends ApplicationController {
 			}
 			tpl_assign('member_data', $member_data);
 			
-			// New ! Permissions
+			// Permissions
 			$permission_parameters = permission_member_form_parameters();
 			
 			$logged_user_pg = array();
@@ -133,6 +133,24 @@ class MemberController extends ApplicationController {
 				);
 			}
 			$permission_parameters['member_permissions'][logged_user()->getPermissionGroupId()] = $logged_user_pg;
+			
+			// Add default permissions for executives, managers and administrators
+			$users = Contacts::findAll(array('conditions' => "user_type IN (SELECT id FROM ".TABLE_PREFIX."permission_groups WHERE type='roles' AND name IN ('Executive','Manager','Administrator','Super Administrator'))"));
+			foreach ($users as $user) {
+				if (!isset($permission_parameters['member_permissions'][$user->getPermissionGroupId()])) {
+					$user_pg = array();
+					foreach ($permission_parameters['allowed_object_types'] as $ot){
+						$role_perm = RoleObjectTypePermissions::findOne(array('conditions' => array("role_id=? AND object_type_id=?", $user->getUserType(), $ot->getId())));
+						$user_pg[] = array(
+							'o' => $ot->getId(),
+							'w' => $role_perm instanceof RoleObjectTypePermission ? ($role_perm->getCanWrite()?1:0) : 0,
+							'd' => $role_perm instanceof RoleObjectTypePermission ? ($role_perm->getCanDelete()?1:0) : 0,
+							'r' => $role_perm instanceof RoleObjectTypePermission ? 1 : 0,
+						);
+					}
+					$permission_parameters['member_permissions'][$user->getPermissionGroupId()] = $user_pg;
+				}
+			}
 			tpl_assign('permission_parameters', $permission_parameters);
 			//--
 			
@@ -188,10 +206,31 @@ class MemberController extends ApplicationController {
 		} else {
 			$ok = $this->saveMember($member_data, $member);
 			
+			// if added from quick-add add default permissions for executives, managers and administrators
+			if (array_var($_GET, 'quick')) {
+				$users = Contacts::findAll(array('conditions' => "user_type IN (SELECT id FROM ".TABLE_PREFIX."permission_groups WHERE type='roles' AND name IN ('Executive','Manager','Administrator','Super Administrator'))"));
+				if (!array_var($_REQUEST, 'permissions')) $_REQUEST['permissions'] = "[]";
+				$permissions_decoded = json_decode(array_var($_REQUEST, 'permissions'));
+				foreach ($users as $user) {
+					$role_perms = RoleObjectTypePermissions::findAll(array('conditions' => array("role_id=?", $user->getUserType())));
+					foreach ($role_perms as $role_perm) {
+						$pg_obj = new stdClass();
+						$pg_obj->pg = $user->getPermissionGroupId();
+						$pg_obj->o = $role_perm->getObjectTypeId();
+						$pg_obj->d = $role_perm->getCanDelete();
+						$pg_obj->w = $role_perm->getCanWrite();
+						$pg_obj->r = 1;
+						$permissions_decoded[] = $pg_obj;
+					}
+				}
+				$_REQUEST['permissions'] = json_encode($permissions_decoded);
+			}
+			
 			Env::useHelper('permissions');
 			save_member_permissions_background(logged_user(), $member, array_var($_REQUEST, 'permissions'));
 			
 			if ($ok) {
+				ApplicationLogs::createLog($member, ApplicationLogs::ACTION_ADD);
 				ajx_extra_data( array(
 					"member"=>array(
 						"id" => $member->getId(),
@@ -302,10 +341,10 @@ class MemberController extends ApplicationController {
 			save_member_permissions_background(logged_user(), $member, array_var($_REQUEST, 'permissions'));
 			
 			if ($ok) {
+				ApplicationLogs::createLog($member, ApplicationLogs::ACTION_EDIT);
 				$ret = null;
 				Hook::fire('after_edit_member', $member, $ret);
-				evt_add("reload dimension tree", array('dim_id' => $member->getDimensionId()));
-//				ApplicationLogs::createLog($member, ApplicationLogs::ACTION_EDIT, false, true);
+				evt_add("reload dimension tree", array('dim_id' => $member->getDimensionId()));				
 			}
 		}
 	}
@@ -660,9 +699,10 @@ class MemberController extends ApplicationController {
 			
 			Hook::fire('delete_member', $member, $ret);
 
-//			ApplicationLogs::createLog($member, ApplicationLogs::ACTION_DELETE, false, true);
+			
 			$ok = $member->delete(false);
 			if ($ok) {
+				//ApplicationLogs::createLog($member, ApplicationLogs::ACTION_DELETE);
 				evt_add("reload dimension tree", array('dim_id' => $dim_id, 'node' => null));
 				evt_add("select dimension member", array('dim_id' => $dim_id, 'node' => 'root'));
 			}
@@ -1285,6 +1325,8 @@ class MemberController extends ApplicationController {
 			evt_add("reload dimension tree", array('dim_id' => $member->getDimensionId()));
 			if (array_var($_REQUEST, 'dont_back')) ajx_current("empty");
 			else ajx_current("back");
+			ApplicationLogs::createLog($member,ApplicationLogs::ACTION_ARCHIVE);
+			DB::commit();
 		} catch (Exception $e) {
 			DB::rollback();
 			flash_error($e->getMessage());
@@ -1324,7 +1366,7 @@ class MemberController extends ApplicationController {
 			if (array_var($_REQUEST, 'dont_back')) ajx_current("empty");
 			else ajx_current("back");
 			flash_success(lang('success unarchive member', $member->getName(), $count));
-			
+			ApplicationLogs::createLog($member, ApplicationLogs::ACTION_UNARCHIVE);
 			DB::commit();
 		} catch (Exception $e) {
 			DB::rollback();

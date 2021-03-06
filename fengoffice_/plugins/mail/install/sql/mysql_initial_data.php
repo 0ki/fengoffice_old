@@ -36,8 +36,8 @@ INSERT INTO `<?php echo $table_prefix ?>contact_config_categories` (`name`, `is_
  ('mails panel', 0, 0, 5)
 ON DUPLICATE KEY UPDATE name=name;
 
-INSERT INTO `<?php echo $table_prefix ?>administration_tools` (`name`, `controller`, `action`, `order`) VALUES
- ('mass_mailer', 'administration', 'tool_mass_mailer', 2)
+INSERT INTO `<?php echo $table_prefix ?>administration_tools` (`name`, `controller`, `action`, `order`, `visible`) VALUES
+ ('mass_mailer', 'administration', 'tool_mass_mailer', '2', '0')
 ON DUPLICATE KEY UPDATE name=name;
 
 INSERT INTO `<?php echo $table_prefix ?>dimension_object_type_contents` (`dimension_id`,`dimension_object_type_id`,`content_object_type_id`, `is_required`, `is_multiple`)

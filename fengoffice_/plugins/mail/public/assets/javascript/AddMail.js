@@ -304,6 +304,8 @@ og.checkMailBodyChanges = function(genid) {
 
 og.autoSaveDraft = function(genid) {
 	var mb = Ext.getDom(genid + 'mailBody');
+	if(mb == null) return;
+	
 	var old_val = og.setHfValue(genid, 'isDraft', true);
 	og.setHfValue(genid, 'autosave', true);
 

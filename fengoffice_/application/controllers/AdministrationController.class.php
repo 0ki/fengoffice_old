@@ -758,21 +758,18 @@ class AdministrationController extends ApplicationController {
 		$logged_user_pgs = implode(',', logged_user()->getPermissionGroupIds());
 		
 		foreach($dimensions as $dim) {
-			$dimensions = Dimensions::findAll(array('conditions' => '`is_manageable` = 1'));
-			$members = array();
-			foreach($dimensions as $dim) {
-				//if ($dim->deniesAllForContact($logged_user_pgs)) continue;
-				
-				$allows_all = $dim->hasAllowAllForContact($logged_user_pgs);
-				
-				$root_members = Members::findAll(array('conditions' => array('`dimension_id`=? AND `parent_member_id`=0', $dim->getId()), 'order' => '`name` ASC'));
-				foreach ($root_members as $mem) {
-					if (!$allows_all) {
-						if (!$mem->canBeReadByContact($logged_user_pgs, logged_user())) continue;
-					}
-					$members[$dim->getId()][] = $mem;
-					$members[$dim->getId()] = array_merge($members[$dim->getId()], $mem->getAllChildrenSorted());
+			//if ($dim->deniesAllForContact($logged_user_pgs)) continue;
+			
+			$allows_all = $dim->hasAllowAllForContact($logged_user_pgs);
+			
+			$root_members = Members::findAll(array('conditions' => array('`dimension_id`=? AND `parent_member_id`=0', $dim->getId()), 'order' => '`name` ASC'));
+			
+			foreach ($root_members as $mem) {
+				if ($dim->getDefinesPermissions() && !$allows_all) {
+					if (!$mem->canBeReadByContact($logged_user_pgs, logged_user())) continue;
 				}
+				$members[$dim->getId()][] = $mem;
+				$members[$dim->getId()] = array_merge($members[$dim->getId()], $mem->getAllChildrenSorted());
 			}
 		}
 		

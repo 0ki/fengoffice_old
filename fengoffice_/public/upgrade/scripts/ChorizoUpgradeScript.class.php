@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Chorizo upgrade script will upgrade FengOffice 2.2.4.1 to FengOffice 2.3.2-rc
+ * Chorizo upgrade script will upgrade FengOffice 2.2.4.1 to FengOffice 2.3.2-rc2
  *
  * @package ScriptUpgrader.scripts
  * @version 1.0
@@ -40,7 +40,7 @@ class ChorizoUpgradeScript extends ScriptUpgraderScript {
 	function __construct(Output $output) {
 		parent::__construct($output);
 		$this->setVersionFrom('2.2.4.1');
-		$this->setVersionTo('2.3.2-rc');
+		$this->setVersionTo('2.3.2-rc2');
 	} // __construct
 
 	function getCheckIsWritable() {
@@ -236,6 +236,20 @@ class ChorizoUpgradeScript extends ScriptUpgraderScript {
 				ALTER TABLE `".$t_prefix."object_types` DROP INDEX `name`,
 				 ADD UNIQUE INDEX `name` USING BTREE(`name`);
 			";
+		}
+		
+		
+		if (version_compare($installed_version, '2.3.2-rc2') < 0) {
+			$upgrade_script .= "
+				UPDATE `".$t_prefix."administration_tools` SET `visible` = '0' WHERE `name`='mass_mailer';
+				DELETE FROM `".$t_prefix."contact_emails` WHERE `contact_id` = '0';
+			";
+			
+			if (!$this->checkColumnExists($t_prefix."application_logs", "member_id", $this->database_connection)) {
+				$upgrade_script .= "
+					ALTER TABLE ".$t_prefix."application_logs ADD member_id int(10) NOT NULL default '0';
+				";
+			}
 		}
 		
 		

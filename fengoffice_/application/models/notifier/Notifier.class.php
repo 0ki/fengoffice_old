@@ -162,17 +162,21 @@ class Notifier {
 		//context
 		$contexts = array();
 		$members =  $object instanceof Comment ? $object->getRelObject()->getMembers() : $object->getMembers();
-		if(count($members)>0){
-			foreach ($members as $member){
-				$dim = $member->getDimension();
-				if($dim->getIsManageable()){
-					if ($dim->getCode() == "customer_project"){
-						$obj_type = ObjectTypes::findById($member->getObjectTypeId());
-						if ($obj_type instanceof ObjectType) {
-							$contexts[$dim->getCode()][$obj_type->getName()][]= '<span style="'.get_workspace_css_properties($member->getMemberColor()).'">'. $member->getName() .'</span>';
+		
+		// Do not send context when edit a user
+		if(!($object instanceof Contact && $notification == 'modified' && $object->getUserType() > 0)){
+			if(count($members)>0){
+				foreach ($members as $member){
+					$dim = $member->getDimension();
+					if($dim->getIsManageable()){
+						if ($dim->getCode() == "customer_project"){
+							$obj_type = ObjectTypes::findById($member->getObjectTypeId());
+							if ($obj_type instanceof ObjectType) {
+								$contexts[$dim->getCode()][$obj_type->getName()][]= '<span style="'.get_workspace_css_properties($member->getMemberColor()).'">'. $member->getName() .'</span>';
+							}
+						}else{
+							$contexts[$dim->getCode()][]= '<span style="'.get_workspace_css_properties($member->getMemberColor()).'">'. $member->getName() .'</span>';
 						}
-					}else{
-						$contexts[$dim->getCode()][]= '<span style="'.get_workspace_css_properties($member->getMemberColor()).'">'. $member->getName() .'</span>';
 					}
 				}
 			}
@@ -890,95 +894,93 @@ class Notifier {
 
 		$locale = $task->getAssignedTo()->getLocale();
 		Localization::instance()->loadSettings($locale, ROOT . '/language');
-                
-                tpl_assign('title', $task->getObjectName());
-                tpl_assign('by', $task->getAssignedBy()->getObjectName());
-                tpl_assign('asigned', $task->getAssignedTo()->getObjectName());
-                $text = "";
-                if(config_option("wysiwyg_tasks")){
-                    $text = purify_html(nl2br($task->getDescription()));
-                }else{
-                    $text = escape_html_whitespace($task->getDescription());
-                }
-                tpl_assign('description', $text);//descripction
-                tpl_assign('description_title', lang("new task assigned to you desc", $task->getObjectName(),$task->getAssignedBy()->getObjectName()));//description_title
-                
-                //priority
-                if ($task->getPriority()) {
-                    if ($task->getPriority() >= ProjectTasks::PRIORITY_URGENT) {
-                            $priorityColor = "#FF0000";
-                            $priority = lang('urgent priority');
-                    }else if ($task->getPriority() >= ProjectTasks::PRIORITY_HIGH) {
-                            $priorityColor = "#FF9088";
-                            $priority = lang('high priority');
-                    } else if ($task->getPriority() <= ProjectTasks::PRIORITY_LOW) {
-                            $priorityColor = "white";
-                            $priority = lang('low priority');
-                    }else{
-                            $priorityColor = "#DAE3F0";
-                            $priority = lang('normal priority');
-                    }
-                    tpl_assign('priority', array($priority,$priorityColor));
+
+		tpl_assign('title', $task->getObjectName());
+		tpl_assign('by', $task->getAssignedBy()->getObjectName());
+		tpl_assign('asigned', $task->getAssignedTo()->getObjectName());
+		$text = "";
+		if(config_option("wysiwyg_tasks")){
+			$text = purify_html(nl2br($task->getDescription()));
+		}else{
+			$text = escape_html_whitespace($task->getDescription());
 		}
-                
-                //ALL SUBSCRIBERS
-                if($task->getSubscribers()){
-                    $subscribers = $task->getSubscribers();
-                    $string_subscriber = '';
-                    $total_s = count($subscribers);
-                    $c = 0;
-                    foreach ($subscribers as $subscriber){
-                        $c++;
-                        if($c == $total_s && $total_s > 1){
-                            $string_subscriber .= lang('and');
-                        }else if($c > 1){
-                            $string_subscriber .= ", ";
-                        }
+		tpl_assign('description', $text);//descripction
+		tpl_assign('description_title', lang("new task assigned to you desc", $task->getObjectName(),$task->getAssignedBy()->getObjectName()));//description_title
 
-                        $string_subscriber .= $subscriber->getFirstName();
-                        if($subscriber->getSurname() != "")
-                            $string_subscriber .=" " . $subscriber->getSurname();
+		//priority
+		if ($task->getPriority()) {
+			if ($task->getPriority() >= ProjectTasks::PRIORITY_URGENT) {
+				$priorityColor = "#FF0000";
+				$priority = lang('urgent priority');
+			}else if ($task->getPriority() >= ProjectTasks::PRIORITY_HIGH) {
+				$priorityColor = "#FF9088";
+				$priority = lang('high priority');
+			} else if ($task->getPriority() <= ProjectTasks::PRIORITY_LOW) {
+				$priorityColor = "white";
+				$priority = lang('low priority');
+			}else{
+				$priorityColor = "#DAE3F0";
+				$priority = lang('normal priority');
+			}
+			tpl_assign('priority', array($priority,$priorityColor));
+		}
 
-                    }
-                    tpl_assign('subscribers', $string_subscriber);// subscribers
-                }
-                
-                //context
-                $contexts = array();
-                $members = $task->getMembers();
-	                if(count($members)>0){
-	                	foreach ($members as $member){
-	                		$dim = $member->getDimension();
-	                		if($dim->getIsManageable()){
-	                			if ($dim->getCode() == "customer_project"){
-	                				$obj_type = ObjectTypes::findById($member->getObjectTypeId());
-	                				if ($obj_type instanceof ObjectType) {
-	                					$contexts[$dim->getCode()][$obj_type->getName()][]= '<span style="'.get_workspace_css_properties($member->getMemberColor()).'">'. $member->getName() .'</span>';
-	                				}
-	                			}else{
-	                				$contexts[$dim->getCode()][]= '<span style="'.get_workspace_css_properties($member->getMemberColor()).'">'. $member->getName() .'</span>';
-	                			}
-	                		}
-	                	}
-	                }
-               
-                
-                tpl_assign('contexts', $contexts);//workspaces 
-                //start date, due date or start
-                if ($task->getStartDate() instanceof DateTimeValue) {
+		//ALL SUBSCRIBERS
+		if($task->getSubscribers()){
+			$subscribers = $task->getSubscribers();
+			$string_subscriber = '';
+			$total_s = count($subscribers);
+			$c = 0;
+			foreach ($subscribers as $subscriber){
+				$c++;
+				if($c == $total_s && $total_s > 1){
+					$string_subscriber .= lang('and');
+				}else if($c > 1){
+					$string_subscriber .= ", ";
+				}
+
+				$string_subscriber .= $subscriber->getFirstName();
+				if($subscriber->getSurname() != "")
+				$string_subscriber .=" " . $subscriber->getSurname();
+
+			}
+			tpl_assign('subscribers', $string_subscriber);// subscribers
+		}
+
+		//context
+		$contexts = array();
+		$members = $task->getMembers();
+		if(count($members)>0){
+			foreach ($members as $member){
+				$dim = $member->getDimension();
+				if($dim->getIsManageable()){
+					if ($dim->getCode() == "customer_project"){
+						$obj_type = ObjectTypes::findById($member->getObjectTypeId());
+						if ($obj_type instanceof ObjectType) {
+							$contexts[$dim->getCode()][$obj_type->getName()][]= '<span style="'.get_workspace_css_properties($member->getMemberColor()).'">'. $member->getName() .'</span>';
+						}
+					}else{
+						$contexts[$dim->getCode()][]= '<span style="'.get_workspace_css_properties($member->getMemberColor()).'">'. $member->getName() .'</span>';
+					}
+				}
+			}
+		}
+
+		 
+		tpl_assign('contexts', $contexts);//workspaces
+		//start date, due date or start
+		if ($task->getStartDate() instanceof DateTimeValue) {
 			$date = Localization::instance()->formatDescriptiveDate($task->getStartDate(), $task->getAssignedTo()->getTimezone());
 			$time = Localization::instance()->formatTime($task->getStartDate(), $task->getAssignedTo()->getTimezone());
-                        if($time > 0)
-                        $date .= " " . $time;
-                        tpl_assign('start_date', $date);//start_date
+			if($time > 0) $date .= " " . $time;
+			tpl_assign('start_date', $date);//start_date
 		}
-                
+
 		if ($task->getDueDate() instanceof DateTimeValue) {
 			$date = Localization::instance()->formatDescriptiveDate($task->getDueDate(), $task->getAssignedTo()->getTimezone());
 			$time = Localization::instance()->formatTime($task->getDueDate(), $task->getAssignedTo()->getTimezone());
-                        if($time > 0)
-                        $date .= " " . $time;
-                        tpl_assign('due_date', $date);//due_date
+			if($time > 0) $date .= " " . $time;
+			tpl_assign('due_date', $date);//due_date
 		}
 		
 		$attachments = array();
@@ -1010,9 +1012,9 @@ class Notifier {
 			self::prepareEmailAddress($task->getUpdatedBy()->getEmailAddress(), $task->getUpdatedByDisplayName()),
 			lang('new task assigned to you',$task->getObjectName()),
 			tpl_fetch(get_template_path('task_assigned', 'notifier')),
-                        'text/html',
-                        '8bit',
-                        $attachments
+			'text/html',
+			'8bit',
+			$attachments
 		); // send
 		
 		$locale = logged_user() instanceof Contact ? logged_user()->getLocale() : DEFAULT_LOCALIZATION;
@@ -1032,35 +1034,35 @@ class Notifier {
 
 		$locale = $task->getAssignedTo()->getLocale();
 		Localization::instance()->loadSettings($locale, ROOT . '/language');
-                
-                tpl_assign('title', $task->getObjectName());
-                tpl_assign('by', $task->getAssignedBy()->getObjectName());
-                tpl_assign('asigned', $task->getAssignedTo()->getObjectName());
-                $text = "";
-                if(config_option("wysiwyg_tasks")){
-                    $text = purify_html(nl2br($task->getDescription()));
-                }else{
-                    $text = escape_html_whitespace($task->getDescription());
-                }
-                tpl_assign('description', $text);//descripction
-                tpl_assign('description_title', lang("new task work estimate to you desc", $task->getObjectName(),$task->getAssignedBy()->getObjectName()));//description_title
-                
-                //priority
-                if ($task->getPriority()) {
-                    if ($task->getPriority() >= ProjectTasks::PRIORITY_URGENT) {
-                            $priorityColor = "#FF0000";
-                            $priority = lang('urgent priority');
-                    }else if ($task->getPriority() >= ProjectTasks::PRIORITY_HIGH) {
-                            $priorityColor = "#FF9088";
-                            $priority = lang('high priority');
-                    } else if ($task->getPriority() <= ProjectTasks::PRIORITY_LOW) {
-                            $priorityColor = "white";
-                            $priority = lang('low priority');
-                    }else{
-                            $priorityColor = "#DAE3F0";
-                            $priority = lang('normal priority');
-                    }
-                    tpl_assign('priority', array($priority,$priorityColor));
+
+		tpl_assign('title', $task->getObjectName());
+		tpl_assign('by', $task->getAssignedBy()->getObjectName());
+		tpl_assign('asigned', $task->getAssignedTo()->getObjectName());
+		$text = "";
+		if(config_option("wysiwyg_tasks")){
+			$text = purify_html(nl2br($task->getDescription()));
+		}else{
+			$text = escape_html_whitespace($task->getDescription());
+		}
+		tpl_assign('description', $text);//descripction
+		tpl_assign('description_title', lang("new task work estimate to you desc", $task->getObjectName(),$task->getAssignedBy()->getObjectName()));//description_title
+
+		//priority
+		if ($task->getPriority()) {
+			if ($task->getPriority() >= ProjectTasks::PRIORITY_URGENT) {
+				$priorityColor = "#FF0000";
+				$priority = lang('urgent priority');
+			}else if ($task->getPriority() >= ProjectTasks::PRIORITY_HIGH) {
+				$priorityColor = "#FF9088";
+				$priority = lang('high priority');
+			} else if ($task->getPriority() <= ProjectTasks::PRIORITY_LOW) {
+				$priorityColor = "white";
+				$priority = lang('low priority');
+			}else{
+				$priorityColor = "#DAE3F0";
+				$priority = lang('normal priority');
+			}
+			tpl_assign('priority', array($priority,$priorityColor));
 		}
 		
 		//context		
@@ -1081,23 +1083,21 @@ class Notifier {
 				}
 			}
 		}
-                tpl_assign('contexts', $contexts);//workspaces
-                
-                //start date, due date or start
-                if ($task->getStartDate() instanceof DateTimeValue) {
+		tpl_assign('contexts', $contexts);//workspaces
+
+		//start date, due date or start
+		if ($task->getStartDate() instanceof DateTimeValue) {
 			$date = Localization::instance()->formatDescriptiveDate($task->getStartDate(), $task->getAssignedTo()->getTimezone());
 			$time = Localization::instance()->formatTime($task->getStartDate(), $task->getAssignedTo()->getTimezone());
-                        if($time > 0)
-                        $date .= " " . $time;
-                        tpl_assign('start_date', $date);//start_date
+			if($time > 0) $date .= " " . $time;
+			tpl_assign('start_date', $date);//start_date
 		}
-                
+
 		if ($task->getDueDate() instanceof DateTimeValue) {
 			$date = Localization::instance()->formatDescriptiveDate($task->getDueDate(), $task->getAssignedTo()->getTimezone());
 			$time = Localization::instance()->formatTime($task->getDueDate(), $task->getAssignedTo()->getTimezone());
-                        if($time > 0)
-                        $date .= " " . $time;
-                        tpl_assign('due_date', $date);//due_date
+			if($time > 0) $date .= " " . $time;
+			tpl_assign('due_date', $date);//due_date
 		}
 
 		$attachments = array();
@@ -1122,29 +1122,29 @@ class Notifier {
 			unset($attachments['logo']);
 		}
 		tpl_assign('attachments', $attachments);// attachments
-		
-                //ALL SUBSCRIBERS
-                if($task->getSubscribers()){
-                    $subscribers = $task->getSubscribers();
-                    $string_subscriber = '';
-                    $total_s = count($subscribers);
-                    $c = 0;
-                    foreach ($subscribers as $subscriber){
-                        $c++;
-                        if($c == $total_s && $total_s > 1){
-                            $string_subscriber .= lang('and');
-                        }else if($c > 1){
-                            $string_subscriber .= ", ";
-                        }
 
-                        $string_subscriber .= $subscriber->getFirstName();
-                        if($subscriber->getSurname() != "")
-                            $string_subscriber .=" " . $subscriber->getSurname();
+		//ALL SUBSCRIBERS
+		if($task->getSubscribers()){
+			$subscribers = $task->getSubscribers();
+			$string_subscriber = '';
+			$total_s = count($subscribers);
+			$c = 0;
+			foreach ($subscribers as $subscriber){
+				$c++;
+				if($c == $total_s && $total_s > 1){
+					$string_subscriber .= lang('and');
+				}else if($c > 1){
+					$string_subscriber .= ", ";
+				}
 
-                    }
-                    tpl_assign('subscribers', $string_subscriber);// subscribers
-                }
-		
+				$string_subscriber .= $subscriber->getFirstName();
+				if($subscriber->getSurname() != "")
+				$string_subscriber .=" " . $subscriber->getSurname();
+
+			}
+			tpl_assign('subscribers', $string_subscriber);// subscribers
+		}
+
 		if($task->getAssignedById() == $task->getAssignedToContactId()){
 			$emails[] = array(
                             "to" => array(self::prepareEmailAddress($task->getAssignedBy()->getEmailAddress(), $task->getAssignedBy()->getObjectName())),

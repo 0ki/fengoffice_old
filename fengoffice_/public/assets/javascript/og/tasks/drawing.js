@@ -866,12 +866,13 @@ ogTasks.drawTaskRow = function(task, drawOptions, displayCriteria, group_id, lev
 		if (task.workingOnIds){
 			var ids = (task.workingOnIds + ' ').split(',');
 			var userIsWorking = false;
-			for (var i = 0; i < ids.length; i++)
-				if (ids[i] == this.currentUser.id){
+			for (var i = 0; i < ids.length; i++) {
+				if (this.currentUser && ids[i] == this.currentUser.id){
 					userIsWorking = true;
 					var pauses = (task.workingOnPauses + ' ').split(',');
 					var userPaused = pauses[i] == 1;
 				}
+			}
 			sb.append("<td class='" + (userIsWorking?(userPaused?"ogTasksPausedTimeTd": "ogTasksActiveTimeTd") : "ogTasksTimeTd") + "'><table><tr>");
 			if (userIsWorking){
 				if (userPaused) {

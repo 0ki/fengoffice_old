@@ -205,7 +205,7 @@
 		// If The object has no required dimensions, and no dimensions are selected: check for contact_member_permissions with member_id=0
 		if ($no_required_dimensions && $membersInContext == 0) {
 			$mailot = ObjectTypes::findByName('mail');
-			if ($mailot->getId() == $object_type_id) {
+			if ($mailot instanceof ObjectType && $mailot->getId() == $object_type_id) {
 				$can_add = true;
 			} else {
 				$can_add = false;
@@ -632,44 +632,45 @@
 			}
 		}
 		
-		//system permissions
-		$system_permissions = SystemPermissions::findById($pg_id);
-		if (!$system_permissions instanceof SystemPermission) {
-			$system_permissions = new SystemPermission();
-			$system_permissions->setPermissionGroupId($pg_id);
-		}
-		$system_permissions->setAllPermissions(false);
-		$other_permissions = array();
-		Hook::fire('add_user_permissions', $pg_id, $other_permissions);
-		foreach ($other_permissions as $k => $v) {
-			$system_permissions->setColumnValue($k, false);
-		}
-		
-		$sys_permissions_data['can_task_assignee'] = !$is_guest;
-		$system_permissions->setFromAttributes($sys_permissions_data);
-		$system_permissions->save();
-		
-		//object type root permissions
-		if ($rp_genid = array_var($_POST, 'root_perm_genid')) {
-			ContactMemberPermissions::delete("permission_group_id = $pg_id AND member_id = 0");
-			foreach ($_POST as $name => $value) {
-				if (str_starts_with($name, $rp_genid . 'rg_root_')) {
-					$rp_ot = substr($name, strrpos($name, '_')+1);
-					
-					if (!is_numeric($rp_ot) || $rp_ot <= 0 || $value < 1) continue;
-					
-					// save with member_id = 0
-					$root_perm_cmp = new ContactMemberPermission();
-					$root_perm_cmp->setPermissionGroupId($pg_id);
-					$root_perm_cmp->setMemberId('0');
-					$root_perm_cmp->setObjectTypeId($rp_ot);
-					$root_perm_cmp->setCanWrite($value >= 2);
-					$root_perm_cmp->setCanDelete($value >= 3);
-					$root_perm_cmp->save();
+		if (logged_user() instanceof Contact && can_manage_security(logged_user()) && logged_user()->isAdminGroup()) {
+			//system permissions
+			$system_permissions = SystemPermissions::findById($pg_id);
+			if (!$system_permissions instanceof SystemPermission) {
+				$system_permissions = new SystemPermission();
+				$system_permissions->setPermissionGroupId($pg_id);
+			}
+			$system_permissions->setAllPermissions(false);
+			$other_permissions = array();
+			Hook::fire('add_user_permissions', $pg_id, $other_permissions);
+			foreach ($other_permissions as $k => $v) {
+				$system_permissions->setColumnValue($k, false);
+			}
+			
+			$sys_permissions_data['can_task_assignee'] = !$is_guest;
+			$system_permissions->setFromAttributes($sys_permissions_data);
+			$system_permissions->save();
+			
+			//object type root permissions
+			if ($rp_genid = array_var($_POST, 'root_perm_genid')) {
+				ContactMemberPermissions::delete("permission_group_id = $pg_id AND member_id = 0");
+				foreach ($_POST as $name => $value) {
+					if (str_starts_with($name, $rp_genid . 'rg_root_')) {
+						$rp_ot = substr($name, strrpos($name, '_')+1);
+						
+						if (!is_numeric($rp_ot) || $rp_ot <= 0 || $value < 1) continue;
+						
+						// save with member_id = 0
+						$root_perm_cmp = new ContactMemberPermission();
+						$root_perm_cmp->setPermissionGroupId($pg_id);
+						$root_perm_cmp->setMemberId('0');
+						$root_perm_cmp->setObjectTypeId($rp_ot);
+						$root_perm_cmp->setCanWrite($value >= 2);
+						$root_perm_cmp->setCanDelete($value >= 3);
+						$root_perm_cmp->save();
+					}
 				}
 			}
 		}
-		
 		//member permissions
 		$permissionsString = array_var($_POST, 'permissions');
 		if ($permissionsString && $permissionsString != ''){
@@ -717,7 +718,7 @@
 			
 			$sharingTablecontroller = new SharingTableController() ;
 			$sharingTablecontroller->afterPermissionChanged($pg_id, $permissions);
-			
+			/* cuando saco permisos sobre un tipo de objeto que no saque sobre todos los tipos
 			foreach ($allowed_members_ids as $key=>$mids){
 				$mbm=Members::findById($key);
 				$root_cmp = ContactMemberPermissions::findById(array('permission_group_id' => $mids['pg'], 'member_id' => $key, 'object_type_id' => $mbm->getObjectTypeId()));
@@ -738,7 +739,7 @@
 						ContactMemberPermissions::instance()->delete("`permission_group_id` = $pg_id AND `member_id` = $mid");
 					}
 				}
-			}
+			}*/
 		}
 		
 		// set all permissiions to read_only
@@ -1064,7 +1065,11 @@
 			$all_permission_groups[] = $row['permission_group_id'];
 		}
 		
-		$allowed_permission_groups = can_access_pgids($all_permission_groups, $members, $object_type_id, $access_level);
+		if (count($members) == 0 && config_option('let_users_create_objects_in_root')) {
+			$allowed_permission_groups = array_flat(DB::executeAll("SELECT permission_group_id FROM ".TABLE_PREFIX."contact_member_permissions WHERE member_id=0 AND object_type_id=$object_type_id"));
+		} else {
+			$allowed_permission_groups = can_access_pgids($all_permission_groups, $members, $object_type_id, $access_level);
+		}
 		
 		if (count($allowed_permission_groups) > 0) {
 			$result = Contacts::instance()->findAll(array(

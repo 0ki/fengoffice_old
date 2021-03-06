@@ -320,6 +320,13 @@ class ApplicationLog extends BaseApplicationLog {
 				//if it is a general timeslot
 				$object_link = '<span style="padding: 1px 0 3px 18px; font-weight:bold;" class="db-ico ico-unknown ico-' . $type . $icon_class . '"/>'.clean($object->getObjectName());
 			}
+		} elseif ($object instanceof Member){
+			$object_type = ObjectTypes::findById($object->getObjectTypeId());
+			$type = $object_type->getName();
+			$object_url = "";
+			$object_link =  '<a style="font-weight:bold" href="' . $object_url . '">&nbsp;'.
+				'<span style="padding: 1px 0 3px 18px;" class="db-ico ico-unknown ico-' . $type . $icon_class . '"/>'.clean($this->getObjectName()).'</a>';
+			return lang('activity ' . $this->getAction(), lang('the '.$type," "), $userName , $object_link);
 		} else {
 			$object_link = clean($this->getObjectName()).'&nbsp;'.lang('object is deleted');
 			return lang('activity ' . $this->getAction(), "", $userName , $object_link);

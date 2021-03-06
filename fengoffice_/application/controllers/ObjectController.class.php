@@ -196,7 +196,7 @@ class ObjectController extends ApplicationController {
 			if ($ent_mem->getDimension()->getIsManageable() && $ent_mem->getDimension()->getDefinesPermissions()) $manageable_members[] = $ent_mem;
 		}
 		
-		if (!can_add($user, $manageable_members, $object->getObjectTypeId())) {
+		if (!can_add($user, $check_allowed_members ? $object->getAllowedMembersToAdd($user, $manageable_members):$manageable_members, $object->getObjectTypeId())) {
 			$dinfos = DB::executeAll("SELECT name, code, options FROM ".TABLE_PREFIX."dimensions WHERE is_manageable = 1");
 			$dimension_names = array();
 			foreach ($dinfos as $dinfo) {
@@ -921,7 +921,8 @@ class ObjectController extends ApplicationController {
 				$result = Objects::getObjectsFromContext(active_context(), 'trashed_on', 'desc', true);
 				$objects = $result->objects;
 
-				list($succ, $err) = $this->do_delete_objects($objects, true);
+				$real_deleted_ids = array();
+				list($succ, $err) = $this->do_delete_objects($objects, true, $real_deleted_ids);
 				if ($err > 0) {
 					flash_error(lang('error delete objects', $err));
 				}

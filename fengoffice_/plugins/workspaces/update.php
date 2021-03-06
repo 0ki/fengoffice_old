@@ -18,7 +18,7 @@
 	function workspaces_update_2_3() {
 		$ws_options = '{"defaultAjax":{"controller":"dashboard", "action": "main_dashboard"}, "quickAdd":true,"showInPaths":true,"useLangs":true}';
 		DB::executeAll("UPDATE ".TABLE_PREFIX."dimensions SET options='$ws_options' WHERE code='workspaces'");
-		$tag_options = '{"defaultAjax":{"controller":"dashboard", "action": "init_overview"},"quickAdd":true,"showInPaths":true,"useLangs":true}';
+		$tag_options = '{"defaultAjax":{"controller":"dashboard", "action": "main_dashboard"},"quickAdd":true,"showInPaths":true,"useLangs":true}';
 		DB::executeAll("UPDATE ".TABLE_PREFIX."dimensions SET options='$tag_options' WHERE code='tags'");
 	}
 	
@@ -68,5 +68,17 @@
 	function workspaces_update_7_8() {
 		DB::execute("
 			UPDATE `".TABLE_PREFIX."widgets` SET `default_section`='left', `default_order`=3 WHERE `name`='workspaces';
+		");
+	}
+	
+	function workspaces_update_8_9() {
+		$tag_options = '{"defaultAjax":{"controller":"dashboard", "action": "main_dashboard"},"quickAdd":true,"showInPaths":true,"useLangs":true}';
+		DB::executeAll("UPDATE ".TABLE_PREFIX."dimensions SET options='$tag_options' WHERE code='tags'");
+		
+		$dot_options = '{"defaultAjax":{"controller":"dashboard", "action": "main_dashboard"}}';
+		DB::executeAll("
+			UPDATE ".TABLE_PREFIX."dimension_object_types SET options='$dot_options' WHERE 
+			 object_type_id=(SELECT `id` FROM `".TABLE_PREFIX."object_types` WHERE `name`='tag') AND
+			 dimension_id=(SELECT `id` FROM `".TABLE_PREFIX."dimensions` WHERE `code`='tags')
 		");
 	}

@@ -190,7 +190,6 @@ class FilesServices extends WebServicesBase {
 						foreach ($validWS as $w) {
 							ApplicationLogs::createLog($file, $w, ApplicationLogs::ACTION_ADD);
 						}
-						DB::commit();
 						
 						$result['message'] = 'd' . str_pad($file->getId(), 3, '0', STR_PAD_LEFT) . 'r' . $file->getRevisionNumber();
 						
@@ -199,6 +198,7 @@ class FilesServices extends WebServicesBase {
 						}
 					}
 				}
+				DB::commit();
 			} catch (Exception $e) {
 				DB::rollback();
 				$result['message'] = $e->getMessage();

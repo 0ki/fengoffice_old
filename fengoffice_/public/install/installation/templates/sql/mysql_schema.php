@@ -385,6 +385,7 @@ CREATE TABLE `<?php echo $table_prefix ?>application_logs` (
   `action` enum('upload','open','close','delete','edit','add','trash','untrash','subscribe','unsubscribe','tag','comment','link','unlink','login','logout','untag','archive','unarchive','move','copy','read','download','checkin','checkout') <?php echo $default_collation ?> default NULL,
   `is_private` tinyint(1) unsigned NOT NULL default '0',
   `is_silent` tinyint(1) unsigned NOT NULL default '0',
+  `member_id` int(10) NOT NULL default '0',
   `log_data` text <?php echo $default_collation ?>,
   PRIMARY KEY  (`id`),
   KEY `created_on` USING BTREE (`created_on`,`is_silent`),

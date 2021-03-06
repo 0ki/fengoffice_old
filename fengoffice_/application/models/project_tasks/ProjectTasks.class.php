@@ -114,21 +114,11 @@ class ProjectTasks extends BaseProjectTasks {
 		}
 		$rep_condition = " (`repeat_forever` = 1 OR `repeat_num` > 0 OR (`repeat_end` > 0 AND `repeat_end` >= '" . $from_date->toMySQL () . "')) ";
 		
-		if ($archived)
-			$archived_cond = " AND `archived_on` <> 0";
-		else
-			$archived_cond = " AND `archived_on` = 0";
+		$archived_cond = " AND `archived_on` ".($archived ? '<>' : '=')." 0";
 		
-		switch($task_filter){
-			case 'complete':
-				$conditions = DB::prepareString(' AND `completed_on` <> ?', array(EMPTY_DATETIME));
-				break;
-			case 'pending':
-			default:
-				$conditions = DB::prepareString(' AND `is_template` = false AND `completed_on` = ? AND (IF(due_date>0,(`due_date` >= ? AND `due_date` < ?),false) OR IF(start_date>0,(`start_date` >= ? AND `start_date` < ?),false) OR ' . $rep_condition . ') ' . $archived_cond . $assignedFilter, array(EMPTY_DATETIME,$from_date, $to_date, $from_date, $to_date));
-				break;
-		}
-                
+		$conditions = DB::prepareString(' AND `is_template` = false AND `completed_on` '. ($task_filter == 'complete' ? '<>' : '=') .' ? AND 
+			(IF(due_date>0,(`due_date` >= ? AND `due_date` < ?),false) OR IF(start_date>0,(`start_date` >= ? AND `start_date` < ?),false) OR ' . $rep_condition . ') ' . $archived_cond . $assignedFilter, array(EMPTY_DATETIME,$from_date, $to_date, $from_date, $to_date));
+		
 		$result = self::instance()->listing(array(
 			"extra_conditions" => $conditions
 		));

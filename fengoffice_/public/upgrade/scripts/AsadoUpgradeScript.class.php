@@ -176,7 +176,7 @@ class AsadoUpgradeScript extends ScriptUpgraderScript {
 
 				$object_members = ObjectMembers::findAll(array('conditions' => 'is_optimization=0 and not exists (SELECT x.object_id FROM fo_object_members x where x.object_id=fo_object_members.object_id and x.is_optimization=1)'));
 				foreach ($object_members as $om) {
-					$parents = $member_parents[$om->getMemberId()];
+					$parents = isset($member_parents[$om->getMemberId()]) ? $member_parents[$om->getMemberId()] : array();
 					if (count($parents) > 0) {
 						$sql_values = "";
 						foreach ($parents as $p) {

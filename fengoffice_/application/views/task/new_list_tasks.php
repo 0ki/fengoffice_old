@@ -47,8 +47,8 @@
 		}
 	}
 	
+	$ids = array();
 	if (isset($tasks)) {
-		$ids = array();
 		foreach($tasks as $task) {
 			$ids[] = $task['id'];
 			$tasks_array[] = ProjectTasks::getArrayInfo($task);
