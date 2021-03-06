@@ -30,11 +30,11 @@ INSERT INTO <?php echo $table_prefix ?>contact_config_options (`category_name`, 
  ('mails panel', 'hide_quoted_text_in_emails', '1', 'BoolConfigHandler', 0, 110, NULL),
  ('mails panel', 'mail_account_err_check_interval', '300', 'IntegerConfigHandler', 0, 120, NULL),
  ('mails panel', 'classify_mail_with_conversation', '1', 'BoolConfigHandler', 0, 130, NULL), 
- ('mails panel', 'folder_received_columns', 'from,subject,account,date,folder,actions', 'StringConfigHandler', 1, 0, NULL),
- ('mails panel', 'folder_sent_columns', 'to,subject,account,date,folder,actions', 'StringConfigHandler', 1, 0, NULL),
- ('mails panel', 'folder_draft_columns', 'to,subject,account,date,folder,actions', 'StringConfigHandler', 1, 0, NULL),
- ('mails panel', 'folder_junk_columns', 'from,subject,account,date,folder,actions', 'StringConfigHandler', 1, 0, NULL),
- ('mails panel', 'folder_outbox_columns', 'to,subject,account,date,folder,actions', 'StringConfigHandler', 1, 0, NULL)
+ ('mails panel', 'folder_received_columns', 'from,subject,account,date,folder,actions', 'StringConfigHandler', 0, 0, NULL),
+ ('mails panel', 'folder_sent_columns', 'to,subject,account,date,folder,actions', 'StringConfigHandler', 0, 0, NULL),
+ ('mails panel', 'folder_draft_columns', 'to,subject,account,date,folder,actions', 'StringConfigHandler', 0, 0, NULL),
+ ('mails panel', 'folder_junk_columns', 'from,subject,account,date,folder,actions', 'StringConfigHandler', 0, 0, NULL),
+ ('mails panel', 'folder_outbox_columns', 'to,subject,account,date,folder,actions', 'StringConfigHandler', 0, 0, NULL)
 ON DUPLICATE KEY UPDATE name=name;
 
 INSERT INTO `<?php echo $table_prefix ?>contact_config_categories` (`name`, `is_system`, `type`, `category_order`) VALUES 
@@ -76,3 +76,7 @@ INSERT INTO <?php echo $table_prefix ?>dimension_object_type_contents (dimension
  SELECT id, (SELECT id FROM <?php echo $table_prefix ?>object_types WHERE name='tag'), (SELECT id FROM <?php echo $table_prefix ?>object_types WHERE name='mail'),0,1 
  FROM <?php echo $table_prefix ?>dimensions WHERE code IN ('tags')
 ON DUPLICATE KEY UPDATE dimension_id=dimension_id;
+
+insert into <?php echo $table_prefix ?>widgets (name,title,plugin_id,path,default_options,default_section,default_order,icon_cls) values
+ ('emails','emails',0,'','','right',10,'ico-email')
+on duplicate key update name=name;

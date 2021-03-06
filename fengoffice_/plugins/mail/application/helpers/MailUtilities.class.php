@@ -190,7 +190,6 @@ class MailUtilities {
 			if (strpos($content, '+OK ') > 0) $content = substr($content, strpos($content, '+OK '));
 			self::parseMail($content, $decoded, $parsedMail, $warnings);
 			$encoding = array_var($parsedMail,'Encoding', 'UTF-8');
-			
 			$enc_conv = EncodingConverter::instance();
 			$to_addresses = self::getAddresses(array_var($parsedMail, "To"));
 			$from = self::getAddresses(array_var($parsedMail, "From"));
@@ -430,44 +429,41 @@ class MailUtilities {
 	
 			$repository_id = self::SaveContentToFilesystem($mail->getUid(), $content);
 			$mail->setContentFileId($repository_id);
-			
-			
-			if ($in_reply_to_id != "") {
-				if ($message_id != "") {
-					$conv_mail = MailContents::findOne(array("conditions" => "`account_id`=".$account->getId()." AND `in_reply_to_id` = '$message_id'"));
-					if (!$conv_mail) {
-						$conv_mail = MailContents::findOne(array("conditions" => "`account_id`=".$account->getId()." AND `message_id` = '$in_reply_to_id'"));
-					} else {
-						// Search for other discontinued conversation part to link it
-						$other_conv_emails = MailContents::findAll(array("conditions" => "`account_id`=".$account->getId()." AND `message_id` = '$in_reply_to_id' AND `conversation_id`<>".$conv_mail->getConversationId()));
-					}
-				} else {
-					$conv_mail = MailContents::findOne(array("conditions" => "`account_id`=".$account->getId()." AND `message_id` = '$in_reply_to_id'"));
+						
+			// Conversation
+						
+			//check if exists a conversation for this mail
+			if ($in_reply_to_id != "" && $message_id != "") {
+				$conv_mail = MailContents::findOne(array("conditions" => "`account_id`=".$account->getId()." AND (`message_id` = '$in_reply_to_id' OR `in_reply_to_id` = '$message_id')"));
+				
+				//check if this mail is in two diferent conversations and fixit
+				if($conv_mail){
+					$other_conv_mail = MailContents::findOne(array("conditions" => "`account_id`=".$account->getId()." AND `conversation_id` != ".$conv_mail->getConversationId()." AND (`message_id` = '$in_reply_to_id' OR `in_reply_to_id` = '$message_id')"));
+					if($other_conv_mail){
+						$other_conv = MailContents::findAll(array("conditions" => "`account_id`=".$account->getId()." AND `conversation_id` = ".$other_conv_mail->getConversationId()));
+						if($other_conv){
+							foreach ($other_conv as $mail_con) {
+								$mail_con->setConversationId($conv_mail->getConversationId());
+								$mail_con->save();
+							}
+						}
+					}					
 				}
 				
-				if ($conv_mail instanceof MailContent) {// Remove "Re: ", "Fwd: ", etc to compare the subjects
-					$conv_original_subject = strtolower($conv_mail->getSubject());
-					if (($pos = strrpos($conv_original_subject, ":")) !== false) {
-						$conv_original_subject = trim(substr($conv_original_subject, $pos+1));
-					}
-				}
-				if ($conv_mail instanceof MailContent && $conv_original_subject != "" && strpos(strtolower($mail->getSubject()), strtolower($conv_original_subject)) !== false) {
-					$mail->setConversationId($conv_mail->getConversationId());
-					if (isset($other_conv_emails) && is_array($other_conv_emails)) {
-						foreach ($other_conv_emails as $ocm) {
-							$ocm->setConversationId($conv_mail->getConversationId());
-							$ocm->save();
-						}
-					}
-				} else {
-					$conv_id = MailContents::getNextConversationId($account->getId());
-					$mail->setConversationId($conv_id);
-				}
-			} else {
+			} elseif ($in_reply_to_id != ""){
+				$conv_mail = MailContents::findOne(array("conditions" => "`account_id`=".$account->getId()." AND `message_id` = '$in_reply_to_id'"));
+			} elseif ($message_id != ""){
+				$conv_mail = MailContents::findOne(array("conditions" => "`account_id`=".$account->getId()." AND `in_reply_to_id` = '$message_id'"));
+			} 
+			
+			if ($conv_mail instanceof MailContent) {
+				$conv_id = $conv_mail->getConversationId();
+			}else{
 				$conv_id = MailContents::getNextConversationId($account->getId());
-				$mail->setConversationId($conv_id);
 			}
 			
+			$mail->setConversationId($conv_id);
+									
 			$mail->save();
 
 			
@@ -501,8 +497,10 @@ class MailUtilities {
 			if ($user instanceof Contact) {
 				$mail->subscribeUser($user);
 			}
+			
 			$mail->addToSharingTable();
-                        
+			$mail->orderConversation();
+			
 			// to apply email rules
 			$null = null;
 			Hook::fire('after_mail_download', $mail, $null);

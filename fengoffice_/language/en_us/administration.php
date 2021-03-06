@@ -177,7 +177,7 @@
   	'config option desc notify_myself_too' => 'When enabled, the automatic notifications will include yourself (only available for documents)',
 
   	'user config option name breadcrumb_member_count' => 'Amount of breadcrumbs to show when listing objects',
-  		
+  	
   	'notify myself too' => 'Include myself in automatic notifications',
 	
   	'group users' => 'Group users',
@@ -258,6 +258,7 @@
 
   	'user config option name breadrcrumb_member_count' => 'Amount of breadcrumbs to display',
   	'config option name updateOnLinkedObjects' => 'Change update date of an object when linking to another',
+  			
   		
     'user config option name show_object_direct_url'=> 'Show direct object urls',
     'user config option desc show_object_direct_url'=> 'If enabled, a direct URL to the object will be displayed on it\'s overview',  
@@ -295,7 +296,7 @@
   
   	'user config option name breadcrumb_member_count' => 'Amount of breadcrumbs to show when listing objects',
   	'user config option name attach_to_notification' => 'When working with a document, attach it to its notifications',
-  
+  		
   	'show context help always' => 'Always',
     'show context help never' => 'Never',
     'show context help until close' => 'Until close',

@@ -672,6 +672,6 @@
   	'objects removed from' => 'Ha quitado {0} de los objetos seleccionados exitosamente',
   	'object removed from' => 'Ha quitado {0} del objeto seleccionado exitosamente',
   	'contact email is required to create user' => 'Para crear un usuario, la persona debe tener una direccón de correo válida. Por favor edite la persona e intente nuevamente.',
-	'disable' => 'Deshabilitar',
+	'disable' => 'Desactivar',
 
 ); ?>

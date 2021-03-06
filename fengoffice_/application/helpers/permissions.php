@@ -630,14 +630,44 @@
 	}
 	
 	
-	function save_permissions($pg_id, $is_guest = false) {
+	function save_permissions($pg_id, $is_guest = false, $permissions_data = null, $save_cmps = true) {
 		
-		$sys_permissions_data = array_var($_POST, 'sys_perm');
+		if (is_null($permissions_data)) {
+			
+			// system permissions
+			$sys_permissions_data = array_var($_POST, 'sys_perm');
+			// module permissions
+			$mod_permissions_data = array_var($_POST, 'mod_perm');
+			// root permissions
+			if ($rp_genid = array_var($_POST, 'root_perm_genid')) {
+				$rp_permissions_data = array();
+				foreach ($_POST as $name => $value) {
+					if (str_starts_with($name, $rp_genid . 'rg_root_')) {
+						$rp_permissions_data[$name] = $value;
+					}
+				}
+			}
+			// member permissions
+			$permissionsString = array_var($_POST, 'permissions');
+			
+		} else {
+			
+			// system permissions
+			$sys_permissions_data = array_var($permissions_data, 'sys_perm');
+			// module permissions
+			$mod_permissions_data = array_var($permissions_data, 'mod_perm');
+			// root permissions
+			$rp_genid = array_var($permissions_data, 'root_perm_genid');
+			$rp_permissions_data = array_var($permissions_data, 'root_perm');
+			// member permissions
+			$permissionsString = array_var($permissions_data, 'permissions');
+			
+		}
+		
 		
 		$changed_members = array();
 				
 		//module permissions
-		$mod_permissions_data = array_var($_POST, 'mod_perm');
 		TabPanelPermissions::clearByPermissionGroup($pg_id);
 		if (!is_null($mod_permissions_data) && is_array($mod_permissions_data)) {
 			foreach($mod_permissions_data as $tab_id => $val) {
@@ -667,9 +697,9 @@
 			$system_permissions->save();
 			
 			//object type root permissions
-			if ($rp_genid = array_var($_POST, 'root_perm_genid')) {
+			if ($rp_genid) {
 				ContactMemberPermissions::delete("permission_group_id = $pg_id AND member_id = 0");
-				foreach ($_POST as $name => $value) {
+				foreach ($rp_permissions_data as $name => $value) {
 					if (str_starts_with($name, $rp_genid . 'rg_root_')) {
 						$rp_ot = substr($name, strrpos($name, '_')+1);
 						
@@ -688,7 +718,6 @@
 			}
 		}
 		//member permissions
-		$permissionsString = array_var($_POST, 'permissions');
 		if ($permissionsString && $permissionsString != ''){
 			$permissions = json_decode($permissionsString);
 		}
@@ -699,15 +728,17 @@
 				if (!isset($all_perm_deleted[$perm->m])) $all_perm_deleted[$perm->m] = true;
 				$allowed_members_ids[$perm->m]=array();
 				$allowed_members_ids[$perm->m]['pg']=$pg_id;
-				$cmp = ContactMemberPermissions::findById(array('permission_group_id' => $pg_id, 'member_id' => $perm->m, 'object_type_id' => $perm->o));
-				if (!$cmp instanceof ContactMemberPermission) {
-					$cmp = new ContactMemberPermission();
-					$cmp->setPermissionGroupId($pg_id);
-					$cmp->setMemberId($perm->m);
-					$cmp->setObjectTypeId($perm->o);
+				if ($save_cmps) {
+					$cmp = ContactMemberPermissions::findById(array('permission_group_id' => $pg_id, 'member_id' => $perm->m, 'object_type_id' => $perm->o));
+					if (!$cmp instanceof ContactMemberPermission) {
+						$cmp = new ContactMemberPermission();
+						$cmp->setPermissionGroupId($pg_id);
+						$cmp->setMemberId($perm->m);
+						$cmp->setObjectTypeId($perm->o);
+					}
+					$cmp->setCanWrite($is_guest ? false : $perm->w);
+					$cmp->setCanDelete($is_guest ? false : $perm->d);
 				}
-				$cmp->setCanWrite($is_guest ? false : $perm->w);
-				$cmp->setCanDelete($is_guest ? false : $perm->d);
 				if ($perm->r) {
 					if(isset($allowed_members_ids[$perm->m]['w'])){
 						if($allowed_members_ids[$perm->m]['w']!=1){
@@ -723,10 +754,10 @@
 					}else{
 						$allowed_members_ids[$perm->m]['d'] = $is_guest ? false : $perm->d;
 					}
-					$cmp->save();
+					if ($save_cmps) $cmp->save();
 					$all_perm_deleted[$perm->m] = false;
 				} else {
-					$cmp->delete();
+					if ($save_cmps) $cmp->delete();
 				}
 				
 				$changed_members[] = $perm->m;
@@ -1165,5 +1196,73 @@
 			  )
 			)";
 		return array_flat(DB::executeAll($sql));
+	}
+	
+	
+	
+	
+	function save_user_permissions_background($user, $pg_id, $is_guest) {
+		
+		// system permissions
+		$sys_permissions_data = array_var($_POST, 'sys_perm');
+		// module permissions
+		$mod_permissions_data = array_var($_POST, 'mod_perm');
+		// root permissions
+		$rp_permissions_data = array();
+		if ($rp_genid = array_var($_POST, 'root_perm_genid')) {
+			foreach ($_POST as $name => $value) {
+				if (str_starts_with($name, $rp_genid . 'rg_root_')) {
+					$rp_permissions_data[$name] = $value;
+				}
+			}
+		}
+		// member permissions
+		$permissionsString = array_var($_POST, 'permissions');
+		
+		
+		
+		if (substr(php_uname(), 0, 7) == "Windows" || (defined('DONT_SAVE_PERMISSIONS_IN_BACKGROUND') && DONT_SAVE_PERMISSIONS_IN_BACKGROUND)){
+			//pclose(popen("start /B ". $command, "r"));
+			save_permissions($pg_id, $is_guest);
+		} else {
+
+			// populate permission groups
+			$permissions_decoded = json_decode($permissionsString);
+			$to_insert = array();
+			$to_delete = array();
+			foreach ($permissions_decoded as $perm) {
+			if ($perm->r) {
+					$to_insert[] = "('".$pg_id."','".$perm->m."','".$perm->o."','".$perm->d."','".$perm->w."')";
+				} else {
+					$to_delete[] = "(permission_group_id='".$pg_id."' AND member_id='".$perm->m."' AND object_type_id='".$perm->o."')";
+				}
+			}
+			if (count($to_insert) > 0) {
+				$values = implode(',', $to_insert);
+				DB::execute("INSERT INTO ".TABLE_PREFIX."contact_member_permissions (permission_group_id,member_id,object_type_id,can_delete,can_write)
+				 VALUES $values ON DUPLICATE KEY UPDATE member_id=member_id");
+			}
+			if (count($to_delete) > 0) {
+				$where = implode(' OR ', $to_delete);
+				DB::execute("DELETE FROM ".TABLE_PREFIX."contact_member_permissions WHERE $where;");
+			}
+			
+			// save permissions in background
+			$perm_filename = ROOT ."/tmp/uperm_".gen_id();
+			file_put_contents($perm_filename, $permissionsString);
+			
+			$sys_filename = ROOT ."/tmp/sys_".gen_id();
+			file_put_contents($sys_filename, json_encode($sys_permissions_data));
+			
+			$mod_filename = ROOT ."/tmp/mod_".gen_id();
+			file_put_contents($mod_filename, json_encode($mod_permissions_data));
+			
+			$rp_filename = ROOT ."/tmp/rp_".gen_id();
+			file_put_contents($rp_filename, json_encode($rp_permissions_data));
+			
+			$is_guest_str = $is_guest ? "1" : "0";
+			$command = "nice -n19 php ". ROOT . "/application/helpers/save_user_permissions.php ".ROOT." ".$user->getId()." ".$user->getTwistedToken()." $pg_id $is_guest_str $perm_filename $sys_filename $mod_filename $rp_filename $rp_genid";
+			exec("$command > /dev/null &");
+		}
 	}
 	

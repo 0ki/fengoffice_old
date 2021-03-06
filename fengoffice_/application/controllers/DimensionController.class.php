@@ -290,12 +290,7 @@ class DimensionController extends ApplicationController {
 		$name = trim(array_var($_REQUEST, 'query', ''));
 		$extra_cond = $name == "" ? "" : " AND name LIKE '%".$name."%'";
 		
-		//$hola workarround
 		$return_all_members = false;
-		if($name == "view_all_dim"){
-			$extra_cond = "";
-			$return_all_members = true;
-		}
 		
 		$selected_member_ids = json_decode(array_var($_REQUEST, 'selected_ids', "[0]"));
 		$selected_members = Members::findAll(array('conditions' => 'id IN ('.implode(',',$selected_member_ids).')'));
@@ -322,15 +317,38 @@ class DimensionController extends ApplicationController {
 				echo "  id: ".$member->getId().",\n";
 				echo "  name:'". str_replace(array("'", "\\"), array("","\\\\" ), clean($member->getName()))."',\n";
 				echo "  ot:". $member->getObjectTypeId().",\n";
+				if ($dim->getIsManageable()) echo "  path:'". str_replace(array("'", "\\"), array("","\\\\" ), trim(clean($member->getPath())))."',\n";
+				else echo "  path:'',\n";
 				echo "  ico:'".$member->getIconClass()."'\n";
 				echo "};\n";
 			}
 			echo "og.dimensions[".$dim->getId()."] = members;\n\n";
 			echo "og.dimensions_info[".$dim->getId()."] = {name:'".clean($dim->getName())."'};\n\n";
 		}
-		exit ;
+		exit;
 	}
 	
+	
+	function reload_dimensions_js () {
+		ajx_current("empty");
+		$dimensions = Dimensions::findAll();
+		$dims_info = array();
+		foreach ($dimensions as $dim) {
+			$dims_info[$dim->getId()] = array();
+			$members = $dim->getAllMembers();
+			foreach ($members as $member) {
+				$mem_info = array();
+				$mem_info['id'] = $member->getId();
+				$mem_info['name'] = clean($member->getName());
+				$mem_info['ot'] = $member->getObjectTypeId();
+				$mem_info['path'] = $dim->getIsManageable() ? trim(clean($member->getPath())) : '';
+				$mem_info['ico'] = $member->getIconClass();
+				
+				$dims_info[$dim->getId()][] = $mem_info;
+			}
+		}
+		ajx_extra_data(array("dims" => $dims_info));
+	}
 	
 	
 	function buildMemberList($all_members, $dimension,  $allowed_member_type_ids, $allowed_object_type_ids, $item_object, $object_type_id, $return_only_name=false) {

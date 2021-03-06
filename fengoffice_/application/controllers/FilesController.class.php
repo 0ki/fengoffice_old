@@ -136,7 +136,13 @@ class FilesController extends ApplicationController {
 			flash_error(lang('file dnx'));
 			return;
 		} // if
-			
+		
+		//if don't have revision
+		if(!($file->getLastRevision() instanceof ProjectFileRevision)) {
+			flash_error(lang('file dnx'));
+			return;
+		} // if
+		
 		if(!$file->canDownload(logged_user())) {
 			flash_error(lang('no access permissions'));
 			return;
@@ -412,17 +418,18 @@ class FilesController extends ApplicationController {
 				$object_controller->add_subscribers($file);
 				$object_controller->add_custom_properties($file);
 				
+				DB::commit();
+				
 				if (array_var($file_data, 'notify_myself_too')) {
 					logged_user()->notify_myself = true;
 				}
 				
+				ApplicationLogs::createLog($file,ApplicationLogs::ACTION_ADD);
 								
 				if (array_var($file_data, 'notify_myself_too')) {
 					logged_user()->notify_myself = false;
 				}
 				
-				DB::commit();
-				ApplicationLogs::createLog($file,ApplicationLogs::ACTION_ADD);
 				
 				$ajx_file =  array();
 				$ajx_file["file"][]= get_class($file->manager()) . ':' . $file->getId();
@@ -1880,17 +1887,17 @@ class FilesController extends ApplicationController {
 
 				$file->resetIsRead();
 				
+				DB::commit();
+				
 				if (array_var($file_data, 'notify_myself_too')) {
 					logged_user()->notify_myself = true;
 				}
 				
-								
+				ApplicationLogs::createLog($file, ApplicationLogs::ACTION_EDIT);
+				
 				if (array_var($file_data, 'notify_myself_too')) {
 					logged_user()->notify_myself = false;
 				}
-
-				DB::commit();
-				ApplicationLogs::createLog($file, ApplicationLogs::ACTION_EDIT);
 				
 				flash_success(lang('success edit file', $file->getFilename()));
 				ajx_current("back");

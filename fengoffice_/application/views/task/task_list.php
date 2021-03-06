@@ -66,24 +66,39 @@ if($task_list->getAssignedTo()){
 	</div>
 	<?php } ?>
 	
-	<?php if (($task_list->getDueDate() instanceof DateTimeValue) || isset($status)) { ?>
+	<?php if (($task_list->getDueDate() instanceof DateTimeValue) || ($task_list->getStartDate() instanceof DateTimeValue) || isset($status)) { ?>
 	<div style="width:50%; float: left;">
-			<?php if ($task_list->getDueDate() instanceof DateTimeValue) { ?>
-		 	<?php if ($task_list->getDueDate()->getYear() > DateTimeValueLib::now()->getYear()) { ?> 
-		 	  <div class="member-path-dim-block dueDate"><span class="bold"><?php echo lang('due date') ?>: </span><?php echo format_datetime($task_list->getDueDate(), null, 0) ?></div>
-		 	<?php } else { ?> 
-		 	  <div class="member-path-dim-block dueDate"><span class="bold"><?php echo lang('due date') ?>: </span>
-		 	  <?php 
-		 	  	echo format_descriptive_date($task_list->getDueDate());
-		 	  	if ($task_list->getUseDueTime()) {
-		 	  		echo " ".lang('by time')." " . format_time($task_list->getDueDate(), user_config_option('time_format_use_24') ? 'G:i' : 'g:i A');
-		 	  	}
-		 	  ?>
-		 	  </div>
-		 	<?php } ?>
-		 <?php } ?>
-		 	<div class="member-path-dim-block" style="font-weight:bold"><?php if (isset($status)){echo $status;} ?></div>
+	<?php if ($task_list->getDueDate() instanceof DateTimeValue) {
+	 		if ($task_list->getDueDate()->getYear() > DateTimeValueLib::now()->getYear()) { ?> 
+			<div class="member-path-dim-block dueDate"><span class="bold"><?php echo lang('due date') ?>: </span><?php echo format_datetime($task_list->getDueDate(), null, 0) ?></div>
+	  <?php } else { ?> 
+	 		<div class="member-path-dim-block dueDate"><span class="bold"><?php echo lang('due date') ?>: </span><?php
+	 		 
+	 	  	echo format_descriptive_date($task_list->getDueDate());
+	 	  	if ($task_list->getUseDueTime()) {
+	 	  		echo " ".lang('by time')." " . format_time($task_list->getDueDate(), user_config_option('time_format_use_24') ? 'G:i' : 'g:i A');
+	 	  	}
+	 	  	
+	 	  ?></div>
+	  <?php }
+		} ?>
 		
+	<?php if ($task_list->getStartDate() instanceof DateTimeValue) {
+	 		if ($task_list->getStartDate()->getYear() > DateTimeValueLib::now()->getYear()) { ?> 
+			<div class="member-path-dim-block startDate"><span class="bold"><?php echo lang('start date') ?>: </span><?php echo format_datetime($task_list->getStartDate(), null, 0) ?></div>
+	  <?php } else { ?> 
+	 		<div class="member-path-dim-block startDate"><span class="bold"><?php echo lang('start date') ?>: </span><?php
+	 		 
+	 	  	echo format_descriptive_date($task_list->getStartDate());
+	 	  	if ($task_list->getUseDueTime()) {
+	 	  		echo " ".lang('by time')." " . format_time($task_list->getStartDate(), user_config_option('time_format_use_24') ? 'G:i' : 'g:i A');
+	 	  	}
+	 	  	
+	 	  ?></div>
+	  <?php }
+		} ?>
+		 
+		 <div class="member-path-dim-block" style="font-weight:bold"><?php if (isset($status)){echo $status;} ?></div>
 	</div>
 	<?php } ?>
 	

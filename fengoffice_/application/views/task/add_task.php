@@ -665,10 +665,10 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
 				} else {
 					og.drawAssignedToSelectBox(data.companies, only_me, data.groups);
 				}
-				og.redrawingUserList = false ;
+				og.redrawingUserList = false;
 			}});
 			setTimeout(function() { 
-				og.redrawingUserList = false
+				og.redrawingUserList = false;
 			}, 1500);
 		}		
 	}

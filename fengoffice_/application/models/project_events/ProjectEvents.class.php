@@ -100,7 +100,7 @@ class ProjectEvents extends BaseProjectEvents {
 							(
 								DATE_ADD(`start`, INTERVAL (`repeat_num`-1)*`repeat_d` DAY) >= '$start_date_str'
 								OR
-                                                        repeat_forever = 1
+								repeat_forever = 1
 								OR
 								repeat_end >= '$year-$month-$day'
 						)
@@ -114,7 +114,7 @@ class ProjectEvents extends BaseProjectEvents {
 							(
 								DATE_ADD(`start`, INTERVAL (`repeat_num`-1)*`repeat_m` MONTH) >= '$start_date_str'
 								OR
-                                                        repeat_forever = 1
+								repeat_forever = 1
 								OR
 								repeat_end >= '$year-$month-$day'
 						)
@@ -128,7 +128,7 @@ class ProjectEvents extends BaseProjectEvents {
 							(
 								DATE_ADD(`start`, INTERVAL (`repeat_num`-1)*`repeat_y` YEAR) >= '$start_date_str'
 								OR
-                                                        repeat_forever = 1
+								repeat_forever = 1
 								OR
 								repeat_end >= '$year-$month-$day'
 						)

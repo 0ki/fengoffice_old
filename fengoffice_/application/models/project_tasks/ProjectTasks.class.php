@@ -108,6 +108,9 @@ class ProjectTasks extends BaseProjectTasks {
 		$to_date = new DateTimeValue ( $date_end->getTimestamp () - logged_user()->getTimezone() * 3600);
 		$to_date = $to_date->endOfDay ();
 		
+		$from_date->advance(logged_user()->getTimezone() * (-3600));
+		$to_date->advance(logged_user()->getTimezone() * (-3600));
+		
 		$assignedFilter = '';
 		if ($assignedUser instanceof Contact) {
 			$assignedFilter = ' AND (`assigned_to_contact_id` = ' . $assignedUser->getId () . ' OR `assigned_to_contact_id` = \'' . $assignedUser->getCompanyId () . '\') ';
@@ -179,11 +182,16 @@ class ProjectTasks extends BaseProjectTasks {
 		}
 	}
 	
-	static function getUpcomingWithoutDate($limit = null ) {
+	static function getUpcomingWithoutDate($limit = null, $user_id = null) {
 		$conditions = " AND is_template = 0 AND `e`.`completed_by_id` = 0 AND `e`.`due_date` = '0000-00-00 00:00:00' " ;
 		
 		if (!SystemPermissions::userHasSystemPermission(logged_user(), 'can_see_assigned_to_other_tasks')) {
 			$conditions .= " AND assigned_to_contact_id = ".logged_user()->getId();
+		} else {
+			$user = Contacts::findById($user_id);
+			if ($user instanceof Contact) {
+				$conditions .= " AND assigned_to_contact_id = ".$user->getId();
+			}
 		}
 		
 		$tasks_result = self::instance()->listing(array(
@@ -197,12 +205,17 @@ class ProjectTasks extends BaseProjectTasks {
 	}
 
 
-	static function getOverdueAndUpcomingObjects($limit = null) {
+	static function getOverdueAndUpcomingObjects($limit = null, $user_id = null) {
 		$conditions_tasks = " AND is_template = 0 AND `e`.`completed_by_id` = 0 AND `e`.`due_date` > 0";
 		$conditions_milestones = " AND is_template = 0 AND `e`.`completed_by_id` = 0 AND `e`.`due_date` > 0";
 		
 		if (!SystemPermissions::userHasSystemPermission(logged_user(), 'can_see_assigned_to_other_tasks')) {
 			$conditions_tasks .= " AND assigned_to_contact_id = ".logged_user()->getId();
+		} else {
+			$user = Contacts::findById($user_id);
+			if ($user instanceof Contact) {
+				$conditions_tasks .= " AND assigned_to_contact_id = ".$user->getId();
+			}
 		}
 		
 		$tasks_result = self::instance()->listing(array(

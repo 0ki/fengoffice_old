@@ -92,7 +92,8 @@
 .dashComments .dashHeader{
 	color: rgb(90,82,101);
 	background: rgb(222,214,246);
-	border-color: rgb(180,163,201);
+	border-color: rgb(222,214,246);
+/*	border-color: rgb(180,163,201);*/
 }
 
 .dashComments .coViewBody {
@@ -101,7 +102,8 @@
 }
 
 .dashComments .dashAltRow {
-	background-color:#EFE0FF;	
+	/*background-color: #EFE0FF !important;*/
+	background-color: #ECEFF7 !important;
 }
 
 .dashComments .internalLink {	
@@ -192,13 +194,14 @@
 ----------------------------------------*/
 
 .dashUnreadEmails .dashAltRow {
-	background-color:#F0F2FF;	
+	background-color: #ECEFF7 !important;
 }
 
 .dashUnreadEmails .dashHeader{
 	color: white;
-	background: #B4BFFF;
-	border-color: #98A8FF;
+	background: #7789EE;
+	border-color: #7789EE;
+	/*border-color: #98A8FF;*/
 }
 
 
@@ -476,4 +479,16 @@
 .no-obj-widget-msg {
 	font-size: 18px;
 	margin: 10px 5px;
+}
+
+
+.widget-comments .comment-row {
+	padding: 2px 0 2px 22px ;
+	background-position: 0 center !important;
+}
+
+.widget-emails .email-row {
+	margin-top: 2px;
+	padding: 0 0 2px 22px;
+	/*background-position: 0 center !important;*/
 }

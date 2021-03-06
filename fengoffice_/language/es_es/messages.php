@@ -640,7 +640,7 @@
   	'the ProjectTasks' => 'la tarea',
   	'the ProjectWebpages' => 'la página web',
   	'the Timeslots' => 'el tiempo de trabajo',
-	'disable' => 'Deshabilitar',
+	'disable' => 'Desactivar',
     
         'the user notification' => 'el usuario',
   	'the comment notification' => 'el comentario',

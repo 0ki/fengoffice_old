@@ -1031,7 +1031,8 @@ function create_user($user_data, $permissionsString) {
 			}
 		}
 	}
-	save_permissions($contact->getPermissionGroupId(), $contact->isGuest());
+	//save_permissions($contact->getPermissionGroupId(), $contact->isGuest());
+	save_user_permissions_background(logged_user(), $contact->getPermissionGroupId(), $contact->isGuest());
 	
 	Hook::fire('after_user_add', $contact, $null);
 	

@@ -257,6 +257,9 @@
       unset($this->link);
       unset($this->database_name);
       $this->connect($this->getParams());
+      if(defined('DB_CHARSET') && trim(DB_CHARSET)) {
+      	@mysql_query("SET NAMES ". DB_CHARSET, $this->link);
+      } // if
     } // reconnect
     
     /**

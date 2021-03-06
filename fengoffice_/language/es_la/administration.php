@@ -181,7 +181,8 @@
   
   	'user config option name event_subscribe_invited' =>'Suscribir usuarios invitados',
     'user config option desc event_subscribe_invited' =>'Habilite esta opción si desea tener la opción "Suscribir invitados" marcada por defecto a la hora de crear un evento',
-	
+	'user config option name breadrcrumb_member_count' => 'Cantidad de rutas a mostrar',
+	'config option name updateOnLinkedObjects' => 'Cambiar fecha de actualización de un objeto al vincularlo con otro',
 	'user config option name access_member_after_add' => 'Acceder al nuevo miembro luego de su creación.',
 	'user config option desc access_member_after_add' => 'Si habilita esta opción, luego de haber creado un espacio de trabajo, cliente, etc; el mismo será seleccionado en el panel de la izquierda (Esta opción solo se aplica si está habilitada la opción "Recordar si acceder a un miembro al crearlo").',
 	'user config option name access_member_after_add_remember' => 'Recordar si acceder a un miembro al crearlo',
@@ -189,8 +190,8 @@
 
 	'user config option name updateOnLinkedObjects' => 'Actualiza los objetos que son vinculados:',
 	'user config option desc updateOnLinkedObjects' => 'Si esta opción esta habilitada, cuando se vincule o desvincule un objeto con otro, ambos actualizaran sus fechas de molificación.',
-	'user config option name breadrcrumb_member_count' => 'Cantidad de rutas a mostrar',
-	'config option name updateOnLinkedObjects' => 'Cambiar fecha de actualización de un objeto al vincularlo con otro',
+	'user config option name breadcrumb_member_count' => 'Cantidad de breadcrumbs a mostrar cuando se listan los objetos',
+	'user config option name attach_to_notification' => 'Cuando se trate de un documento, adjuntar el mismo a la notificación enviada',
 		
 	'config option name let_users_create_objects_in_root' => 'Permitir crear objetos sin clasificarlos',
 
@@ -244,8 +245,6 @@
 	'user config option desc work_day_start_time' => 'Especifica la hora de comienzo de la jornada laboral',
 	'user config option name work_day_end_time' => 'Hora de fin de la jornada laboral',
 	'user config option desc work_day_end_time' => 'Especifica la hora de fin de la jornada laboral',
-	'user config option name attach_to_notification' => 'Cuando se trate de un documento, adjuntar el mismo a la notificación enviada',
-	'user config option name breadcrumb_member_count' => 'Cantidad de breadcrumbs a mostrar cuando se listan los objetos',
 	'cron events' => 'Eventos de Cron',
 	'about cron events' => 'Aprenda sobre eventos de Cron...',
 	'cron events info' => 'Los eventos de Cron le permiten ejecutar tareas periódicamente, sin necesidad de iniciar una sesión. Para habilitar eventos de Cron necesita previamente configurar un \'cron job\' que periódicamente ejecute el archivo "cron.php", ubicado en la raíz de su instalación de Feng Office. La periodicidad a la que ejecute el \'cron job\' determinará la granularidad a la que podrá ejecutar estos eventos de Cron. Por ejemplo, si el \'cron job\' ejecuta cada cinco minutos y usted configura un evento de Cron para ejecutar cada un minuto, sólo podrá ejecutar cada cinco minutos. Para aprender cómo configurar un \'cron job\' consulte con su administrador de sistema o su proveedor de hosting.',

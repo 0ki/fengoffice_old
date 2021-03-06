@@ -58,5 +58,13 @@
 	function setDefaultSection($value) {
 		return $this->setColumnValue ( 'default_section', $value );
 	}
+	
+	function getIconCls() {
+		return $this->getColumnValue ( 'icon_cls' );
+	}
+	
+	function setIconCls($value) {
+		return $this->setColumnValue ( 'icon_cls', $value );
+	}
 
 } 

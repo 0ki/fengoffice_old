@@ -178,7 +178,9 @@ og.eventManager.addListener('tabs changed',
 );
 og.eventManager.addListener('logo changed',
 	function(option) {
-		window.location.href = '<?php echo ROOT_URL?>';
+		if (og.ownerCompany.id == option.id) {
+			window.location.href = '<?php echo ROOT_URL?>';
+		}
 	}
 );
 og.eventManager.addListener('expand menu panel',
@@ -194,7 +196,9 @@ og.eventManager.addListener('after member save',
 				og.dimensions[member.dimension_id][member.member_id] = {};
 				og.dimensions[member.dimension_id][member.member_id].id = member.member_id ;
 			}
-			og.dimensions[member.dimension_id][member.member_id].name=member.name; 
+			og.dimensions[member.dimension_id][member.member_id].name=member.name;
+			og.dimensions[member.dimension_id][member.member_id].path=member.path;
+			og.dimensions[member.dimension_id][member.member_id].ico=member.ico;
 			og.dimensions[member.dimension_id][member.member_id].ot=member.object_type_id;
 		}
 	}

@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Morcilla upgrade script will upgrade FengOffice 2.3.2.1 to FengOffice 2.5.0.1
+ * Morcilla upgrade script will upgrade FengOffice 2.3.2.1 to FengOffice 2.4.1
  *
  * @package ScriptUpgrader.scripts
  * @version 1.0
@@ -40,7 +40,7 @@ class MorcillaUpgradeScript extends ScriptUpgraderScript {
 	function __construct(Output $output) {
 		parent::__construct($output);
 		$this->setVersionFrom('2.3.2.1');
-		$this->setVersionTo('2.5.0.1');
+		$this->setVersionTo('2.4.1');
 	} // __construct
 
 	function getCheckIsWritable() {
@@ -107,8 +107,9 @@ class MorcillaUpgradeScript extends ScriptUpgraderScript {
 			$multi_assignment_create .= "ALTER TABLE `".$t_prefix."template_tasks` ADD `multi_assignment` TINYINT( 1 ) NULL DEFAULT 0;";
 			$multi_assignment .= ", `multi_assignment`";
 		}
-				
-		$original_version_from = array_var(array_var($_POST, 'form_data'), 'upgrade_from', $installed_version);
+		
+		$v_from = array_var($_POST, 'form_data');
+		$original_version_from = array_var($v_from, 'upgrade_from', $installed_version);
 		if (version_compare($installed_version, $this->getVersionFrom()) <= 0 && version_compare($original_version_from, '2.0.0.0-beta') > 0
 			 && (!isset($_SESSION['from_feng1']) || !$_SESSION['from_feng1'])) {
 			// upgrading from a version lower than this script's 'from' version
@@ -387,7 +388,16 @@ class MorcillaUpgradeScript extends ScriptUpgraderScript {
 		} else {
 			$this->printMessage('Failed to execute DB schema transformations. MySQL said: ' . mysql_error(), true);
 			return false;
-		}				
+		}
+		
+		if (version_compare($installed_version, '2.5.0.4') < 0) {
+			if (!$this->checkColumnExists("queued_emails", "attachments", $this->database_connection)) {
+				$sqls = "
+					ALTER TABLE ".$t_prefix."queued_emails` ADD COLUMN `attachments` TEXT;
+				";
+				$this->executeMultipleQueries($sqls, $t_queries, $e_queries, $this->database_connection);
+			}
+		}
 		
 		$this->printMessage('Feng Office has been upgraded. You are now running Feng Office '.$this->getVersionTo().' Enjoy!');
 

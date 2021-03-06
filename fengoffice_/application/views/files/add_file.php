@@ -50,11 +50,11 @@ $visible_cps = CustomProperties::countVisibleCustomPropertiesByObjectType($objec
 <?php if ($enableUpload) {
 	if ($file->isNew()) {?>
 		<div id="<?php echo $genid ?>selectFileControlDiv">
-			<label class="checkbox">
+			<label class="checkbox" style="display:none;">
 	    	<?php echo radio_field($genid.'_rg', true, array('id' => $genid.'fileRadio', 'onchange' => 'og.addDocumentTypeChanged(0, "'.$genid.'")', 'value' => '0'))?>
 	    	<?php echo lang('file') ?>
 	    	</label>
-	    	<label class="checkbox">
+	    	<label class="checkbox" style="display:none;">
 	    	<?php echo radio_field($genid.'_rg', false, array('id' => $genid.'weblinkRadio', 'onchange' => 'og.addDocumentTypeChanged(1, "'.$genid.'")', 'value' => '1'))?>
 	    	<?php echo lang('weblink') ?>
 	    	</label>

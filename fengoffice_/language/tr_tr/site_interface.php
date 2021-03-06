@@ -1,6 +1,7 @@
 <?php return array(
 	'new Feng Office version available' => 'Feng Office\'nin yeni sürümü indirilmeye hazır. <a class="internalLink" href="{0}" onclick="{1}">More details</a>.',
 	'my tasks' => 'Benim görevlerim',
+	'contact information' => 'İletişim Bilgileri',
 	'welcome back' => 'Tekrar hoşgeldin <strong>{0}</strong>',
 	'online users' => 'Çevrimiçi kullanıcılar',
 	'online users desc' => 'Son 15 dakika içinde aktif olan kullanıcılar',

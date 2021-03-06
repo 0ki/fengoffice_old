@@ -993,6 +993,7 @@ CREATE TABLE  `<?php echo $table_prefix ?>widgets` (
   `default_options` text NOT NULL,
   `default_section` varchar(64) NOT NULL,
   `default_order` int(10) NOT NULL,
+  `icon_cls` varchar(64) NOT NULL DEFAULT '',
   PRIMARY KEY (`name`)
 ) ENGINE=<?php echo $engine ?> <?php echo $default_charset ?>;
 
@@ -1096,4 +1097,15 @@ CREATE TABLE `<?php echo $table_prefix ?>template_milestones` (
   PRIMARY KEY  (`object_id`),
   KEY `due_date` (`due_date`),
   KEY `completed_on` (`completed_on`)
+) ENGINE=<?php echo $engine ?> <?php echo $default_charset ?>;
+
+CREATE TABLE `<?php echo $table_prefix ?>contact_widget_options` (
+  `widget_name` varchar(40) COLLATE utf8_unicode_ci NOT NULL,
+  `contact_id` int(11) NOT NULL,
+  `member_type_id` int(11) NOT NULL DEFAULT 0,
+  `option` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
+  `value` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
+  `config_handler_class` varchar(50) COLLATE utf8_unicode_ci NOT NULL,
+  `is_system` tinyint(1) unsigned default 0,
+  PRIMARY KEY (`widget_name`,`contact_id`,`member_type_id`,`option`) USING BTREE
 ) ENGINE=<?php echo $engine ?> <?php echo $default_charset ?>;

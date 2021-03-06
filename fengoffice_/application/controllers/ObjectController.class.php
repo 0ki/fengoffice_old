@@ -838,6 +838,8 @@ class ObjectController extends ApplicationController {
 			$order = "archived_on";
 		}elseif ($order == "dateDeleted") {
 			$order = "trashed_on";
+		}elseif ($order == "name") {
+			$order = "name";
 		} else {
 			$order = "";
 			$orderdir = "";
@@ -1101,18 +1103,22 @@ class ObjectController extends ApplicationController {
 			if (!$instance instanceof ContentDataObject) continue;
 			$info_elem['url'] = $instance->getViewUrl();
 			
+			
+			$info_elem['isRead'] = $instance->getIsRead(logged_user()->getId()) ;
+			$info_elem['manager'] = get_class($instance->manager()) ;
+			$info_elem['memPath'] = json_encode($instance->getMembersToDisplayPath());
 			/* @var $instance Contact  */
 			if ($instance instanceof  Contact /* @var $instance Contact  */ ) {
 				if( $instance->isCompany() ) {
 					$info_elem['icon'] = 'ico-company';
 					$info_elem['type'] = 'company';
+					
+				}else{
+					$info_elem['memPath'] = json_encode($instance->getUserType()?"":$instance->getMembersToDisplayPath());
 				}
 			} else if ($instance instanceof ProjectFile) {
 				$info_elem['mimeType'] = $instance->getTypeString();
 			}
-			$info_elem['isRead'] = $instance->getIsRead(logged_user()->getId()) ;
-			$info_elem['manager'] = get_class($instance->manager()) ;
-			$info_elem['memPath'] = json_encode($instance->getMembersToDisplayPath());
 			
 			$info[] = $info_elem;
 			
@@ -1652,6 +1658,9 @@ class ObjectController extends ApplicationController {
 	function popup_reminders() {
 		ajx_current("empty");
 		
+		// extra data to send to interface
+		$extra_data = array();
+		
 		// if no new popup reminders don't make useless queries
 		if (GlobalCache::isAvailable()) {
 			$check = GlobalCache::get('check_for_popup_reminders_'.logged_user()->getId(), $success);
@@ -1746,6 +1755,18 @@ class ObjectController extends ApplicationController {
 				GlobalCache::update('check_for_popup_reminders_'.logged_user()->getId(), 0, 60*30);
 			}
 		}
+		
+		// check for member modifications
+		if (isset($_POST['dims_check_date'])) {
+			$dims_check_date = new DateTimeValue($_POST['dims_check_date']);
+			$dims_check_date_sql = $dims_check_date->toMySQL();
+			$members_log_count = ApplicationLogs::instance()->count("member_id>0 AND created_on>'$dims_check_date_sql'");
+			if ($members_log_count > 0) {
+				$extra_data['reload_dims'] = 1;
+			}
+		}
+		
+		ajx_extra_data($extra_data);
 	}
 
 	function createMinimumUser($email, $compId) {

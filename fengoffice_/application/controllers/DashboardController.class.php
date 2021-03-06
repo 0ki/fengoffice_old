@@ -278,7 +278,6 @@ class DashboardTools {
 			
 			if 	($cw = ContactWidgets::instance()->findById(array('contact_id'=>logged_user()->getId(),'widget_name'=>$w->getName()))){
 				if ( $cw->getSection() == $name ) {
-					$w->setOptions($cw->getOptions()); 
 					$w->setDefaultOrder($cw->getOrder());
 					$widgetsToRender[] = $w ;
 				}

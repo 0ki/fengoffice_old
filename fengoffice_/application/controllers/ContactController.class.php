@@ -687,7 +687,7 @@ class ContactController extends ApplicationController {
 						"updatedOn_today" => $c->getUpdatedOn() instanceof DateTimeValue ? $c->getUpdatedOn()->isToday() : 0,
 						"updatedBy" => $c->getUpdatedByDisplayName(),
 						"updatedById" => $c->getUpdatedById(),
-						"memPath" => json_encode($c->getMembersToDisplayPath()),
+						"memPath" => json_encode($c->getUserType()?"":$c->getMembersToDisplayPath()),
 						"userType" => $c->getUserType(),
 					);
 				} else if ($c instanceof Contact){
@@ -3022,9 +3022,9 @@ class ContactController extends ApplicationController {
 					throw new InvalidUploadError($avatar, lang('error edit company logo'));
 				} // if
 
-				evt_add("logo changed");
-				
 				DB::commit();
+				
+				evt_add("logo changed", array('id' => $company->getId()));
 				ApplicationLogs::createLog($company, ApplicationLogs::ACTION_EDIT);
 				
 				if(is_file($old_file)) {
@@ -3394,5 +3394,65 @@ class ContactController extends ApplicationController {
   		
   		$this->setTemplate(get_template_path('list_users', 'administration'));
   		
+	}
+	
+	
+	
+	function configure_widgets() {
+		$widgets = Widgets::instance()->findAll(array(
+			"conditions" => " plugin_id = 0 OR plugin_id IS NULL OR plugin_id IN ( SELECT id FROM ".TABLE_PREFIX."plugins WHERE is_activated > 0 AND is_installed > 0 )",
+			"order" => "default_order",
+			"order_dir" => "ASC",
+		));
+		
+		$widgets_info = array();
+		foreach ($widgets as $widget) {
+			$widgets_info[] = $widget->getContactWidgetSettings(logged_user());
+		}
+		
+		tpl_assign('widgets_info', $widgets_info);
+	}
+	
+	
+	function configure_widgets_submit() {
+		ajx_current("empty");
+		
+		$widgets_data = array_var($_POST, 'widgets');
+		try {
+			DB::beginWork();
+			foreach ($widgets_data as $name => $data) {
+				
+				$contact_widget = ContactWidgets::instance()->findOne(array('conditions' => array('contact_id = ? AND widget_name = ?', logged_user()->getId(), $name)));
+				if (!$contact_widget instanceof ContactWidget) {
+					$contact_widget = new ContactWidget();
+					$contact_widget->setContactId(logged_user()->getId());
+					$contact_widget->setWidgetName($name);
+				}
+				$contact_widget->setOrder($data['order']);
+				$contact_widget->setSection($data['section']);
+				$contact_widget->save();
+				
+				if (isset($data['options']) && is_array($data['options'])) {
+					foreach ($data['options'] as $opt_name => $opt_val) {
+						$contact_widget_option = ContactWidgetOptions::instance()->findOne(array('conditions' => array('contact_id=? AND widget_name=? AND `option`=?',logged_user()->getId(),$name,$opt_name)));
+						if (!$contact_widget_option instanceof ContactWidgetOption) {
+							$contact_widget_option = new ContactWidgetOption();
+							$contact_widget_option->setContactId(logged_user()->getId());
+							$contact_widget_option->setWidgetName($name);
+							$contact_widget_option->setMemberTypeId(0);
+							$contact_widget_option->setOption($opt_name);
+						}
+						$contact_widget_option->setValue($opt_val);
+						$contact_widget_option->save();
+					}
+				}
+			}
+			DB::commit();
+			evt_add('reload tab panel', 'overview-panel');
+			ajx_current("back");
+		} catch (Exception $e) {
+			flash_error($e->getMessage());
+			DB::rollback();
+		}
 	}
 } 

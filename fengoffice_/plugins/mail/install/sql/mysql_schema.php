@@ -25,6 +25,7 @@ CREATE TABLE  `<?php echo $table_prefix ?>mail_contents` (
   `message_id` varchar(255) <?php echo $default_collation ?> NOT NULL COMMENT 'Message-Id header',
   `in_reply_to_id` varchar(255) <?php echo $default_collation ?> NOT NULL COMMENT 'Message-Id header of the previous email in the conversation',
   `conversation_id` int(10) unsigned NOT NULL default '0',
+  `conversation_last` int(1) NOT NULL default '1',
   `sync` int(1) NOT NULL default '0',
   PRIMARY KEY  (`object_id`),
   KEY `account_id` (`account_id`, `uid`),

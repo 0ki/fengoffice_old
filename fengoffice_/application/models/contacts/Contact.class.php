@@ -567,7 +567,7 @@ class Contact extends BaseContact {
 	} // getPhoneNumber
 
 	function getAllImValues() {
-		$rows = DB::executeAll("SELECT i.value, t.name FROM fo_contact_im_values i INNER JOIN fo_im_types t ON i.im_type_id=t.id WHERE i.contact_id=".$this->getId());
+		$rows = DB::executeAll("SELECT i.value, t.name FROM ".TABLE_PREFIX."contact_im_values i INNER JOIN fo_im_types t ON i.im_type_id=t.id WHERE i.contact_id=".$this->getId());
 		$res = array();
 		foreach ($rows as $row) {
 			$res[$row['name']] = $row['value'];
@@ -1714,7 +1714,9 @@ class Contact extends BaseContact {
 		if(!$result && $public_fileid) {
 			FileRepository::deleteFile($public_fileid);
 		} // if
-		@unlink($temp_file);
+		if (is_file($temp_file)) {
+			@unlink($temp_file);
+		}
 
 		return $result;
 	} // setLogo

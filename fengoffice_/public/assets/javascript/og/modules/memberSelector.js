@@ -4,6 +4,8 @@ member_selector.init = function(genid) {
 
 	member_selector[genid].sel_context = {};
 	var selected_member_ids = Ext.util.JSON.decode(Ext.fly(Ext.get(genid + member_selector[genid].hiddenFieldName)).getValue());
+	
+	var dimension_to_get = new Array();
 	for (i=0; i<selected_member_ids.length; i++) {
 		var mid = selected_member_ids[i];
 		if (member_selector[genid].members_dimension[mid] > 0) {
@@ -16,31 +18,43 @@ member_selector.init = function(genid) {
 			if (selected_member_ids.length == i) {
 				var idshf = document.getElementById(genid+'subscribers_ids_hidden');
 				if (idshf) og.reload_subscribers(genid, member_selector[genid].otid, idshf.value);
-			}
-			
+			}			
 		} else {
-			og.openLink(og.getUrl('member', 'get_dimension_id', {member_id: mid}), {callback: function(success, data){
-				if (!data.dim_id) return;
-				var dim = data.dim_id;
-				var mid_call = data.member_id;
-				if (!member_selector[genid].sel_context[dim]) {
-					member_selector[genid].sel_context[dim] = [];
-				}
-				member_selector[genid].sel_context[dim].push(mid_call);
-				member_selector[genid].members_dimension[mid_call] = dim;
-				
-				if (selected_member_ids.length == i) {
-					var idshf = document.getElementById(genid+'subscribers_ids_hidden');
-					if (idshf) og.reload_subscribers(genid, member_selector[genid].otid, idshf.value);
-				}
-				
-				//render Invited people in event
-				if ($("#"+genid+"add_event_invitation_div").length > 0) {
-					og.redrawPeopleList(genid);
-				}
-			}});
+			dimension_to_get.push(mid);
 		}
 	}
+	
+	// fill store with preloaded members
+	member_selector.preload_members(genid);
+	
+	og.openLink(og.getUrl('member', 'get_dimension_id', {member_id: Ext.util.JSON.encode(dimension_to_get)}), {callback: function(success, data){
+				
+		if (!data.dim_ids) return;
+		
+		for (var i=0;i<data.dim_ids.length;i++){
+			data.dim_ids[i]
+			if (!member_selector[genid].sel_context[data.dim_ids[i].dim_id]) {
+				member_selector[genid].sel_context[data.dim_ids[i].dim_id] = [];
+			}
+			
+			member_selector[genid].sel_context[data.dim_ids[i].dim_id].push(data.dim_ids[i].member_id);
+			member_selector[genid].members_dimension[data.dim_ids[i].member_id] = data.dim_ids[i].dim_id;
+			
+		}
+						
+		//RENDER
+		if (selected_member_ids.length == i) {
+			var idshf = document.getElementById(genid+'subscribers_ids_hidden');
+			if (idshf) og.reload_subscribers(genid, member_selector[genid].otid, idshf.value);
+		}
+		
+		//render Invited people in event
+		if ($("#"+genid+"add_event_invitation_div").length > 0) {
+			og.redrawPeopleList(genid);
+		}
+						
+	}});
+	
 	if (selected_member_ids.length == 0) {
 		var idshf = document.getElementById(genid+'subscribers_ids_hidden');
 		if (idshf) og.reload_subscribers(genid, member_selector[genid].otid, idshf.value);
@@ -52,6 +66,9 @@ member_selector.autocomplete_select = function(dimension_id, genid, combo, recor
 	combo.selected_member = record.data;
 
 	member_selector.add_relation(dimension_id, genid);
+	
+	// fill store with preloaded members
+	member_selector.preload_members(genid, dimension_id);
 }
 
 member_selector.add_relation = function(dimension_id, genid) {
@@ -258,4 +275,36 @@ member_selector.set_selected = function(genid, sel_member_ids) {
 	member_ids_input.value = Ext.util.JSON.encode(sel_member_ids);
 	
 	member_selector.init(genid);
+}
+
+member_selector.preload_members = function(genid, d) {
+	for (dim_id in member_selector[genid].properties) {
+		if (typeof d != 'undefined' && d != dim_id) continue;
+		
+		var combo = Ext.getCmp(genid + 'add-member-input-dim' + dim_id);
+		var dim_members = og.dimensions[dim_id];
+		var records = [];
+		
+		for (var k in dim_members) {
+			var m = dim_members[k];
+			if (typeof m == 'function') continue;
+			// ["id", "name", "path", "to_show", "ico", "dim"]
+			
+			var to_show = m.path == '' ? m.name : m.name + " ("+m.path+")";
+			var record = new Ext.data.Record(
+				{'id':m.id, 'name':m.name, 'path':m.path, 'to_show':to_show, 'ico':m.ico, 'dim':dim_id},
+				m.id
+			);
+			records.push(record);
+		}
+	
+		if (records.length > 0) {
+			combo.disable();
+			combo.store.removeAll();
+			combo.store.add(records);
+			combo.reset();
+			combo.enable();
+		}
+	
+	}
 }

@@ -935,18 +935,20 @@ class TaskController extends ApplicationController {
         
         if (config_option('use tasks dependencies')) {
         	$dependency_count = array();
-	        foreach ($tasks as $task) {
-				$previous = 0;
-				$ptasks = ProjectTaskDependencies::getDependenciesForTask($task['id']);
-				foreach ($ptasks as $pdep) {
-					$ptask = ProjectTasks::findById($pdep->getPreviousTaskId());
-					if ($ptask instanceof ProjectTask && !$ptask->isCompleted()) $previous++;
+        	if (is_array($tasks)) {
+		        foreach ($tasks as $task) {
+					$previous = 0;
+					$ptasks = ProjectTaskDependencies::getDependenciesForTask($task['id']);
+					foreach ($ptasks as $pdep) {
+						$ptask = ProjectTasks::findById($pdep->getPreviousTaskId());
+						if ($ptask instanceof ProjectTask && !$ptask->isCompleted()) $previous++;
+					}
+					$dependants = ProjectTaskDependencies::getDependantsForTask($task['id']);
+					$dep_csv = "";
+					foreach ($dependants as $dep) $dep_csv .= ($dep_csv==""?"":",") . $dep->getTaskId();
+					$dependency_count[] = array('id' => $task['id'], 'count' => $previous, 'dependants' => $dep_csv);
 				}
-				$dependants = ProjectTaskDependencies::getDependantsForTask($task['id']);
-				$dep_csv = "";
-				foreach ($dependants as $dep) $dep_csv .= ($dep_csv==""?"":",") . $dep->getTaskId();
-				$dependency_count[] = array('id' => $task['id'], 'count' => $previous, 'dependants' => $dep_csv);
-			}
+        	}
 			tpl_assign('dependency_count', $dependency_count);
         }
         
@@ -1175,32 +1177,37 @@ class TaskController extends ApplicationController {
 		tpl_assign('multi_assignment', $subtasks);
 
 		if (is_array(array_var($_POST, 'task'))) {
-			// order
-			$task->setOrder(ProjectTasks::maxOrder(array_var($task_data, "parent_id", 0), array_var($task_data, "milestone_id", 0)));
-				
-			$task_data['due_date'] = getDateValue(array_var($_POST, 'task_due_date'));
-			$task_data['start_date'] = getDateValue(array_var($_POST, 'task_start_date'));
-			
-			if ($task_data['due_date'] instanceof DateTimeValue) {
-				$duetime = getTimeValue(array_var($_POST, 'task_due_time'));
-				if (is_array($duetime)) {
-					$task_data['due_date']->setHour(array_var($duetime, 'hours'));
-					$task_data['due_date']->setMinute(array_var($duetime, 'mins'));
-				}
-				$task_data['due_date']->advance(logged_user()->getTimezone() * -3600);
-				$task_data['use_due_time'] = is_array($duetime);
-			}
-			if ($task_data['start_date'] instanceof DateTimeValue) {
-				$starttime = getTimeValue(array_var($_POST, 'task_start_time'));
-				if (is_array($starttime)) {
-					$task_data['start_date']->setHour(array_var($starttime, 'hours'));
-					$task_data['start_date']->setMinute(array_var($starttime, 'mins'));
-				}
-				$task_data['start_date']->advance(logged_user()->getTimezone() * -3600);
-				$task_data['use_start_time'] = is_array($starttime);
-			}
-			
 			try {
+				// order
+				$task->setOrder(ProjectTasks::maxOrder(array_var($task_data, "parent_id", 0), array_var($task_data, "milestone_id", 0)));
+				
+				try {
+					$task_data['due_date'] = getDateValue(array_var($_POST, 'task_due_date'));
+					$task_data['start_date'] = getDateValue(array_var($_POST, 'task_start_date'));
+				} catch (Exception $e) {
+					throw new Exception(lang('date format error', date_format_tip(user_config_option('date_format'))));
+				}
+				
+				if ($task_data['due_date'] instanceof DateTimeValue) {
+					$duetime = getTimeValue(array_var($_POST, 'task_due_time'));
+					if (is_array($duetime)) {
+						$task_data['due_date']->setHour(array_var($duetime, 'hours'));
+						$task_data['due_date']->setMinute(array_var($duetime, 'mins'));
+					}
+					$task_data['due_date']->advance(logged_user()->getTimezone() * -3600);
+					$task_data['use_due_time'] = is_array($duetime);
+				}
+				if ($task_data['start_date'] instanceof DateTimeValue) {
+					$starttime = getTimeValue(array_var($_POST, 'task_start_time'));
+					if (is_array($starttime)) {
+						$task_data['start_date']->setHour(array_var($starttime, 'hours'));
+						$task_data['start_date']->setMinute(array_var($starttime, 'mins'));
+					}
+					$task_data['start_date']->advance(logged_user()->getTimezone() * -3600);
+					$task_data['use_start_time'] = is_array($starttime);
+				}
+				
+			
 				$err_msg = $this->setRepeatOptions($task_data);
 				if ($err_msg) {
 					flash_error($err_msg);
@@ -1623,57 +1630,60 @@ class TaskController extends ApplicationController {
 				ajx_current("empty");
 				return;
 			}
-				
-			$task_data['due_date'] = getDateValue(array_var($_POST, 'task_due_date'));
-			$task_data['start_date'] = getDateValue(array_var($_POST, 'task_start_date'));
-				
-			if ($task_data['due_date'] instanceof DateTimeValue) {
-				$duetime = getTimeValue(array_var($_POST, 'task_due_time'));
-				if (is_array($duetime)) {
-					$task_data['due_date']->setHour(array_var($duetime, 'hours'));
-					$task_data['due_date']->setMinute(array_var($duetime, 'mins'));
-				}
-				$task_data['due_date']->advance(logged_user()->getTimezone() * -3600);
-				$task_data['use_due_time'] = is_array($duetime);
-			}
-			if ($task_data['start_date'] instanceof DateTimeValue) {
-				$starttime = getTimeValue(array_var($_POST, 'task_start_time'));
-				if (is_array($starttime)) {
-					$task_data['start_date']->setHour(array_var($starttime, 'hours'));
-					$task_data['start_date']->setMinute(array_var($starttime, 'mins'));
-				}
-				$task_data['start_date']->advance(logged_user()->getTimezone() * -3600);
-				$task_data['use_start_time'] = is_array($starttime);
-			}
-
-			//control date subtask whit parent
-			if(array_var($_POST, 'control_dates') == "child"){
-				$parent = $task->getParent();
-				if ($parent->getStartDate() instanceof DateTimeValue && $task_data['start_date'] instanceof DateTimeValue) {
-					if($task_data['start_date']->getTimestamp() < $parent->getStartDate()->getTimestamp()){
-						$parent->setStartDate($task_data['start_date']);
-						$parent->setUseStartTime($task_data['use_start_time']);
-					}
-				}else{
-					$parent->setStartDate($task_data['start_date']);
-					$parent->setUseStartTime(array_var($task_data, 'use_start_time',0));
-				}
-				if ($parent->getDueDate() instanceof DateTimeValue && $task_data['due_date'] instanceof DateTimeValue) {
-					if($task_data['due_date']->getTimestamp() > $parent->getDueDate()->getTimestamp()){
-						$parent->setDueDate($task_data['due_date']);
-						$parent->setUseDueTime($task_data['use_due_time']);
-					}
-				}else{
-					$parent->setDueDate($task_data['due_date']);
-					$parent->setUseDueTime(array_var($task_data, 'use_due_time',0));
-				}
-				// calculate and set estimated time
-				$totalMinutes = (array_var($task_data, 'time_estimate_hours') * 60) + (array_var($task_data, 'time_estimate_minutes'));
-				$parent->setTimeEstimate($totalMinutes);
-				$parent->save();
-			}
 
 			try {
+				try {
+					$task_data['due_date'] = getDateValue(array_var($_POST, 'task_due_date'));
+					$task_data['start_date'] = getDateValue(array_var($_POST, 'task_start_date'));
+				} catch (Exception $e) {
+					throw new Exception(lang('date format error', date_format_tip(user_config_option('date_format'))));
+				}
+					
+				if ($task_data['due_date'] instanceof DateTimeValue) {
+					$duetime = getTimeValue(array_var($_POST, 'task_due_time'));
+					if (is_array($duetime)) {
+						$task_data['due_date']->setHour(array_var($duetime, 'hours'));
+						$task_data['due_date']->setMinute(array_var($duetime, 'mins'));
+					}
+					$task_data['due_date']->advance(logged_user()->getTimezone() * -3600);
+					$task_data['use_due_time'] = is_array($duetime);
+				}
+				if ($task_data['start_date'] instanceof DateTimeValue) {
+					$starttime = getTimeValue(array_var($_POST, 'task_start_time'));
+					if (is_array($starttime)) {
+						$task_data['start_date']->setHour(array_var($starttime, 'hours'));
+						$task_data['start_date']->setMinute(array_var($starttime, 'mins'));
+					}
+					$task_data['start_date']->advance(logged_user()->getTimezone() * -3600);
+					$task_data['use_start_time'] = is_array($starttime);
+				}
+	
+				//control date subtask whit parent
+				if(array_var($_POST, 'control_dates') == "child"){
+					$parent = $task->getParent();
+					if ($parent->getStartDate() instanceof DateTimeValue && $task_data['start_date'] instanceof DateTimeValue) {
+						if($task_data['start_date']->getTimestamp() < $parent->getStartDate()->getTimestamp()){
+							$parent->setStartDate($task_data['start_date']);
+							$parent->setUseStartTime($task_data['use_start_time']);
+						}
+					}else{
+						$parent->setStartDate($task_data['start_date']);
+						$parent->setUseStartTime(array_var($task_data, 'use_start_time',0));
+					}
+					if ($parent->getDueDate() instanceof DateTimeValue && $task_data['due_date'] instanceof DateTimeValue) {
+						if($task_data['due_date']->getTimestamp() > $parent->getDueDate()->getTimestamp()){
+							$parent->setDueDate($task_data['due_date']);
+							$parent->setUseDueTime($task_data['use_due_time']);
+						}
+					}else{
+						$parent->setDueDate($task_data['due_date']);
+						$parent->setUseDueTime(array_var($task_data, 'use_due_time',0));
+					}
+					// calculate and set estimated time
+					$totalMinutes = (array_var($task_data, 'time_estimate_hours') * 60) + (array_var($task_data, 'time_estimate_minutes'));
+					$parent->setTimeEstimate($totalMinutes);
+					$parent->save();
+				}
 				$err_msg = $this->setRepeatOptions($task_data);
 				if ($err_msg) {
 					flash_error($err_msg);

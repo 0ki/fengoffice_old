@@ -38,25 +38,28 @@ if ($calendar_panel instanceof TabPanel && $calendar_panel->getEnabled()) {
 	$currentmonth = $today->getMonth();
 	$currentyear = $today->getYear();
 	
-	$user_comp_filter = user_config_option('pending tasks widget assigned to filter');
-	$exploded = explode(":", $user_comp_filter);
-	$user_filter_id = array_var($exploded, 1);
-	$user_filter = $user_filter_id > 0 ? Users::findById($user_filter_id) : null;
+	$user_filter_myself = true;
+	$user_filter = null;
+	$w_option_user_filter = ContactWidgetOptions::instance()->getContactOption('calendar', logged_user()->getId(), 'filter_by_myself');
+	if (array_var($w_option_user_filter, 'option')) {
+		$user_filter_myself = array_var($w_option_user_filter, 'value');
+	}
+	if ($user_filter_myself) $user_filter = logged_user();
 	
-	$date_start = new DateTimeValue(mktime(0, 0, 0, $currentmonth, $startday, $currentyear)); 
-	$date_end = new DateTimeValue(mktime(0, 0, 0, $currentmonth, $endday, $currentyear)); 
+	$date_start = new DateTimeValue(mktime(0, 0, 0, $currentmonth, $startday, $currentyear));
+	$date_end = new DateTimeValue(mktime(0, 0, 0, $currentmonth, $endday, $currentyear));
 
-	$tmp_tasks = ProjectTasks::instance()->getRangeTasksByUser($date_start, $date_end, $user_filter );
+	$tmp_tasks = ProjectTasks::instance()->getRangeTasksByUser($date_start, $date_end, $user_filter);
 	$birthdays = Contacts::instance()->getRangeContactsByBirthday($date_start, $date_end);
 	
 	$milestones = ProjectMilestones::getRangeMilestones($date_start, $date_end);
-                                        
+	
 	$tasks = array();
 	if($tmp_tasks) {
 		foreach ($tmp_tasks as $task) {
 			$tasks = array_merge($tasks, replicateRepetitiveTaskForCalendar($task, $date_start, $date_end));
 		}
-	}	
+	}
 	$use_24_hours = user_config_option('time_format_use_24');
 	if($use_24_hours) $timeformat = 'G:i';
 	else $timeformat = 'g:i A';
@@ -195,7 +198,7 @@ if ($calendar_panel instanceof TabPanel && $calendar_panel->getEnabled()) {
 			$output .= "</div>";
 			// This loop writes the events for the day in the cell
 			if (is_numeric($w)){
-				$result = ProjectEvents::getDayProjectEvents($dtv,active_context(), logged_user()->getId(),' 0 1 3'); 
+				$result = ProjectEvents::getDayProjectEvents($dtv,active_context(), ($user_filter instanceof Contact ? $user_filter->getId() : -1),' 0 1 3'); 
 				if(!$result)
 					$result = array();
 				if(!empty($milestones))

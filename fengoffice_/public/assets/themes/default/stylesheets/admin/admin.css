@@ -123,3 +123,19 @@
 	vertical-align: middle;
 	padding: 3px 5px;
 }
+
+/* ------------------------------- WIDGET ADMINISTRATION ------------------------------*/
+
+.widget-manager table {
+	width: 1010px;
+	margin: 15px 5px;
+}
+.widget-manager .left-section table, .widget-manager .right-section table {
+	width: 500px;
+	margin: 15px 5px;
+	float: left;
+}
+.widget-manager th, .widget-manager td {
+	vertical-align: middle;
+	padding: 3px 5px;
+}

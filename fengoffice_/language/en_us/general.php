@@ -350,4 +350,25 @@ return array(
 	'use default subject' => 'Use default Subject',
 	'enter a custom subject' => 'Enter a custom Subject...',
 
+	'widgets' => 'Widgets',
+	'dashboard options' => 'Dashboard options',
+	'default dashboard options' => 'Default dashboard options',
+	'top' => 'Top',
+	'left' => 'Left',
+	'right' => 'Right',
+	'section' => 'Section',
+	'sec order' => 'Order',
+	'everyone' => 'Everyone',
+
+	'widget_overdue_upcoming_assigned_to_user' => 'Show tasks for',
+	'widget_calendar_filter_by_myself' => 'Show only my events',
+
+	'activity_feed' => 'Activity Feed',
+	'completed tasks list' => 'Completed tasks',
+	'crpm_people' => 'People',
+	'estimated_worked_time' => 'Estimated and worked time',
+	'overdue and upcoming' => 'Late and upcoming tasks',
+	'projects widget title' => 'Projects',
+	'statics' => 'Statistics',
+	'summary' => 'Summary',
 );

@@ -28,13 +28,20 @@ class MemberController extends ApplicationController {
 	
 	function get_dimension_id() {
 		ajx_current("empty");
-		$data = array();
-		$member = Members::instance()->findById(array_var($_REQUEST, 'member_id'));
-		if ($member instanceof Member) {
-			$data['dim_id'] = $member->getDimensionId();
-			$data['member_id'] = $member->getId();
-		}		
-		ajx_extra_data($data);
+		$data_to_return = array();
+		
+		$members_ids = json_decode(array_var($_REQUEST, 'member_id'));
+		
+		foreach ($members_ids as $key=>$m){
+			$member = Members::instance()->findById($m);
+			if ($member instanceof Member) {
+				$data = array();
+				$data['dim_id'] = $member->getDimensionId();
+				$data['member_id'] = $member->getId();
+				$data_to_return['dim_ids'][] = $data;
+			}
+		}
+		ajx_extra_data(($data_to_return));
 	}
 	
 	
@@ -650,6 +657,9 @@ class MemberController extends ApplicationController {
 			if ($is_new) {
 				$member_data['member_id'] = $member->getId();
 			}
+			$member_data['path'] = trim(clean($member->getPath()));
+			$member_data['ico'] = $member->getIconClass();
+			
 			evt_add("after member save", $member_data) ;
 			return $member;
 		} catch (Exception $e) {

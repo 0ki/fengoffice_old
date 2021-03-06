@@ -208,7 +208,7 @@ class MailContents extends BaseMailContents {
 	 * @param Project $project
 	 * @return array
 	 */
-	function getEmails($account_id = null, $state = null, $read_filter = "", $classif_filter = "", $context = null, $start = null, $limit = null, $order_by = 'received_date', $dir = 'ASC', $join_params = null, $archived = false) {
+	function getEmails($account_id = null, $state = null, $read_filter = "", $classif_filter = "", $context = null, $start = null, $limit = null, $order_by = 'received_date', $dir = 'ASC', $join_params = null, $archived = false, $conversation_list = null) {
 		$mailTablePrefix = "e";
 		if (!$limit) $limit = user_config_option('mails_per_page') ? user_config_option('mails_per_page') : config_option('files_per_page');
 		$accountConditions = "";
@@ -272,22 +272,13 @@ class MailContents extends BaseMailContents {
 
 		
 		
-		// Conversations not allowed yet
-		//if (user_config_option('show_emails_as_conversations')) {
-		//	$state_conv_cond_1 = $state != 'received' ? " $stateConditions AND " : " m.state <> '2' AND ";
-		//	$state_conv_cond_2 = $state != 'received' ? " AND (mc.state = '1' OR mc.state = '3' OR mc.state = '5') " : " AND mc.state <> '2' ";
-		//	$archived_by_id = $archived ? "AND o.archived_by_id != 0" : "AND o.archived_by_id = 0";
-		//	$trashed_by_id = "AND o.trashed_by_id = 0";
-		//	$conversation_cond = "AND IF(m.conversation_id = 0, $stateConditions, $state_conv_cond_1 NOT EXISTS (SELECT * FROM ".TABLE_PREFIX."mail_contents mc WHERE m.conversation_id = mc.conversation_id AND m.account_id = mc.account_id AND m.received_date < mc.received_date $archived_by_id AND mc.is_deleted = 0 $trashed_by_id $subread $state_conv_cond_2))";
-		//	$box_cond = "AND IF(EXISTS(SELECT * FROM ".TABLE_PREFIX."mail_contents mc WHERE m.conversation_id = mc.conversation_id AND m.object_id <> o.id AND m.account_id = mc.account_id $archived_by_id AND mc.is_deleted = 0 $trashed_by_id AND $stateConditions), TRUE, $stateConditions)";
-		//} else {
-			$conversation_cond = "";
-			$box_cond = "AND $stateConditions";
-		//}
-
-		/*return self::findByContext(array('limit' => $limit, 'offset' => $start, 'order' => "$order_by $dir",
-			'extra_conditions' => "$accountConditions $classified $read $conversation_cond $box_cond")); */
-
+		$conversation_cond = "";
+		$box_cond = "AND $stateConditions";
+		
+		if (isset($conversation_list) && $conversation_list > 0) {
+			$conversation_cond = "AND e.conversation_last = 1";
+		}
+		
 		return self::instance()->listing(array(
 			'limit' => $limit, 
 			'start' => $start, 

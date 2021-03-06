@@ -476,14 +476,15 @@ INSERT INTO `<?php echo $table_prefix ?>system_permissions` (`permission_group_i
 ((SELECT id FROM <?php echo $table_prefix ?>permission_groups WHERE name = 'Guest'),	0,	0,	0,	0,	0,		0,	0,	0,	0,	0,	0,	1, 0),
 ((SELECT id FROM <?php echo $table_prefix ?>permission_groups WHERE name = 'Non-Exec Director'),	0,	0,	0,	0,	0,		0,	0,	0,	0,	0,	1,	1, 0);
 
-INSERT INTO `<?php echo $table_prefix ?>widgets` (`name`,`title`,`plugin_id`,`path`,`default_options`,`default_section`,`default_order`) VALUES 
- ('overdue_upcoming','overdue and upcoming',0,'','','left',3),
- ('people','people',0,'','','right',-1),
- ('messages','notes',0,'','','right',1000),
- ('documents','documents',0,'','','right',1100),
- ('calendar','upcoming events milestones and tasks',0,'','','top',0),
- ('completed_tasks_list','completed tasks list',0,'','','right',150),
- ('activity_feed', 'activity_feed', 0, '', '', 'left', 0);
+INSERT INTO `<?php echo $table_prefix ?>widgets` (`name`,`title`,`plugin_id`,`path`,`default_options`,`default_section`,`default_order`,`icon_cls`) VALUES 
+ ('overdue_upcoming','overdue and upcoming',0,'','','left',3,'ico-task'),
+ ('people','people',0,'','','right',-1,'ico-contact'),
+ ('messages','notes',0,'','','right',1000,'ico-message'),
+ ('documents','documents',0,'','','right',1100,'ico-file'),
+ ('calendar','upcoming events milestones and tasks',0,'','','top',0,'ico-event'),
+ ('completed_tasks_list','completed tasks list',0,'','','right',150,'ico-task'),
+ ('activity_feed', 'activity_feed', 0, '', '', 'left', 0,'ico-properties'),
+ ('comments','comments',0,'','','left',5,'ico-comment');
 
 INSERT INTO <?php echo $table_prefix ?>role_object_type_permissions (role_id, object_type_id, can_delete, can_write)
  SELECT p.id, o.id, 1, 1
@@ -522,3 +523,8 @@ INSERT INTO <?php echo $table_prefix ?>role_object_type_permissions (role_id, ob
  AND p.`name` IN ('Non-Exec Director');
 
 UPDATE <?php echo $table_prefix ?>role_object_type_permissions SET can_write = 1 WHERE object_type_id = (SELECT id FROM <?php echo $table_prefix ?>object_types WHERE name='comment');
+
+INSERT INTO `<?php echo $table_prefix ?>contact_widget_options` (widget_name,contact_id,member_type_id,`option`,`value`,config_handler_class,is_system) VALUES
+('overdue_upcoming',0,0,'assigned_to_user',0,'UserCompanyConfigHandler',0),
+('calendar',0,0,'filter_by_myself',1,'BooleanConfigHandler',0)
+ON DUPLICATE KEY UPDATE widget_name=widget_name;

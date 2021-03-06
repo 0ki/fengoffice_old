@@ -47,8 +47,10 @@
       $objects = array();
       foreach($relations as $relation) {
         $object = $relation->getOtherObject($originalObject);
-		if (!$object->canView(logged_user())) continue;
-        $objects[] = $object;
+		if($object instanceof ContentDataObject){
+       		if (!$object->canView(logged_user())) continue;
+       		$objects[] = $object;
+		}
       } // if
 
       return count($objects) ? $objects : null;

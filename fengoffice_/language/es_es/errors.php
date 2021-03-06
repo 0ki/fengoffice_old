@@ -134,4 +134,5 @@
 	'start date > closure date' => 'La fecha de cierre debe ser mayor que la fecha de inicio.',
   
   	'uploaded file bigger than max upload size' => 'Está intentando subir un documento que es mayor a su límite de tamaño que es {0}.',
-); ?>
+  	'date format error' => 'La fecha de inicio o fin ingresada es incorrecta, el formato correcto es "{0}", por favor use este formato o cambie el mismo en sus preferencias de usuario.',
+);

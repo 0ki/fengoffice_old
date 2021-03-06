@@ -198,6 +198,7 @@
 	'you dont have permissions to classify object in member' => 'You don\'t have permissions to classify \'{0}\' in \'{1}\'',
   
   	'uploaded file bigger than max upload size' => 'You are trying to upload a document that is over your current upload size limit of {0}.',
+  	'date format error' => 'You have an error when typing due date or start date, the correct date format is "{0}", please use this format or change it in your account preferences.',
   ); // array
 
 ?>

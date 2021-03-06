@@ -7,7 +7,15 @@ abstract class BaseWidgets extends DataManager {
 	 * @var array
 	 * @static
 	 */
-	private static $columns = array ('name' => DATA_TYPE_STRING, 'title' => DATA_TYPE_STRING, 'plugin_id' => DATA_TYPE_INTEGER, 'default_section' => DATA_TYPE_STRING, 'default_order' => DATA_TYPE_INTEGER, 'default_options' => DATA_TYPE_STRING );
+	private static $columns = array (
+		'name' => DATA_TYPE_STRING,
+		'title' => DATA_TYPE_STRING,
+		'plugin_id' => DATA_TYPE_INTEGER,
+		'default_section' => DATA_TYPE_STRING,
+		'default_order' => DATA_TYPE_INTEGER,
+		'default_options' => DATA_TYPE_STRING,
+		'icon_cls' => DATA_TYPE_STRING,
+	);
 	
 	function __construct() {
 		Hook::fire ( 'object_definition', 'Widget', self::$columns );

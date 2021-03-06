@@ -311,7 +311,8 @@ class AccountController extends ApplicationController {
 				
 				$user->setUserType(array_var($user_data, 'type'));
 				$user->save();
-				save_permissions($pg_id, $user->isGuest());
+				//save_permissions($pg_id, $user->isGuest());
+				save_user_permissions_background(logged_user(), $pg_id, $user->isGuest());
 				
 				DB::commit();
 				flash_success(lang('success user permissions updated'));

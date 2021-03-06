@@ -681,6 +681,7 @@ class MailController extends ApplicationController {
 					}
 				}*/
 				$mail->addToSharingTable();
+				$mail->orderConversation();
 				DB::commit();
 				ApplicationLogs::createLog($mail,  ApplicationLogs::ACTION_ADD,false,true);
 				
@@ -841,6 +842,7 @@ class MailController extends ApplicationController {
 						if (defined('DEBUG') && DEBUG) file_put_contents(ROOT."/cache/log_mails.txt", gmdate("d-m-Y H:i:s") . " antes de enviar: ".$mail->getId() . "\n", FILE_APPEND);
 						
 						$sentOK = $utils->sendMail($account->getSmtpServer(), $to, $from, $subject, $body, $cc, $bcc, $attachments, $account->getSmtpPort(), $account->smtpUsername(), $account->smtpPassword(), $type, $account->getOutgoingTrasnportType(), $msg_id, $in_reply_to_id, $images, $complete_mail, $att_version);
+						$mail->orderConversation();
 					} catch (Exception $e) {
 						// actions are taken below depending on the sentOK variable
 						Logger::log("Could not send email: ".$e->getMessage()."\nmail_id=".$mail->getId());
@@ -1489,9 +1491,11 @@ class MailController extends ApplicationController {
 			$canWriteFiles = $this->checkFileWritability($classification_data, $parsedEmail);
 			if ($canWriteFiles) {
 				DB::beginWork();
-				if ($members) {
+				if (count($members) > 0) {
 					$account_owner = logged_user() instanceof contact ? logged_user() : Contacts::findById($email->getAccount()->getContactId());
 					$ctrl->add_to_members($email, $members, $account_owner);
+				} else {
+					$email->removeFromMembers(logged_user() instanceof contact ? logged_user() : Contacts::findById($email->getAccount()->getContactId(), $email->getMembers()));
 				}
 				if ($process_conversation) {
 					$conversation = MailContents::getMailsFromConversation($email);
@@ -1505,6 +1509,10 @@ class MailController extends ApplicationController {
 							if ($conv_email->getHasAttachments()) {
 								$this->classifyFile($classification_data, $conv_email, $parsedEmail, $member_instances, true);
 							}
+						}
+					} else {
+						foreach ($conversation as $conv_email) {
+							$conv_email->removeFromMembers(logged_user() instanceof contact ? logged_user() : Contacts::findById($email->getAccount()->getContactId(), $conv_email->getMembers()));
 						}
 					}
 				}
@@ -1822,7 +1830,7 @@ class MailController extends ApplicationController {
 						$account_user->save();
 					}
 				}
-							
+				
 				if ($mailAccount->getIsImap() && is_array(array_var($_POST, 'check'))) {
 					$real_folders = MailUtilities::getImapFolders($mailAccount);
 					foreach ($real_folders as $folder_name) {
@@ -2060,18 +2068,22 @@ class MailController extends ApplicationController {
 					//If imap, save folders to check
 					if($mailAccount->getIsImap() && is_array(array_var($_POST, 'check'))) {
 					  	$checks = array_var($_POST, 'check');
-					  	if (is_array($imap_folders) && count($imap_folders)) {
-						  	foreach ($imap_folders as $folder) {
-						  		$folder->setCheckFolder(false);
-						  		foreach ($checks as $name => $cf) {
-						  			$name = str_replace(array('¡','!'), array('[',']'), $name);//to avoid a mistaken array if name contains [ 
-						  			if (strcasecmp($name, $folder->getFolderName()) == 0) {
-						  				$folder->setCheckFolder($cf == 'checked');
-						  				break;
-						  			}
-						  		}
-						  		$folder->save();
-						  	}
+						
+					  	$names = array();
+					  	foreach ($checks as $name => $checked) {
+					  		$name = str_replace(array('¡','!'), array('[',']'), $name);//to avoid a mistaken array if name contains [
+					  		$names[] = $name;
+					  		$imap_folder = MailAccountImapFolders::instance()->findOne(array('conditions' => array('folder_name = ?', $name)));
+					  		if (!$imap_folder instanceof MailAccountImapFolder) {
+					  			$imap_folder = new MailAccountImapFolder();
+					  			$imap_folder->setAccountId($mailAccount->getId());
+					  			$imap_folder->setFolderName($name);
+					  		}
+					  		$imap_folder->setCheckFolder($checked == 'checked');
+					  		$imap_folder->save();
+					  	}
+					  	if (count($names) > 0) {
+					  		DB::execute("UPDATE ".TABLE_PREFIX."mail_account_imap_folder SET check_folder=0 WHERE account_id=".$mailAccount->getId()." AND folder_name NOT IN ('".implode("','",$names)."')");
 					  	}
 					}
 					
@@ -2545,7 +2557,10 @@ class MailController extends ApplicationController {
 		// Get all emails to display
 		$context = active_context();
 		
-		$result = $this->getEmails($attributes, $context, $start, $limit, $order, $dir, $join_params);
+		// Get only last mail in conversation for this folder
+		$conversation_list = 1;
+		
+		$result = $this->getEmails($attributes, $context, $start, $limit, $order, $dir, $join_params, $conversation_list);
 		
 		$total = $result->total;
 		$emails = $result->objects;
@@ -2567,7 +2582,7 @@ class MailController extends ApplicationController {
 	 * @param Project $project
 	 * @return array
 	 */
-	private function getEmails($attributes, $context = null, $start = null, $limit = null, $order_by = 'sent_date', $dir = 'ASC',$join_params = null) {
+	private function getEmails($attributes, $context = null, $start = null, $limit = null, $order_by = 'sent_date', $dir = 'ASC',$join_params = null, $conversation_list = null) {
 		// Return if no emails should be displayed
 		if (!isset($attributes["viewType"]) || ($attributes["viewType"] != "all" && $attributes["viewType"] != "emails")) return null;
 		$account = array_var($attributes, "accountId");
@@ -2580,7 +2595,7 @@ class MailController extends ApplicationController {
 		
 		$state = array_var($attributes, 'stateType');
 		
-		$result = MailContents::getEmails($account, $state, $read_filter, $classif_filter, $context, $start, $limit, $order_by, $dir, $join_params);
+		$result = MailContents::getEmails($account, $state, $read_filter, $classif_filter, $context, $start, $limit, $order_by, $dir, $join_params, null, $conversation_list);
 		
 
 		return $result;
@@ -2721,7 +2736,7 @@ class MailController extends ApplicationController {
 		if ($filter = array_var($_POST, 'name_filter')) {
 			$filter = mysql_real_escape_string($filter, DB::connection()->getLink());
 			$extra_conds = "(e.first_name like '%$filter%' || e.surname like '%$filter%' || 
-				(select count(id) from fo_contact_emails ce where ce.contact_id=e.object_id and ce.email_address like '%$filter%'))";
+				(select count(id) from ".TABLE_PREFIX."contact_emails ce where ce.contact_id=e.object_id and ce.email_address like '%$filter%'))";
 			$addresses = $this->getAllowedAddresses($extra_conds);
 		} else {
 			$return_values = true;

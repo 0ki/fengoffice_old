@@ -14,9 +14,13 @@ class BaseContactWidget extends DataObject {
 		return $this->manager;
 	}
 	
-	function getOptions() {
-		return $this->getColumnValue('options');
+	function getContactId() {
+		return $this->getColumnValue('contact_id');
 	} 
+	
+	function getWidgetName() {
+		return $this->getColumnValue('widget_name');
+	}
 	
 	function getSection() {
 		return $this->getColumnValue('section');
@@ -24,6 +28,24 @@ class BaseContactWidget extends DataObject {
 	
 	function getOrder() {
 		return $this->getColumnValue('order');
+	}
+	
+	
+	
+	function setContactId($value) {
+		return $this->setColumnValue('contact_id', $value);
+	}
+	
+	function setWidgetName($value) {
+		return $this->setColumnValue('widget_name', $value);
+	}
+	
+	function setSection($value) {
+		return $this->setColumnValue('section', $value);
+	}
+	
+	function setOrder($value) {
+		return $this->setColumnValue('order', $value);
 	}
 	
 	

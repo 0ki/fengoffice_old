@@ -93,6 +93,57 @@ class ConfigController extends ApplicationController {
 	function default_user_preferences() {
 		tpl_assign('config_categories', ContactConfigCategories::getAll());
 	} //list_preferences
+	
+	
+	function configure_widgets_default() {
+		$widgets = Widgets::instance()->findAll(array(
+			"conditions" => " plugin_id = 0 OR plugin_id IS NULL OR plugin_id IN ( SELECT id FROM ".TABLE_PREFIX."plugins WHERE is_activated > 0 AND is_installed > 0 )",
+			"order" => "default_order",
+			"order_dir" => "ASC",
+		));
+		
+		$widgets_info = array();
+		foreach ($widgets as $widget) {
+			$widgets_info[] = $widget->getDefaultWidgetSettings(logged_user());
+		}
+		
+		tpl_assign('widgets_info', $widgets_info);
+		tpl_assign('default_configuration', true);
+		$this->setTemplate(get_template_path('configure_widgets', 'contact'));
+	}
+	
+	function configure_widgets_default_submit() {
+		ajx_current("empty");
+		
+		$widgets_data = array_var($_POST, 'widgets');
+		try {
+			DB::beginWork();
+			foreach ($widgets_data as $name => $data) {
+				$widget = Widgets::instance()->findOne(array('conditions' => array('name = ?', $name)));
+				if (!$widget instanceof Widget) continue;
+				
+				$widget->setDefaultOrder($data['order']);
+				$widget->setDefaultSection($data['section']);
+				$widget->save();
+				
+				if (isset($data['options']) && is_array($data['options'])) {
+					foreach ($data['options'] as $opt_name => $opt_val) {
+						$contact_widget_option = ContactWidgetOptions::instance()->findOne(array('conditions' => array('contact_id=0 AND widget_name=? AND `option`=?',$name,$opt_name)));
+						if (!$contact_widget_option instanceof ContactWidgetOption) continue;
+						$contact_widget_option->setValue($opt_val);
+						$contact_widget_option->save();
+					}
+				}
+			}
+			DB::commit();
+			evt_add('reload tab panel', 'overview-panel');
+			ajx_current("back");
+		} catch (Exception $e) {
+			flash_error($e->getMessage());
+			DB::rollback();
+		}
+	}
+	
 
 	/**
 	 * Update default user preferences

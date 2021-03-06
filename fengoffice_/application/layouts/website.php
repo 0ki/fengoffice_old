@@ -143,7 +143,7 @@ $use_owner_company_logo = owner_company()->hasLogo();
 								<input type="hidden" name="current" value="search" />
 								<input type="hidden" id="hfVars" name="vars" value="dashboard" />
 								<input style="display:none" id="searchButtonReal" type="submit" />
-								<input style="display:none" name="search_for" id="search_for"/>	
+								<input style="display:none" name="search_for" id="search_for"/>
 							</td>
 							<td>
 								<div class="btn-group">
@@ -284,12 +284,12 @@ $use_owner_company_logo = owner_company()->hasLogo();
                     });
 
                     $("#form_search").submit(function (e){
-                    	$("#search_for").val($("#search_for_in").val());
+						$("#search_for").val($("#search_for_in").val());
                     	$("#searchButton").prop("disabled",true);
                     	$("#search_for_in").prop("disabled",true);
                     });
 
-                  	//if enter key press on chrome submit the form
+					//if enter key press on chrome submit the form
                     if (navigator.userAgent.toLowerCase().indexOf('chrome')>-1){
                     	$('#form_search').keypress(function(e){
 	                        if(e.which == 13){
@@ -445,16 +445,50 @@ if (Ext.isIE) {
 	  isActiveBrowserTab = false;
 	};
 }
+
+og.dimensions_check_date = new Date();
+
 setInterval(function() {
 	if (window.isActiveBrowserTab) {
 		og.openLink(og.getUrl('object', 'popup_reminders'), {
 			hideLoading: true,
 			hideErrors: true,
-			preventPanelLoad: true
+			preventPanelLoad: true,
+			post: {
+				dims_check_date: Math.floor(og.dimensions_check_date.getTime()/1000)
+			},
+			callback: function(success, data) {
+				
+				if (data.reload_dims) {
+					og.openLink(og.getUrl('dimension', 'reload_dimensions_js'), {
+						hideLoading: true,
+						hideErrors: true,
+						preventPanelLoad: true,
+						callback: function(s, d) {
+							if (d.dims) {
+								og.dimensions = d.dims;
+								og.dimensions_check_date = new Date();
+							}
+						}
+					});
+				}
+			}
 		});
 	}
 }, 60000);
 <?php } ?>
+
+og.openLink(og.getUrl('dimension', 'reload_dimensions_js'), {
+	hideLoading: true,
+	hideErrors: true,
+	preventPanelLoad: true,
+	callback: function(s, d) {
+		if (d.dims) {
+			og.dimensions = d.dims;
+			og.dimensions_check_date = new Date();
+		}
+	}
+});
 
 <?php if (Plugins::instance()->isActivePlugin('mail')) { ?>
 	og.loadEmailAccounts('view');

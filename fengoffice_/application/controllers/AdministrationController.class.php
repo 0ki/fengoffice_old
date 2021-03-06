@@ -822,34 +822,34 @@ class AdministrationController extends ApplicationController {
 		}
 		
 	}
-        
-        function documents() {
+
+	function documents() {
 		if(!can_manage_security(logged_user())) {
 			flash_error(lang('no access permissions'));
 			ajx_current("empty");
 			return;
 		}
 	}
-        
-        function documents_allow() {
+
+	function documents_allow() {
 		if(!can_manage_security(logged_user())) {
 			flash_error(lang('no access permissions'));
 			ajx_current("empty");
 			return;
-		} 
+		}
 		tpl_assign('file_types', FileTypes::instance()->findAll());
 	}
-        
-        function documents_allow_submit() {
+
+	function documents_allow_submit() {
 		ajx_current("empty");
 		if(!can_manage_security(logged_user())) {
 			flash_error(lang('no access permissions'));
 			ajx_current("empty");
 			return;
-		} 
+		}
 		foreach ($_POST['file_types'] as $id => $extension) {
 			$allow = ($extension['allow'] == "on") ? 1 : 0;
-			
+				
 			if ($ft = FileTypes::instance()->findById($id)){
 				$ft->setIsAllow($allow);
 				$ft->save();

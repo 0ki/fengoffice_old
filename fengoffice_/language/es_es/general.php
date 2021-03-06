@@ -328,4 +328,26 @@
 	'subject for email notification' => 'Asunto a utilizar en el correo de notificación:',
 	'use default subject' => 'Utilizar Asunto por defecto',
 	'enter a custom subject' => 'Ingrese un Asunto personalizado...',
+	
+	'widgets' => 'Widgets',
+	'dashboard options' => 'Opciones del panel de resumen',
+	'default dashboard options' => 'Opciones por defecto del panel de resumen',
+	'top' => 'Arriba',
+	'left' => 'Izquierda',
+	'right' => 'Derecha',
+	'section' => 'Sección',
+	'sec order' => 'Orden',
+	'everyone' => 'Todos',
+
+	'widget_overdue_upcoming_assigned_to_user' => 'Mostrar tareas de',
+	'widget_calendar_filter_by_myself' => 'Solo mostrar mis eventos',
+
+	'activity_feed' => 'Actividad',
+	'completed tasks list' => 'Tareas Completadas',
+	'crpm_people' => 'Personas',
+	'estimated_worked_time' => 'Tiempo estimado y trabajado',
+	'overdue and upcoming' => 'Tareas atrasadas y próximas',
+	'projects widget title' => 'Proyectos',
+	'statics' => 'Estadísticas',
+	'summary' => 'Resumen',
 ); ?>

@@ -21,20 +21,34 @@
 		// config option to remember columns on mail list
 		DB::execute("
 				INSERT INTO ".TABLE_PREFIX."contact_config_options (`category_name`, `name`, `default_value`, `config_handler_class`, `is_system`, `option_order`, `dev_comment`) VALUES
-				('mails panel', 'folder_received_columns', 'from,subject,account,date,folder,actions', 'StringConfigHandler', 1, 0, NULL),
- 				('mails panel', 'folder_sent_columns', 'to,subject,account,date,folder,actions', 'StringConfigHandler', 1, 0, NULL),
-				('mails panel', 'folder_draft_columns', 'to,subject,account,date,folder,actions', 'StringConfigHandler', 1, 0, NULL),
-				('mails panel', 'folder_junk_columns', 'from,subject,account,date,folder,actions', 'StringConfigHandler', 1, 0, NULL),
-				('mails panel', 'folder_outbox_columns', 'to,subject,account,date,folder,actions', 'StringConfigHandler', 1, 0, NULL)
+				('mails panel', 'folder_received_columns', 'from,subject,account,date,folder,actions', 'StringConfigHandler', 0, 0, NULL),
+ 				('mails panel', 'folder_sent_columns', 'to,subject,account,date,folder,actions', 'StringConfigHandler', 0, 0, NULL),
+				('mails panel', 'folder_draft_columns', 'to,subject,account,date,folder,actions', 'StringConfigHandler', 0, 0, NULL),
+				('mails panel', 'folder_junk_columns', 'from,subject,account,date,folder,actions', 'StringConfigHandler', 0, 0, NULL),
+				('mails panel', 'folder_outbox_columns', 'to,subject,account,date,folder,actions', 'StringConfigHandler', 0, 0, NULL)
 				ON DUPLICATE KEY UPDATE name = name;
 				");
 	}
-	
+
 	function mail_update_4_5() {
-		//setting them as invisible as they should not be shown in the user preferences
+		// config option to remember columns on mail list
+		DB::execute("
+			insert into ".TABLE_PREFIX."widgets (name,title,plugin_id,path,default_options,default_section,default_order,icon_cls) values
+			 ('emails','emails',0,'','','right',10,'ico-email')
+			on duplicate key update name=name;
+		");
+		//setting these user config options as invisible as they should not be shown in the user preferences
 		DB::execute("UPDATE ".TABLE_PREFIX."contact_config_options SET `is_system` = '1' WHERE `name` = 'folder_received_columns';");
 		DB::execute("UPDATE ".TABLE_PREFIX."contact_config_options SET `is_system` = '1' WHERE `name` = 'folder_sent_columns';");
 		DB::execute("UPDATE ".TABLE_PREFIX."contact_config_options SET `is_system` = '1' WHERE `name` = 'folder_draft_columns';");
 		DB::execute("UPDATE ".TABLE_PREFIX."contact_config_options SET `is_system` = '1' WHERE `name` = 'folder_junk_columns';");
-		DB::execute("UPDATE ".TABLE_PREFIX."contact_config_options SET `is_system` = '1' WHERE `name` = 'folder_outbox_columns';");				
+		DB::execute("UPDATE ".TABLE_PREFIX."contact_config_options SET `is_system` = '1' WHERE `name` = 'folder_outbox_columns';");
 	}
+	
+	function mail_update_5_6() {
+		// add a column to know the last mail in conversation for each folder
+		DB::execute("
+			ALTER TABLE `".TABLE_PREFIX."mail_contents` ADD COLUMN `conversation_last` int(1) NOT NULL default '1' AFTER conversation_id;
+		");
+	}
+

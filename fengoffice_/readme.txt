@@ -1,5 +1,5 @@
 
-	About Feng Office 2.5.0.1
+	About Feng Office 2.5.1-beta
 	================================
 	
 	Feng Office is a Collaboration Platform and Project Management System.
@@ -102,9 +102,52 @@
 	Changelog
 	=========
 	
+	
+	Since 2.5.0.4
+	----------------
+	performance: Issue when loading persons dim.
+	bugfix: Imap folders are not saved when editing an email account.
+	bugfix: Cannot unclassify mails from classify form.
+	bugfix: Emessage not shown when inputing dates with incorrect format.
+	bugfix: Add start date to task view.
+	bugfix: Get tasks by range query does not include logged user's timezone.
+	bugfix: In task complete edition form, assigned to are not displayed correctly.
+	bugfix: Issue in include myself in document notifications.
+	bugfix: Set db charset when reconnecting in abstract db adapter.
+	
+	
+	Since 2.5.0.3
+	----------------
+	bugfix: Add attachments column in queued_emails in upgrade scripts.
+	bugfix: Set db charset when reconnecting in abstract db adapter.
+	
+	
+	Since 2.5.0.2
+	----------------
+	bugfix: Render member selectors with preloaded member info.
+	bugfix: Order by name doesn't work on object list.
+	bugfix: People widget only display users.
+	
+	
+	Since 2.5.0.1
+	----------------
+	bugfix: on mysql 5.6 have_innodb variable is deprecated
+	
+	
 	Since 2.5
 	----------------
 	
+	feature: Allow to configure dashboard widget position and order for each user.
+	feature: Allow to configure default dashboard widget position and order for all users.
+	feature: Comments dashboard widget.
+	feature: Email dashboard widget.
+	feature: choose to filter calendar widget or not.
+	feature: choose the user to filter the tasks widget.
+	
+	bugfix: when add a timeslot by clock on tasks update the percent complete.
+	bugfix: if a file doesn't have revision when classify create one.
+	bugfix: several minor fixes of undefined variables, missing langs, etc.
+	bugfix: when disabling or reactivating users from company view, users list is not reloaded.
 	bugfix: member selector displayed wrong data
 	bugfix: on task add/edit view, assignee combo displayed wrong data
 	bugfix: subscribers and invited people were not shown correctly

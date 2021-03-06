@@ -812,4 +812,36 @@ class MailContent extends BaseMailContent {
 			
 		}
 	}
+	
+	/**
+	 * Use this function to order conversation
+	 */
+	function orderConversation() {
+		$id = $this->getId();
+		$convId = $this->getConversationId();
+		$accountId = $this->getAccountId();
+		$folderName = $this->getImapFolderName();
+		$state = $this->getState();
+		
+		if ($state == 2) {
+			$stateConditions = " AND state = '2'";
+		} else if (in_array($state, array(1,3,5))) {
+			$stateConditions = " AND state IN ('1','3','5')";
+		} else if ($state == 0) {
+			$stateConditions = " AND state = '0'";
+		} else if ($state == 4) {
+			$stateConditions = " AND state = '4'";
+		} else if ($state >= 200) {
+			$stateConditions = " AND state >= 200";
+		}
+		
+		
+		//revisar si soy el ultimo de la conersacion para mi carpeta
+		$sql = "UPDATE `".TABLE_PREFIX."mail_contents` SET
+						`conversation_last`=0
+						WHERE `conversation_id`='$convId' AND `object_id` !='$id'  AND `account_id` ='$accountId' $stateConditions AND `conversation_last` ='1';
+		";
+		
+		DB::execute($sql);		
+	}
 }

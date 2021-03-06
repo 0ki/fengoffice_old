@@ -751,6 +751,7 @@ abstract class ContentDataObject extends ApplicationDataObject {
 	 * @param void
 	 * @return integer
 	 */
+	private $all_comments_count = null;
 	function countAllComments() {
 		if(is_null($this->all_comments_count)) {
 			$this->all_comments_count = Comments::countCommentsByObject($this);

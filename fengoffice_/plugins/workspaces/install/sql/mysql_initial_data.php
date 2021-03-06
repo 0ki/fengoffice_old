@@ -45,9 +45,9 @@ UPDATE `<?php echo $table_prefix ?>tab_panels` SET default_action = 'main_dashbo
 
 
 
-INSERT INTO <?php echo $table_prefix ?>widgets(name, title, plugin_id, default_section,default_order) VALUES
- ('ws_description', 'workspace description', (SELECT id from <?php echo $table_prefix ?>plugins WHERE name = 'workspaces'), 'top', -100),
- ('workspaces', 'workspaces', (SELECT id from <?php echo $table_prefix ?>plugins WHERE name = 'workspaces'), 'left', 3)
+INSERT INTO <?php echo $table_prefix ?>widgets(`name`, `title`, `plugin_id`, `default_section`,`default_order`,`icon_cls`) VALUES
+ ('ws_description', 'workspace description', (SELECT id from <?php echo $table_prefix ?>plugins WHERE name = 'workspaces'), 'top', -100, 'ico-workspace'),
+ ('workspaces', 'workspaces', (SELECT id from <?php echo $table_prefix ?>plugins WHERE name = 'workspaces'), 'left', 3, 'ico-workspace')
 ON DUPLICATE KEY update name = name;
 
 INSERT INTO <?php echo $table_prefix ?>dimension_object_type_contents (dimension_id,dimension_object_type_id,content_object_type_id,is_required,is_multiple) VALUES 

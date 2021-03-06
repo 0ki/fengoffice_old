@@ -1,7 +1,8 @@
 <?php
 	//limit to the number of users to be displayed in widgets
 	$limit = 6;
-
+	$order = array("last_activity", "updated_on");
+	
 	$active_members = array();
 	$context = active_context();
 	foreach ($context as $selection) {
@@ -29,13 +30,18 @@
 		
 		//user to display on the widget
 		$intersection_condition = count($intersection) > 0 ? 'object_id IN ('.implode(',',$intersection).') AND' : '';
-		$contacts = Contacts::findAll(array(
-			'conditions' => $intersection_condition . ' `is_company` = 0 AND disabled = 0',
-			'limit' => $limit,
-			'order' => 'last_activity, updated_on',
-			'order_dir' => 'desc',
+		$intersection_condition = "";
+				
+		$result = Contacts::instance()->listing(array(
+				"order" => $order,
+				"order_dir" => "DESC",
+				"extra_conditions" => " AND `is_company` = 0 AND disabled = 0",
+				"start" => 0,
+				"limit" => $limit
 		));
-		$total = count($contacts);
+		
+		$total = $result->total ;
+		$contacts = $result->objects;
 		
 		$contacts_for_combo = null;
 		//if logged user can assign permissions
@@ -61,14 +67,16 @@
 	} else {
 		
 		$result = Contacts::instance()->listing(array(
-			"order" => "last_activity, updated_on",
-			"order_dir" => "desc",
-			"extra_conditions" => " AND `is_company` = 0 AND disabled = 0 AND user_type > 0",
+			"order" => $order,
+			"order_dir" => "DESC",
+			"extra_conditions" => " AND `is_company` = 0 AND disabled = 0",
 			"start" => 0,
 			"limit" => $limit
 		));
+		
 		$total = $result->total ;
 		$contacts = $result->objects;
+		
 	}
 	
 	$render_add = can_manage_security(logged_user());

@@ -166,7 +166,7 @@
 	background: transparent url(../../images/16x16/all_16_16_vertical.png) no-repeat scroll 0 -378px !important;
 }
 .ico-email, .ico-emails, .ico-mail {
-	background: transparent url(../../images/16x16/all_16_16_vertical.png) no-repeat scroll 0 -438px !important;
+	background: transparent url(../../images/16x16/mail_mark_unread.png) no-repeat !important;
 }
 .ico-check_mails {
 	background-image: url(../../images/16x16/mail_receive.png) !important;
@@ -267,7 +267,7 @@
 	background: transparent url(../../images/16x16/message.png) no-repeat !important;
 }
 .ico-comment {
-	background-image: url(../../images/16x16/comment.png) !important;
+	background: transparent url(../../images/16x16/comment.png) no-repeat !important;
 }
 .ico-projectmilestone, .ico-milestone, .ico-milestones {
 	background-image: url(../../images/16x16/milestone.png) !important;

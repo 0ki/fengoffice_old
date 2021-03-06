@@ -2667,3 +2667,11 @@ og.addNodesToTree = function(tree_id) {
 		}
 	}
 }
+
+og.showHideWidgetMoreLink = function(cls, linkid, show) {
+	og.showHide('hidelnk' + linkid);
+	og.showHide('showlnk' + linkid);
+
+	if (show) $(cls).show("slow");
+	else $(cls).hide("slow");
+}

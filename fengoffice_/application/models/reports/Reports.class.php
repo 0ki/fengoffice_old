@@ -135,33 +135,33 @@ class Reports extends BaseReports {
 				break;
 			case 'email_address':
 				$order = 'IF(ISNULL(jt.email_address),1,0),jt.email_address';
-				$join_params['table'] = "fo_contact_emails";
+				$join_params['table'] = TABLE_PREFIX."contact_emails";
 				$select_columns = array("DISTINCT o.*", "e.*");
 				break;
 			case 'mobile_phone':
 			case 'work_phone':
 			case 'home_phone':
 				$order = 'IF(ISNULL(jt.number),1,0),jt.number';
-				$join_params['table'] = "fo_contact_telephones";
+				$join_params['table'] = TABLE_PREFIX."contact_telephones";
 				$select_columns = array("DISTINCT o.*", "e.*");
 				break;
 			case 'personal_webpage':
 			case 'work_webpage':
 			case 'other_webpage':
 				$order = 'IF(ISNULL(jt.url),1,0),jt.url';
-				$join_params['table'] = "fo_contact_web_pages";
+				$join_params['table'] = TABLE_PREFIX."contact_web_pages";
 				$select_columns = array("DISTINCT o.*", "e.*");
 				break;
 			case 'im_values':
 				$order = 'IF(ISNULL(jt.value),1,0),jt.value';
-				$join_params['table'] = "fo_contact_im_values";
+				$join_params['table'] = TABLE_PREFIX."contact_im_values";
 				$select_columns = array("DISTINCT o.*", "e.*");
 				break;
 			case 'home_address':
 			case 'work_address':
 			case 'other_address':
 				$order = 'IF(ISNULL(jt.street) and ISNULL(jt.city) and ISNULL(jt.state) and ISNULL(jt.country) and ISNULL(jt.zip_code),1,0), jt.street, jt.city, jt.state, jt.country, jt.zip_code';
-				$join_params['table'] = "fo_contact_addresses";
+				$join_params['table'] = TABLE_PREFIX."contact_addresses";
 				$select_columns = array("DISTINCT o.*", "e.*");
 				break;
 			default:

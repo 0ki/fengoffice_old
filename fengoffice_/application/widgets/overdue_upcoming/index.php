@@ -19,16 +19,22 @@ if (count($active_members) > 0) {
 	$widget_title = lang('late tasks and upcoming tasks'). ' '. lang('in').' '. implode(", ", $mnames);
 }
 
+$assigned_to_user = null;
+$w_option_assigned_to = ContactWidgetOptions::instance()->getContactOption('overdue_upcoming', logged_user()->getId(), 'assigned_to_user');
+if (array_var($w_option_assigned_to, 'value')) {
+	$assigned_to_user = array_var($w_option_assigned_to, 'value');
+}
 
 // Not due tasks
-$not_due_tasks = ProjectTasks::getUpcomingWithoutDate($not_overdue_limit+1);
+$not_due_tasks = ProjectTasks::getUpcomingWithoutDate($not_overdue_limit+1, $assigned_to_user);
 if ( count($not_due_tasks) > $not_overdue_limit ) {
 	$show_more = true;
 	array_pop($not_due_tasks);
 }
 
+
 // Due Tasks
-$overdue_upcoming_objects = ProjectTasks::getOverdueAndUpcomingObjects ($overdue_limit+1); // FIXME: performance Killer
+$overdue_upcoming_objects = ProjectTasks::getOverdueAndUpcomingObjects ($overdue_limit+1, $assigned_to_user); // FIXME: performance Killer
 if ( count($overdue_upcoming_objects) > $overdue_limit ) {
 	$show_more = true;
 	array_pop($overdue_upcoming_objects);

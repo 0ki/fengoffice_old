@@ -84,7 +84,7 @@ class AccessController extends ApplicationController {
 				}
 			}
 
-			if(trim($username == '')) {
+			if(trim($username) == '') {
 				AdministrationLogs::createLog("invalid login", array_var($_SERVER, 'REMOTE_ADDR'), AdministrationLogs::ADM_LOG_CATEGORY_SECURITY);
 				tpl_assign('error', new Error(lang('username value missing')));
 				$this->render();

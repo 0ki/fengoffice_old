@@ -21,5 +21,8 @@ set_page_title(lang('edit default user preferences'));
 			<?php } // if ?>
 		<?php } // foreach ?>
 	<?php } // if ?>
+		<div class="userWsConfigCategory" id="user_ws_category_widgets">
+			<h2><a class="internalLink" href="<?php echo get_url('config', 'configure_widgets_default'); ?>"><?php echo lang('dashboard options') ?></a></h2>
+		</div>
 	</div>
 </div>

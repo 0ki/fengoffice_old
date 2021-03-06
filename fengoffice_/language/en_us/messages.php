@@ -766,7 +766,7 @@
   	'object removed from' => 'You have successfully removed {0} from the selected object',
   	'contact email is required to create user' => 'In order to create a user, the contact must have an email address. Please edit the contact and re-try',
   	'success delete member' => '{0} has been deleted',
-  	'disable' => 'Disable'
+  	'disable' => 'Inactivate'
   ); // array
 
 ?>
