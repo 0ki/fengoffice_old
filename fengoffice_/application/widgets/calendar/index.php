@@ -313,7 +313,7 @@ if ($calendar_panel instanceof TabPanel && $calendar_panel->getEnabled()) {
 									$output .= '</span>';
 									$output .= "</div>";
 									
-									$tip_text = str_replace("\r", '', lang('assigned to') .': '. clean($task->getAssignedToName()) . (trim(clean($task->getText())) == '' ? '' : '<br><br>'. clean($task->getText())));
+									$tip_text = str_replace("\r", '', lang('assigned to') .': '. clean($task->getAssignedToName()) . (trim(clean($task->getText())) == '' ? '' : '<br><br>'. clean(html_to_text($task->getText()))));
 									$tip_text = str_replace("\n", '<br>', $tip_text);													
 									if (strlen_utf($tip_text) > 200) $tip_text = substr_utf($tip_text, 0, strpos($tip_text, ' ', 200)) . ' ...';
 									?>

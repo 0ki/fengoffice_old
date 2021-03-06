@@ -8,8 +8,6 @@
  */
 class MemberController extends ApplicationController {
         
-        var $dimension = 3 ;
-        
 	/**
 	 * Prepare this controller
 	 *
@@ -72,7 +70,7 @@ class MemberController extends ApplicationController {
 		$object = array(
 			"totalCount" => $total,
 			"start" => $start,
-			"dimension_id" => $this->dimension,
+			"dimension_id" => 0,
 			"members" => array()
 		);
 		for ($i = 0; $i < $limit; $i++){
@@ -188,9 +186,10 @@ class MemberController extends ApplicationController {
 			if (array_var($_GET, 'prop_genid') != "") tpl_assign('prop_genid', array_var($_GET, 'prop_genid'));
 			
 		} else {
-							
 			$ok = $this->saveMember($member_data, $member);
-			save_member_permissions($member);
+			
+			Env::useHelper('permissions');
+			save_member_permissions_background(logged_user(), $member, array_var($_REQUEST, 'permissions'));
 			
 			if ($ok) {
 				ajx_extra_data( array(
@@ -298,7 +297,10 @@ class MemberController extends ApplicationController {
 			
 		} else {
 			$ok = $this->saveMember($member_data, $member, false);
-			save_member_permissions($member);// NEW member permissions
+			
+			Env::useHelper('permissions');
+			save_member_permissions_background(logged_user(), $member, array_var($_REQUEST, 'permissions'));
+			
 			if ($ok) {
 				$ret = null;
 				Hook::fire('after_edit_member', $member, $ret);

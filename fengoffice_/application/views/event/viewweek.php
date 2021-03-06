@@ -485,7 +485,7 @@ if (!$max_events_to_show) $max_events_to_show = 3;
 		?>
 	</div>
 	
-	<div id="gridcontainer" style="background-color:#fff; position:relative; overflow-x:hidden; overflow-y:scroll; height:504px;">	
+	<div id="gridcontainer" class="toprint" style="background-color:#fff; position:relative; overflow-x:hidden; overflow-y:scroll; height:504px;">	
 			<div id='calowner' style="display:block; width:100%;">  
 				<table cellspacing="0" cellpadding="0" border="0" style="table-layout: fixed; width: 100%;height: 100%;">
 					<tr>

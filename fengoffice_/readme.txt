@@ -1,5 +1,5 @@
 
-	About Feng Office 2.3.1 final
+	About Feng Office 2.3.2-beta
 	================================
 	
 	Feng Office is a Collaboration Platform and Project Management System.
@@ -102,12 +102,41 @@
 	Changelog
 	=========
 	
-	Since 2.3.1-rc
+	Since 2.3.1
 	----------------
-	bugfix: When adding users username field is not used.
-	bugfix: In Archived Objects breadcrumbs are not displayed if members is archived, same happens in Trash can.
-	bugfix: Synchronization with google calendar now deletes old events using "cancelled" status.
-	bugfix: In some places don't display dates with the format of the config option(military time).
+	
+	bugfix: When ordering tasks and subtasks and grouping by some criterias.
+	bugfix: ul and ol (list) on task description doesn't show number or bullet.
+	bugfix: Don't update email filter options when reloading email list if they are not modified.
+	bugfix: Eail polling only when browser tab is active.
+	bugfix: Wait time interval to check an email account.
+	bugfix: Session managment fix.
+	bugfix: Workspaces widget to the left.
+	bugfix: When creating workspace it is not selected if it isn't a root workspace.
+	bugfix: Update objects when linking to others, from user_config_option to config_option.
+	bugfix: Calendar dalily view puts other days tasks.
+	bugfix: Fixes of undefined variables logged in cache/log.php.
+	bugfix: Call popup reminders only from active browser tab.
+	bugfix: Format date funcions did not use config option for format.
+	bugfix: Username is not remembered when creating a new user.
+	bugfix: People widget is not displayed.
+	bugfix: When unzipping a file the name has the url first.
+	bugfix: On Trashed Objects breadcrumbs are not displayed if members are archived.
+	bugfix: When add a timespan on a task was always taking logged user id for billing.
+	bugfix: Time zone bug on list task in a range of dates.
+	bugfix: Last login not saved into data base.
+	bugfix: Google calendar synchronization bug fixes.
+	
+	performance: Save permissions asyncronically when saving member to improve performance.
+	
+	feature: New login form.
+	feature: Field "Is user" added for people custom reports.
+	feature: Users permissions can be configured to leave objects unclassified and choose the users that can read/write/delete these objects.
+	feature: Tasks view improved.
+	feature: People widget improved.
+	feature: Improved member panels loading.
+	
+	language: Several language updates.
 	
 	
 	Since 2.3.1-beta
@@ -123,10 +152,9 @@
 	bugfix: Exchange compatibility option has been removed.
 	bugfix: When listing tasks timezones were not being taken into account.
 	bugfix: Last login field was not being updated.
-	bugfix: Gantt chart was showing some tasks as completed when their percentage was over 100% and they were not completed.
-	bugfix: When adding a timeslot for someone else within a task, the billing value was not being taken into account.
-	bugfix: Gantt chart tasks resizing has been improved.
-	
+	bugfix: Gantt chart was showing some tasks as completed when their percentage was over 100% and they were not completed
+	bugfix: When adding a timeslot for someone else within a task, the billing value was not being taken into account
+	bugfix: Gantt chart tasks resizing has been improved 
 	
 	Since 2.3
 	----------------
@@ -178,7 +206,6 @@
 	bugfix: Description not set for all tasks when listing.
 	bugfix: Left menu expands after adding first client or project
 	
-	
 	Since 2.3-rc
 	----------------
 	
@@ -201,7 +228,6 @@
 	bugfix: Show "save with new name" button after saving a new document.
 	bugfix: Object picker pagination shows wrong total.
 	bugfix: Several missing langs fixed (en_us, es_la).
-	
 	
 	Since 2.3-beta
 	----------------

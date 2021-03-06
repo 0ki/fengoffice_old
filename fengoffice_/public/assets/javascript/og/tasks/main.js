@@ -417,6 +417,21 @@ ogTasks.groupTasks = function(displayCriteria, tasksContainer){
 		}
 	}
 	
+	var tmp = [];
+	for (var j = 0; j < tasksContainer.length; j++){
+		var t = tasksContainer[j];
+		if (!tmp[t.parentId]) tmp[t.parentId] = [];
+		tmp[t.parentId].push(t);
+	}
+	var tmpTasksContainer = [];
+	for (x in tmp){
+		if (typeof(x) == 'function') continue;
+		for (var k = 0; k < tmp[x].length; k++){
+			if (tmp[x][k]) tmpTasksContainer.push(tmp[x][k]);
+		}
+	}
+	tasksContainer = tmpTasksContainer;
+	
 	for (var i = 0; i < tasksContainer.length; i++){
 		var taskIn = true;
 		var task = tasksContainer[i];
@@ -492,24 +507,23 @@ ogTasks.groupTasks = function(displayCriteria, tasksContainer){
 			case 'priority' : cond1 = task.priority; cond2 = parent.priority; break;
 			case 'assigned_to' : cond1 = task.assignedToId; cond2 = parent.assignedToId; break;
 			case 'created_by' : cond1 = task.createdBy; cond2 = parent.createdBy; break;
+			case 'milestone' : cond1 = task.milestoneId; cond2 = parent.milestoneId; break;
 			case 'status' : cond1 = task.status; cond2 = parent.status; break;
 			case 'completed_by' : cond1 = task.completedById; cond2 = parent.completedById; break;
 			default:
 				cond3 = false;
 			}
-			if(cond3){
-				if(cond1 == cond2){
-					parent.subtasks.push(task);					
-					if(cond1 != null){
-						var groupT = tasks[groups.indexOf(cond1)];
-						groupT.splice(groupT.indexOf(task), 1);
-					}else{
-						var groupT = tasks[0];
-						groupT.splice(groupT.indexOf(task), 1);
-					}					
-				}				
-			}	
-		}	
+			if(cond3 && cond1 == cond2){
+				parent.subtasks.push(task);
+				if(cond1 != null){
+					var groupT = tasks[groups.indexOf(cond1)];
+					groupT.splice(groupT.indexOf(task), 1);
+				}else{
+					var groupT = tasks[0];
+					groupT.splice(groupT.indexOf(task), 1);
+				}
+			}
+		}
 	}
 	if (displayCriteria.group_by == 'milestone'){ 			//Show all milestones
 	

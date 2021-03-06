@@ -64,3 +64,9 @@
 			ON DUPLICATE KEY UPDATE name=name;
 		");
 	}
+	
+	function workspaces_update_7_8() {
+		DB::execute("
+			UPDATE `".TABLE_PREFIX."widgets` SET `default_section`='left', `default_order`=3 WHERE `name`='workspaces';
+		");
+	}

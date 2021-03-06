@@ -77,7 +77,10 @@
 						</select>
 				<?php 
 						} else {
-							if ($col_type == DATA_TYPE_DATE || $col_type == DATA_TYPE_DATETIME) {
+							if ($condition->getFieldName() == 'is_user') {
+								$options = array(option_tag(lang('yes'), 1), option_tag(lang('no'), 0));
+								echo select_box("params[".$condition->getId()."]", $options);
+							} else  if ($col_type == DATA_TYPE_DATE || $col_type == DATA_TYPE_DATETIME) {
 								echo pick_date_widget2("params[".$condition->getId()."]");
 							} else {
 				?>

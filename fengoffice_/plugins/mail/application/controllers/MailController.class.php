@@ -2534,10 +2534,9 @@ class MailController extends ApplicationController {
 		$classif_filter = array_var($attributes, 'classifType');
 		$read_filter = array_var($attributes, 'readType');
 		
-
-		set_user_config_option('mails account filter', $account, logged_user()->getId());
-		set_user_config_option('mails classification filter', $classif_filter, logged_user()->getId());
-		set_user_config_option('mails read filter', $read_filter, logged_user()->getId());
+		//set_user_config_option('mails account filter', $account, logged_user()->getId());
+		//set_user_config_option('mails classification filter', $classif_filter, logged_user()->getId());
+		//set_user_config_option('mails read filter', $read_filter, logged_user()->getId());
 		
 		$state = array_var($attributes, 'stateType');
 		

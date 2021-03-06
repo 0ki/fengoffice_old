@@ -124,52 +124,56 @@ class Reports extends BaseReports {
 					$dateFormat = 'm/d/Y';
 					if(isset($params[$condField->getId()])){
 						$value = $params[$condField->getId()];
-						if ($col_type == DATA_TYPE_DATE || $col_type == DATA_TYPE_DATETIME)
-						$dateFormat = user_config_option('date_format');
+						if ($col_type == DATA_TYPE_DATE || $col_type == DATA_TYPE_DATETIME) {
+							$dateFormat = user_config_option('date_format');
+						}
 					} else {
 						$value = $condField->getValue();
 					}
-					if ($value == '' && $condField->getIsParametrizable()) $skip_condition = true;
-					if (!$skip_condition) {
-						$field_name = $condField->getFieldName();
-						if (in_array($condField->getFieldName(), Objects::getColumns())) {
-							$field_name = 'o`.`'.$condField->getFieldName();
-						}
-						if($condField->getCondition() == 'like' || $condField->getCondition() == 'not like'){
-							$value = '%'.$value.'%';
-						}
-						if ($col_type == DATA_TYPE_DATE || $col_type == DATA_TYPE_DATETIME) {
-							$dtValue = DateTimeValueLib::dateFromFormatAndString($dateFormat, $value);
-							$value = $dtValue->format('Y-m-d');
-						}
-						if($condField->getCondition() != '%'){
-							if ($col_type == DATA_TYPE_INTEGER || $col_type == DATA_TYPE_FLOAT) {
-								$allConditions .= '`'.$field_name.'` '.$condField->getCondition().' '.DB::escape($value);
-							} else {
-								if ($condField->getCondition()=='=' || $condField->getCondition()=='<=' || $condField->getCondition()=='>='){
-									if ($col_type == DATA_TYPE_DATETIME || $col_type == DATA_TYPE_DATE) {
-										$equal = 'datediff('.DB::escape($value).', `'.$field_name.'`)=0';
-									} else {
-										$equal = '`'.$field_name.'` '.$condField->getCondition().' '.DB::escape($value);
-									}
-									switch($condField->getCondition()){
-										case '=':
-											$allConditions .= $equal;
-											break;
-										case '<=':
-										case '>=':
-											$allConditions .= '(`'.$field_name.'` '.$condField->getCondition().' '.DB::escape($value).' OR '.$equal.') ';
-											break;																
-									}										
-								} else {
-									$allConditions .= '`'.$field_name.'` '.$condField->getCondition().' '.DB::escape($value);
-								}									
+					if ($condField->getFieldName() == 'is_user') {
+						$allConditions .= '`user_type` '.($value=='1'?'>':'=').' 0';
+					} else {
+						if ($value == '' && $condField->getIsParametrizable()) $skip_condition = true;
+						if (!$skip_condition) {
+							$field_name = $condField->getFieldName();
+							if (in_array($condField->getFieldName(), Objects::getColumns())) {
+								$field_name = 'o`.`'.$condField->getFieldName();
 							}
-						} else {
-							$allConditions .= '`'.$field_name.'` like '.DB::escape("%$value");
-						}
-					} else $allConditions .= ' true';
-					
+							if($condField->getCondition() == 'like' || $condField->getCondition() == 'not like'){
+								$value = '%'.$value.'%';
+							}
+							if ($col_type == DATA_TYPE_DATE || $col_type == DATA_TYPE_DATETIME) {
+								$dtValue = DateTimeValueLib::dateFromFormatAndString($dateFormat, $value);
+								$value = $dtValue->format('Y-m-d');
+							}
+							if($condField->getCondition() != '%'){
+								if ($col_type == DATA_TYPE_INTEGER || $col_type == DATA_TYPE_FLOAT) {
+									$allConditions .= '`'.$field_name.'` '.$condField->getCondition().' '.DB::escape($value);
+								} else {
+									if ($condField->getCondition()=='=' || $condField->getCondition()=='<=' || $condField->getCondition()=='>='){
+										if ($col_type == DATA_TYPE_DATETIME || $col_type == DATA_TYPE_DATE) {
+											$equal = 'datediff('.DB::escape($value).', `'.$field_name.'`)=0';
+										} else {
+											$equal = '`'.$field_name.'` '.$condField->getCondition().' '.DB::escape($value);
+										}
+										switch($condField->getCondition()){
+											case '=':
+												$allConditions .= $equal;
+												break;
+											case '<=':
+											case '>=':
+												$allConditions .= '(`'.$field_name.'` '.$condField->getCondition().' '.DB::escape($value).' OR '.$equal.') ';
+												break;																
+										}										
+									} else {
+										$allConditions .= '`'.$field_name.'` '.$condField->getCondition().' '.DB::escape($value);
+									}									
+								}
+							} else {
+								$allConditions .= '`'.$field_name.'` like '.DB::escape("%$value");
+							}
+						} else $allConditions .= ' true';
+					}
 				}
 			}
 			if(count($conditionsCp) > 0){
@@ -289,10 +293,10 @@ class Reports extends BaseReports {
 							$results['db_columns'][$column_name] = $field;
 						}else{
 								if($ot->getHandlerClass() == 'Contacts'){
-									if($managerInstance instanceof Contacts){										
-										if ($field = "email_address"){
+									if($managerInstance instanceof Contacts){
+										if ($field == "email_address" || $field == "is_user"){
 											$results['columns'][$field] = lang($field);	
-											$results['db_columns'][$field] = $field;
+											$results['db_columns'][lang($field)] = $field;
 										}
 									}
 								}
@@ -370,7 +374,9 @@ class Reports extends BaseReports {
 									if ($field == "email_address"){									
 										$row_values[$field] = $conta->getEmailAddress();
 									}
-									
+									if ($field == "is_user"){									
+										$row_values[$field] = $conta->getUserType() > 0 && !$conta->getIsCompany();
+									}
 								}
 							}
 						}						

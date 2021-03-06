@@ -1184,6 +1184,7 @@ class ReportingController extends ApplicationController {
 			$objType = ObjectTypes::findByName('contact');
 			if ($objType instanceof ObjectType){
 				if($object_type == $objType->getId()){
+					$fields[] = array('id' => 'is_user', 'name' => lang('is_user'), 'type' => 'boolean');
 					$fields[] = array('id' => 'email_address', 'name' => lang('email address'), 'type' => 'text');
 					//$fields[] = array('id' => 'phone_number', 'name' => lang('phone number'), 'type' => 'text');
 					//$fields[] = array('id' => 'web_url', 'name' => lang('web pages'), 'type' => 'text');

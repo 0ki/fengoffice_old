@@ -101,7 +101,6 @@ $genid = gen_id();
 					$added = true;
 				}
 			}
-			if (!$added) $alldayevents[$task->getId()] = $task;
 		}
 	}
 	
@@ -275,7 +274,7 @@ $genid = gen_id();
 						?>
 					</div>
 				</div>
-				<div id="gridcontainer" style="background-color:#fff; overflow-x:hidden; overflow-y:scroll; height:504px; position:relative;" >	
+				<div id="gridcontainer" class="toprint" style="background-color:#fff; overflow-x:hidden; overflow-y:scroll; height:504px; position:relative;" >	
 						<div id='calowner' style="display:block; width:100%;">  
 							<table cellspacing="0" cellpadding="0" border="0" style="table-layout: fixed; width: 100%;height: 1008px;">
 								<tr>

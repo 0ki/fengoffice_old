@@ -16,6 +16,11 @@
 	<table style="width:100%;border-collapse:collapse;table-layout:fixed;min-width:600px;">
 		
 		<tr>
+			<?php
+			/**
+			 * This section displays the content object header. 
+			 */
+			?>
 			<td class="coViewIcon" colspan=2 rowspan=2>
 				<?php if (isset($image)) { echo $image; } else {?>
 				<div id="<?php echo $coId; ?>_iconDiv" class="coViewIconImage <?php echo $iconclass ?>"></div>
@@ -34,6 +39,12 @@
 					<?php $oncloseclick = $object instanceof Contact && Plugins::instance()->isActivePlugin('core_dimensions') ? "og.onPersonClose()" : "og.closeView()" ?>
 					<div title="<?php echo lang('close') ?>" onclick="<?php echo $oncloseclick; ?>" class="coViewClose"><?php echo lang('close') ?>&nbsp;&nbsp;X</div>
 				</div>
+				
+				<?php
+				/**
+				 * This section displays the content object description. 
+				 */
+				?>
 				<div class="coViewDesc">
 					<?php if (!isset($description)) $description = "";
 					Hook::fire("render_object_description", $object, $description);
@@ -55,8 +66,13 @@
 		</td></tr>
 		
 		<tr>
+			<?php
+			/**
+			 * This section displays the rest of the content object body. 
+			 */
+			?>
 			<td class="coViewBody" colspan=3>
-			<div style="padding-bottom:15px">
+			<div>
 				<?php 
 				if (isset($content_template) && is_array($content_template)) {
 					tpl_assign('object', $object);
@@ -66,6 +82,12 @@
 					$this->includeTemplate(get_template_path($content_template[0], $content_template[1], array_var($content_template, 2)));
 				}
 				else if (isset($content)) echo $content;
+				
+				if (!isset($is_user) && user_config_option("show_object_direct_url") ) { ?>
+							<div id="<?php echo $genid?>direct_url"><b><?php echo lang('direct url') ?>:</b>
+								<a id="<?php echo $genid ?>task_url" href="<?php echo($object->getViewUrl()) ?>" target="_blank"><?php echo($object->getViewUrl()) ?></a>
+							</div>
+							<?php } 
 				?>
 			</div>
 			<?php if (isset($internalDivs)){
@@ -73,11 +95,7 @@
 					echo $idiv;
 			}
 			
-			if (!isset($is_user) && user_config_option("show_object_direct_url") ) { ?>
-			<div style="padding-bottom:15px" id="<?php echo $genid?>direct_url"><b><?php echo lang('direct url') ?>:</b>
-				<a id="<?php echo $genid ?>task_url" href="<?php echo($object->getViewUrl()) ?>" target="_blank"><?php echo($object->getViewUrl()) ?></a>
-			</div>
-			<?php } 
+			
 			
 			$more_content_templates = array();
 			Hook::fire("more_content_templates", $object, $more_content_templates);
@@ -93,11 +111,23 @@
 			if ($object instanceof ApplicationDataObject)
 				echo render_custom_properties($object);
 			
+			if ($object instanceof ProjectTask) {
+				$this->includeTemplate(get_template_path('subtasks_info', 'task'));
+				//$this->includeTemplate(get_template_path('work_performed', 'task'));
+			}
+			
 			$logged_user_pgs = logged_user()->getPermissionGroupIds();
 			if ($object instanceof ContentDataObject && $object->allowsTimeslots() && can_access_pgids($logged_user_pgs, $object->getMembers(), Timeslots::instance()->getObjectTypeId(), ACCESS_LEVEL_READ)) {
 				echo render_object_timeslots($object, $object->getViewUrl());
 			}
-				
+			
+			
+			
+			if ($object instanceof ProjectTask) {
+				$this->includeTemplate(get_template_path('work_performed', 'task'));
+			}
+			
+			
 			$isUser = ( $object instanceof Contact && $object->isUser() );
 			if ($object instanceof ContentDataObject &&	$object->canView(logged_user()) || ( $isUser && (logged_user()->getId() == get_id() || logged_user()->isAdministrator()) ) ){ 
 				//echo render_object_latest_activity($object); //TODO SE rompe

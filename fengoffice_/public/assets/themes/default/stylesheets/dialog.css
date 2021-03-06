@@ -13,15 +13,11 @@ body {
 
 a {
   color: #263356;
-  font-weight: bolder;
-  text-decoration: none;
-  border-bottom: 1px dotted #ccc;
 }
 
 a:hover {
   border: 0;
-  color: white;
-  background: #263356;
+  color: #566386;
 }
 
 h1 {
@@ -134,18 +130,20 @@ textarea.short {
 
 
 button.submit {
-  margin-top: 10px;
+  /*argin-top: 10px;*/
 }
 
 span.required {
-  color: red;
+  color: rgb(170, 33, 33);
   font-size: 90%;
 }
 
 #formErrors {
-  background: red;
+  background: rgb(170, 33, 33);
   color: white;
   padding: 5px 10px;
+  border-radius: 5px;
+  margin: 10px 20px;
 }
 
 #formErrors ul li {
@@ -256,13 +254,13 @@ span.required {
 }
 
 #optionsLink, #hideOptionsLink {
-	position: absolute;
+/*	position: absolute;
 	right: 10px;
-	top: 0px;
+	top: 0px;*/
 }
 
 #optionsDiv {
-	padding-top: 10px;
+	/*padding-top: 10px;*/
 }
 #optionsDiv label {
 	float: left;

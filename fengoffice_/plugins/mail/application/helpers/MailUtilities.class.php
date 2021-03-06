@@ -31,24 +31,20 @@ class MailUtilities {
 		$succ = 0;
 		$errAccounts = array();
 		$mailsReceived = 0;
-
 		if (isset($accounts)) {
 			foreach($accounts as $account) {
 				if (!$account->getServer()) continue;
 				try {
 					$lastChecked = $account->getLastChecked();
-					$minutes = 5;
+					$minutes = 1;
 					if ($lastChecked instanceof DateTimeValue && $lastChecked->getTimestamp() + $minutes*60 >= DateTimeValueLib::now()->getTimestamp()) {
 						$succ++;
 						continue;
 					} else {
 						try {
-							DB::beginWork();
 							$account->setLastChecked(DateTimeValueLib::now());
 							$account->save();
-							DB::commit();
 						} catch (Exception $ex) {
-							DB::rollback();
 							$errAccounts[$err]["accountName"] = $account->getEmail();
 							$errAccounts[$err]["message"] = $ex->getMessage();
 							$err++;
@@ -61,8 +57,6 @@ class MailUtilities {
 					} else {
 						$mailsReceived += self::getNewImapMails($account, $maxPerAccount);
 					}
-					$account->setLastChecked(EMPTY_DATETIME);
-					$account->save();
 //					self::cleanCheckingAccountError($account);
 					$succ++;
 				} catch(Exception $e) {
@@ -212,7 +206,8 @@ class MailUtilities {
 				if (trim($message_id) != "") {
 					$id_condition = " AND `message_id`='".trim($message_id)."'";
 				} else {
-					$id_condition = " AND `name`='". trim(array_var($parsedMail, 'Subject')) ."' AND `from`='$from'";
+					$id_condition = " AND `name`= ". DB::escape(trim(array_var($parsedMail, 'Subject'))) ." AND `from`='$from'";
+					
 					if (array_var($parsedMail, 'Date')) {
 						$sent_date_dt = new DateTimeValue(strtotime(array_var($parsedMail, 'Date')));
 						$sent_date_str = $sent_date_dt->toMySQL();

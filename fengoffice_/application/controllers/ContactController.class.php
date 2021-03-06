@@ -245,8 +245,8 @@ class ContactController extends ApplicationController {
 	function list_user_categories(){	
 		tpl_assign('config_categories', ContactConfigCategories::getAll());	
 	} //list_preferences
-
 	
+		
 	/**
 	 * List user preferences
 	 *
@@ -303,6 +303,80 @@ class ContactController extends ApplicationController {
 		} // if
 	} //list_preferences
 	
+	/**
+	 * Add Permissions on members for a user
+	 * @param void
+	 * @return null
+	 */
+	function add_permissions_user(){
+		ajx_current("empty");
+		try {
+			DB::beginWork();
+			
+			// get user_id
+			if(isset ($_POST['cid'])){
+				$user = Contacts::findById($_POST['cid']);
+			}
+			//get members id
+			if(isset ($_POST['mid'])){
+				$members_id = $_POST['mid'];
+			}else{
+				flash_error(lang('member dnx'));
+				ajx_current("empty");
+				return;
+			}
+			$members_id = explode(",", $members_id);
+			
+			
+			if(!($user instanceof Contact && $user->isUser()) || $user->getDisabled()) {
+				flash_error(lang('user dnx'));
+				ajx_current("empty");
+				return;
+			} // if
+			
+			if(!$user->canUpdatePermissions(logged_user())) {
+				flash_error(lang('no access permissions'));
+				ajx_current("empty");
+				return;
+			} // if
+			
+			
+			//get the role id for the user
+			$role_id = $user->getUserType();
+			
+			//get the permissions for the user type
+			$rows = DB::executeAll("SELECT object_type_id, can_delete, can_write FROM ".TABLE_PREFIX."role_object_type_permissions WHERE role_id = $role_id");
+			$rol_permissions = $rows;
+			
+			//get the permissions group for the contact
+			$group_id = $user->getPermissionGroupId();
+			$group = PermissionGroups::findById($group_id);
+			if(!($group instanceof PermissionGroup)) {
+				flash_error(lang('group dnx'));
+				return;
+			}
+			
+			//add the permissions on this group
+			$group->addPermissions($members_id, $rol_permissions);
+			
+			
+			//contact info
+			$contact_data['id'] = $user->getId();
+			$contact_data['card_url'] = $user->getCardUrl();
+			$contact_data['picture_url'] = $user->getPictureUrl();
+			$contact_data['object_name'] = clean($user->getObjectName());
+			$contact_data['email'] = $user->getEmailAddress();
+			
+			flash_success(lang('success user permissions updated'));//
+			ajx_extra_data($contact_data);
+			
+			DB::commit();
+			
+		} catch (Exception $e) {
+			DB::rollback();
+			flash_error($e->getMessage());
+		}
+	}
 	
 	/**
 	 * Creates an user (called from add_user). Does no transaction and throws Exceptions
@@ -405,6 +479,9 @@ class ContactController extends ApplicationController {
 			$cpId = substr($order, 3);
 			$order = 'customProp';
 		}
+		$select_columns = array('*');
+		$join_params = array();
+		
 		switch ($order){
 			case 'updatedOn':
 				$order = '`updated_on`';
@@ -423,8 +500,7 @@ class ContactController extends ApplicationController {
 				$join_params['e_field'] = "object_id";
 				$join_params['on_extra'] = "AND custom_property_id = ".$cpId;
 				$extra_conditions.= " AND ( custom_property_id = ".$cpId. " OR custom_property_id IS NULL)";
-				$select_columns[0] = "DISTINCT o.*";
-				$select_columns[1] = "e.*";
+				$select_columns = array("DISTINCT o.*", "e.*");
 				break;
 			default:
 				$order = '`name`';
@@ -959,6 +1035,7 @@ class ContactController extends ApplicationController {
 				} // foreach
 				
 				ApplicationLogs::createLog($contact, ApplicationLogs::ACTION_ADD);
+				
 				//NEW ! User data in the same form 
 				$user = array_var(array_var($_POST, 'contact'),'user');
 				if(isset($contact_data['specify_username'])){

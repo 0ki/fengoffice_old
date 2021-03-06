@@ -191,6 +191,22 @@ class ObjectController extends ApplicationController {
 			$enteredMembers = array();
 		}
 		
+		$manageable_members = array();
+		foreach ($enteredMembers as $ent_mem) {
+			if ($ent_mem->getDimension()->getIsManageable() && $ent_mem->getDimension()->getDefinesPermissions()) $manageable_members[] = $ent_mem;
+		}
+		
+		if (!can_add($user, $manageable_members, $object->getObjectTypeId())) {
+			$dinfos = DB::executeAll("SELECT name, code, options FROM ".TABLE_PREFIX."dimensions WHERE is_manageable = 1");
+			$dimension_names = array();
+			foreach ($dinfos as $dinfo) {
+				$dimension_names[] = json_decode($dinfo['options'])->useLangs ? lang($dinfo['code']) : $dinfo['name'];
+			}
+			throw new Exception(lang('must choose at least one member of', implode(', ', $dimension_names)));
+			ajx_current("empty");
+			return;
+		}
+		
 		$object->removeFromMembers($user, $enteredMembers);
 		/* @var $object ContentDataObject */
 		$validMembers = $check_allowed_members ? $object->getAllowedMembersToAdd($user,$enteredMembers) : $enteredMembers;
@@ -1822,6 +1838,15 @@ class ObjectController extends ApplicationController {
 		}
 		ajx_current("empty");
 		ajx_extra_data(array('properties' => $grouped));
+	}
+	
+	//set user config option value
+	function set_user_config_option_value() {
+		ajx_current("empty");
+		if(!logged_user() instanceof Contact) return;
+		$name = array_var($_GET,'config_option_name');
+		$value = array_var($_GET,'config_option_value');
+		set_user_config_option($name, $value, logged_user()->getId());
 	}
 	
 }

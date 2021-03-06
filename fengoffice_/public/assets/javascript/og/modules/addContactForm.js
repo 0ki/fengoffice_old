@@ -108,3 +108,15 @@ og.companySelectedIndexChanged = function(genid,data_js){
     });
 }
 
+og.addContactTypeChanged = function(type, genid){
+	if(type == 0){
+		//document.getElementById(genid + 'hfType').value = 0;
+		document.getElementById(genid + 'non-registered-person-form').style.display = '';
+		document.getElementById(genid + 'registered-person-form').style.display = 'none';
+		//, 'onclick' => "$('.non-registered-add-person-form').slideToggle();$('#non-registered-add-person-form-show').show();"
+	}else{
+		//document.getElementById(genid + 'hfType').value = 1;
+		document.getElementById(genid + 'non-registered-person-form').style.display = 'none';
+		document.getElementById(genid + 'registered-person-form').style.display = '';
+	}
+}

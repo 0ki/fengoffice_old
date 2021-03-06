@@ -744,5 +744,16 @@ addLangs({
 	'do you want to mantain the current associations of this obj with members of': 'Wil je de huidige koppelingen an dit object met {0} behouden?',
 	'sync': 'Synchroniseer',
 	'delete calendar': 'Kalender wissen?',
-	'delete calendar events': 'It erased the events related to the calendar, also wants erased from Google Calendar?'
+	'delete calendar events': 'It erased the events related to the calendar, also wants erased from Google Calendar?',
+	'add first task': 'Eerste taak toevoegen',
+	'company not found': 'bedrijf niet gevonden (id: {0})',
+	'all tasks related': 'Alle gerelateerde taken',
+	'accept': 'Accepteren',
+	'new member added popup title': '{0} {1} succesvol toegevoegd',
+	'what would you like to do next': 'Wat wil je nu doen?',
+	'save as': 'opslaan als',
+	'add new workspace': 'Nieuwe werkomgeving toevoegen',
+	'edit selected workspace': 'bewerk geselecteerde werkomgeving',
+	'delete selected workspace_': 'verwijder geselecteerde werkomgeving',
+	'new member added popup msg': 'Succesvol {0} met de naam {1} toegevoegd.'
 });

@@ -1384,10 +1384,18 @@ abstract class ContentDataObject extends ApplicationDataObject {
 		$dids_tmp = null;
 		
 		$sql_from = "".$table_prefix."contact_member_permissions cmp
-			INNER JOIN ".$table_prefix."members m ON m.id = cmp.member_id
-			INNER JOIN ".$table_prefix."dimensions d ON d.id = m.dimension_id";
+			LEFT JOIN ".$table_prefix."members m ON m.id = cmp.member_id
+			LEFT JOIN ".$table_prefix."dimensions d ON d.id = m.dimension_id";
 		
-		$sql_where = "member_id IN ( SELECT member_id FROM ".$table_prefix."object_members WHERE object_id = $oid AND is_optimization = 0) AND cmp.object_type_id = $tid";
+		$member_where_conditions = "";
+		$dim_where_conditions = "";
+		// if users can add objects without classifying then check for permissions with member_id=0
+		if (config_option('let_users_create_objects_in_root')) {
+			$member_where_conditions = "member_id=0 OR ";
+			$dim_where_conditions = " OR d.id IS NULL";
+		}
+		
+		$sql_where = "($member_where_conditions member_id IN ( SELECT member_id FROM ".$table_prefix."object_members WHERE object_id = $oid AND is_optimization = 0)) AND cmp.object_type_id = $tid";
 
 		//3. If there are dimensions that defines permissions containing any of the object members
 		if ( count($dids) ){
@@ -1400,8 +1408,8 @@ abstract class ContentDataObject extends ApplicationDataObject {
 				FROM
 				  $sql_from
 				WHERE
-				  $sql_where AND d.id IN (". implode(',',$dids).")";
-				 
+				  $sql_where AND (d.id IN (". implode(',',$dids).") $dim_where_conditions)";
+
 			$res = DB::execute($sql);
 			$gids_tmp = array();
 			while ( $row = $res->fetchRow() ) {

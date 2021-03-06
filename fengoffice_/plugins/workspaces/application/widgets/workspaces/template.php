@@ -3,6 +3,8 @@ $ws_dim = Dimensions::findByCode('workspaces');
 $row_cls = "";
 $add_button_text = count($data_ws) > 0 ? lang('add new workspace') : lang('add your first workspace');
 $no_objects_text = count($data_ws) > 0 ? '' : lang('you have no workspaces yet');
+$ws_widget = Widgets::instance()->findById('workspaces');
+$section = $ws_widget instanceof Widget && in_array($ws_widget->getDefaultSection(), array('left','right')) ? $ws_widget->getDefaultSection() : 'right';
 ?>
 
 <div class="ws-widget widget">
@@ -44,7 +46,7 @@ $no_objects_text = count($data_ws) > 0 ? '' : lang('you have no workspaces yet')
 			<div class="separator"></div>
 		<?php endif; ?>		
 		<?php if ($no_objects_text != '') : ?><div class="no-obj-widget-msg"><?php echo $no_objects_text ?></div><?php endif; ?>
-		<button title="<?php echo $add_button_text ?>" class="ws-more-details add-first-btn" style="float:right;">
+		<button title="<?php echo $add_button_text ?>" class="ws-more-details add-first-btn" style="float:<?php echo $section?>;">
 			<img src="public/assets/themes/default/images/16x16/add.png"/>&nbsp;<?php echo $add_button_text ?>
 		</button>
 		<div class="clear"></div>

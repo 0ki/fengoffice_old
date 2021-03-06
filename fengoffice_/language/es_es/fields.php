@@ -272,4 +272,7 @@
 	'field Objects trashed_by_id' => 'Eliminado por',
 	'field Objects archived_on' => 'Archivado el',
 	'field Objects archived_by_id' => 'Archivado por',
+	'is_user' => 'Es usuario',
+	'field Objects is_user' => 'Es usuario',
+	'field Contacts is_user' => 'Es usuario',
 ); ?>

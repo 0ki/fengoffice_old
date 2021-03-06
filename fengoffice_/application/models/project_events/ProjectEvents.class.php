@@ -409,7 +409,7 @@ class ProjectEvents extends BaseProjectEvents {
                                         $query->setStartMin($start_sel);
                                         $query->setStartMax($end_sel);
                                         $query->setMaxResults(2000);
-                                        $query->setParam('showdeleted', 'true');
+                                     	//$query->setParam('showdeleted', 'true');                                 
                                         // execute and get results
                                         $event_list = $gdataCal->getCalendarEventFeed($query);
                                         $array_events_google = array();
@@ -422,22 +422,22 @@ class ProjectEvents extends BaseProjectEvents {
                                             }
                                             $array_events_google[] = $special_id;
                                             $new_event = ProjectEvents::findBySpecialId($special_id);
-                                            $is_invitation = EventInvitations::findBySpecialId($special_id);  
-                                          
-                                            if(array_pop(explode( '.', $event->getEventStatus() )) == "canceled"){
-                                            	if($new_event|| $is_invitation){
-                                            		if($is_invitation){
-                                            			$new_event = ProjectEvents::findById($is_invitation->getEventId());
-                                            		}
+                                            $is_invitation = EventInvitations::findBySpecialId($special_id); 
+                                        //If event deleted in google, delete event from feng
+                                       /* if(array_pop(explode( '.', $event->getEventStatus() )) == "canceled"){
+                                        	if($new_event|| $is_invitation){
+                                            	if($is_invitation){
+                                            		$new_event = ProjectEvents::findById($is_invitation->getEventId());
+                                            	}
                                             		$event_controller->delete_event_calendar_extern($new_event);
                                             		EventInvitations::delete(array("conditions"=>"event_id = ".$new_event->getId()));
                                             		$new_event->trash();
                                             		 
                                             		$new_event->setSpecialID("");
                                             		$new_event->setExtCalId(0);
-                                            		$new_event->save();                                            	
+                                            		$new_event->save();
                                             	}
-                                            }else{
+                                            }else{*/
                                             
                                             if($new_event || $is_invitation){
                                             	if($is_invitation){
@@ -560,9 +560,9 @@ class ProjectEvents extends BaseProjectEvents {
                                                     $object_controller->add_to_members($new_event, $member_ids, $contact); 
                                                 }                                                
                                             }
-                                            }	
-                                            }        
-                                        }                             
+                                            }  
+                                            }
+                                       // }
                                     }else{
                                         $events = ProjectEvents::findByExtCalId($calendar->getId());
                                         if($calendar->delete()){

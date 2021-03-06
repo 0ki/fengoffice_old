@@ -2095,7 +2095,7 @@ class FilesController extends ApplicationController {
 				$members = $file->getMemberIds();				
 				while ($e_name = $zip->getNameIndex($i++)) {					
 					$tmp_path = $tmp_dir.$e_name;  
-										
+					
 					//removes weird characters
 					$e_name = preg_match_all('/([\x09\x0a\x0d\x20-\x7e]'. // ASCII characters
 					'|[\xc2-\xdf][\x80-\xbf]'. // 2-byte (except overly longs)
@@ -2104,9 +2104,11 @@ class FilesController extends ApplicationController {
 					'|\xed[\x80-\x9f][\x80-\xbf])+/', // 3 byte (except UTF-16 surrogates)
 					$e_name, $clean_pieces);					
 					$e_name = join('?', $clean_pieces[0]);
-										
+					
 					if (!is_dir($tmp_path)) {
-						$this->upload_file(null, $e_name, $tmp_path, $members);
+						$path_parts = pathinfo($tmp_path);
+						$file_name = $path_parts['basename'];
+						$this->upload_file(null, $file_name, $tmp_path, $members);
 						$file_count++;
 					}
 				}			

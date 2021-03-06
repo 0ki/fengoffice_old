@@ -241,8 +241,12 @@ function date_format_tip($format) {
 			case DATA_TYPE_STRING: 
 				if(preg_match(EMAIL_FORMAT, strip_tags($value))){
 					$formatted = strip_tags($value);
-				}else{ 
-					$formatted = $textWrapper . clean($value) . $textWrapper;
+				}else{
+					if ($col == 'is_user') {
+						$formatted = ($value == 1 ? lang('yes') : lang('no'));
+					} else {
+						$formatted = $textWrapper . clean($value) . $textWrapper;
+					}
 				}
 				break;
 			case DATA_TYPE_INTEGER:

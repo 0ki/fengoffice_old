@@ -24,6 +24,37 @@ class PermissionGroup extends BasePermissionGroup {
 		return get_url('group', 'delete', array("id" => $this->getId()));
 	}
 	
+	/**
+	 * Add permissions for a contact on members
+	 * @param array $members_id  Array with the ids of members
+	 * @param array $rol_permissions Array with the permissions for the user type of the contact
+	 * @return null
+	 */
+	function addPermissions($members_id, $rol_permissions) {
+		//permissions
+		$permissions = "";
+		foreach ($rol_permissions as $permission){
+			if ($permissions != "") $permissions .= ','; 
+			$permissions .= '{"pg":"'.$this->getId().'","o":'.$permission['object_type_id'].',"d":'.$permission['can_delete'].',"w":'.$permission['can_write'].',"r":1}';
+		}
+		$permissions = "[".$permissions."]";
+		
+		//members
+		$members = array();
+		foreach ($members_id as $member_id){
+			$mem = Members::findById($member_id);
+			if (!$mem instanceof Member) {
+				continue;
+			}
+			$members[] = $mem;
+		}
+		
+		
+		//save permissions 
+		foreach($members as $member){
+			save_member_permissions_background(logged_user(), $member, $permissions);	
+		}
+	}
 	
 	function delete() {
 		// delete system permissions

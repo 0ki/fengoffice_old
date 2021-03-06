@@ -331,6 +331,10 @@ if (user_config_option("autodetect_time_zone", null)) {
 <?php 
 } ?>
 og.CurrentPagingToolbar = <?php echo defined('INFINITE_PAGING') && INFINITE_PAGING ? 'og.InfinitePagingToolbar' : 'og.PagingToolbar' ?>;
+og.ownerCompany = {
+	id: '<?php echo owner_company()->getId()?>',
+	name: '<?php clean(owner_company()->getObjectName())?>'
+};
 og.loggedUser = {
 	id: <?php echo logged_user()->getId() ?>,
 	username: <?php echo json_encode(logged_user()->getUsername()) ?>,
@@ -404,12 +408,30 @@ og.systemSound = new Sound();
 var quickAdd = new og.QuickAdd({renderTo:'quickAdd'});
 
 <?php if (!defined('DISABLE_JS_POLLING') || !DISABLE_JS_POLLING) { ?>
+var isActiveBrowserTab = true;
+if (Ext.isIE) {
+	document.onfocusin = function () {
+	  isActiveBrowserTab = true;
+	};
+	document.onfocusout = function () {
+	  isActiveBrowserTab = false;
+	};
+} else {
+	window.onfocus = function () {
+	  isActiveBrowserTab = true;
+	};
+	window.onblur = function () {
+	  isActiveBrowserTab = false;
+	};
+}
 setInterval(function() {
-	og.openLink(og.getUrl('object', 'popup_reminders'), {
-		hideLoading: true,
-		hideErrors: true,
-		preventPanelLoad: true
-	});
+	if (window.isActiveBrowserTab) {
+		og.openLink(og.getUrl('object', 'popup_reminders'), {
+			hideLoading: true,
+			hideErrors: true,
+			preventPanelLoad: true
+		});
+	}
 }, 60000);
 <?php } ?>
 

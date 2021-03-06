@@ -1,5 +1,4 @@
 App.modules.updatePermissionsForm = {
-  owner_company_id: 1,
   project_permissions: [],
   
   /**
@@ -28,7 +27,7 @@ App.modules.updatePermissionsForm = {
       Ext.getDom(genid+'project_user_' + user_id + '_' + permission_name).checked = userCheckbox.checked;
     }
     
-    if(company_id == App.modules.updatePermissionsForm.owner_company_id) {
+    if(company_id == og.ownerCompany.id) {
       return;
     } // if
     var new_display_value = userCheckbox.checked ? 'block' : 'none';

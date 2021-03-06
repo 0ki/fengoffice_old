@@ -28,6 +28,7 @@ Ext.extend(og.MemberChooserTreeLoader , Ext.tree.TreeLoader, {
             Ext.applyIf(attr, this.baseAttrs);
         }
         if(this.applyLoader !== false){
+        	if (!attr) attr = {};
             attr.loader = this;
         }
         if(typeof attr.uiProvider == 'string'){
@@ -63,29 +64,53 @@ Ext.extend(og.MemberChooserTreeLoader , Ext.tree.TreeLoader, {
 		}
 		var json = response.responseText;
 		try {
-			var o = eval("("+json+")");
-			o = o.dimension_members;
+			var json_obj = eval("("+json+")");
 
-			for(var i = 0, len = o.length; i < len; i++){
-				var n = this.createNode(o[i]);
-				n.object_id = o[i].object_id ;
-				n.options = o[i].options ;
-				n.object_controller = o[i].object_controller ;
-				n.allow_childs = o[i].allow_childs ;
-
-				if(n){
-					node.appendChild(n);
-				}
+			var dimension_id = this.ownerTree.dimensionId;
+			if (!og.tmp_members_to_add) og.tmp_members_to_add = [];
+			
+			// build tmp member arrays
+			var tmp_member_array = [];
+			var count = 0;
+			while (json_obj.dimension_members.length > 0) {
+				tmp_member_array[count] = json_obj.dimension_members.splice(0, 100);
+				count++;
 			}
+			tmp_member_array.reverse();
+			og.tmp_members_to_add[dimension_id] = tmp_member_array;
+			
+			var tree_id = this.ownerTree.id;
+			if (!og.tmp_node) og.tmp_node = [];
+			og.tmp_node[dimension_id] = node;
+			
+			// mask
+			var old_text = this.ownerTree.getRootNode().text;
+			this.ownerTree.getRootNode().setText(lang('loading'));
+			this.ownerTree.innerCt.mask();
+		
+			// add nodes
+			for (x=0; x<count; x++) {
+				setTimeout('og.addNodesToTree("'+tree_id+'");', 1000 * x);
+			}
+			
+			// unmask
+			var t = this.ownerTree;
+			setTimeout(function(){
+				t.innerCt.unmask();
+				t.getRootNode().setText(old_text);
+				t.getRootNode().expand(true);
+				t.getRootNode().collapse(true);
+				t.getRootNode().expand(false);
+			}, 1000 * count);
+			
 			node.endUpdate();
 			if(typeof callback == "function"){
 				callback(this, node);
 			}
 			this.ownerTree.expanded_once = false;
+			
 		}catch(e){
 			this.handleFailure(response);
 		}
 	}
-	
-	
-}); 
+});

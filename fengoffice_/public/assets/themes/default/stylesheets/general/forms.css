@@ -383,6 +383,22 @@ div.add-person-form div.field label {
 	width: 100px;
 	float: left;
 }
+
+div.non-registered-person-form div.field label {
+	margin-right: 4px;
+	float: left;
+	width: auto;
+}
+
+div.non-registered-person-form select {
+	width: 300px;
+	float: right;	
+}
+
+div.non-registered-person-form div.field input {
+	float: right;
+}
+
 div.add-person-form div.field label.checkbox {
 	width: auto;
 }

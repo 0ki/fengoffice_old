@@ -44,6 +44,7 @@
 ?>
 <div class="commentsTitle"><?php echo lang('related to')?></div>
 	<div style="padding-bottom: 10px;">
+	<div style="width:50%; float: left;">
 <?php
 		foreach ($dimensions_info as $dname => $dinfo) { ?>
 			<div class="member-path-dim-block">
@@ -77,5 +78,31 @@
 			}
 		?></div><?php
 		}
-	?></div><?php
+		
+	?></div>
+	<div style="width:50%; float: left; "><?php 
+		if($object instanceof ProjectTask) {
+			
+			$task_list = $object;
+			//milestone
+			if (isset($milestone)){
+				echo $milestone;
+			}
+			
+			//parent
+			if (isset($parentInf)){
+				echo $parentInf;
+			}
+				
+		}
+		?></div>
+	
+	
+	</div>
+	<div class="clear"></div>
+		
+	
+	
+	
+	<?php
 	}

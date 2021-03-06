@@ -22,7 +22,7 @@ if (!$object->isNew()) {
 		<a class="internalLink" href="<?php echo logged_user()->getCardUserUrl() ?>">
 		<div class="db-ico unknown ico-user"></div>
 		</a></td><td><b><a class="internalLink" href="<?php echo logged_user()->getCardUserUrl() ?>">
-		<span><?php echo lang("you") ?></span> </a></b> <?php if (!$object->isTrashed()) {?>
+		<span><?php echo lang("me") ?></span> </a></b> <?php if (!$object->isTrashed()) {?>
 			(<a class="internalLink" href="#" onclick="if (confirm('<?php echo escape_single_quotes(lang("confirm unsubscribe")) ?>')) og.openLink('<?php echo $object->getUnsubscribeUrl() ?>');"><?php echo lang("unsubscribe from object") ?></a>)
 		<?php } ?></td></tr>
 	<?php } ?>

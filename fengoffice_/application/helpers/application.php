@@ -308,12 +308,16 @@ function assign_to_select_box($list_name, $context = null, $selected = null, $at
 
 
 
-function user_select_box($list_name, $selected = null, $attributes = null) {
+function user_select_box($list_name, $selected = null, $attributes = null, $contacts = null) {
 	$logged_user = logged_user();
 	
 	//FIXME Feng 2
-	$users = Contacts::instance()->findAll(array("conditions" => "is_company = 0 AND user_type > 0 AND disabled = 0"));
-	
+	if($contacts != null){
+		$users = $contacts;
+	}else{
+		$users = Contacts::instance()->findAll(array("conditions" => "is_company = 0 AND user_type > 0 AND disabled = 0"));
+	}
+		
 	if(is_array($users)) {
 		foreach($users as $user) {
 			$option_attributes = $user->getId() == $selected ? array('selected' => 'selected') : null;

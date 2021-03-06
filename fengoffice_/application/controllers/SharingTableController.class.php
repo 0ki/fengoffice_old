@@ -11,15 +11,14 @@ class  SharingTableController extends ApplicationController {
 	 * 			[r] => 1 //read 
 	 * @throws Exception
 	 */
-	function afterPermissionChanged($group, $permissions) {
-		$this->after_permission_changed($group, $permissions);
-		/*
-		// Make async request to save permissions
-		$url = get_url('sharing_table', 'after_permission_changed');
-		$parameters = array('group' => $group, 'permissions' => json_encode($permissions));
-		
-		$result = HttpRequest($url, 'POST', $parameters, '', true, true);
-		*/
+	function afterPermissionChanged($groups, $permissions) {
+		if (!is_array($groups)) {
+			if (is_numeric($groups)) $groups = array($groups);
+			else return;
+		}
+		foreach ($groups as $group) {
+			$this->after_permission_changed($group, $permissions);
+		}
 	}
 	
 	

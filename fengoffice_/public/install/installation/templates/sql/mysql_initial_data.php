@@ -61,7 +61,6 @@ INSERT INTO `<?php echo $table_prefix ?>config_options` (`category_name`, `name`
     ('general', 'use_milestones', '0', 'BoolConfigHandler', '0', '0', NULL),
     ('general', 'show_tab_icons', '1', 'BoolConfigHandler', '0', '0', NULL),
 	('general', 'can_assign_tasks_to_companies', '0', 'BoolConfigHandler', '0', '0', NULL),
-	('general', 'updateOnLinkedObjects', '1', 'BoolConfigHandler', '0', '0', 'Update objects when linking others'),
     ('general', 'use_object_properties', '0', 'BoolConfigHandler', '0', '0', NULL),
 	('task panel', 'tasksShowTimeEstimates', '1', 'BoolConfigHandler', '1', '0', NULL),
 	('brand_colors', 'brand_colors_head_back', '', 'StringConfigHandler', '1', '0', NULL),
@@ -161,7 +160,7 @@ INSERT INTO `<?php echo $table_prefix ?>contact_config_options` (`category_name`
  ('general', 'work_day_end_time', '18:00', 'TimeConfigHandler', 0, 410, 'Work day end time'),
  ('general', 'time_format_use_24', '0', 'BoolConfigHandler', 0, 500, 'Use 24 hours time format'),
  ('general', 'date_format', 'd/m/Y', 'DateFormatConfigHandler', 0, 600, 'Date objects will be displayed using this format.'),
- ('general', 'descriptive_date_format', 'l, j F', 'StringConfigHandler', 0, 700, 'Descriptive dates will be displayed using this format.'),
+ ('general', 'descriptive_date_format', 'F j, Y (l)', 'StringConfigHandler', 0, 700, 'Descriptive dates will be displayed using this format.'),
  ('general', 'custom_report_tab', '5', 'StringConfigHandler', '1', '0', NULL),
  ('general', 'last_mail_format', 'html', 'StringConfigHandler', '1', '0', NULL),
  ('general', 'amount_objects_to_show', '5', 'IntegerConfigHandler', '0', '0', NULL),
@@ -271,6 +270,7 @@ INSERT INTO `<?php echo $table_prefix ?>contact_config_options` (`category_name`
  ('general', 'viewContactsChecked', '1', 'BoolConfigHandler', '1', '0', 'in people panel is view contacts checked'),
  ('general', 'viewUsersChecked', '0', 'BoolConfigHandler', '1', '0', 'in people panel is view users checked'),
  ('general', 'viewCompaniesChecked', '1', 'BoolConfigHandler', '1', '0', 'in people panel is view companies checked'),
+ ('general', 'updateOnLinkedObjects', '1', 'BoolConfigHandler', '0', '0', 'Update objects when linking others'),
  ('dashboard', 'overviewAsList', '0', 'BoolConfigHandler', '1', '0', 'View Overview as list'),
  ('general', 'contacts_per_page', '50', 'IntegerConfigHandler', '0', '1200', NULL);
  

@@ -421,6 +421,7 @@ og.MailManager = function() {
 		all: new Ext.Action({
 			text: lang('view all'),
 			handler: function() {
+				og.openLink(og.getUrl('object', 'set_user_config_option_value', {config_option_name: 'mails read filter', config_option_value: 'all'}), {preventPanelLoad: true});
 				this.reloadFiltering("all", null, null);
 				Ext.getCmp('mails-manager').getTopToolbar().items.get('tb-item-read-unread').setText(lang('view by state'))
 			},
@@ -429,6 +430,7 @@ og.MailManager = function() {
 		read: new Ext.Action({
 			text: lang('read'),
 			handler: function() {
+				og.openLink(og.getUrl('object', 'set_user_config_option_value', {config_option_name: 'mails read filter', config_option_value: 'read'}), {preventPanelLoad: true});
 				this.reloadFiltering("read", null, null);
 				Ext.getCmp('mails-manager').getTopToolbar().items.get('tb-item-read-unread').setText(lang('read'))
 			},
@@ -437,6 +439,7 @@ og.MailManager = function() {
 		unread: new Ext.Action({
 			text: lang('unread'),
 			handler: function() {
+				og.openLink(og.getUrl('object', 'set_user_config_option_value', {config_option_name: 'mails read filter', config_option_value: 'unread'}), {preventPanelLoad: true});
 				this.reloadFiltering("unread", null, null);
 				Ext.getCmp('mails-manager').getTopToolbar().items.get('tb-item-read-unread').setText(lang('unread'))
 			},
@@ -448,6 +451,7 @@ og.MailManager = function() {
 		all: new Ext.Action({
 			text: lang('view all'),
 			handler: function() {
+				og.openLink(og.getUrl('object', 'set_user_config_option_value', {config_option_name: 'mails classification filter', config_option_value: 'all'}), {preventPanelLoad: true});
 				this.reloadFiltering(null, null, null, 'all');
 				Ext.getCmp('mails-manager').getTopToolbar().items.get('tb-item-classification').setText(lang('view by classification'))
 			},
@@ -456,6 +460,7 @@ og.MailManager = function() {
 		classified: new Ext.Action({
 			text: lang('classified'),
 			handler: function() {
+				og.openLink(og.getUrl('object', 'set_user_config_option_value', {config_option_name: 'mails classification filter', config_option_value: 'classified'}), {preventPanelLoad: true});
 				this.reloadFiltering(null, null, null, "classified");
 				Ext.getCmp('mails-manager').getTopToolbar().items.get('tb-item-classification').setText(lang('classified'))
 			},
@@ -464,6 +469,7 @@ og.MailManager = function() {
 		unclassified: new Ext.Action({
 			text: lang('unclassified'),
 			handler: function() {
+				og.openLink(og.getUrl('object', 'set_user_config_option_value', {config_option_name: 'mails classification filter', config_option_value: 'unclassified'}), {preventPanelLoad: true});
 				this.reloadFiltering(null, null, null, "unclassified");
 				Ext.getCmp('mails-manager').getTopToolbar().items.get('tb-item-classification').setText(lang('unclassified'))
 			},
@@ -942,6 +948,7 @@ og.MailManager = function() {
 				listeners: {
 					'accountselect': {
 						fn: function(account, name) {
+							og.openLink(og.getUrl('object', 'set_user_config_option_value', {config_option_name: 'mails account filter', config_option_value: account}), {preventPanelLoad: true});
 							this.accountId = account;
 							this.load();
 							if (account == 0) {
@@ -1121,7 +1128,7 @@ og.MailManager = function() {
 	var me = this;
 	this.emailRefreshInterval = setInterval(function() {
 		var p = me.getBottomToolbar().getPageData().activePage;
-		if (Ext.getCmp('tabs-panel').getActiveTab().id == 'mails-panel' && p == 1) {
+		if (window.isActiveBrowserTab && (Ext.getCmp('tabs-panel').getActiveTab().id == 'mails-panel' && p == 1)) {
 			me.needRefresh = false;
 			og.MailManager.store.load();
 		} else {
@@ -1156,11 +1163,16 @@ Ext.extend(og.MailManager, Ext.grid.GridPanel, {
 	      context: og.contextManager.plainContext(),
 		  account_id: this.accountId
 	    };
+		
+		this.actionRep.checkMails.disable();
 		this.store.load({
 			params: Ext.apply(params, {
 				start: start,
 				limit: mails_per_page
-			})
+			}),
+			callback: function() {
+				Ext.getCmp('mails-manager').actionRep.checkMails.enable();				
+			}
 		});
 		this.store.baseParams.action = "";
 	},

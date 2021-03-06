@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Chorizo upgrade script will upgrade FengOffice 2.2.4.1 to FengOffice 2.3.1.1
+ * Chorizo upgrade script will upgrade FengOffice 2.2.4.1 to FengOffice 2.3.2-beta
  *
  * @package ScriptUpgrader.scripts
  * @version 1.0
@@ -40,7 +40,7 @@ class ChorizoUpgradeScript extends ScriptUpgraderScript {
 	function __construct(Output $output) {
 		parent::__construct($output);
 		$this->setVersionFrom('2.2.4.1');
-		$this->setVersionTo('2.3.1.1');
+		$this->setVersionTo('2.3.2-beta');
 	} // __construct
 
 	function getCheckIsWritable() {
@@ -164,6 +164,8 @@ class ChorizoUpgradeScript extends ScriptUpgraderScript {
 					update ".$t_prefix."contacts set personal_member_id=0 where personal_member_id is null;
 					UPDATE `".$t_prefix."config_options` SET `is_system` = '1' WHERE `name`='viewUsersChecked';
 
+					INSERT INTO `".$t_prefix."contact_config_options` (`category_name`, `name`, `default_value`, `config_handler_class`, `is_system`, `option_order`, `dev_comment`)
+					VALUES ('general', 'updateOnLinkedObjects', '0', 'BoolConfigHandler', '0', '0', 'Update objects when linking others')ON DUPLICATE KEY UPDATE name=name;
 				";
 
 				if (!$this->checkColumnExists($t_prefix."event_invitations", "synced", $this->database_connection)) {
@@ -173,29 +175,60 @@ class ChorizoUpgradeScript extends ScriptUpgraderScript {
 				}
 				if (!$this->checkColumnExists($t_prefix."event_invitations", "special_id", $this->database_connection)) {
 					$upgrade_script .= "
-						ALTER TABLE ".$t_prefix."event_invitations ADD special_id text CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL DEFAULT '';
+						ALTER TABLE ".$t_prefix."event_invitations ADD special_id text CHARACTER SET utf8 COLLATE utf8_unicode_ci NULL DEFAULT NULL;
 					";
 				}
 			}
 			
 			if (version_compare($installed_version, '2.3.1-rc') < 0) {
 				$upgrade_script .= "
-					UPDATE `".$t_prefix."config_options` SET `is_system`=1 WHERE `name`='exchange_compatible';
-					INSERT INTO `".$t_prefix."contact_config_options` (`category_name`, `name`, `default_value`, `config_handler_class`, `is_system`, `option_order`, `dev_comment`)
-						VALUES ('dashboard', 'overviewAsList', '0', 'BoolConfigHandler', '1', '0', 'View Overview as list')
-					ON DUPLICATE KEY UPDATE name=name;
+					update ".$t_prefix."config_options set is_system=1 where name='exchange_compatible';
+					UPDATE `".$t_prefix."widgets` SET `default_section` = 'right' WHERE `title`='people';
+					UPDATE `".$t_prefix."contact_config_options` SET `default_value` = 'F j, Y (l)' WHERE `name`='descriptive_date_format';
+							
+				INSERT INTO `".$t_prefix."contact_config_options` (`category_name`, `name`, `default_value`, `config_handler_class`, `is_system`, `option_order`, `dev_comment`)
+				VALUES ('dashboard', 'overviewAsList', '0', 'BoolConfigHandler', '1', '0', 'View Overview as list')
+				ON DUPLICATE KEY UPDATE name=name;
 				";
 			}
-			if (version_compare($installed_version, '2.3.1.1') < 0) {
-				$upgrade_script .= "
+		}
+		if (version_compare($installed_version, '2.3.1.1') < 0) {
+			$upgrade_script .= "
 					DELETE FROM `".$t_prefix."contact_config_option_values` WHERE `option_id` = ( SELECT `id` FROM `".$t_prefix."contact_config_options` WHERE `name` = 'updateOnLinkedObjects');
 					DELETE FROM `".$t_prefix."contact_config_options` WHERE `name` = 'updateOnLinkedObjects';
-							
+				
 					INSERT INTO `".$t_prefix."config_options` (`category_name`, `name`, `value`, `config_handler_class`, `is_system`, `option_order`, `dev_comment`)
 					VALUES ('general', 'updateOnLinkedObjects', '0', 'BoolConfigHandler', '0', '0', 'Update objects when linking others')
 					ON DUPLICATE KEY UPDATE name=name;
 				";
-			}
+		}
+		
+		if (version_compare($installed_version, '2.3.2-beta') < 0) {
+			$upgrade_script .= "
+				INSERT INTO `".$t_prefix."config_options` (`category_name`,`name`,`value`,`config_handler_class`,`is_system`) VALUES
+					('general', 'let_users_create_objects_in_root', '1', 'BoolConfigHandler', '0')
+				ON DUPLICATE KEY UPDATE name=name;
+				
+				INSERT INTO ".$t_prefix."contact_member_permissions (permission_group_id, member_id, object_type_id, can_delete, can_write)
+				  SELECT c.permission_group_id, 0, rtp.object_type_id, rtp.can_delete, rtp.can_write FROM ".$t_prefix."role_object_type_permissions rtp 
+				  INNER JOIN ".$t_prefix."contacts c ON c.user_type=rtp.role_id
+				  WHERE rtp.role_id in (
+				    SELECT pg.id FROM ".$t_prefix."permission_groups pg WHERE pg.type='roles' AND pg.name IN ('Super Administrator','Administrator','Manager','Executive')
+				  )
+				ON DUPLICATE KEY UPDATE member_id=0;
+				
+				INSERT INTO ".$t_prefix."sharing_table (group_id, object_id)
+				SELECT cmp.permission_group_id, o.id FROM ".$t_prefix."objects o
+				INNER JOIN ".$t_prefix."contact_member_permissions cmp ON cmp.object_type_id=o.object_type_id AND cmp.member_id=0
+				WHERE o.object_type_id IN (SELECT ot.id FROM ".$t_prefix."object_types ot WHERE ot.type IN ('content_object','comment','located'))
+				AND NOT EXISTS (
+				  SELECT om.object_id FROM ".$t_prefix."object_members om
+				  WHERE om.object_id=o.id
+				  AND om.member_id IN (
+				    SELECT m.id FROM ".$t_prefix."members m WHERE m.dimension_id IN (SELECT d.id FROM ".$t_prefix."dimensions d WHERE d.defines_permissions=1 AND d.is_manageable=1)
+				  )
+				);
+			";
 		}
 		
 		if($this->executeMultipleQueries($upgrade_script, $total_queries, $executed_queries, $this->database_connection)) {

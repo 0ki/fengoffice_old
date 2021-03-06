@@ -197,7 +197,6 @@ og.switchToOverview = function(){
 
 og.switchToDashboard = function(){
 	og.openLink(og.getUrl('account', 'update_user_preference', {name:'overviewAsList', value:0}), {hideLoading:true});
-	
 	var opanel = Ext.getCmp('overview-panel');
 	opanel.defaultContent = {type: "url", data: og.getUrl('dashboard','main_dashboard')};
 	opanel.load(opanel.defaultContent);
@@ -2313,6 +2312,22 @@ og.expandCollapseDimensionTree = function(tree, previous_exp, selection_id) {
 	}
 }
 
+/*
+ * The email must contain an @ sign and at least one dot (.).
+ *  Also, the @ must not be the first character of the email address,
+ *   and the last dot must be present after the @ sign, and minimum 2 characters before the end
+ */
+og.checkValidEmailAddress = function(email) {
+	  var atpos=email.indexOf("@");
+	  var dotpos=email.lastIndexOf(".");
+	  if (atpos<1 || dotpos<atpos+2 || dotpos+2>=email.length){
+	      return false;
+	  }else{
+		  return true;
+	  }
+	  
+}
+
 og.checkEmailAddress = function(element,id_contact) {    
 	$(element).blur(function(){
 		var field = $(this);
@@ -2629,4 +2644,22 @@ og.expandMenuPanel = function(options) {
 	var animate = options.animate ? options.animate : true;
 	if (options.expand) Ext.getCmp('menu-panel').expand(animate);
 	else if (options.collapse) Ext.getCmp('menu-panel').collapse(animate);
+}
+
+og.addNodesToTree = function(tree_id) {
+	var tree = Ext.getCmp(tree_id);
+	var o = og.tmp_members_to_add[tree.dimensionId].pop();
+	
+	if (o) {
+		for (i=0; i<o.length; i++) {
+			if (!o[i]) continue;
+			var n = tree.loader.createNode(o[i]);
+			n.object_id = o[i].object_id;
+			n.options = o[i].options;
+			n.object_controller = o[i].object_controller;
+			n.allow_childs = o[i].allow_childs;
+
+			if (n) og.tmp_node[tree.dimensionId].appendChild(n);
+		}
+	}
 }

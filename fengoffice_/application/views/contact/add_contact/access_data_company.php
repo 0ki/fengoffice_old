@@ -30,8 +30,8 @@
 	<div class="clear"></div>
 	<div class="field role" style="vertical-align:middle;">
 		<div style="height:5px;"></div>
-		<input class="checkbox" type="checkbox" name="contact[user][create-user]" checked id="<?php echo $genid?>contact[user][create-user]"></input>
-		<label class="checkbox" style="margin-left:5px;" for="<?php echo $genid?>contact[user][create-user]"><?php echo lang("will this person use feng office?") ?></label>
+		<label class="checkbox" for="<?php echo $genid?>contact[user][create-user]"><?php echo lang("will this person use feng office?") ?></label>
+		<input style="float: left;" class="checkbox" type="checkbox" name="contact[user][create-user]" checked id="<?php echo $genid?>contact[user][create-user]"></input>
 	</div>
 	<div class="clear"></div>
 	<div class="user-data" style="margin-bottom: 10px;">

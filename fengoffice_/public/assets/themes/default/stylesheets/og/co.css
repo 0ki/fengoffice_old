@@ -50,7 +50,7 @@
 }
 
 .coViewHeader .coViewTitle {
-  	font-size: 130%;
+  	font-size: 150%;
   	font-weight: bold;
   	padding-bottom: 4px;
   	border-bottom: 3px solid;
@@ -747,6 +747,22 @@
 	border-radius: 3px;
 }
 
+.wysiwyg-description {
+	font-size: 130%;
+	min-height: 150px;
+	border-bottom: 1px solid #CCCCCC;
+	margin-bottom: 8px;
+	padding-bottom: 10px;
+}
+.wysiwyg-description ul{
+	padding-left: 25px;
+	list-style: inherit !important;
+}
+
+.wysiwyg-description ol{
+	padding-left: 25px;
+	list-style: decimal outside none !important;
+}
 .wysiwyg-description em {
 	font-style: italic;
 }

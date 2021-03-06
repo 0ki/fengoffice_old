@@ -75,6 +75,8 @@ return array(
         'all' => 'All',
         'or' => 'Or',
         'by' => 'By',
+        'by time' => 'before',
+        'at' => 'at',
         'on' => 'On',
         'in' => 'In',
   	'check all' => 'Check All',
@@ -131,6 +133,13 @@ return array(
         'events' => 'Events',
         'Event' => 'Event',
         'Events' => 'Events',
+        'Non registered person (add one from scratch)' => 'Non registered person (add one from scratch)',
+        'Registered Person' => 'Registered Person',
+        'View and edit all details' => 'View and edit all details',
+        'view all_people' => 'View all',
+        'add people to' => 'Add people to',   
+        'add people' => 'Add people',
+       
 
         'project calendar' => '{0} calendar',
         'user calendar' => '{0}\'s calendar',
@@ -333,4 +342,5 @@ return array(
 	'Guest Customer' => 'Guest Customer',
 	'Guest' => 'Guest',
 	'Non-Exec Director' => 'Non executive Director',
+	'permissions for unclassified objects' => 'Permissions for unclassified objects',
 );

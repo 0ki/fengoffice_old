@@ -21,8 +21,10 @@ INSERT INTO `<?php echo $table_prefix ?>contact_config_options` (`category_name`
  	('general', 'viewContactsChecked', '1', 'BoolConfigHandler', '1', '0', 'in people panel is view contacts checked'),
  	('general', 'viewUsersChecked', '0', 'BoolConfigHandler', '1', '0', 'in people panel is view users checked'),
  	('general', 'viewCompaniesChecked', '1', 'BoolConfigHandler', '1', '0', 'in people panel is view companies checked'),
+ 	('general', 'updateOnLinkedObjects', '0', 'BoolConfigHandler', '0', '0', 'Update objects when linking others'),
  	('dashboard', 'overviewAsList', '0', 'BoolConfigHandler', '1', '0', 'View Overview as list'),
-	('general', 'contacts_per_page', '50', 'IntegerConfigHandler', '0', '1200', NULL)
+	('general', 'contacts_per_page', '50', 'IntegerConfigHandler', '0', '1200', NULL),
+	('general', 'let_users_create_objects_in_root', '1', 'BoolConfigHandler', '0', 1300, NULL)
 ON DUPLICATE KEY UPDATE name=name;
 
 DELETE FROM `<?php echo $table_prefix ?>contact_config_option_values` WHERE `option_id` = ( SELECT `id` FROM `<?php echo $table_prefix ?>contact_config_options` WHERE `name` = 'updateOnLinkedObjects');
@@ -53,7 +55,7 @@ INSERT INTO <?php echo $table_prefix ?>searchable_objects (rel_object_id, column
 ON DUPLICATE KEY UPDATE rel_object_id=rel_object_id;
 
 ALTER TABLE  <?php echo $table_prefix ?>event_invitations ADD synced int(1) DEFAULT '0';
-ALTER TABLE  <?php echo $table_prefix ?>event_invitations ADD special_id text <?php echo $default_collation ?> NOT NULL DEFAULT '';
+ALTER TABLE  <?php echo $table_prefix ?>event_invitations ADD special_id text CHARACTER SET utf8 COLLATE utf8_unicode_ci NULL DEFAULT NULL;
 
 update <?php echo $table_prefix ?>contacts set company_id=0 where company_id is null;
 update <?php echo $table_prefix ?>contacts set display_name='' where display_name is null;
@@ -63,3 +65,26 @@ update <?php echo $table_prefix ?>contacts set last_visit='0000-00-00 00:00:00' 
 update <?php echo $table_prefix ?>contacts set personal_member_id=0 where personal_member_id is null;
 
 update <?php echo $table_prefix ?>config_options set is_system=1 where name='exchange_compatible';
+
+UPDATE `<?php echo $table_prefix ?>widgets` SET `default_section`='right' WHERE `title`='people';
+UPDATE `<?php echo $table_prefix ?>contact_config_options` SET `default_value`='F j, Y (l)' WHERE `name`='descriptive_date_format';
+
+INSERT INTO <?php echo $table_prefix ?>contact_member_permissions (permission_group_id, member_id, object_type_id, can_delete, can_write)
+  SELECT c.permission_group_id, 0, rtp.object_type_id, rtp.can_delete, rtp.can_write FROM <?php echo $table_prefix ?>role_object_type_permissions rtp 
+  INNER JOIN <?php echo $table_prefix ?>contacts c ON c.user_type=rtp.role_id
+  WHERE rtp.role_id in (
+    SELECT pg.id FROM <?php echo $table_prefix ?>permission_groups pg WHERE pg.type='roles' AND pg.name IN ('Super Administrator','Administrator','Manager','Executive')
+  )
+ON DUPLICATE KEY UPDATE member_id=0;
+
+INSERT INTO <?php echo $table_prefix ?>sharing_table (group_id, object_id)
+SELECT cmp.permission_group_id, o.id FROM <?php echo $table_prefix ?>objects o
+INNER JOIN <?php echo $table_prefix ?>contact_member_permissions cmp ON cmp.object_type_id=o.object_type_id AND cmp.member_id=0
+WHERE o.object_type_id IN (SELECT ot.id FROM <?php echo $table_prefix ?>object_types ot WHERE ot.type IN ('content_object','comment','located'))
+AND NOT EXISTS (
+  SELECT om.object_id FROM <?php echo $table_prefix ?>object_members om
+  WHERE om.object_id=o.id
+  AND om.member_id IN (
+    SELECT m.id FROM <?php echo $table_prefix ?>members m WHERE m.dimension_id IN (SELECT d.id FROM <?php echo $table_prefix ?>dimensions d WHERE d.defines_permissions=1 AND d.is_manageable=1)
+  )
+);

@@ -142,7 +142,7 @@ foreach($companies as $company)
 		</tr>
 		<tr>
 			<td class="coViewBody" style="padding:0px;width:100%;height:100%;" colspan=1>
-				<div id="gridcontainer" style="position:relative; overflow-x:hidden; overflow-y:scroll;padding-bottom:0px;width:100%;height:100%;">
+				<div id="gridcontainer" class="toprint" style="position:relative; overflow-x:hidden; overflow-y:scroll;padding-bottom:0px;width:100%;height:100%;">
 				
 				<table id="calendar" cellspacing='0' cellpadding='0' width="100%" height="100%" style="border: 1px solid #777;">
 				

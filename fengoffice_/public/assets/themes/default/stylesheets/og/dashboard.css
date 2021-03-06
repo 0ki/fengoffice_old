@@ -352,6 +352,10 @@
 	margin-left: 10px ;
 }
 
+.widget  li { 
+	margin-right: 10px;
+}
+
 .widget .dimension-relation {
 	float: left ;
 	margin: 0 20px 20px 0  ;

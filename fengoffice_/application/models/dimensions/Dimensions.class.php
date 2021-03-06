@@ -57,8 +57,8 @@
 				d.name as dimension_name,
 				d.code as dimension_code,
 				d.options as dimension_options,
-				BIT_OR(dotc.is_required) AS is_required,
-				BIT_OR(dotc.is_multiple) AS is_multiple,
+				(dotc.is_required OR d.is_required) AS is_required,
+				dotc.is_multiple AS is_multiple,
 				d.is_manageable AS is_manageable
 			
 			FROM 

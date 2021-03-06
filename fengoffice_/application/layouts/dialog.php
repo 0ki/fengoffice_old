@@ -9,20 +9,8 @@
 <?php echo meta_tag('content-type', 'text/html; charset=utf-8', true) ?> 
 <?php echo render_page_head() ?>
   </head>
-  <body class="loginBody" style="text-align:center;">
-  <div class="loginDiv">
-    <table style="border-collapse:collapse;margin:150px auto 0;width:440px" border=0>
-    	<tr>
-    		<td class="t1">&nbsp;</td>
-    		<td class="t2">&nbsp;</td>
-    		<td class="t3">&nbsp;<div class="title"><?php echo get_page_title() ?></div></td>
-    		<td class="t4">&nbsp;</td>
-    		<td class="t5">&nbsp;</td>
-    	</tr>
-    	<tr height="19px">
-    		<td class="mt1"></td>
-    		<td rowspan=2 colspan=3 class="loginContents" >
-			<div style="padding:10px 0px 10px 6px;">
+  <body class="" style="text-align:center;">
+  
 <?php if(!is_null(flash_get('success'))) { ?>
           <div id="success" onclick="this.style.display = 'none'"><?php echo clean(flash_get('success')) ?></div>
 <?php } ?>
@@ -30,25 +18,7 @@
           <div id="error" onclick="this.style.display = 'none'"><?php echo clean(flash_get('error')) ?></div>
 <?php } ?>
 <?php echo $content_for_layout ?>
-    		</div>
-
-			</td>
-    		<td rowspan=2 class="m5">&nbsp;</td>
-    	</tr>
-    	<tr style="">
-    		<td class="m1">&nbsp;</td>
-    	</tr>
-    	<tr>
-    		<td class="b1">&nbsp;</td>
-    		<td class="b2">&nbsp;</td>
-    		<td class="b3">&nbsp;</td>
-    		<td class="b4">&nbsp;</td>
-    		<td class="b5">&nbsp;</td>
-    	</tr>
-    </table>
-    </div>
-    <div class="powered-by">
-    <?php echo lang('footer powered', 'http://www.fengoffice.com/', clean(product_name())) . ' - ' . lang('version') . ' ' . product_version();?>
-    </div>
+  
+	
   </body>
 </html>

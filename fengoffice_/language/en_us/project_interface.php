@@ -48,8 +48,12 @@ return array(
     'posted on by' => '{0} | <a class="internalLink" href="{1}">{2}</a>',
     'milestone assigned to' => 'Assigned to {0}',
     'assigned to' => 'Assigned to',
+    'assigned by' => 'Assigned by',
     'project started on' => 'Started on',
-
+    'assigned to' => 'Assigned to',
+    'to start' => 'To start',
+    'work performed' => 'Work performed',
+    
     'email sent by linktitle' => 'Sent by {1}, {0}',
 
     'send milestone assigned to notification' => 'Send email notification to user',

@@ -383,8 +383,8 @@ class TaskController extends ApplicationController {
 						$object_controller = new ObjectController();												
 						$object_controller->update_reminders($task, $old_reminders); //updating the old ones						
 					}else if ( $task->getAssignedTo() == null //if there is no asignee, but it still has subscribers
-					 		  || (user_config_option("add_self_task_autoreminder") && logged_user()->getId() == $task->getAssignedTo()->getId()) //if the user is going to set up reminders for his own tasks
-					 		  || (user_config_option("add_task_autoreminder") && logged_user()->getId() != $task->getAssignedTo()->getId())){ //if the user is going to set up reminders for tasks assigned to its colleagues			
+					 		  || (user_config_option("add_self_task_autoreminder") && logged_user()->getId() == $task->getAssignedToContactId()) //if the user is going to set up reminders for his own tasks
+					 		  || (user_config_option("add_task_autoreminder") && logged_user()->getId() != $task->getAssignedToContactId())){ //if the user is going to set up reminders for tasks assigned to its colleagues			
 						$reminder = new ObjectReminder();
 						$def = explode(",",user_config_option("reminders_tasks"));          			
 						$minutes = $def[2] * $def[1];

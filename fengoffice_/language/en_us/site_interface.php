@@ -160,6 +160,7 @@ return array(
 
 //Contacts
   	'add contact' => 'Add Person',
+  	'add contact here' => 'Add Person Here',
   	'edit contact' => 'Edit Person',
     'update contact' => 'Update Person',
   	'edit picture' => 'Edit Picture',
@@ -376,7 +377,9 @@ return array(
   'deleted by' => 'Deleted by',
   'checked out by' => 'Checked out by',
   'user date' => '<a class="internalLink" href="{0}" title="View {3}\'s profile">{1}</a>, on {2}',
+  'user date bold' => '<a class="internalLink" href="{0}" title="View {3}\'s profile">{1}</a>, <b>On</b> {2}',
   'user date today at' => '<a class="internalLink" href="{0}" title="View {3}\'s profile">{1}</a>, today at {2}',
+  'user date today at bold' => '<a class="internalLink" href="{0}" title="View {3}\'s profile">{1}</a>, <b>today at</b> {2}',
   'today at' => 'Today, at {0}',
   'created by on' => 'Created by <a class="internalLink" href="{0}">{1}</a> on {2}',
   'modified by on' => 'Modified by <a class="internalLink" href="{0}">{1}</a> on {2}',
@@ -395,6 +398,7 @@ return array(
   'messages' => 'Notes',
   'complete' => 'Complete',
   'incomplete' => 'Incomplete',
+  'pending' => 'Pending',
   'complete task' => 'Complete this task',
   'complete milestone' => 'Complete this milestone',
   'subtask count all open' => '{0} subtasks, {1} still open',

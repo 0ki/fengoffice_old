@@ -210,6 +210,9 @@ final class CompanyWebsite {
 		Cookie::unsetValue('id');
 		Cookie::unsetValue('token');
 		Cookie::unsetValue('remember');
+		if(session_id() != "") {
+			@session_destroy();
+		}
 	} // logUserOut
 
 	// ---------------------------------------------------

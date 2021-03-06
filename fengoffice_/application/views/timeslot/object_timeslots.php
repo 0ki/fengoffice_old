@@ -7,9 +7,9 @@
 	$open_timeslot = null;
 ?>
 
-<?php if ($countTimeslots > 0) { ?>
+
     <div class="commentsTitle">
-    	<table style="width:100%"><tr><td><?php echo lang('object time slots')?></td>
+    	<table style="width:100%"><tr><td><?php echo lang('work performed')?></td>
     		<?php if($__timeslots_object instanceof ProjectTask){ ?>
     			<td align=right><a style="font-weight:normal;font-size:80%" class="coViewAction ico-print" href="<?php echo get_url('reporting','total_task_times_by_task_print',array("id" => $__timeslots_object->getId())) ?>" target="_blank"><?php echo lang('print') ?></a>  </td>
     		<?php } ?>
@@ -65,7 +65,7 @@
 		<?php } //if 
 		} // foreach ?>
 		</table>
-<?php } // if ?>
+
 
 
 <?php if (!$__timeslots_object->isTrashed()){

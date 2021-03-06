@@ -187,6 +187,20 @@ og.eventManager.addListener('after member save',
 	}
 );
 
+og.eventManager.addListener('try to select member',
+	function (member) {
+		var interval = setInterval(function(){
+			var tree = Ext.getCmp("dimension-panel-" + member.dimension_id);
+			var treenode = tree ? tree.getNodeById(member.id) : null;
+			if (treenode) {
+				treenode.fireEvent('click', treenode);
+				og.Breadcrumbs.refresh(treenode);
+				clearInterval(interval);
+			}
+		}, 1000);
+	}
+);
+
 og.eventManager.addListener('ask to select member',
 	function (member){
 		
@@ -200,6 +214,8 @@ og.eventManager.addListener('ask to select member',
 							if (treenode) {
 								treenode.fireEvent('click', treenode);
 								og.Breadcrumbs.refresh(treenode);
+							} else {
+								og.eventManager.fireEvent('try to select member', member);
 							}
 						}, 500);
 					}
@@ -234,6 +250,8 @@ og.eventManager.addListener('ask to select member',
 								if (treenode) {
 									treenode.fireEvent('click', treenode);
 									og.Breadcrumbs.refresh(treenode);
+								} else {
+									og.eventManager.fireEvent('try to select member', member);
 								}
 							}
 						}

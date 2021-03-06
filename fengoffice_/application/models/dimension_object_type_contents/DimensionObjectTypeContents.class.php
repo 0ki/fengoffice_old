@@ -30,7 +30,8 @@
   	
   	static function getRequiredDimensions($object_type_id){
   		$sql = "SELECT DISTINCT `dimension_id` FROM `".TABLE_PREFIX."dimension_object_type_contents` WHERE 
-  			   `content_object_type_id` = '$object_type_id' AND `is_required` = 1";
+  			   `content_object_type_id` = '$object_type_id' AND `is_required` = 1
+  			   OR `dimension_id` IN (SELECT `d`.`id` FROM `".TABLE_PREFIX."dimensions` `d` WHERE `d`.`is_required`=1)";
   		
   		$result = DB::execute($sql);
     	$rows = $result->fetchAll();

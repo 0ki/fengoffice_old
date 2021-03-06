@@ -1,4 +1,13 @@
-<?php set_page_title(lang('login')) ?>
+<?php 
+set_page_title(lang('login'));
+add_javascript_to_page('jquery/jquery.js');
+
+$css = array();
+Hook::fire('overwrite_login_css', null, $css);
+foreach ($css as $c) {
+	echo stylesheet_tag($c);
+}
+?>
 <script>
 	showMoreOptions = function() {
 		var div = document.getElementById("optionsDiv");
@@ -17,26 +26,41 @@
 		more.style.display = "inline";
 	}
 </script>
+
+<div class="header-container">
+	<div class="header">
+	<?php if (Plugins::instance()->isActivePlugin('custom_login')) {
+			echo_custom_logo_url();
+		  } else { ?>
+		<a class="logo" href="http://www.fengoffice.com"></a>
+	<?php } ?>
+	</div>
+</div>
+<div class="login-body">
+
 <form action="<?php echo get_url('access', 'login') ?>" method="post">
 	
 	<img src="<?php echo get_image_url("layout/loading.gif") ?>" width="1" height="1" style="position:absolute; top:0; left:0 ;display:none"/>
 	
 <?php tpl_display(get_template_path('form_errors')) ?>
 
-  <div id="loginUsernameDiv">
+<div class="form-container">
+  <div class="input">
     <label for="loginUsername"><?php echo lang('email or username') ?>:</label>
-    <?php echo text_field('login[username]', array_var($login_data, 'username'), array('id' => 'loginUsername', 'class' => 'medium')) ?>
+    <?php echo text_field('login[username]', array_var($login_data, 'username'), array('id' => 'loginUsername')) ?>
   </div>
-  <div id="loginPasswordDiv">
+  <div class="input">
     <label for="loginPassword"><?php echo lang('password') ?>:</label>
-    <?php echo password_field('login[password]', null, array('id' => 'loginPassword', 'class' => 'medium')) ?>
+    <?php echo password_field('login[password]', null, array('id' => 'loginPassword')) ?>
   </div>
-  <div class="clean"></div>
-  <div style="margin-top: 6px">
-    <?php echo checkbox_field('login[remember]', array_var($login_data, 'remember') == 'checked', array('id' => 'loginRememberMe')) ?>
-    <label class="checkbox" for="loginRememberMe"><?php echo lang('remember me') ?></label>
+  <div id="optionsDiv" class="input" style="display:none">
+	<label><?php echo lang('language')?>:</label>
+  	<div style="float:right"><?php
+  		$handler = new LocalizationConfigHandler();
+  		echo $handler->render('configOptionSelect', array('text' => lang('last language'), 'value' => 'Default'));
+  	?></div>
   </div>
-  
+  <div style="clear:both;"></div>
 <?php if(isset($login_data) && is_array($login_data) && count($login_data)) { ?>
 <?php foreach($login_data as $k => $v) { ?>
 <?php if(str_starts_with($k, 'ref_')) { ?>
@@ -45,31 +69,33 @@
 <?php } // foreach ?>
 <?php } // if ?>
 
-	<!-- table><tr><td -->
-  		<div id="loginSubmit">
-  			<?php echo submit_button(lang('login')) ?>
-  			<span><a class="internalLink" href="<?php echo get_url('access', 'forgot_password') ?>"><?php echo lang('forgot password') ?></a></span>
-  			<a id="optionsLink" href="javascript:showMoreOptions()"> <?php echo lang('options'); ?></a>
-  			<a id="hideOptionsLink" style="display:none" href="javascript:hideMoreOptions()"> <?php echo lang ('hide options'); ?></a>
-  		</div>
-  	<!-- /td><td -->
-  		
-  	<!-- /td></tr></table -->
-  
-  	<div id="optionsDiv" style="display:none">
-	<table>
-	<tr><td>
-		<label><?php echo lang('language')?>:</label>
-  		<?php
-  			$handler = new LocalizationConfigHandler();
-  			echo $handler->render('configOptionSelect', array('text' => lang('last language'), 'value' => 'Default'));
-  		?>
-  	</td></tr>
-	</table>
-	</div>    
+	<div class="submit-div">
+		<?php echo submit_button(lang('login')) ?>
+		<span class="forgot-pass"><a class="internalLink" href="<?php echo get_url('access', 'forgot_password') ?>"><?php echo lang('forgot password') ?></a></span>
+	</div>
+	<div style="clear:both;"></div>
+	<div class="options-container">
+		<div class="remember-div">
+			<?php echo checkbox_field('login[remember]', array_var($login_data, 'remember') == 'checked', array('id' => 'loginRememberMe')) ?>
+			<label class="checkbox" for="loginRememberMe"><?php echo lang('remember me') ?></label>
+		</div>
+		<div class="options-links">
+			<a id="optionsLink" href="javascript:showMoreOptions()"><?php echo lang('options'); ?></a>
+			<a id="hideOptionsLink" style="display:none" href="javascript:hideMoreOptions()"><?php echo lang ('hide options'); ?></a>
+		</div>
+	</div>
+  	
 </form>
+
+</div>
+
+</div>
+<div class="login-footer">
+	<div class="powered-by">
+		<?php echo lang('footer powered', 'http://www.fengoffice.com/', clean(product_name())) . ' - ' . lang('version') . ' ' . product_version();?>
+	</div>
+</div>
 
 <script>
 document.getElementById('loginUsername').focus();
 </script>
-

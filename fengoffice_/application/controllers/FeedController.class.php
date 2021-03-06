@@ -272,7 +272,32 @@ class FeedController extends PageController {
 		$mc = new MailController();
 		$mc->show_html_mail();
 	}
-	
+	/*
+	function save_member_permissions() {
+		try {
+			Env::useHelper('permissions');
+			DB::beginWork();
+			$user = $this->loginUserByToken('user_id');
+			
+			$sharing_table_controller = new SharingTableController();
+			
+			$member_id = json_decode(array_var($_REQUEST, 'member_id'));
+			$permissions = array_var($_REQUEST, 'permissions');
+			
+			$member = Members::findById($member_id);
+			if ($member instanceof Member) {
+				$_POST['permissions'] = $permissions;
+				save_member_permissions($member);
+			}
+			
+			$this->setLayout('empty');
+			
+			DB::commit();
+		} catch (Exception $e) {
+			DB::rollback();
+			Logger::log($e->getMessage()."\n".$e->getTraceAsString());
+		}
+	}*/
 } // FeedController
 
 ?>

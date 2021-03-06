@@ -278,6 +278,10 @@ return array(
 	'field Projects completed_by_id' => 'Completed by',
 	'field Projects archived_on' => 'Archived on',
 	'field Projects archived_by_id' => 'Archived by',
+
+	'is_user' => 'Is user',
+	'field Objects is_user' => 'Is user',
+	'field Contacts is_user' => 'Is user',
 );
 
 ?>

@@ -285,7 +285,7 @@ class Member extends BaseMember {
 		if (!array_var($this->skip_validations, 'presence of name')) {
 			if (!$this->validatePresenceOf('name')) $errors[] = lang('name required');
 		}
-		if (!array_var($this->skip_validations, 'uniqueness of parent - name')) {
+		if ($this->isNew() && !array_var($this->skip_validations, 'uniqueness of parent - name')) {
 			if ($this->getParentMemberId() == 0) {
 				if (!$this->validateUniquenessOf('name', 'dimension_id', 'object_type_id')) $errors[] = lang('member name already exists in dimension', $this->getName());
 			} else {

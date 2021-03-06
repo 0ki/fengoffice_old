@@ -36,20 +36,20 @@
 	<table><tr><td>
 		<div>
 			<?php echo label_tag(lang('first name'), $genid . 'profileFormFirstName') ?>
-			<?php echo text_field('contact[first_name]', array_var($contact_data, 'first_name'), 
+			<?php echo text_field('contact[first_name]', (isset ($_POST['widget_name'])? $_POST['widget_name']:array_var($contact_data, 'first_name')), 
 				array('id' => $genid . 'profileFormFirstName', 'maxlength' => 50)) ?>
 		</div>
 	</td><td style="padding-left:20px">
 		<div>
 			<?php echo label_tag(lang('last name'), $genid . 'profileFormSurName') ?>
-			<?php echo text_field('contact[surname]', array_var($contact_data, 'surname'), 
+			<?php echo text_field('contact[surname]', (isset ($_POST['widget_surname'])? $_POST['widget_surname']:array_var($contact_data, 'surname')), 
 			array('id' => $genid . 'profileFormSurname',  'maxlength' => 50)) ?>
-		</div>
+		</div> 
 	</td>
 	<td style="padding-left:20px">
 		<div>
 			<?php echo label_tag(lang('email address'), $genid.'profileFormEmail') ?>
-			<?php echo text_field('contact[email]', array_var($contact_data, 'email'), 
+			<?php echo text_field('contact[email]', (isset ($_POST['widget_email'])? $_POST['widget_email']:array_var($contact_data, 'email')), 
 				array('id' => $genid.'profileFormEmail', 'maxlength' => 100, 'style' => 'width:260px;')) ?>
 		</div>
 	</td>
@@ -414,14 +414,25 @@
   	<?php echo submit_button($contact->isNew() ? lang('add contact') : lang('save changes'),'s',array('tabindex' => '20000', 'id' => $genid . 'submit2')) ?>
 
 	<script>
-
+				
 		Ext.get('<?php echo $genid ?>profileFormFirstName').focus();
 
 		$(function(){
 			og.checkEmailAddress("#<?php echo $genid ?>profileFormEmail",'<?php echo $contact->getId();?>','<?php echo $genid ?>');
 		});
 		
-		og.load_company_combo("<?php echo $genid?>profileFormCompany", '<?php echo array_var($contact_data, 'company_id', '0') ?>');
+		og.load_company_combo("<?php echo $genid?>profileFormCompany", '<?php echo (isset ($_POST['widget_company'])? $_POST['widget_company']:array_var($contact_data, 'company_id', '0')) ?>');
+
+		$(document).ready(function() {
+			<?php if(isset ($_POST['widget_is_user'])){ ?>
+				$('input[name*="contact[user][create-user]"]').prop("checked",true);
+				$(".user-data").show();
+			<?php } ?>
+			<?php if(isset ($_POST['widget_user_type'])){ ?>
+				$('[name="contact[user][type]"]').val(<?php echo $_POST['widget_user_type'] ?>);
+			<?php } ?>
+		});
+			
 	</script>
 </div>
 </div>

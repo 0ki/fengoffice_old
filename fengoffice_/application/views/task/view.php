@@ -1,6 +1,9 @@
 <?php
 require_javascript("og/modules/addTaskForm.js");
 
+/* 
+ * This section builds the actions menu 
+ */
 if (isset($task_list) && $task_list instanceof ProjectTask) {
 	if (!$task_list->isTrashed()){
 		if (!$task_list->isCompleted() && $task_list->canEdit(logged_user())) {
@@ -48,7 +51,7 @@ if (isset($task_list) && $task_list instanceof ProjectTask) {
 	} // if
 	
 	add_page_action(lang('print'), get_url('task', 'print_task', array("id" => $task_list->getId())), 'ico-print', '_blank');
-
+	
 	//FIXME Fix reorder subtasks
 	/*if($task_list->canReorderTasks(logged_user()) && is_array($task_list->getOpenSubTasks())) {
 	add_page_action(lang('reorder sub tasks'), $task_list->getReorderTasksUrl($on_list_page), 'ico-properties');
@@ -58,29 +61,35 @@ if (isset($task_list) && $task_list instanceof ProjectTask) {
 
 <div style="padding: 7px">
 <div class="tasks"><?php
+
+/*
+ * This section builds the task title
+*/
 $title = $task_list->getObjectName() != '' ? $task_list->getObjectName() : $task_list->getText();
 $description = '';
+$parentInf = '';
 //
 $task = ProjectTasks::findById(get_id());
  
 //start
 if (($task_list->getParent() instanceof ProjectTask)&& $task->canEdit(logged_user())) {
 	$parent = $task_list->getParent();
-	$description = lang('subtask of', $parent->getViewUrl(), $parent->getObjectName() != ''? clean($parent->getObjectName()) : clean($parent->getText()))." ";
+	$parentInf = '<div class="member-path-dim-block"><b>'.lang('subtask of', $parent->getViewUrl(), $parent->getObjectName() != ''? clean($parent->getObjectName()) : clean($parent->getText()))." ".'</b></div>';
 }
 //end
 
 $status = '<div class="taskStatus">';
 if(!$task_list->isCompleted()) {
 	if ($task_list->canEdit(logged_user()) && !$task_list->isTrashed())
-	$status .= '<a class=\'internalLink og-ico ico-delete\' style="color:white; background-position:0 -501px !important;" href=\'' . $task_list->getCompleteUrl(rawurlencode(get_url('task','view',array('id'=>$task_list->getId())))) . '\' title=\''
-	.escape_single_quotes(lang('complete task')) . '\'>' . lang('incomplete') . '</a>';
+	$status .= '<b>'.lang('status').': </b><a class=\'internalLink \' style="background-position:0 -501px !important;" href=\'' . $task_list->getCompleteUrl(rawurlencode(get_url('task','view',array('id'=>$task_list->getId())))) . '\' title=\''
+	.escape_single_quotes(lang('complete task')) . '\'>' . lang('pending') . '</a>';
 	else
-	$status .= '<div style="display:inline;" class="og-ico ico-delete">' . lang('incomplete') . '</div>';
+	$status .= '<div style="display:inline;"><b>'.lang('status').': </b>' . lang('pending') . '</div>';
 }
 else {
+	$status .= lang('status').': ';
 	if ($task_list->canEdit(logged_user()) && !$task_list->isTrashed())
-	$status .= '<a class=\'internalLink og-ico ico-complete\' style="color:white;" href=\'' . $task_list->getOpenUrl(rawurlencode(get_url('task','view',array('id'=>$task_list->getId())))) . '\' title=\''
+	$status .= '<a class=\'internalLink og-ico ico-complete\' href=\'' . $task_list->getOpenUrl(rawurlencode(get_url('task','view',array('id'=>$task_list->getId())))) . '\' title=\''
 	. escape_single_quotes(lang('open task')) . '\'>' . lang('complete') . '</a>';
 	else
 	$status .= '<div style="display:inline;" class="og-ico ico-complete">' . lang('complete') . '</div>';
@@ -105,7 +114,7 @@ if ($task_list->getAssignedTo()){
 $milestone = '';
 if ($task_list->getMilestone() instanceof ProjectMilestone){
 	$m = $task_list->getMilestone();
-	$milestone .= '<div><div class="og-ico ico-milestone"><a class=\'internalLink\' style="color:white" href=\''
+	$milestone .= '<div class="member-path-dim-block"><div class="og-ico ico-milestone"><b>'.lang('milestones').': </b><a class=\'internalLink\' href=\''
 	. $m->getViewUrl() . '\' title=\'' . escape_single_quotes(lang('view milestone') . '\'>' . clean($m->getObjectName())) . '</a></div>';
 }
 
@@ -119,9 +128,11 @@ if ($task_list->getPriority() >= ProjectTasks::PRIORITY_URGENT) {
 }
 
 $variables = array();
-//$variables['on_list_page'] = $on_list_page;
 
-tpl_assign("description", $status . $milestone . $priority . $description);
+tpl_assign("parentInf", $parentInf);
+tpl_assign("milestone", $milestone);
+tpl_assign("priority", $priority);
+tpl_assign("status", $status);
 tpl_assign("variables", $variables);
 tpl_assign("content_template", array('task_list', 'task'));
 tpl_assign('object', $task_list);
