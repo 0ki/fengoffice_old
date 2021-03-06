@@ -1,10 +1,10 @@
-og.OpenGooProxy = function(config) {
-    og.OpenGooProxy.superclass.constructor.call(this);
+og.GooProxy = function(config) {
+    og.GooProxy.superclass.constructor.call(this);
 
     Ext.apply(this, config);
 };
 
-Ext.extend(og.OpenGooProxy, Ext.data.DataProxy, {
+Ext.extend(og.GooProxy, Ext.data.DataProxy, {
     load : function(params, reader, callback, scope, arg) {
         if (this.fireEvent("beforeload", this, params) !== false) {
         	og.openLink(this.url, {

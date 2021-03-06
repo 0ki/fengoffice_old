@@ -137,10 +137,10 @@ ogTasks.drawTaskForm = function(container_id, data){
 	}
 	
 	var chkIsVisible = data.assignedTo && data.assignedTo.split(':')[1] != '0';
-	var chkIsChecked = chkIsVisible && data.assignedTo != (this.currentUser.companyId + ':' + this.currentUser.id);
+	var chkIsChecked = chkIsVisible && ogTasks.userPreferences.defaultNotifyValue && data.assignedTo != (this.currentUser.companyId + ':' + this.currentUser.id);
+	
 	html += "<table><tr><td><div id='ogTasksPanelATAssigned' style='padding-top:5px;'><table><tr><td><b>" + lang('assigned to') + ":&nbsp;</b></td><td><span id='ogTasksPanelATAssignedCont'></span></td></tr></table></div></td>";
-	if (ogTasks.userPreferences.enable_notify != '0')
-		html += '<td style="padding-top:7px;padding-left:15px"><div style="display:' + (chkIsVisible?'inline':'none') + '" id="ogTasksPanelATNotifyDiv"><label for="ogTasksPanelATNotify"><input style="width:14px;" type="checkbox" name="task[notify]" id="ogTasksPanelATNotify" ' + (chkIsChecked? 'checked':'') + '/>&nbsp;' + lang('send notification') + '</label></div></td>';
+	html += '<td style="padding-top:7px;padding-left:15px"><div style="display:' + (chkIsVisible?'inline':'none') + '" id="ogTasksPanelATNotifyDiv"><label for="ogTasksPanelATNotify"><input style="width:14px;" type="checkbox" name="task[notify]" id="ogTasksPanelATNotify" ' + (chkIsChecked? 'checked':'') + '/>&nbsp;' + lang('send notification') + '</label></div></td>';
 	html += '</tr></table>'; 
 	
 	html += "<div id='ogTasksPanelATWorkspace' style='padding-top:5px;" + (data.isEdit? '': 'display:none') + "'><table><tr><td><b>" + lang('workspace') + ":&nbsp;</b></td><td><div id='ogTasksPanelWsSelector'></div></td></tr></table></div>";
@@ -466,15 +466,16 @@ ogTasks.drawAssignedToCombo = function(success, data) {
 			'select':function(combo, record){
 				var checkbox = document.getElementById('ogTasksPanelATNotify');
 				if (checkbox){
+					var chkIsVisible = record.data.value != '-1:-1' && record.data.value.split(':')[1] != '0';
+					var chkIsChecked = ogTasks.userPreferences.defaultNotifyValue && chkIsVisible && (record.data.value != (ogTasks.currentUser.companyId + ':' + ogTasks.currentUser.id));
+					
+					checkbox.checked = chkIsChecked;
 					var checkboxDiv = document.getElementById('ogTasksPanelATNotifyDiv');
-					if (record.data.value != '-1:-1' && record.data.value.split(':')[1] != '0'){
-						checkboxDiv.style.display = 'block';
-						var currentUser = ogTasks.currentUser;
-						checkbox.checked = (record.data.value != (currentUser.companyId + ':' + currentUser.id));
+					if (chkIsVisible){
 						ogTasks.assignedTo = combo.getValue();
+						checkboxDiv.style.display = 'block';
 					} else {
 						checkboxDiv.style.display = 'none';
-						checkbox.checked = false;
 					}
 				}
 			}

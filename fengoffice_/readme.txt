@@ -1,9 +1,9 @@
 
-    About OpenGoo 1.2 
-    =================
+    About OpenGoo 1.2.1 
+    ===================
 
-    OpenGoo is a free WebOffice, project management and collaboration
-    tool. For license details, see license.txt.
+    OpenGoo is a free and open source WebOffice, project management and collaboration
+    tool, licensed under the Affero GPL 3 license.
 
     visit:
         * http://www.opengoo.org/
@@ -61,10 +61,10 @@
     ====================
     
     1. Backup you current installation (important!)
-    2. Download OpenGoo 1.2 - http://www.opengoo.org/
+    2. Download OpenGoo 1.2.1 - http://www.opengoo.org/
     3. Unpack into your OpenGoo installation, overwriting your previous files and folders,
     	but keeping your config and upload folders.
-    5. Go to <your_opengoo>/public/upgrade in your browser and choose to upgrade from your current version to 1.2.0.1.
+    5. Go to <your_opengoo>/public/upgrade in your browser and choose to upgrade from your current version to 1.2.1.
     6. Refresh your browser or clear its cache to load new javascript, css and images.   
 
     
@@ -80,11 +80,22 @@
 	- Slimey - http://slimey.sourceforge.net
 	- FCKEditor - http://www.fckeditor.net
 	- JSSoundKit - http://jssoundkit.sourceforge.net
-	- Services_JSON - http://pear.php.net/pepr/pepr-proposal-show.php?id=198
+	- PEAR - http://pear.php.net
 
 
 	Changelog
 	=========
+
+	Since 1.2
+	---------
+	- usability: Changed the behavior of the "Show notification checkbox" user config option. Now it always shows the checkbox but it's checked or unchecked by default depending on this config option.
+	- usability: Now you will be notified of new versions of OpenGoo.
+	- bugfix: Fixed some layout problems in the object's view in IE.
+	- bugfix: Notification checkboxes weren't working correctly when adding or editing an event.
+	- bugfix: Clicking on "+1 more" on the calendar's monthly view would ignore the saved calendar filters.
+	- bugfix: Error in Notifier when deleting an object.
+	- system: Changed how emails are stored, which will let you receive larger emails.
+	- security: Fixed a security vulnerability that would allow a normal user to modify his own permissions.
 
 	Since 1.2 RC2
 	-------------

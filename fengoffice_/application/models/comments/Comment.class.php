@@ -112,7 +112,7 @@ class Comment extends BaseComment {
 	 */
 	function getViewUrl() {
 		$object = $this->getObject();
-		return $object instanceof ProjectDataObject ? $object->getObjectUrl() . '#comment' . $this->getId() : '';
+		return $object instanceof ProjectDataObject ? $object->getObjectUrl() : '';// . '#comment' . $this->getId() : '';
 	} // getViewUrl
 
 	/**

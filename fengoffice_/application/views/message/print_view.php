@@ -42,7 +42,7 @@ h2 {
 <div class="header">
 <h1><?php echo clean($message->getTitle()); ?></h1>
 <b><?php echo lang('from') ?>:</b> <?php echo clean($message->getCreatedByDisplayName()) ?><br />
-<b><?php echo lang('date') ?>:</b> <?php echo format_datetime($message->getUpdatedOn(), logged_user()->getTimezone()) ?><br />
+<b><?php echo lang('date') ?>:</b> <?php echo format_datetime($message->getUpdatedOn(), null, logged_user()->getTimezone()) ?><br />
 <b><?php echo lang('workspace') ?>:</b> <?php echo clean($message->getWorkspacesNamesCSV()) ?><br />
 </div>
 

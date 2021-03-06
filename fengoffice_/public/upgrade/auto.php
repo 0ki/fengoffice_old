@@ -22,8 +22,8 @@ try {
 	while ($zip_entry  = zip_read($zip)) {
 		$completePath = dirname(zip_entry_name($zip_entry));
 		$completeName = zip_entry_name($zip_entry);
-		$completePath = substr($completePath, strpos($completePath, "opengoo") + 8);
-		$completeName = substr($completeName, strpos($completeName, "opengoo") + 8);
+		$completePath = substr($completePath, strpos($completePath, "opengoo") + strlen("opengoo") + 1);
+		$completeName = substr($completeName, strpos($completeName, "opengoo") + strlen("opengoo") + 1);
 
 		@mkdir($completePath, true);
 

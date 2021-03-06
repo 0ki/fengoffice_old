@@ -33,7 +33,7 @@ function cal_get_ws_color($ws_color, &$ws_style, &$ws_class, &$txt_color, &$bord
 	} else if ($ws_color>12) {
 		$ws_style = "";
 		$txt_color = '#003562';
-		$ws_class = "og-wsname-color-$ws_color";	
+		$ws_class = "og-wsname-color-$ws_color";
 	}else {
 		$ws_style = "color: #000000;background-color: #C5C7C1;border-color: #C5C7C1;";
 		$txt_color = '#000000';

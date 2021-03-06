@@ -468,7 +468,7 @@ onmouseup="showEventPopup(<?php echo $date->getDay() ?>, <?php echo $date->getMo
 						<div class="t1 <?php echo $ws_class ?>" style="<?php echo $ws_style ?>;margin:0px 2px 0px 2px;height:0px; border-bottom:1px solid;border-color:<?php echo $border_color ?>"></div>
 						<div class="t2 <?php echo $ws_class ?>" style="<?php echo $ws_style ?>;margin:0px 1px 0px 1px;height:1px; border-left:1px solid;border-right:1px solid;border-color:<?php echo $border_color ?>"></div>
 						<div class="chipbody edit og-wsname-color-<?php echo $ws_color?>">
-						<dl class="<?php echo  $ws_class?>" style="height: <?php echo $height ?>px;<?php echo $ws_style?>;border-left:1px solid;border-right:1px solid;border-color:<?php echo $border_color ?>" onclick="og.openLink(og.getUrl('event', 'viewevent', {view:'week', id:<?php echo $event->getId()?>, user_id:<?php echo $user_filter?>}, null));">
+						<dl class="<?php echo  $ws_class?>" style="height: <?php echo $height ?>px;<?php echo $ws_style?>;border-left:1px solid;border-right:1px solid;border-color:<?php echo $border_color ?>" onclick="hideCalendarToolbar();og.openLink(og.getUrl('event', 'viewevent', {view:'week', id:<?php echo $event->getId()?>, user_id:<?php echo $user_filter?>}, null));">
 							<dt class="<?php echo  $ws_class?>" style="<?php echo $ws_style?>;">
 							<table width="100%"><tr><td>
 								<a 

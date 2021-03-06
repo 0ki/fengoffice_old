@@ -8,7 +8,7 @@ og.WebpageManager = function() {
 	
 	if (!og.WebpageManager.store) {
 		og.WebpageManager.store = new Ext.data.Store({
-	        proxy: new og.OpenGooProxy({
+	        proxy: new og.GooProxy({
 	            url: og.getUrl('webpage', 'list_all')
 	        }),
 	        reader: new Ext.data.JsonReader({

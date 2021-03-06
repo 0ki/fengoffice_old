@@ -4,8 +4,8 @@
   * Administration interface langs
   * @author OpenGoo
   * UTF-8
-  * @version 1.2 RC1, Keine Unterscheidung Du- oder Sie-Version
-  * @translation 02/04/2009 by Karl, bitte Fehler und Korrekturen per Email an <karl@mountainbird.net> senden
+  * @version 1.2 beta2, Keine Unterscheidung Du- oder Sie-Version
+  * @translation 01/27/2009 by Karl, bitte Fehler und Korrekturen per Email an <karl@mountainbird.net> senden
   */
 
   return array(

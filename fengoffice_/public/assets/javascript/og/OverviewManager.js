@@ -11,7 +11,7 @@ og.OverviewManager = function() {
 
 	if (!og.OverviewManager.store) {
 		og.OverviewManager.store = new Ext.data.Store({
-			proxy: new og.OpenGooProxy({
+			proxy: new og.GooProxy({
 				url: og.getUrl('object', 'list_objects')
 			}),
 			reader: new Ext.data.JsonReader({

@@ -9,7 +9,7 @@
   
   // Return langs
   return array(
-    'new OpenGoo version available' => 'New version of OpenGoo is available. <a class="internalLink" href="{0}">More details</a>.',
+    'new OpenGoo version available' => 'New version of OpenGoo is available. <a class="internalLink" href="{0}" onclick="{1}">More details</a>.',
     
     'my tasks' => 'My tasks',
     'welcome back' => 'Welcome back <strong>{0}</strong>',
@@ -513,6 +513,8 @@
   
   'remember last' => 'Remember last',
   
+  'auto' => 'Auto',
+  'print all groups' => 'Print all groups',
   ); // array
 
 ?>

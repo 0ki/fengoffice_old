@@ -545,6 +545,29 @@ abstract class BaseMailContent extends ProjectDataObject {
       return $this->setColumnValue('account_email', $value);
     } // setAccountEmail()
     
+    /**
+    * Return value of 'content_file_id' field
+    *
+    * @access public
+    * @param void
+    * @return string 
+    */
+    function getContentFileId() {
+      return $this->getColumnValue('content_file_id');
+    } // getContentFileId()
+    
+    /**
+    * Set value of 'content_file_id' field
+    *
+    * @access public   
+    * @param string $value
+    * @return boolean
+    */
+    function setContentFileId($value) {
+      return $this->setColumnValue('content_file_id', $value);
+    } // setContentFileId()
+  
+    
 	/**
 	 * Return manager instance
 	 *

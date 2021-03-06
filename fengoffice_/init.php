@@ -62,7 +62,6 @@
   // ---------------------------------------------------
   
   define('PRODUCT_NAME', 'OpenGoo');
-  define('PRODUCT_VERSION', include ROOT . '/version.php');
   
   define('MAX_SEARCHABLE_FILE_SIZE', 1048576); // if file type is searchable script will load its content into search index. Using this constant you can set the max filesize of the file that will be imported. Noone wants 500MB in search index for single file
   define('SESSION_LIFETIME', 14400);

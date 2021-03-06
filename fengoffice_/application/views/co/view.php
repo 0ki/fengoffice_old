@@ -11,45 +11,47 @@
 
 <table style="width:100%" id="<?php echo $genid ?>-co"><tr>
 <td>
-	<table style="width:100%">
-		<col width="12px"/><col width="60px"/>
+	<table style="width:100%;border-collapse:collapse;">
+		<col width="12px"/><col width="36px"/><col/><col width="12px"/>
+		<tr><td></td><td></td><td></td><td style="width:12px"></td></tr>
 		<tr>
-		<td class="coViewIcon" colspan=2 rowspan=2>
-			<?php if (isset($image)) { echo $image; } else {?>
-			<div id="<?php echo $coId; ?>_iconDiv" class="coViewIconImage <?php echo $iconclass ?>"></div>
-			<?php } ?>
-		</td>
-		
-		<td class="coViewHeader" rowspan=2>
-			<div class="coViewTitle">
-				<table><tr><td>
-				<?php echo isset($title)? $title : lang($object->getObjectTypeName()) . ": " . clean($object->getObjectName()) ?>
-				</td>
-				
-				</tr></table>
-			</div>
-			<div>
-				<?php if (isset($description)) echo $description ;?>
-			</div>
+			<td class="coViewIcon" colspan=2 rowspan=2>
+				<?php if (isset($image)) { echo $image; } else {?>
+				<div id="<?php echo $coId; ?>_iconDiv" class="coViewIconImage <?php echo $iconclass ?>"></div>
+				<?php } ?>
+			</td>
 			
-			<a class="internalLink" href="#" onclick="og.closeView(); return false;" title="<?php echo lang('close') ?>" ><div class="coViewClose" style="cursor:pointer"><?php echo lang('close') ?>&nbsp;&nbsp;X</div></a>
-		</td>
+			<td class="coViewHeader" rowspan=2>
+				<div class="coViewTitle">
+					<table><tr><td>
+					<?php echo isset($title)? $title : lang($object->getObjectTypeName()) . ": " . clean($object->getObjectName()) ?>
+					</td>
+					
+					</tr></table>
+				</div>
+				<div>
+					<?php if (isset($description)) echo $description ;?>
+				</div>
+				
+				<a class="internalLink" href="#" onclick="og.closeView(); return false;" title="<?php echo lang('close') ?>" ><div class="coViewClose" style="cursor:pointer"><?php echo lang('close') ?>&nbsp;&nbsp;X</div></a>
+			</td>
+			
+			<td class="coViewTopRight" style="width:12px"></td>
+		</tr>
+		<tr><td class="coViewRight" rowspan=2 style="width:12px"></td></tr>
 		
-		<td class="coViewTopRight"></td></tr>
-		<tr><td class="coViewRight" rowspan=2></td></tr>
-		
-		<tr><td class="coViewBody" colspan=3>
+		<tr>
+			<td class="coViewBody" colspan=3>
 			<div style="padding-bottom:15px">
-			<?php 
-			if (isset($content_template) && is_array($content_template)){
-				tpl_assign('object', $object);
-				if (isset($variables))
-					tpl_assign('variables', $variables);
-				$this->includeTemplate(get_template_path($content_template[0], $content_template[1]));
-			}
-			else
-				if (isset($content)) echo $content;
-			?>
+				<?php 
+				if (isset($content_template) && is_array($content_template)){
+					tpl_assign('object', $object);
+					if (isset($variables))
+						tpl_assign('variables', $variables);
+					$this->includeTemplate(get_template_path($content_template[0], $content_template[1]));
+				}
+				else if (isset($content)) echo $content;
+				?>
 			</div>
 			<?php if (isset($internalDivs)){
 				foreach ($internalDivs as $idiv)
@@ -61,24 +63,30 @@
 			if ($object instanceof ProjectDataObject && $object->isCommentable())
 				echo render_object_comments($object, $object->getViewUrl());
 			?>
-		</td>
-		
-		<tr><td class="coViewBottomLeft"></td>
-		<td class="coViewBottom" colspan=2></td>
-		<td class="coViewBottomRight"></td></tr>
+			</td>
+		</tr>
+		<tr>
+			<td class="coViewBottomLeft"></td>
+			<td class="coViewBottom" colspan=2></td>
+			<td class="coViewBottomRight" style="width:12px">&nbsp;</td>
+		</tr>
 	</table>
 </td>
 
 
 <!-- Actions Panel -->
 <td style="width:250px; padding-left:10px">
-<table style="width:100%">
-	<col width=12/><col width=226/><col width=12/>
-	<tr><td class="coViewHeader" colspan=2 rowspan=2><div class="coViewPropertiesHeader"><?php echo lang("actions") ?></div></td>
-	<td class="coViewTopRight"></td></tr>
+<table style="width:240px;border-collapse:collapse">
+	<col width=12/><col width=216/><col width=12/>
+	<tr>
+		<td class="coViewHeader" colspan=2 rowspan=2><div class="coViewPropertiesHeader"><?php echo lang("actions") ?></div></td>
+		<td class="coViewTopRight"></td>
+	</tr>
 		
 	<tr><td class="coViewRight" rowspan=2></td></tr>
-	<tr><td class="coViewBody" colspan=2>
+	
+	<tr>
+		<td class="coViewBody" colspan=2>
 		<?php if(count(PageActions::instance()->getActions()) > 0 ) {?>
 			<div>
 			<?php
@@ -93,60 +101,61 @@
 			<?php } ?>
 			</div>
 		<?php } ?>
-	</td></tr>
+		</td>
+	</tr>
 	
-	<tr><td class="coViewBottomLeft"></td>
-	<td class="coViewBottom"></td>
-	<td class="coViewBottomRight"></td></tr>
+	<tr>
+		<td class="coViewBottomLeft" style="width:12px;">&nbsp;</td>
+		<td class="coViewBottom" style="width:216px;"></td>
+		<td class="coViewBottomRight" style="width:12px;">&nbsp;&nbsp;</td>
+	</tr>
 </table>
 
 
 
 <!-- Properties Panel -->
-<table style="width:100%">
-	<col width=12/><col width=226/><col width=12/>
-	<tr><td class="coViewHeader" colspan=2 rowspan=2><div class="coViewPropertiesHeader"><?php echo lang("properties") ?></div></td>
-	<td class="coViewTopRight"></td></tr>
+<table style="width:240px">
+	<col width=12/><col width=216/><col width=12/>
+	<tr>
+		<td class="coViewHeader" colspan=2 rowspan=2><div class="coViewPropertiesHeader"><?php echo lang("properties") ?></div></td>
+		<td class="coViewTopRight"></td>
+	</tr>
 		
 	<tr><td class="coViewRight" rowspan=2></td></tr>
-	<tr><td class="coViewBody" colspan=2>
 	
-	<div class="prop-col-div" style="width:200;">
-		<span style="color:333333;font-weight:bolder;"><?php echo lang('unique id') ?>:&nbsp;</span><?php echo $object->getUniqueObjectId() ?>
-	</div>
+	<tr>
+		<td class="coViewBody" colspan=2>
+			<div class="prop-col-div" style="width:200;">
+				<span style="color:333333;font-weight:bolder;"><?php echo lang('unique id') ?>:&nbsp;</span><?php echo $object->getUniqueObjectId() ?>
+			</div>
+		<?php 
+		if ($object instanceof ProjectDataObject)
+			$user_object_workspaces = $object->getWorkspaces(logged_user()->getActiveProjectIdsCSV());
 		
-	<?php 
-	$has_wss = $object instanceof ProjectDataObject && (is_array($object->getWorkspaces()) && count($object->getWorkspaces()) > 0);
-	if ($has_wss) { ?>
-		<div class="prop-col-div"><span style="color:333333;font-weight:bolder;"><?php echo lang('workspace') ?>:</span>
-			<?php
-				$wsl = $object->getWorkspaces();
-				if (is_array($wsl) && count($wsl) > 0){
-					$projectLinks = array();
-					foreach ($wsl as $ws) {
-						$projectLinks[] = '<span class="project-replace">' . $ws->getId() . '</span>';
-					}
-					echo '<br/>' . implode('<br/>',$projectLinks);
-				}
-	}
-				?>
-				
-		<?php if ($object->isTaggable()) {
-			$tags = project_object_tags2($object);
-			if ($tags != '--'){
-			?>
-		<br/>
-		<div style="color:333333;font-weight:bolder;"><?php echo lang('tags') ?>:</div><?php echo $tags ?>
-		<?php }} ?>
-	<?php if($has_wss){?>
+		$has_wss = $object instanceof ProjectDataObject && (is_array($user_object_workspaces) && count($user_object_workspaces) > 0);
+		if ($has_wss || $object->isTaggable()) { ?>
+			<div class="prop-col-div" style="width:200;">
+			<?php if ($has_wss) {?>
+			<span style="color:333333;font-weight:bolder;"><?php echo lang('workspace') ?>:</span>
+		<?php
+			$projectLinks = array();
+			foreach ($user_object_workspaces as $ws) {
+				$projectLinks[] = '<span class="project-replace">' . $ws->getId() . '</span>';
+			}
+			echo '<br/>' . implode('<br/>',$projectLinks);
+		}
+		
+		if ($object->isTaggable() && ($tags = project_object_tags2($object)) && $tags != '--') {?>
+			<br/>
+			<div style="color:333333;font-weight:bolder;"><?php echo lang('tags') ?>:</div><?php echo $tags ?>
+		<?php } ?>
 		</div>
-	<?php } ?>
-	
-	
+	<?php } // if ?>
 	
 	<?php if($object->isLinkableObject() && !$object->isTrashed()) { ?>
 		<div class="prop-col-div" style="width:200;"><?php echo render_object_links($object, $object->canEdit(logged_user()))?></div>
 	<?php } ?>
+	
 	<?php if ($object instanceof ProjectDataObject) { ?>
 		<div class="prop-col-div" style="width:200;"><?php echo render_object_subscribers($object)?></div>
 	<?php } ?>
@@ -192,8 +201,7 @@
 					$datetime = format_datetime($object->getUpdatedOn(), lang('date format'), logged_user()->getTimezone());
 					echo lang('user date', $object->getUpdatedBy()->getCardUrl(), $username, $datetime, clean($object->getUpdatedBy()->getDisplayName()));
 				}
-			}
-			 ?></div>
+			}?></div>
 		<?php } // if ?>
 		
 		<?php
@@ -227,11 +235,14 @@
 	</div>
 	<?php } ?>
 	
-	</td></tr>
+		</td>
+	</tr>
 	
-	<tr><td class="coViewBottomLeft"></td>
-	<td class="coViewBottom"></td>
-	<td class="coViewBottomRight"></td></tr>
+	<tr>
+		<td class="coViewBottomLeft" style="width:12px;">&nbsp;&nbsp;</td>
+		<td class="coViewBottom" style="width:216px;"></td>
+		<td class="coViewBottomRight" style="width:12px;">&nbsp;&nbsp;</td>
+	</tr>
 	</table>
 </td>
 </tr></table>

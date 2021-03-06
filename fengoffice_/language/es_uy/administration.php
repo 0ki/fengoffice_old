@@ -88,7 +88,7 @@
  	'user ws config option name my tasks is default view' => 'La vista por defecto muestra sólo las tareas asignadas a mi',
   	'user ws config option desc my tasks is default view' => 'Si se selecciona no, se mostrarán todas las tareas del espacio y sus subespacios',
   	'user ws config option name show tasks in progress widget' => 'Mostrar widget de tareas en progreso',
-  	'user ws config option name can notify from quick add' => 'Checkbox de notificación',
+  	'user ws config option name can notify from quick add' => 'Checkbox de notificación chequeado por defecto',
   	'user ws config option desc can notify from quick add' => 'El checkbox de notificación permite la opción de notificar a los usuarios asignados luego de agregar o modificar una tarea',
     
   	'backup process desc' => 'Un respaldo almacena el estado de toda la aplicación en un archivo comprimido. Pretende ser una forma rápida de obtener un respaldo de una instalación de OpenGoo. <br> Generar un respaldo puede demorar más que unos segundos, por lo que el proceso de respaldo consiste en 3 pasos: <br>1.- Iniciar un proceso de respaldo, <br>2.- Desargar el respaldo. <br> 3.- Opcional. Eliminar el respaldo del servidor. <br> ',

@@ -4,8 +4,8 @@
   * Array of messages file (error, success message, status...)
   * @author Ilija Studen <ilija.studen@gmail.com>
   * UTF-8
-  * @version 1.2 RC1, Keine Unterscheidung Du- oder Sie-Version
-  * @translation 02/04/2009 by Karl, bitte Fehler und Korrekturen per Email an <karl@mountainbird.net> senden
+  * @version 1.2 beta2, Keine Unterscheidung Du- oder Sie-Version
+  * @translation 01/27/2009 by Karl, bitte Fehler und Korrekturen per Email an <karl@mountainbird.net> senden
   */
 
   return array(
@@ -253,7 +253,7 @@
     'error delete user' => 	'Fehler beim Löschen des Benutzers',
     'error update project permissions' => 	'Fehler beim Aktualisieren der Arbeitsbereichs-Rechte',
     'error remove user from project' => 	'Fehler beim Entfernen des Benutzer vom Arbeitsbereich',
-    'error remove company from project' => 	'Fehler beim Entfernen der Firma vom Arbeitsbereich',
+    'error remove company from project' => 	'Fehler beim Entfernen der Firma from Arbeitsbereich',
     'error edit avatar' => 	'Fehler beim Bearbeiten des Avatars',
     'error delete avatar' => 	'Fehler beim Löschen des Avatars',
     'error edit picture' => 	'Fehler beim Bearbeiten des Bildes',

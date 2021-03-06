@@ -536,7 +536,7 @@ class TaskController extends ApplicationController {
 				'showTags' => user_config_option('tasksShowTags',0),
 				'groupBy' => user_config_option('tasksGroupBy','milestone'),
 				'orderBy' => user_config_option('tasksOrderBy','priority'),
-				'enable_notify' => user_config_option('can notify from quick add')
+				'defaultNotifyValue' => user_config_option('can notify from quick add')
 			));
 			ajx_set_no_toolbar(true);
 		}

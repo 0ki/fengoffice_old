@@ -296,4 +296,8 @@ Ext.onReady(function(){
 	});
 	
     og.captureLinks();
+    
+    if (og.hasNewVersions) {
+    	og.msg(lang('message'), og.hasNewVersions, 0);
+    }
 });

@@ -877,15 +877,3 @@ ogTasks.existsSoloGroup = function(){
 			return true;
 	return false;
 }
-
-//Written for edit task view
-og.addTaskUserChanged = function(genid, user_id){
-	var ddUser = document.getElementById(genid + 'taskFormAssignedTo');
-	var chk = document.getElementById(genid + 'taskFormSendNotification');
-	if (ddUser && chk){
-		var values = ddUser.value.split(':');
-		var user = values[1];
-		chk.checked = (user > 0 && user != user_id);
-		document.getElementById(genid + 'taskFormSendNotificationDiv').style.display = user > 0 ? 'block':'none';
-	}
-}

@@ -414,10 +414,10 @@
   		else
   			$dateValue =  $value->getDay() . '/' . $value->getMonth() . '/' . $value->getYear();
   	}
-  	
-  	$html = "<table><tr><td><span id='" . $genid . $name . "'></span></td></tr></table>";
+  	$daterow = '';
   	if ($display_date_info)
-  		$html .= "<td style='padding-top:4px;font-size:80%'><span class='desc'>" . lang('date format description') . "</span></td>";
+  		$daterow = "<td style='padding-top:4px;font-size:80%'><span class='desc'>" . lang('date format description') . "</span></td>";
+  	$html = "<table><tr><td><span id='" . $genid . $name . "'></span></td>$daterow</tr></table>";
 	$html .= "<script type='text/javascript'>
 	var dtp" . gen_id() . " = new og.DateField({
 		renderTo:'" . $genid . $name . "',

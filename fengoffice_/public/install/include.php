@@ -27,6 +27,7 @@ if (is_file($config_path)) {
 	$config_is_set = @include $config_path;
 }
 if(is_bool($config_is_set) && $config_is_set) {
+	header("Location: ../../index.php");
 	die('<strong>Installation error:</strong> OpenGoo is already installed');
 } else {
 	$f = @fopen($config_path, "w");

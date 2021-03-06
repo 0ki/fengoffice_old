@@ -25,8 +25,12 @@ App.modules.addMessageForm = {
    *
    * @param integer company_id Company ID
    */
-  emailNotifyClickCompany: function(company_id, genid) {
-  	var cos = Ext.getDom(genid + 'notify_companies').notify_companies;
+  emailNotifyClickCompany: function(company_id, genid, div_id, type) {
+  	if (type == 'notification')
+  		var cos = Ext.getDom(genid + div_id).notify_companies;
+  	else if (type == 'invitation')
+  		var cos = Ext.getDom(genid + div_id).invite_companies;
+  	else return;
     var company_details = cos['company_' + company_id]; // get company details from hash
     if(!company_details) return;
     
@@ -44,8 +48,12 @@ App.modules.addMessageForm = {
    * @param integer company_id
    * @param integer user_id
    */
-  emailNotifyClickUser: function(company_id, user_id, genid) {
-  	var cos = Ext.getDom(genid + 'notify_companies').notify_companies;
+  emailNotifyClickUser: function(company_id, user_id, genid, div_id, type) {
+  	if (type == 'notification')
+  		var cos = Ext.getDom(genid + div_id).notify_companies;
+  	else if (type == 'invitation')
+  		var cos = Ext.getDom(genid + div_id).invite_companies;
+  	else return;
     var company_details = cos['company_' + company_id]; // get company details from hash
     if(!company_details) return;
     

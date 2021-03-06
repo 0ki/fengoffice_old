@@ -108,7 +108,7 @@
       	$project_ids = $user->getActiveProjectIdsCSV();
       
       $permissions = ' AND ( ' . permissions_sql_for_listings(ProjectMilestones::instance(),ACCESS_LEVEL_READ, logged_user(), 'project_id') .')';
-      $tagStr = $tag? (" AND id in (SELECT rel_object_id from " . TABLE_PREFIX . "tags t WHERE tag=".DB::escape($tags)." AND t.rel_object_manager='ProjectMilestones')"):'';
+      $tagStr = $tag? (" AND id in (SELECT rel_object_id from " . TABLE_PREFIX . "tags t WHERE tag=".DB::escape($tag)." AND t.rel_object_manager='ProjectMilestones')"):'';
 	
       return self::findAll(array(
         'conditions' => array('`is_template` = false AND `due_date` < ? AND `completed_on` = ? AND `project_id` IN ('. $project_ids . ')' . $tagStr . $permissions, $due_date, EMPTY_DATETIME),
@@ -133,7 +133,7 @@
       	$project_ids = $user->getActiveProjectIdsCSV();
       
       $permissions = ' AND ( ' . permissions_sql_for_listings(ProjectMilestones::instance(),ACCESS_LEVEL_READ, logged_user(), 'project_id') .')';
-      $tagStr = $tag? (" AND id in (SELECT rel_object_id from " . TABLE_PREFIX . "tags t WHERE tag=".DB::escape($tags)." AND t.rel_object_manager='ProjectMilestones')"):'';
+      $tagStr = $tag? (" AND id in (SELECT rel_object_id from " . TABLE_PREFIX . "tags t WHERE tag=".DB::escape($tag)." AND t.rel_object_manager='ProjectMilestones')"):'';
 	
        return self::findAll(array(
         'conditions' => array('`is_template` = false AND `completed_on` = ? AND (`due_date` >= ? AND `due_date` < ?) AND `project_id` IN (' . $project_ids . ')' . $tagStr . $permissions, EMPTY_DATETIME, $from_date, $to_date)

@@ -10,7 +10,7 @@ og.FileManager = function() {
 
 	if (!og.FileManager.store) {
 		og.FileManager.store = new Ext.data.Store({
-			proxy: new og.OpenGooProxy({
+			proxy: new og.GooProxy({
 				url: og.getUrl('files', 'list_files')
 			}),
 			reader: new Ext.data.JsonReader({
@@ -159,7 +159,7 @@ og.FileManager = function() {
 					r.id, lang('view slideshow'));
 		}
 		
-		if (r.data.mimeType == "application/zip") {
+		if (r.data.mimeType == "application/zip" || r.data.mimeType == "application/x-zip-compressed") {
 			actions += String.format(
 			'<a class="list-action ico-zip-extract" href="#" onclick="og.openLink(og.getUrl(\'files\', \'zip_extract\', {id:{0}}))" title="{1}" ' + actionStyle + '>.</a>',
 			r.data.object_id,lang('extract files'));

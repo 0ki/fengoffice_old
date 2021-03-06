@@ -142,7 +142,6 @@ final class acInstallation {
 	        'ROOT_URL'             => $absolute_url,
 	        'DEFAULT_LOCALIZATION' => $default_localization,
 	        'DEBUG'                => false,
-	        'PRODUCT_VERSION'      => require INSTALLATION_PATH . '/version.php',
 		); // array
 
 		tpl_assign('table_prefix', $database_prefix);
@@ -189,7 +188,7 @@ final class acInstallation {
 			return $this->breakExecution('Failed to write config data into config file');
 		} // if
 		
-		if ($this->writeInstalledVersionFile($constants['PRODUCT_VERSION'])) {
+		if ($this->writeInstalledVersionFile(require INSTALLATION_PATH . '/version.php')) {
 			$this->printMessage('File installed_version.php created successfully');
 		} else {
 			return $this->breakExecution('Failed to create installed_version file');

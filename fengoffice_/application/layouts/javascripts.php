@@ -14,7 +14,7 @@ return array(
 		'og/time/main.js',
 		'og/time/drawing.js',
 		'og/HttpProvider.js',
-		'og/OpenGooProxy.js',
+		'og/GooProxy.js',
 		'og/WorkspaceChooser.js',
 		'og/QuickAdd.js',
 		'og/Permissions.js',

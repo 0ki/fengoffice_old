@@ -649,6 +649,7 @@ CREATE TABLE  `<?php echo $table_prefix ?>mail_contents` (
   `trashed_by_id` int(10) unsigned default NULL,
   `imap_folder_name` varchar(100) <?php echo $default_collation ?> NOT NULL default '',
   `account_email` varchar(100) <?php echo $default_collation ?> default '',
+  `content_file_id` varchar(40) <?php echo $default_collation ?> NOT NULL default '',
   PRIMARY KEY  (`id`),
   KEY `account_id` (`account_id`),
   KEY `sent_date` USING BTREE (`sent_date`)

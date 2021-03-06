@@ -9,7 +9,7 @@
   
   // Return langs
   return array(
-    'new OpenGoo version available' => 'Está disponible una nueva versión de OpenGoo. <a class="internalLink" href="{0}">Más detalles</a>.',
+    'new OpenGoo version available' => 'Está disponible una nueva versión de OpenGoo. <a class="internalLink" href="{0}" onclick="{1}">Más detalles</a>.',
     
     'my tasks' => 'Mis tareas',
     'welcome back' => 'Bienvenido <strong>{0}</strong>',
@@ -509,7 +509,8 @@
   
   'release notes' => 'Notas de la versión',
   'remember last' => 'Recordar último',
-  
+  'auto' => 'Auto',
+  'print all groups' => 'Imprimir todos los grupos',
   
   ); // array
 

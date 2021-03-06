@@ -212,18 +212,18 @@
 	</div>
 
 	<div>
-		<?php $showCheckBox = user_config_option('can notify from quick add') != 0; ?>
+		<?php $defaultNotifyValue = user_config_option('can notify from quick add'); ?>
 		<label><?php echo lang('assign to') ?>:</label> 
 		<table><tr><td>
 			<input type="hidden" id="<?php echo $genid ?>taskFormAssignedTo" name="task[assigned_to]"></input>
 			<div id="<?php echo $genid ?>assignto_div">
 				<div id="<?php echo $genid ?>assignto_container_div"></div>
 			</div>
-		</td><?php if($showCheckBox) { ?><td style="padding-left:10px"><div  id="<?php echo $genid ?>taskFormSendNotificationDiv">
+		</td><td style="padding-left:10px"><div  id="<?php echo $genid ?>taskFormSendNotificationDiv" style="display:none">
 			<?php echo checkbox_field('task[send_notification]', array_var($task_data, 'send_notification'), array('id' => $genid . 'taskFormSendNotification')) ?>
 			<label for="<?php echo $genid ?>taskFormSendNotification" class="checkbox"><?php echo lang('send task assigned to notification') ?></label>
 		</div>
-		</td><?php } ?></tr></table>
+		</td></tr></table>
 		
 	</div>
 	<?php echo input_field("task[is_template]", array_var($task_data, 'is_template', false), array("type" => "hidden")); ?>
@@ -257,7 +257,7 @@
 				htmlStr += '<div class="companyDetails">';
 				htmlStr += '<div class="companyName">';
 				
-				htmlStr += '<input type="checkbox" class="checkbox" name="task[notify_company_'+comp_id+']" id="<?php echo $genid ?>notifyCompany'+comp_id+'" onclick="App.modules.addMessageForm.emailNotifyClickCompany('+comp_id+',\'<?php echo $genid ?>\')"></input>'; 
+				htmlStr += '<input type="checkbox" class="checkbox" name="task[notify_company_'+comp_id+']" id="<?php echo $genid ?>notifyCompany'+comp_id+'" onclick="App.modules.addMessageForm.emailNotifyClickCompany('+comp_id+',\'<?php echo $genid ?>\',\'notify_companies\', \'notification\')"></input>'; 
 				htmlStr += '<label for="<?php echo $genid ?>notifyCompany'+comp_id+'" class="checkbox">'+og.clean(comp_name)+'</label>';
 				
 				htmlStr += '</div>';
@@ -266,11 +266,11 @@
 				
 				for (j = 0; j < companies[i].users.length; j++) {
 					usr = companies[i].users[j];
-					htmlStr += '<li><input type="checkbox" class="checkbox" name="task[notify_user_'+usr.id+']" id="<?php echo $genid ?>notifyUser'+usr.id+'" onclick="App.modules.addMessageForm.emailNotifyClickUser('+comp_id+','+usr.id+',\'<?php echo $genid ?>\')"></input>'; 
-					htmlStr += '<label for="<?php echo $genid ?>notifyUser'+usr.id+'" class="checkbox">'+og.clean(usr.name)+'</label></li>';
+					htmlStr += '<li><input type="checkbox" class="checkbox" name="task[notify_user_'+usr.id+']" id="<?php echo $genid ?>notifyUser'+usr.id+'" onclick="App.modules.addMessageForm.emailNotifyClickUser('+comp_id+','+usr.id+',\'<?php echo $genid ?>\',\'notify_companies\', \'notification\')"></input>'; 
+					htmlStr += '<label for="<?php echo $genid ?>notifyUser'+usr.id+'" class="checkbox">'+og.clean(usr.name)+'</label>';
 					htmlStr += '<script type="text/javascript">';
 					htmlStr += 'cos.company_' + comp_id + '.users.push({ id:'+usr.id+', checkbox_id : \'notifyUser' + usr.id + '\'});';
-					htmlStr += '\<\/script>';
+					htmlStr += '\<\/script></li>';
 				}
 				htmlStr += '</ul>';
 				htmlStr += '</div>';
@@ -311,6 +311,18 @@
 		assigned_user = combo.getValue();
 		
 		og.addTaskUserChanged('<?php echo $genid ?>', '<?php echo logged_user()->getId() ?>');
+	}
+
+	og.addTaskUserChanged = function(genid, logged_user_id){
+		var ddUser = document.getElementById(genid + 'taskFormAssignedTo');
+		var chk = document.getElementById(genid + 'taskFormSendNotification');
+		if (ddUser && chk){
+			var values = ddUser.value.split(':');
+			var user = values[1];
+			var nV = <?php echo $defaultNotifyValue?>;
+			chk.checked = (user > 0 && nV != 0 && user != logged_user_id);
+			document.getElementById(genid + 'taskFormSendNotificationDiv').style.display = user > 0 ? 'block':'none';
+		}
 	}
 	
 	og.drawUserLists = function(success, data) {

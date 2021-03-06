@@ -77,6 +77,7 @@ return array(
 	'view due task' => 'Zobrazit splatnost úkolu',
 	'due task email' => 'Úkol "{0}" je splatný "{1}" a stále čeká',
 	'due task' => 'Splatnost úkolu brzy',
+	'due task reminder' => 'Splatnost úkolu brzy',
 	'task has been modified' => 'Úkol "{0}" na pracovní ploše "{1}" byl upraven',
 	'task modified' => 'Úkol upraven',
 	'view task' => 'Zobrazit úkol',

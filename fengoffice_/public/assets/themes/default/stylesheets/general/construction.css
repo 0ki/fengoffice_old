@@ -87,13 +87,14 @@
 
 #logodiv {
 	background-image: url(../../images/layout/logo.png);
-	width: 60px;
 	position: relative;
 	margin: 5 auto;
 	text-align: left;
 	background-repeat: no-repeat;
 	height: 45px;
-	margin-top:2px;
+	width: 45px;
+	margin-left: 15px;
+	margin-top:6px;
 }
 
 #subWsExpander {

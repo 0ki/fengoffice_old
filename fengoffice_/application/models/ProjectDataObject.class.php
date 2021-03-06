@@ -1327,7 +1327,7 @@ abstract class ProjectDataObject extends ApplicationDataObject {
 				"name" => $this->getObjectName(),
 				"type" => $this->getObjectTypeName(),
 				"tags" => project_object_tags($this),
-				"createdBy" => $this->getCreatedByDisplayName(),// Users::findById($this->getCreatedBy())->getUsername(),
+				"createdBy" => $this->getCreatedByDisplayName(),
 				"createdById" => $this->getCreatedById(),
 				"dateCreated" => ($this->getObjectCreationTime())?$this->getObjectCreationTime()->getTimestamp():lang('n/a'),
 				"updatedBy" => $updated_by_name,

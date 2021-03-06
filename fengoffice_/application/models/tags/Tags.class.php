@@ -52,10 +52,10 @@ class Tags extends BaseTags {
 		$query = '';
 		switch ($order_by){
 			case 'name':
-				$query = 'SELECT DISTINCT `tag` as `name`  FROM ' .  self::instance()->getTableName(true) . 'GROUP BY `tag` ORDER BY  `tag` ';
+				$query = 'SELECT DISTINCT `tag` as `name`  FROM ' .  self::instance()->getTableName(true) . ' GROUP BY `tag` ORDER BY  `tag` ';
 				break ;
 			case 'count':
-				$query = 'SELECT DISTINCT `tag` as `name`, count(`tag`) `count` FROM ' .  self::instance()->getTableName(true) . 'GROUP BY `tag` ORDER BY `count` DESC , `tag`' ;
+				$query = 'SELECT DISTINCT `tag` as `name`, count(`tag`) `count` FROM ' .  self::instance()->getTableName(true) . ' GROUP BY `tag` ORDER BY `count` DESC , `tag`' ;
 				break ;
 			default:
 				throw new Exception('Invalid tag sort criteria');

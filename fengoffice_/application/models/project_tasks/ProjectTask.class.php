@@ -1189,7 +1189,7 @@ class ProjectTask extends BaseProjectTask {
 			'id' => $this->getId(),
 			't' => $this->getTitle(),
 			'wsid' => $this->getWorkspacesIdsCSV(),
-			'c' => $this->getCreatedOn()->getTimestamp(),
+			'c' => $this->getCreatedOn() instanceof DateTimeValue ? $this->getCreatedOn()->getTimestamp() : 0,
 			'cid' => $this->getCreatedById());
 		
 		if ($this->isCompleted())

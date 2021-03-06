@@ -10,7 +10,7 @@
   
   // Return langs
   return array(
-    'new OpenGoo version available' => 'Je dostupná nová verze OpenGoo. <a class="internalLink" href="{0}">Více informací</a>.',
+    'new OpenGoo version available' => 'Je dostupná nová verze OpenGoo. <a class="internalLink" href="{0}" onclick="{1}">Více informací</a>.',
     
     'my tasks' => 'Moje úkoly',
     'welcome back' => 'Vítejte zpět <strong>{0}</strong>',
@@ -490,8 +490,10 @@
   'my tasks in progress' => 'Moje úkoly ve vývoji',
   'tasks in progress for' => 'Úkoly ve vývoji do {0}',
   
-  'time has to be greater than 0' => 'Čas musí být větší než 0'
+  'time has to be greater than 0' => 'Čas musí být větší než 0',
   
+  'auto' => 'Auto',
+'print all groups' => 'Tisk',  
   ); // array
 
 ?>

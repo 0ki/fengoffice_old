@@ -225,7 +225,7 @@ Ext.extend(og.WorkspaceTree, Ext.tree.TreePanel, {
 			if (ws.id == 0) return;
 			exists.setText(og.clean(ws.name));
 			var ico = exists.getUI().getIconEl();
-			ico.className = ico.className.replace(/ico-color([0-9]*)/ig, 'ico-color' + (ws.color || 0));
+			if (ico) ico.className = ico.className.replace(/ico-color([0-9]*)/ig, 'ico-color' + (ws.color || 0));
 			if (ws.parent != exists.ws.parent || ws.name != exists.ws.name) {
 				var selected = exists.isSelected();
 				var parent = this.getNode(ws.parent);

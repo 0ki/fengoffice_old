@@ -106,10 +106,28 @@ class MailContent extends BaseMailContent {
 		return true;
 	}
 
-	
 	function getTitle(){
 		return $this->getSubject();
 	}
+	
+	/**
+	 * Returns the mail content. If it is in repository returns the file content,
+	 * else tries to get the content from database (if column content exists).
+	 *
+	 * @access public
+	 * @param void
+	 * @return string
+	 */
+	function getContent() {
+		if (FileRepository::getBackend() instanceof FileRepository_Backend_FileSystem && 
+			FileRepository::isInRepository($this->getContentFileId())) {
+				return FileRepository::getFileContent($this->getContentFileId());
+		}
+		else if ($this->columnExists('content'))
+			return $this->getColumnValue('content');
+		else return '';
+	} // getContent()
+	
 
 
 	/**

@@ -215,7 +215,7 @@ class COTemplate extends BaseCOTemplate {
 			'id' => $this->getId(),
 			't' => $this->getName(),
 			//'wsid' => $this->getWorkspacesIdsCSV(),
-			'c' => $this->getCreatedOn()->getTimestamp(),
+			'c' => $this->getCreatedOn() instanceof DateTimeValue ? $this->getCreatedOn()->getTimestamp() : 0,
 			'cid' => $this->getCreatedById()
 		);
 	}

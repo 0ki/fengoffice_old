@@ -83,7 +83,7 @@
 		<input type="hidden" id="addTaskProjectId<?php echo $task_list->getId() ?>" name="task[project_id]" value="<?php echo $task_list->getProjectId() ?>"/>
 		<input type="hidden" id="addTaskTags<?php echo $task_list->getId() ?>" name="task[tags]" value="<?php echo implode(',',$task_list->getTagNames()) ?>"/>
 		<input type="hidden" id="addTaskPriority<?php echo $task_list->getId() ?>" name="task[priority]" value="<?php echo $task_list->getPriority() ?>"/>
-        <input type="hidden" id="addTaskInputType<?php echo $task_list->getId() ?>" name="task[inputtype]" value="taskview"/>
+		<input type="hidden" id="addTaskInputType<?php echo $task_list->getId() ?>" name="task[inputtype]" value="taskview"/>
         <?php echo submit_button(lang('add sub task'), 's', array('id' => 'addTaskSubmit' . $task_list->getId(), 'fromTaskView' => 'true')) ?> <?php echo lang('or') ?> <a href="#" onclick="App.modules.addTaskForm.hideAddTaskForm(<?php echo $task_list->getId() ?>); return false;"><?php echo lang('cancel') ?></a>
       </form>
     </div>

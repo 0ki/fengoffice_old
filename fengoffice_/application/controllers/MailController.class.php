@@ -1063,8 +1063,8 @@
 					if ($msg instanceof MailContent) {/* @var $msg MailContent */
 						$text = $msg->getBodyPlain();
 						// plain body is already converted to UTF-8 (when mail was saved)
-						if (mb_strlen($text, 'UTF-8') > 300) {
-							$text = mb_substr($text, 0, 300, 'UTF-8') . "...";
+						if (strlen_utf($text) > 300) {
+							$text = substr_utf($text, 0, 300) . "...";
 						}
 						$object["messages"][] = array(
 						    "id" => $i,

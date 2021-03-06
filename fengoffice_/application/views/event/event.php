@@ -329,7 +329,7 @@ $use_24_hours = user_config_option('time_format_use_24');
 	<div id="trap7"><fieldset id="fs7" style="height:0px;border:0px;padding:0px;display:none"><span style="color:#FFFFFF;"></span></fieldset></div>
 	<?php } // if ?>
 
-	<div id="<?php echo $genid ?>add_event_invitation_div" style="display:none">
+	<div id="<?php echo $genid ?>add_event_invitation_div" style="display:none" class="og-add-subscribers">
 	<fieldset id="emailNotification">
 		<legend><?php echo lang('event invitations') ?></legend>
 		<?php // ComboBox for Assistance confirmation 
@@ -459,25 +459,25 @@ var prevWsVal = -1;
 
 og.drawInnerHtml = function(companies) {
 	var htmlStr = '';
-	htmlStr += '<div id="<?php echo $genid ?>notify_companies"></div>';
+	htmlStr += '<div id="<?php echo $genid ?>invite_companies"></div>';
 	htmlStr += '<script type="text/javascript">';
-	htmlStr += 'var div = Ext.getDom(\'<?php echo $genid ?>notify_companies\');';
-	htmlStr += 'div.notify_companies = {};';
-	htmlStr += 'var cos = div.notify_companies;';
+	htmlStr += 'var div = Ext.getDom(\'<?php echo $genid ?>invite_companies\');';
+	htmlStr += 'div.invite_companies = {};';
+	htmlStr += 'var cos = div.invite_companies;';
 	htmlStr += '<\/script>';
 	if (companies != null) {
 		for (i = 0; i < companies.length; i++) {
 			comp_id = companies[i].object_id;
 			comp_name = companies[i].name;
 			htmlStr += '<script type="text/javascript">';
-			htmlStr += 'cos.company_' + comp_id + ' = {id:\'<?php echo $genid ?>notifyCompany' + comp_id + '\', checkbox_id : \'notifyCompany' + comp_id + '\',users : []};';
+			htmlStr += 'cos.company_' + comp_id + ' = {id:\'<?php echo $genid ?>inviteCompany' + comp_id + '\', checkbox_id : \'inviteCompany' + comp_id + '\',users : []};';
 			htmlStr += '\<\/script>';
 				
 			htmlStr += '<div class="companyDetails">';
 			htmlStr += '<div class="companyName">';
 			
-			htmlStr += '<input type="checkbox" class="checkbox" name="event[invite_company_'+comp_id+']" id="<?php echo $genid ?>notifyCompany'+comp_id+'" onclick="App.modules.addMessageForm.emailNotifyClickCompany('+comp_id+',\'<?php echo $genid ?>\')"></input>'; 
-			htmlStr += '<label for="<?php echo $genid ?>notifyCompany'+comp_id+'" class="checkbox">'+og.clean(comp_name)+'</label>';
+			htmlStr += '<input type="checkbox" class="checkbox" name="event[invite_company_'+comp_id+']" id="<?php echo $genid ?>inviteCompany'+comp_id+'" onclick="App.modules.addMessageForm.emailNotifyClickCompany('+comp_id+',\'<?php echo $genid ?>\',\'invite_companies\', \'invitation\')"></input>'; 
+			htmlStr += '<label for="<?php echo $genid ?>inviteCompany'+comp_id+'" class="checkbox">'+og.clean(comp_name)+'</label>';
 			
 			htmlStr += '</div>';
 			htmlStr += '<div class="companyMembers">';
@@ -485,11 +485,11 @@ og.drawInnerHtml = function(companies) {
 			
 			for (j = 0; j < companies[i].users.length; j++) {
 				usr = companies[i].users[j];
-				htmlStr += '<li><input type="checkbox" class="checkbox" name="event[invite_user_'+usr.id+']" id="<?php echo $genid ?>notifyUser'+usr.id+'" onclick="App.modules.addMessageForm.emailNotifyClickUser('+comp_id+','+usr.id+',\'<?php echo $genid ?>\')"></input>'; 
-				htmlStr += '<label for="<?php echo $genid ?>notifyUser'+usr.id+'" class="checkbox">'+og.clean(usr.name)+'</label></li>';
+				htmlStr += '<li><input type="checkbox" class="checkbox" name="event[invite_user_'+usr.id+']" id="<?php echo $genid ?>inviteUser'+usr.id+'" onclick="App.modules.addMessageForm.emailNotifyClickUser('+comp_id+','+usr.id+',\'<?php echo $genid ?>\',\'invite_companies\', \'invitation\')"></input>'; 
+				htmlStr += '<label for="<?php echo $genid ?>inviteUser'+usr.id+'" class="checkbox">'+og.clean(usr.name)+'</label>';
 				htmlStr += '<script type="text/javascript">';
-				htmlStr += 'cos.company_' + comp_id + '.users.push({ id:'+usr.id+', checkbox_id : \'notifyUser' + usr.id + '\'});';
-				htmlStr += '\<\/script>';
+				htmlStr += 'cos.company_' + comp_id + '.users.push({ id:'+usr.id+', checkbox_id : \'inviteUser' + usr.id + '\'});';
+				htmlStr += '\<\/script></li>';
 			}
 			htmlStr += '</ul>';
 			htmlStr += '</div>';

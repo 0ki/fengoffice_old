@@ -13,7 +13,7 @@ INSERT INTO `<?php echo $table_prefix ?>config_categories` (`name`, `is_system`,
  ('modules', 0, 3)
 ON DUPLICATE KEY UPDATE id=id;
 
-DELETE FROM `<?php echo $table_prefix ?>config_options` WHERE `name` = 'enable_email_module';
+UPDATE `<?php echo $table_prefix ?>config_options` SET `category_name` = 'modules' WHERE `name` = 'enable_email_module';
 DELETE FROM `<?php echo $table_prefix ?>config_options` WHERE `name` = 'time_format_use_24';
 
 INSERT INTO `<?php echo $table_prefix ?>config_options` (`category_name`, `name`, `value`, `config_handler_class`, `is_system`, `option_order`, `dev_comment`) VALUES
@@ -68,7 +68,7 @@ INSERT INTO `<?php echo $table_prefix ?>user_ws_config_options` (`category_name`
  ('dashboard', 'show tasks in progress widget', '1', 'BoolConfigHandler', 0, 700, ''),
  ('dashboard', 'show comments widget', '1', 'BoolConfigHandler', 0, 800, ''),
  ('dashboard', 'always show unread mail in dashboard', '0', 'BoolConfigHandler', 0, 10, 'when false, active workspace email is shown'),
- ('task panel', 'can notify from quick add', '1', 'BoolConfigHandler', 0, 0, ''),
+ ('task panel', 'can notify from quick add', '1', 'BoolConfigHandler', 0, 0, 'Notification checkbox default value'),
  ('task panel', 'tasksShowWorkspaces', '1', 'BoolConfigHandler', 1, 0, ''),
  ('task panel', 'tasksShowTime', '1', 'BoolConfigHandler', 1, 0, ''),
  ('task panel', 'tasksShowDates', '1', 'BoolConfigHandler', 1, 0, ''),
@@ -236,4 +236,6 @@ ALTER TABLE `<?php echo $table_prefix ?>users` MODIFY COLUMN `timezone` float(3,
 -- add PPT file type
 
 INSERT INTO `<?php echo $table_prefix ?>file_types` (`extension`, `icon`, `is_searchable`, `is_image`) VALUES ('ppt', 'ppt.png', 0, 0);
+
+ALTER TABLE `<?php echo $table_prefix ?>mail_contents` ADD COLUMN `content_file_id` VARCHAR(40) NOT NULL default '';
 ALTER TABLE `<?php echo $table_prefix ?>mail_contents` ADD INDEX `sent_date` USING BTREE(`sent_date`);

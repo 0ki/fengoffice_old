@@ -17,6 +17,12 @@ Flash::instance();
 include_once APPLICATION_PATH . '/functions.php';
 try {
 	CompanyWebsite::init();
+	// if two days since last upgrade check => check for upgrades
+	$lastUpgradeCheck = config_option('upgrade_last_check_datetime', 0);
+	if ($lastUpgradeCheck instanceof DateTimeValue) $lastUpgradeCheck = $lastUpgradeCheck->getTimestamp();
+	if ($lastUpgradeCheck < DateTimeValueLib::now()->getTimestamp() - 60*60*24*2) {
+		VersionChecker::check(true);
+	}
 	$locale = user_config_option("localization", DEFAULT_LOCALIZATION);
 	Localization::instance()->loadSettings($locale, ROOT . '/language');
 

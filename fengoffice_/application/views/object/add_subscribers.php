@@ -51,7 +51,7 @@ var cos = div.notify_companies;
 		<div class="companyName">
 			<?php echo checkbox_field('', null, 
 				array('id' => $genid.'notifyCompany' . $companyId, 
-					'onclick' => 'App.modules.addMessageForm.emailNotifyClickCompany(' . $companyId . ',"' . $genid. '")')) ?> 
+					'onclick' => 'App.modules.addMessageForm.emailNotifyClickCompany(' . $companyId . ',"' . $genid. '","notify_companies", "notification")')) ?> 
 			<label for="<?php echo $genid ?>notifyCompany<?php echo $companyId ?>" class="checkbox"><?php echo clean(Companies::findById($companyId)->getName()) ?></label>
 		</div>
 		
@@ -61,7 +61,7 @@ var cos = div.notify_companies;
 			<li><?php echo checkbox_field('subscribers[user_' . $user->getId() . ']', 
 				in_array($user->getId(), $subscriberIds), 
 				array('id' => $genid.'notifyUser' . $user->getId(), 
-					'onclick' => 'App.modules.addMessageForm.emailNotifyClickUser(' . $companyId . ', ' . $user->getId() . ',"' . $genid. '")')) ?> 
+					'onclick' => 'App.modules.addMessageForm.emailNotifyClickUser(' . $companyId . ', ' . $user->getId() . ',"' . $genid. '","notify_companies", "notification")')) ?> 
 				<label for="<?php echo $genid ?>notifyUser<?php echo $user->getId() ?>" class="checkbox"><?php echo clean($user->getDisplayName()) ?></label>
 			<script type="text/javascript">
 				cos.company_<?php echo $companyId ?>.users.push({

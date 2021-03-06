@@ -120,7 +120,7 @@ else
 <tr><td colspan=2>
 <?php if (user_config_option('show calendar widget') && config_option('enable_calendar_module')) {?>
 <div class="dashCalendar">
-<table style="width:100%">
+<table style="width:100%;">
 	<col width=12/><col /><col width=12/><tr>
 	<td colspan=2 rowspan=2 class="dashHeader"><div class="dashTitle"><?php echo lang('upcoming events milestones and tasks')?></div></td>
 	<td class="coViewTopRight"></td></tr>
@@ -148,7 +148,7 @@ else
 	else $firstday = (date("w", mktime(0,0,0,$currentmonth,1,$currentyear))) % 7; // Numeric representation of day of week.
 	$lastday = date("t", mktime(0,0,0,$currentmonth,1,$currentyear)); // # of days in the month
 	
-	$output .= "<table id=\"calendar\" border='0' style='width:100%;border-collapse:collapse' cellspacing='1' cellpadding='0'>\n";
+	$output .= "<table id=\"calendar\" border='0' style='width:100%;border-collapse:collapse' cellspacing='0' cellpadding='0'>\n";
 	$day = date("d");
 	$month = date("m");
 	$year = date("Y");

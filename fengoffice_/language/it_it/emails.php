@@ -64,6 +64,7 @@
 	'view due task' => 'Vedi attività obbligatorie',
 	'due task email' => 'L\'attività "{0}" è obbligatoria su "{1}" ed è ancora pendente',
 	'due task' => 'Attività obbligatoria presto',
+	'due task reminder' => 'Attività obbligatoria presto',
 	'task has been modified' => 'L\'attività "{0}" nel Progetto "{1}" è stata modificata',
 	'task modified' => 'Attività modificata',
 	'view task' => 'Vedi attività',

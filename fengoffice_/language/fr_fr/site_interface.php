@@ -1,5 +1,5 @@
 <?php return array(
-	'new OpenGoo version available' => 'Une nouvelle version d\'OpenGoo est disponible. <a class="internalLink" href="{0}">En savoir plus</a>.',
+	'new OpenGoo version available' => 'Une nouvelle version d\'OpenGoo est disponible. <a class="internalLink" href="{0}" onclick="{1}">En savoir plus</a>.',
 	'my tasks' => 'Mes tâches',
 	'welcome back' => 'Bienvenue <strong>{0}</strong>',
 	'online users' => 'Utilisateurs en Ligne',
@@ -408,4 +408,6 @@
 	'companies import fail' => 'Échec de l\'import des sociétés',
 	'export companies to csv' => 'Exporter des sociétés dans un fichier .cvs',
 	'mail account delete mails from server description' => 'Activer cette option pour effacer les courriels du serveurs après un temps défini.',
+  	'auto' => 'Auto',
+	'print all groups' => 'Imprimer',
 ); ?>

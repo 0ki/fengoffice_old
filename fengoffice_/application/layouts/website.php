@@ -113,7 +113,13 @@ og.loggedUser = {
 	username: <?php echo json_encode(logged_user()->getUsername()) ?>,
 	displayName: <?php echo json_encode(logged_user()->getDisplayName()) ?>
 };
-
+og.hasNewVersions = <?php
+	if (config_option('upgrade_last_check_new_version', false)) {
+		echo json_encode(lang('new OpenGoo version available', "#", "og.openLink(og.getUrl('administration', 'upgrade'))"));
+	} else {
+		echo "false";
+	}	
+?>;
 og.enableNotesModule = <?php echo config_option("enable_notes_module", 1) ? 1 : 0 ?>;
 og.enableEmailModule = <?php echo config_option("enable_email_module", defined('SHOW_MAILS_TAB') && SHOW_MAILS_TAB) ? 1 : 0 ?>;
 og.enableContactsModule = <?php echo config_option("enable_contacts_module", 1) ? 1 : 0 ?>;

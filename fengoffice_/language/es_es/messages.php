@@ -17,7 +17,7 @@
     'project dnx' => 'El área de trabajo solicitada no existe en la base de datos',
     'contact dnx' => 'El contacto solicitado no existe en la base de datos',
     'company dnx' => 'La empresa solicitada no existe en la base de datos',
-    'message dnx' => 'La nota solicitado no existe en la base de datos',
+    'message dnx' => 'La nota solicitada no existe en la base de datos',
     'no comments in message' => 'Esta nota no tiene comentarios',
     'no comments associated with object' => 'No se han introducido comentarios para este objeto',
     'no messages in project' => 'No hay notas en esta área de trabajo',

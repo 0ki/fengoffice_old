@@ -11,7 +11,7 @@ og.TrashCan = function() {
 
 	if (!og.TrashCan.store) {
 		og.TrashCan.store = new Ext.data.Store({
-			proxy: new og.OpenGooProxy({
+			proxy: new og.GooProxy({
 				url: og.getUrl('object', 'list_objects', {trashed: "true"})
 			}),
 			reader: new Ext.data.JsonReader({

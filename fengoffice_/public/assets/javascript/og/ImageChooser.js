@@ -102,7 +102,7 @@ og.ImageChooser = function(config) {
 				value: 'name',
 				store: new Ext.data.SimpleStore({
 					fields: ['name', 'desc'],
-					data : [['name', lang('name')],['size', lang('file fize')],['lastmod', lang('last modified')]]
+					data : [['name', lang('name')],['size', lang('file size')],['lastmod', lang('last modified')]]
 				}),
 				listeners: {
 					'select': {fn:this.sortImages, scope:this}

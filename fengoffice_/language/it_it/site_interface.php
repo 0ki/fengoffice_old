@@ -1,5 +1,5 @@
 <?php return array(
-	'new OpenGoo version available' => 'È disponibile una nuova versione di  OpenGoo. <a class="internalLink" href="{0}">Altri dettagli</a>.',
+	'new OpenGoo version available' => 'È disponibile una nuova versione di  OpenGoo. <a class="internalLink" href="{0}" onclick="{1}">Altri dettagli</a>.',
 	'my tasks' => 'Le mie attività',
 	'welcome back' => 'Bentornato <strong>{0}</strong>',
 	'online users' => 'Utenti online',
@@ -407,4 +407,6 @@
 	'mail account delete mails from server description' => 'Abilita questa opzione per cancellare le email dal server dopo il tempo indicato',
 	'release notes' => 'Note di rilascio',
 	'remember last' => 'Ricorda ultimo',
+  	'auto' => 'Auto',
+'print all groups' => 'Stampa',
 ); ?>

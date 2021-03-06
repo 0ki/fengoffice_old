@@ -37,7 +37,9 @@ abstract class BaseMailContents extends ProjectDataObjects {
     'created_by_id' => DATA_TYPE_INTEGER,
 	'trashed_on' => DATA_TYPE_DATETIME,
     'trashed_by_id' => DATA_TYPE_INTEGER,
-	'imap_folder_name' => DATA_TYPE_STRING
+	'imap_folder_name' => DATA_TYPE_STRING,
+	'account_email' => DATA_TYPE_STRING,
+	'content_file_id' => DATA_TYPE_STRING
 	);
 
 	/**

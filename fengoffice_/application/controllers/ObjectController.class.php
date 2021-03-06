@@ -619,7 +619,7 @@ class ObjectController extends ApplicationController {
     	
     	/** If the name of the query ends with Comments it is assumed to be a list of Comments **/
     	
-    	// Notes
+		// Notes
     	if (config_option("enable_notes_module")) {
 			$permissions = ' AND ( ' . permissions_sql_for_listings(ProjectMessages::instance(), ACCESS_LEVEL_READ, logged_user(), '`project_id`', '`co`') .')';
 			$res['Messages']  = "SELECT  'ProjectMessages' AS `object_manager_value`, `id` AS `oid`, $order_crit_messages AS `order_value` FROM `" . 

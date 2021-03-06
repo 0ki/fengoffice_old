@@ -166,12 +166,12 @@ function cancel (evt) {//cancel clic event bubbling. used to cancel opening a Ne
 					<?php
 						
 							if($day_of_month <= $lastday AND $day_of_month >= 1){ 
-								$p = cal_getlink("index.php?action=viewdate&day=$day_of_month&month=$month_aux&year=$year_aux");
+								$p = cal_getlink("index.php?action=viewdate&day=$day_of_month&month=$month_aux&year=$year_aux&user_filter=$user_filter&state_filter=$state_filter");
 								$t = cal_getlink("index.php?action=add&day=$day_of_month&month=$month_aux&year=$year_aux");
 								$w = $day_of_month;
 								$dtv = DateTimeValueLib::make(0, 0, 0, $month_aux, $day_of_month, $year_aux);
 							}elseif($day_of_month < 1){
-								$p = cal_getlink("index.php?action=viewdate&day=$day_of_month&month=$month_aux&year=$year_aux");
+								$p = cal_getlink("index.php?action=viewdate&day=$day_of_month&month=$month_aux&year=$year_aux&user_filter=$user_filter&state_filter=$state_filter");
 								$t = cal_getlink("index.php?action=add&day=$day_of_month&month=$month_aux&year=$year_aux");
 								$ld = idate('d', mktime(0, 0, 0, $month_aux, 0, $year_aux));//date("t", strtotime("last month",mktime(0,0,0,$month-1,1,$year)));
 								$w = $ld + $day_of_month ;
@@ -185,7 +185,7 @@ function cancel (evt) {//cancel clic event bubbling. used to cancel opening a Ne
 										$year_aux++;
 									}
 								}
-								$p = cal_getlink("index.php?action=viewdate&day=".($day_of_month-$lastday)."&month=$month_aux&year=$year_aux");
+								$p = cal_getlink("index.php?action=viewdate&day=".($day_of_month-$lastday)."&month=$month_aux&year=$year_aux&user_filter=$user_filter&state_filter=$state_filter");
 								$t = cal_getlink("index.php?action=add&day=".($day_of_month-$lastday)."&month=$month_aux&year=$year_aux");
 								$w = $day_of_month - $lastday;
 								$dtv = DateTimeValueLib::make(0, 0, 0, $month_aux, $w, $year_aux);

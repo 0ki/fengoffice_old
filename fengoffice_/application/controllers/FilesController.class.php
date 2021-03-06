@@ -122,7 +122,7 @@ class FilesController extends ApplicationController {
 			return;
 		} // if
 
-		if ($file->getTypeString() == 'sprd') echo lang("not implemented");
+		if ($file->getTypeString() == 'sprd') die(lang("not implemented"));
 		session_commit();
 		if (FileRepository::getBackend() instanceof FileRepository_Backend_FileSystem) {
 			$path = FileRepository::getBackend()->getFilePath($file->getLastRevision()->getRepositoryId());
@@ -280,6 +280,7 @@ class FilesController extends ApplicationController {
 		tpl_assign('tags', Tags::getTagNames());
 			
 		if (is_array(array_var($_POST, 'file'))) {
+			$this->setLayout("html");
 			$ids = array_var($_POST, "ws_ids", "");
 			$enteredWS = Projects::findByCSVIds($ids);
 			$validWS = array();
@@ -1044,10 +1045,10 @@ class FilesController extends ApplicationController {
 					"tags" => project_object_tags($o),
 					"createdBy" => $o->getCreatedByDisplayName(),
 					"createdById" => $o->getCreatedById(),
-					"dateCreated" => $o->getCreatedOn()->getTimestamp(),
+					"dateCreated" => $o->getCreatedOn() instanceof DateTimeValue ? $o->getCreatedOn()->getTimestamp() : 0,
 					"updatedBy" => $o->getUpdatedByDisplayName(),
 					"updatedById" => $o->getUpdatedById(),
-					"dateUpdated" => $o->getUpdatedOn()->getTimestamp(),
+					"dateUpdated" => $o->getUpdatedOn() instanceof DateTimeValue ? $o->getUpdatedOn()->getTimestamp() : 0,
 					"icon" => $o->getTypeIconUrl(),
 					"size" => $o->getFileSize(),
 					"wsIds" => $o->getWorkspacesIdsCSV(logged_user()->getActiveProjectIdsCSV()),
@@ -1391,7 +1392,7 @@ class FilesController extends ApplicationController {
 						"size" => $file->getFilesize(),
 						"created_by_id" => $file->getCreatedById(),
 						"created_by_name" => Users::findById($file->getCreatedById())->getDisplayName(),
-						"created_on" => $file->getCreatedOn()->getTimestamp(),
+						"created_on" => $file->getCreatedOn() instanceof DateTimeValue ? $file->getCreatedOn()->getTimestamp() : 0,
 						"is_checked_out" => $file->isCheckedOut(),
 						"checked_out_by_name" => $file->getCheckedOutByDisplayName(),
 						"can_check_in" => $file->canCheckin(logged_user()),

@@ -318,4 +318,3 @@ og.WorkspaceSelected = function(controlName, workspace){
 	document.getElementById(controlName + 'Header').style.display = 'block';
 	document.getElementById(controlName + 'Value').value = workspace.id;	
 }
-

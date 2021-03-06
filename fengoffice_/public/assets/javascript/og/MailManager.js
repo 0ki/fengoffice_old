@@ -25,7 +25,7 @@ og.MailManager = function() {
 */	
 	if (!og.MailManager.store) {
 		og.MailManager.store = new Ext.data.Store({
-			proxy: new og.OpenGooProxy({
+			proxy: new og.GooProxy({
 				url: og.getUrl('mail', 'list_all'),
 				timeout: 0//Ext.Ajax.timeout
 			}),

@@ -9,7 +9,7 @@ og.ContactManager = function() {
 	
 	if (!og.ContactManager.store) {
 		og.ContactManager.store = new Ext.data.Store({
-	        proxy: new og.OpenGooProxy({
+	        proxy: new og.GooProxy({
 	            url: og.getUrl('contact', 'list_all')
 	        }),
 	        reader: new Ext.data.JsonReader({

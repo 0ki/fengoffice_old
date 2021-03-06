@@ -1,5 +1,5 @@
 <?php return array(
-	'new OpenGoo version available' => 'Доступна новая версия OpenGoo. <a class="internalLink" href="{0}">Подробнее...</a>.',
+	'new OpenGoo version available' => 'Доступна новая версия OpenGoo. <a class="internalLink" href="{0}" onclick="{1}">Подробнее...</a>.',
 	'my tasks' => 'Мои задачи',
 	'welcome back' => 'Добро пожаловать, <strong>{0}</strong>',
 	'online users' => 'Пользователей в сети',
@@ -391,4 +391,5 @@
 	'my tasks in progress' => 'Мои задачи в процессе',
 	'tasks in progress for' => 'Прогресс задач для {0}',
 	'time has to be greater than 0' => 'Время должно быть больше 0',
+'print all groups' => 'Печать',
 ); ?>

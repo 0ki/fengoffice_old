@@ -6,7 +6,6 @@ class MailUtilities {
 			$accounts = MailAccounts::findAll();
 		}
 		
-		$old_memory_limit = ini_get('memory_limit');
 		ini_set('memory_limit', '96M');
 
 		$err = 0;
@@ -20,8 +19,9 @@ class MailUtilities {
 					$accId = $account->getId();
 					$emails = array();
 					if (!$account->getIsImap()) {
-						if (!$account->getIncomingSsl())
-						$mailsReceived += self::getNewPOP3Mails($account, $maxPerAccount);
+						if (!$account->getIncomingSsl()) {
+							$mailsReceived += self::getNewPOP3Mails($account, $maxPerAccount);
+						}
 					} else {
 						$mailsReceived += self::getNewImapMails($account, $maxPerAccount);
 					}
@@ -34,8 +34,6 @@ class MailUtilities {
 				}
 			}
 		}
-		
-		ini_set('memory_limit', $old_memory_limit);
 		
 		tpl_assign('err',$err);
 		tpl_assign('errAccounts',$errAccounts);
@@ -57,6 +55,19 @@ class MailUtilities {
 		}
 		return $f;
 	}
+	
+	private function SaveContentToFilesystem($uid, &$content) {
+		$tmp = ROOT . '/tmp/' . rand();
+		$handle = fopen($tmp, "wb");
+		fputs($handle, $content);
+		fclose($handle);
+		$date = DateTimeValueLib::now()->format("Y_m_d_H_i_s__");
+		$repository_id = FileRepository::addFile($tmp, array('name' => $date.$uid, 'type' => 'text/plain', 'size' => strlen($content)));
+
+		unlink($tmp);
+		
+		return $repository_id;
+	}
 
 	private function SaveMail(&$content, MailAccount $account, $uidl, $state = 0, $imap_folder_name = '') {
 		if (strpos($content, '+OK ') > 0) $content = substr($content, strpos($content, '+OK '));
@@ -69,7 +80,6 @@ class MailUtilities {
 		$mail->setAccountId($account->getId());
 		$mail->setState($state);
 		$mail->setImapFolderName($imap_folder_name);
-		$mail->setContent(iconv($encoding, 'UTF-8//IGNORE', $content));
 		$mail->setFrom(self::getAddresses(array_var($parsedMail, "From")));
 		
 		if (array_key_exists('Encoding', $parsedMail)){
@@ -88,7 +98,6 @@ class MailUtilities {
 		$mail->setCreatedOn(new DateTimeValue(time()));
 		$mail->setCreatedById($account->getUserId());
 		$mail->setAccountEmail($account->getEmail());
-		
 		$uid = trim($uidl);
 		if ($uid[0]== '<') {
 			$uid = mb_substr($uid, 1, mb_strlen($uid, $encoding) - 2, $encoding);
@@ -110,6 +119,9 @@ class MailUtilities {
 				$mail->setBodyPlain(iconv(array_var($parsedMail['Alternative'][0],'Encoding','UTF-8'),'UTF-8//IGNORE', array_var($parsedMail['Alternative'][0], 'Data', '')));
 			}
 		}
+
+		$repository_id = self::SaveContentToFilesystem($mail->getUid(), iconv($encoding, 'UTF-8//IGNORE', $content));
+		$mail->setContentFileId($repository_id);
 
 		try {
 			DB::beginWork();

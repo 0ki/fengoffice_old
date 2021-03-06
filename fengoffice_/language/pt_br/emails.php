@@ -64,6 +64,7 @@
 	'view due task' => 'Ver tarefa alvo',
 	'due task email' => 'Tarefa "{0}" programada em "{1}" ainda está pendente',
 	'due task' => 'Próximas tarefas programadas',
+	'due task reminder' => 'Próximas tarefas programadas',
 	'task has been modified' => 'A Tarefa "{0}" na Área de Trabalho "{1}" foi modificada',
 	'task modified' => 'Tarefa modificada',
 	'view task' => 'Ver tarefa',

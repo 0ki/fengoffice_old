@@ -13,7 +13,7 @@ og.MessageManager = function() {
 	
 	if (!og.MessageManager.store) {
 		og.MessageManager.store = new Ext.data.Store({
-			proxy: new og.OpenGooProxy({
+			proxy: new og.GooProxy({
 				url: og.getUrl('message', 'list_all')
 			}),
 			reader: new Ext.data.JsonReader({
