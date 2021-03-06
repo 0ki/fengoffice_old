@@ -75,54 +75,58 @@ class CalFormatUtilities {
 	function generateICalInfo($events, $calendar_name, $user = null) {
 		if ($user == null) $user = logged_user();
 		$ical_info = '';
-		$ical_info .= "BEGIN:VCALENDAR\r\n";
-		$ical_info .= "VERSION:2.0\r\n";
-		$ical_info .= "PRODID:PHP\r\n";
-		$ical_info .= "METHOD:REQUEST\r\n";
-		$ical_info .= "X-WR-CALNAME:$calendar_name\r\n";
+		$ical_info .= "BEGIN:VCALENDAR\n";
+		$ical_info .= "VERSION:2.0\n";
+		$ical_info .= "PRODID:PHP\n";
+		$ical_info .= "METHOD:REQUEST\n";
+		$ical_info .= "X-WR-CALNAME:$calendar_name\n";
 		
 		// timezone info
 		$tz = ($user->getTimezone() < 0 ? "-":"+").str_pad(abs($user->getTimezone())*100, 4, '0', STR_PAD_LEFT);
 		$tz_desc = $user->getTimezone() > 0 ? lang("timezone gmt +".$user->getTimezone()) : lang("timezone gmt ".$user->getTimezone());
-		$ical_info .= "BEGIN:VTIMEZONE\r\n";
-		$ical_info .= "TZID:$tz_desc\r\n";
-		$ical_info .= "BEGIN:STANDARD\r\n";
-		$ical_info .= "TZOFFSETFROM:$tz\r\n";
-		$ical_info .= "TZOFFSETTO:$tz\r\n";
-		$ical_info .= "END:STANDARD\r\n";
-		$ical_info .= "END:VTIMEZONE\r\n";
+		$ical_info .= "BEGIN:VTIMEZONE\n";
+		$ical_info .= "TZID:$tz_desc\n";
+		$ical_info .= "BEGIN:STANDARD\n";
+		$ical_info .= "TZOFFSETFROM:$tz\n";
+		$ical_info .= "TZOFFSETTO:$tz\n";
+		$ical_info .= "END:STANDARD\n";
+		$ical_info .= "END:VTIMEZONE\n";
 		
 		foreach ($events as $event) {
-			$ical_info .= "BEGIN:VEVENT\r\n";
+			$ical_info .= "BEGIN:VEVENT\n";
 			
 			$event_start = new DateTimeValue($event->getStart()->getTimestamp() + 3600 * $user->getTimezone());
 			$event_duration = new DateTimeValue($event->getDuration()->getTimestamp() + 3600 * $user->getTimezone());
 			
 			$startNext = new DateTimeValue($event_start->getTimestamp());
 			$startNext->add('d', 1);
-			if ($event->getTypeId() == 2) $ical_info .= "DTSTART;VALUE=DATE:" . $event_start->format('Ymd') ."\r\n";
-			else $ical_info .= "DTSTART:" . $event_start->format('Ymd') ."T". $event_start->format('His') ."\r\n";
-			if ($event->getTypeId() == 2) $ical_info .= "DTEND;VALUE=DATE:" . $startNext->format('Ymd') ."\r\n";
-			else $ical_info .= "DTEND:" . $event_duration->format('Ymd') ."T". $event_duration->format('His') ."\r\n";
+			if ($event->getTypeId() == 2) $ical_info .= "DTSTART;VALUE=DATE:" . $event_start->format('Ymd') ."\n";
+			else $ical_info .= "DTSTART:" . $event_start->format('Ymd') ."T". $event_start->format('His') ."\n";
+			if ($event->getTypeId() == 2) $ical_info .= "DTEND;VALUE=DATE:" . $startNext->format('Ymd') ."\n";
+			else $ical_info .= "DTEND:" . $event_duration->format('Ymd') ."T". $event_duration->format('His') ."\n";
 
 			$uid = $event->getId() . "@";
-			$url = str_replace('http://', '', ROOT_URL);
-			$uid .= str_replace('www.', '', $url);
+			$exploded = explode('/', ROOT);
+			$exploded = explode('\\', end($exploded));
+			$uid .= "fengoffice.com/".end($exploded);
 			
+			$subject = $event->getSubject();
 			$description = str_replace(array(chr(13).chr(10), chr(13), chr(10)),'\n', $event->getDescription());
-			$ical_info .= "DESCRIPTION:$description\r\n";
-            $ical_info .= "SUMMARY:" . $event->getSubject() . "\r\n";
-		    $ical_info .= "UID:$uid\r\n";
-		    $ical_info .= "SEQUENCE:0\r\n";
-		    $ical_info .= "DTSTAMP:".$event->getUpdatedOn()->format('Ymd').'T'.$event->getUpdatedOn()->format('His')."\r\n";
+			$subject = str_replace(array(',', ';'), array('\,', '\;'), $subject);
+			$description = str_replace(array(',', ';'), array('\,', '\;'), $description);
+			
+			$ical_info .= "DESCRIPTION:$description\n";
+            $ical_info .= "SUMMARY:$subject\n";
+		    $ical_info .= "UID:$uid\n";
+		    $ical_info .= "SEQUENCE:0\n";
+		    $ical_info .= "DTSTAMP:".$event->getUpdatedOn()->format('Ymd').'T'.$event->getUpdatedOn()->format('His')."\n";
 			
 		    $invitations = $event->getInvitations();
 			if (is_array($invitations) && array_var($invitations, $user->getId())) {
 				$inv = array_var($invitations, $user->getId());
-		    	$inv->getInvitationState();
-		    	if ($inv->getInvitationState() == 1) $ical_info .= "STATUS:CONFIRMED\r\n"; 
-		    	else if ($inv->getInvitationState() == 2) $ical_info .= "STATUS:CANCELLED\r\n";
-		    	else $ical_info .= "STATUS:TENTATIVE\r\n";
+		    	if ($inv->getInvitationState() == 1) $ical_info .= "STATUS:CONFIRMED\n"; 
+		    	else if ($inv->getInvitationState() == 2) $ical_info .= "STATUS:CANCELLED\n";
+		    	else $ical_info .= "STATUS:TENTATIVE\n";
 			}
 			$rrule = '';
 			if ($event->getRepeatD() > 0 || $event->getRepeatM() > 0 || $event->getRepeatY() > 0 || $event->getRepeatForever() > 0) {
@@ -149,7 +153,7 @@ class CalFormatUtilities {
 				if (!$event->getRepeatForever() && $event->getRepeatNum() > 0) $count = ";COUNT=".$event->getRepeatNum();
 				else if (!$event->getRepeatForever() && $event->getRepeatEnd()) $until = ";UNTIL=".$event->getRepeatEnd()->format('Ymd').'T'.$event->getRepeatEnd()->format('His');
 				
-				if ($rrule_ok) $rrule = "RRULE:$freq$interval$count$until\r\n";
+				if ($rrule_ok) $rrule = "RRULE:$freq$interval$count$until\n";
 			}
 			if ($event->getRepeatH() > 0) {
 				"RRULE:FREQ=MONTHLY;INTERVAL=1;BYDAY=1TU";
@@ -166,14 +170,14 @@ class CalFormatUtilities {
 				}
 				$byday = "BYDAY=" . $event->getRepeatWnum() . $day;
 				
-				$rrule = "RRULE:FREQ=MONTHLY;$interval;$byday\r\n";
+				$rrule = "RRULE:FREQ=MONTHLY;$interval;$byday\n";
 			}
 		    $ical_info .= $rrule;
 		    
-		    $ical_info .= "END:VEVENT\r\n";
+		    $ical_info .= "END:VEVENT\n";
 		}
 		
-		$ical_info .= "END:VCALENDAR\r\n";
+		$ical_info .= "END:VCALENDAR\n";
 		
 		return $ical_info;
 	}

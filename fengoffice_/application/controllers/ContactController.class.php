@@ -525,6 +525,10 @@ class ContactController extends ApplicationController {
 		
 		$only_count_result = array_var($_GET, 'only_result',false);
 		
+		if (logged_user()->isGuest()) {
+			$extra_conditions .= " AND user_type=0 ";
+		}
+		
 		$content_objects = Contacts::instance()->listing(array(
 			"order" => $order,
 			"order_dir" => $order_dir,
@@ -1011,7 +1015,7 @@ class ContactController extends ApplicationController {
 					$contact->addAddress($contact_data['w_address'], $contact_data['w_city'], $contact_data['w_state'], $contact_data['w_country'], $contact_data['w_zipcode'], 'work');
 				if($contact_data['w_phone_number'] != "") $contact->addPhone($contact_data['w_phone_number'], 'work', true);
 				if($contact_data['w_phone_number2'] != "") $contact->addPhone($contact_data['w_phone_number2'], 'work');
-				if($contact_data['w_assistant_number'] != "") $contact->addPhone($contact_data['w_assistant_number'], 'assistant');
+				if($contact_data['w_assistant_number'] != "") $contact->addPhone($contact_data['w_assistant_number'], 'assistant', null, $contact_data['w_assistant_name']);
 				if($contact_data['w_callback_number'] != "") $contact->addPhone($contact_data['w_callback_number'], 'callback');
 				if($contact_data['w_fax_number'] != "") $contact->addPhone($contact_data['w_fax_number'], 'fax', true);
 				if($contact_data['w_web_page'] != "") $contact->addWebpage($contact_data['w_web_page'], 'work');
@@ -1162,6 +1166,7 @@ class ContactController extends ApplicationController {
 		$contact_data = array_var($_POST, 'contact');
 		// Populate form fields
 		if(!is_array($contact_data)) {
+			$assistantPhone = $contact->getPhone('assistant');
 			$contact_data = array(
 				'first_name' => $contact->getFirstName(),
 				'surname' => $contact->getSurname(),
@@ -1177,7 +1182,8 @@ class ContactController extends ApplicationController {
 				'w_phone_number'=> $contact->getPhoneNumber('work', true),
 				'w_phone_number2'=> $contact->getPhoneNumber('work'),
 				'w_fax_number'=> $contact->getPhoneNumber('fax', true),
-				'w_assistant_number'=> $contact->getPhoneNumber('assistant'),
+				'w_assistant_number'=> $assistantPhone instanceof ContactTelephone ? $assistantPhone->getNumber() : '',
+				'w_assistant_name'=> $assistantPhone instanceof ContactTelephone ? $assistantPhone->getName() : '',
 				'w_callback_number'=> $contact->getPhoneNumber('callback'),
 				
 				'h_web_page'=> $contact->getWebpageUrl('personal'),
@@ -1312,9 +1318,13 @@ class ContactController extends ApplicationController {
 				
 				$assistantPhone =  $contact->getPhone('assistant');
 				if($assistantPhone){
-						$assistantPhone->editNumber($contact_data['w_assistant_number']);
+					$assistantPhone->editNumber($contact_data['w_assistant_number']);
+					if ($assistantPhone->getName() != array_var($contact_data, 'w_assistant_name')) {
+						$assistantPhone->setName(array_var($contact_data, 'w_assistant_name'));
+						$assistantPhone->save();
+					}
 				}else{
-					if($contact_data['w_assistant_number'] != "") $contact->addPhone($contact_data['w_assistant_number'], 'assistant');
+					if($contact_data['w_assistant_number'] != "") $contact->addPhone($contact_data['w_assistant_number'], 'assistant', null, array_var($contact_data, 'w_assistant_name'));
 				}
 				
 				$callbackPhone =  $contact->getPhone('callback');

@@ -100,6 +100,28 @@
     } // setNumber() 
     
     /**
+     * Return value of 'name' field
+     *
+     * @access public
+     * @param void
+     * @return string
+     */
+    function getName() {
+    	return $this->getColumnValue('name');
+    } // getName()
+    
+    /**
+     * Set value of 'name' field
+     *
+     * @access public
+     * @param string $value
+     * @return boolean
+     */
+    function setName($value) {
+    	return $this->setColumnValue('name', $value);
+    } // setName()
+    
+    /**
     * Return value of 'is_main' field
     *
     * @access public

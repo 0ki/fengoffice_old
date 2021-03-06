@@ -329,9 +329,9 @@ var rx__TasksDrag = {
 			
 			// change
 			switch (this.displayCriteria.group_by){
-				case 'milestone':	parameters["milestone_id"] = this.d != 'unclassified' ? ogTasks.getMilestone(this.d).id : 0; break;
+				case 'milestone':	parameters["milestone_id"] = this.d != 'unclassified' ? ogTasks.getMilestone(this.d).id : 0; parameters["keep_members"]=1;break;
 				case 'priority':	parameters["priority"] = this.d != 'unclassified' ? parseInt(this.d) : 200; /*100,200,300*/ break;
-				case 'assigned_to':	parameters["assigned_to_contact_id"] = this.d; break;
+				case 'assigned_to':	parameters["assigned_to_contact_id"] = this.d; parameters["keep_members"]=1; break;
 				case 'due_date' : 	if(group_not_empty) parameters["task_due_date"] = group.group_tasks[0].dueDate; break;
 				case 'start_date' : if(group_not_empty) parameters["task_start_date"] = group.group_tasks[0].startDate; break;
 				case 'created_on' : if(group_not_empty) parameters["created_on"] = group.group_tasks[0].createdOn; break;

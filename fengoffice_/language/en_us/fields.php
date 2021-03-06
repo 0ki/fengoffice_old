@@ -39,7 +39,8 @@ return array(
 	'field Contacts w_phone_number' => 'Work phone',
 	'field Contacts w_phone_number2' => 'Work phone 2',
 	'field Contacts w_fax_number' => 'Work fax',
-	'field Contacts w_assistant_number' => 'Work assistant',
+	'field Contacts w_assistant_name' => 'Work assistant',
+	'field Contacts w_assistant_number' => 'Work assistant number',
 	'field Contacts w_callback_number' => 'Work callback',
 
 	'field Contacts h_web_page' => 'Home website',

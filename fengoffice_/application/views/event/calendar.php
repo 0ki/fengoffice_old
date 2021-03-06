@@ -164,8 +164,8 @@ foreach($companies as $company)
 					if($task_filter != "hide"){
 						$tasks = ProjectTasks::getRangeTasksByUser($date_start, $date_end, ($user_filter != -1 ? $user : null),$task_filter);
 					}
-					// FIXME
-					$birthdays = array(); //Contacts::instance()->getRangeContactsByBirthday($date_start, $date_end);
+					
+					$birthdays = array();//Contacts::instance()->getRangeContactsByBirthday($date_start, $date_end, active_context_members(false));
 					
 					$result = array();
 					if($milestones) {
@@ -176,8 +176,8 @@ foreach($companies as $company)
 							$result = array_merge($result, replicateRepetitiveTaskForCalendar($task, $date_start, $date_end));
 						}
 					}
-					if($birthdays) {
-						$result = array_merge($result, $birthdays );
+					if(is_array($birthdays) && count($birthdays) > 0) {
+						$result = array_merge($result, $birthdays);
 					}
 					
 					
@@ -532,7 +532,7 @@ foreach($companies as $company)
 										}//endif task
 										elseif($event instanceof Contact){
 											$contact = $event;
-											$bday = $contact->getOBirthday();
+											$bday = $contact->getBirthday();
 											$now = mktime(0, 0, 0, $dtv->getMonth(), $dtv->getDay(), $dtv->getYear());
 											if ($now == mktime(0, 0, 0, $bday->getMonth(), $bday->getDay(), $dtv->getYear())) {	
 												$count++;
@@ -540,7 +540,7 @@ foreach($companies as $company)
 													$color = 'B1BFAC';
 													$subject = clean($contact->getObjectName()).' - <span class="italic">'.lang('birthday').'</span>';
 								?>
-													<div id="m_bd_div_<?php echo $contact->getId()?>" class="event_block" style="border-left-color: #<?php echo $color?>;">
+													<div id="m_bd_div_<?php echo $contact->getId()?>" class="<?php echo "og-wsname-color-$ws_color" ?>" style="height:20px;margin: 1px;padding-left:1px;padding-bottom:0px;border-radius:4px;border: 1px solid;border-color:<?php echo $border_color ?>;<?php echo $extra_style ?>">
 														<a href='<?php echo $contact->getViewUrl()?>' class='internalLink' onclick="og.disableEventPropagation(event);return true;"  style="border-width:0px">
 															<img src="<?php echo image_url('/16x16/contacts.png')?>" style="vertical-align: middle;">
 														 	<span><?php echo $contact->getObjectName() ?></span>

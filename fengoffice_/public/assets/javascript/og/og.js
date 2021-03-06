@@ -2305,7 +2305,7 @@ og.getCrumbHtmlWithoutLinksMemPath = function(dims, draw_all_members, skipped_di
 		for (id in members) {
 			var m = members[id];
 			if (!m.archived) {
-				var texts = og.getMemberFromOgDimensions(x, id, true);				
+				var texts = og.getMemberFromTrees(x, id, true);
 			} else {
 				var texts = [];
 				texts.push({id:m.id, text:m.name, ot:m.ot, c:m.c});
@@ -2318,10 +2318,10 @@ og.getCrumbHtmlWithoutLinksMemPath = function(dims, draw_all_members, skipped_di
 			all_texts[id] = texts;
 			
 			if(total_length && !isNaN(total_length)){
-				texts.forEach(function(text) {
-				    total_text_length += text.text.length;
-				    total_texts_in_Crumb ++;
-				});
+				for (x in texts) {
+					total_text_length += texts[x].length;
+				    total_texts_in_Crumb++;
+				}
 			}
 		}
 		
@@ -2413,7 +2413,7 @@ og.getCrumbHtmlWithoutLinks = function (member_id, dimension_id, genid) {
 	
 	var member_info = {};
 	member_info[member.id] ={
-			"ot":member.ot,
+			"ot":"1",
 			"c":member.color,
 			"archived": member.archived,
 			"name":member.name
@@ -2426,44 +2426,6 @@ og.getCrumbHtmlWithoutLinks = function (member_id, dimension_id, genid) {
 	mem_path = og.getCrumbHtmlWithoutLinksMemPath(member_path, false, null,false,null,bredcrumb_total_length);
 	
 	return mem_path;
-}
-
-og.getMemberFromOgDimensions = function(dim_id, mem_id, include_parents) {
-	var texts = [];
-	if(og.dimensions && og.dimensions[dim_id] && og.dimensions[dim_id][mem_id]){
-		var member = og.dimensions[dim_id][mem_id];
-		
-		if(member){
-			var member_info = {};
-			member_info ={
-					"id":member.id,
-					"ot":member.ot,
-					"c":member.color,
-					"text":member.name
-			};		
-			
-			texts.push(member_info);
-			
-			if(!include_parents){
-				return texts;
-			}else{
-				while(member.parent_id && member.parent_id > 0) {
-					member = og.dimensions[dim_id][member.parent_id];
-					if (member){
-						member_info ={
-								"id":member.id,
-								"ot":member.ot,
-								"c":member.color,
-								"text":member.name
-						};
-						texts.push(member_info);
-					}
-				}
-						
-			}
-		}
-	}
-	return texts;
 }
 
 og.getMemberTreeNodeColor = function(node) {

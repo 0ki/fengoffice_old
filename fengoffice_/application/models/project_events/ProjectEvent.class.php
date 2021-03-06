@@ -21,7 +21,7 @@ class ProjectEvent extends BaseProjectEvent {
 	 *
 	 * @var array
 	 */
-	private $event_invitations;
+	private $event_invitations = null;
 
 	/**
 	 * Contruct the object
@@ -243,6 +243,13 @@ class ProjectEvent extends BaseProjectEvent {
 	
 	
 	function getInvitations() {
+		if (is_null($this->event_invitations)) {
+			$this->event_invitations = array();
+			$invs = EventInvitations::instance()->findAll(array('conditions' => 'event_id='.$this->getId()));
+			foreach ($invs as $inv) {
+				$this->event_invitations[$inv->getContactId()] = $inv;
+			}
+		}
 		return $this->event_invitations;
 	}
 	function setInvitations($invitations) {

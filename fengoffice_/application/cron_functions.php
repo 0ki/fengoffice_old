@@ -132,4 +132,26 @@ function export_google_calendar() {
     _log("end export with google calendar...");
 }
 
-?>
+
+function check_sharing_table_flags() {
+	_log("Checking for sharing table pending updates...");
+	
+	$date = DateTimeValueLib::now();
+	$date->add('m', -30);
+	$flags = SharingTableFlags::instance()->getFlags($date);
+	
+	if (is_array($flags) && count($flags) > 0) {
+		_log("  " . count($flags) . " permission groups needs to be recalculated...");
+		foreach ($flags as $flag) {
+			$ok = SharingTableFlags::instance()->healPermissionGroup($flag);
+			if ($ok) {
+				_log("    Sharing table updated successfully for permission_group_id ".$flag->getPermissionGroupId().($flag->getMemberId()>0?" and member_id=".$flag->getMemberId():""));
+			} else {
+				_log("    Failed to update sharing table for permission_group_id ".$flag->getPermissionGroupId().($flag->getMemberId()>0?" and member_id=".$flag->getMemberId():""));
+			}
+		}
+		_log("  Sharing table update finished.");
+	} else {
+		_log("No permission groups need to be updated.");
+	}
+}

@@ -162,19 +162,22 @@ class FeedController extends PageController {
 			
 			$conditions = " AND EXISTS (SELECT i.contact_id FROM ".TABLE_PREFIX."event_invitations i WHERE i.event_id=e.object_id AND  i.contact_id=".$user->getId().")";
 			
-			$params = array(
-				"extra_conditions" => $conditions,
-				"count_results" => false,
-				"ignore_context" => true,
-			);
 			if (array_var($_GET, 'cal') != "") {
-				$params["member_ids"] = explode(',', array_var($_GET, 'cal'));
+				$mem_cond = "e.object_id IN (SELECT object_id FROM ".TABLE_PREFIX."object_members WHERE member_id IN (".array_var($_GET, 'cal')."))";
+			} else {
+				$mem_cond = "true";
 			}
-			$events = ProjectEvents::instance()->listing($params)->objects;
+			$user_pgs = $user->getPermissionGroupIds();
+			$perm_cond = " AND EXISTS (SELECT st.object_id FROM ".TABLE_PREFIX."sharing_table st WHERE st.object_id=e.object_id AND st.group_id IN (".implode(',', $user_pgs)."))";
+			
+			$events = ProjectEvents::findAll(array('conditions' => "$mem_cond $perm_cond $conditions"));
 			
 			$calendar_name = isset($_GET['n']) ? $_GET['n'] : $user->getObjectName();
+			$calendar_name = str_replace(' ', '_', $calendar_name);
 			
-			tpl_assign('content', CalFormatUtilities::generateICalInfo($events, $calendar_name, $user));
+			$content = CalFormatUtilities::generateICalInfo($events, $calendar_name, $user);
+			
+			tpl_assign('content', $content);
 		} else {
 			header('HTTP/1.0 404 Not Found');
 			die();

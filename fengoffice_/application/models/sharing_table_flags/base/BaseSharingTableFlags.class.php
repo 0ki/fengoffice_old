@@ -1,12 +1,6 @@
 <?php 
 
-  
-  /**
-  * ContactTelephones class
-  *
-  * @author Diego Castiglioni <diego.castiglioni@fengoffice.com>
-  */
-  abstract class BaseContactTelephones extends DataManager {
+  abstract class BaseSharingTableFlags extends DataManager {
   
     /**
     * Column name => Column type map
@@ -16,21 +10,21 @@
     */
     static private $columns = array(
     	'id' => DATA_TYPE_INTEGER,
-    	'contact_id' => DATA_TYPE_INTEGER, 
-    	'telephone_type_id' => DATA_TYPE_INTEGER, 
-    	'number' => DATA_TYPE_STRING,
-    	'name' => DATA_TYPE_STRING,
-    	'is_main' => DATA_TYPE_BOOLEAN
-    );
+    	'permission_group_id' => DATA_TYPE_INTEGER,
+    	'member_id' => DATA_TYPE_INTEGER,
+    	'execution_date' => DATA_TYPE_DATETIME,
+    	'permission_string' => DATA_TYPE_STRING,
+    	'created_by_id' => DATA_TYPE_INTEGER,
+	);
   
     /**
     * Construct
     *
-    * @return BaseContactTelephones 
+    * @return BaseSharingTableFlags 
     */
     function __construct() {
-      //Hook::fire('object_definition', 'ContactTelephone', self::$columns);
-      parent::__construct('ContactTelephone', 'contact_telephones', true);
+    	Hook::fire('object_definition', 'SharingTableFlag', self::$columns);
+      parent::__construct('SharingTableFlag', 'sharing_table_flags', true);
     } // __construct
     
     // -------------------------------------------------------
@@ -71,7 +65,7 @@
     * @return array or string
     */
     function getPkColumns() {
-      return 'id';
+      return array('id');
     } // getPkColumns
     
     /**
@@ -83,7 +77,7 @@
     */
     function getAutoIncrementColumn() {
       return 'id';
-    } // getAutoIncrementColumn
+    }
     
     // -------------------------------------------------------
     //  Finders
@@ -101,14 +95,14 @@
     *  - offset - limit offset, valid only if limit is present
     *  - limit
     * 
-    * @return one or ContactTelephones objects
+    * @return one or MailAccounts objects
     * @throws DBQueryError
     */
     function find($arguments = null) {
-      if(isset($this) && instance_of($this, 'ContactTelephones')) {
+      if(isset($this) && instance_of($this, 'SharingTableFlags')) {
         return parent::find($arguments);
       } else {
-        return ContactTelephones::instance()->find($arguments);
+        return SharingTableFlags::instance()->find($arguments);
       } // if
     } // find
     
@@ -117,13 +111,13 @@
     *
     * @access public
     * @param array $arguments
-    * @return one or ContactTelephones objects
+    * @return one or MailAccounts objects
     */
     function findAll($arguments = null) {
-      if(isset($this) && instance_of($this, 'ContactTelephones')) {
+      if(isset($this) && instance_of($this, 'SharingTableFlags')) {
         return parent::findAll($arguments);
       } else {
-        return ContactTelephones::instance()->findAll($arguments);
+        return SharingTableFlags::instance()->findAll($arguments);
       } // if
     } // findAll
     
@@ -132,13 +126,13 @@
     *
     * @access public
     * @param array $arguments
-    * @return ContactTelephone 
+    * @return MailAccount 
     */
     function findOne($arguments = null) {
-      if(isset($this) && instance_of($this, 'ContactTelephones')) {
+      if(isset($this) && instance_of($this, 'SharingTableFlags')) {
         return parent::findOne($arguments);
       } else {
-        return ContactTelephones::instance()->findOne($arguments);
+        return SharingTableFlags::instance()->findOne($arguments);
       } // if
     } // findOne
     
@@ -148,13 +142,13 @@
     * @access public
     * @param mixed $id
     * @param boolean $force_reload If true cache will be skipped and data will be loaded from database
-    * @return ContactTelephone 
+    * @return MailAccount 
     */
     function findById($id, $force_reload = false) {
-      if(isset($this) && instance_of($this, 'ContactTelephones')) {
+      if(isset($this) && instance_of($this, 'SharingTableFlags')) {
         return parent::findById($id, $force_reload);
       } else {
-        return ContactTelephones::instance()->findById($id, $force_reload);
+        return SharingTableFlags::instance()->findById($id, $force_reload);
       } // if
     } // findById
     
@@ -166,10 +160,10 @@
     * @return integer
     */
     function count($condition = null) {
-      if(isset($this) && instance_of($this, 'ContactTelephones')) {
+      if(isset($this) && instance_of($this, 'SharingTableFlags')) {
         return parent::count($condition);
       } else {
-        return ContactTelephones::instance()->count($condition);
+        return SharingTableFlags::instance()->count($condition);
       } // if
     } // count
     
@@ -181,10 +175,10 @@
     * @return boolean
     */
     function delete($condition = null) {
-      if(isset($this) && instance_of($this, 'ContactTelephones')) {
+      if(isset($this) && instance_of($this, 'SharingTableFlags')) {
         return parent::delete($condition);
       } else {
-        return ContactTelephones::instance()->delete($condition);
+        return SharingTableFlags::instance()->delete($condition);
       } // if
     } // delete
     
@@ -203,26 +197,26 @@
     * @return array
     */
     function paginate($arguments = null, $items_per_page = 10, $current_page = 1) {
-      if(isset($this) && instance_of($this, 'ContactTelephones')) {
+      if(isset($this) && instance_of($this, 'SharingTableFlags')) {
         return parent::paginate($arguments, $items_per_page, $current_page);
       } else {
-        return ContactTelephones::instance()->paginate($arguments, $items_per_page, $current_page);
+        return SharingTableFlags::instance()->paginate($arguments, $items_per_page, $current_page);
       } // if
     } // paginate
     
     /**
     * Return manager instance
     *
-    * @return ContactTelephones 
+    * @return SharingTableFlags 
     */
     function instance() {
       static $instance;
-      if(!instance_of($instance, 'ContactTelephones')) {
-        $instance = new ContactTelephones();
+      if(!instance_of($instance, 'SharingTableFlags')) {
+        $instance = new SharingTableFlags();
       } // if
       return $instance;
     } // instance
   
-  } // ContactTelephones 
+  } // SharingTableFlags 
 
 ?>

@@ -1268,12 +1268,13 @@ class Contact extends BaseContact {
      * @param boolean $isMain
      * @author Seba
      */
-    function addPhone($number, $phone_type, $isMain = false) {
+    function addPhone($number, $phone_type, $isMain = false, $name = "") {
     	$phone = new ContactTelephone() ;
     	$phone->setNumber($number);
     	$phone->setTelephoneTypeId(TelephoneTypes::getTelephoneTypeId($phone_type));
     	$phone->setContactId($this->getId());
     	$phone->setIsMain($isMain);
+    	$phone->setName($name);
     	$phone->save();
     }
     

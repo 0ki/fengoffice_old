@@ -308,6 +308,7 @@ CREATE TABLE `<?php echo $table_prefix ?>contact_telephones` (
   `contact_id` int(10) unsigned NOT NULL, 
   `telephone_type_id` int(10) unsigned NOT NULL, 
   `number` varchar(50) <?php echo $default_collation ?> NOT NULL default '',
+  `name` varchar(256) <?php echo $default_collation ?> NOT NULL DEFAULT '',
   `is_main` tinyint(1) unsigned NOT NULL default '0',
   PRIMARY KEY  (`id`),
   KEY `by_contact` (`contact_id`,`is_main`)
@@ -787,6 +788,17 @@ CREATE TABLE  `<?php echo $table_prefix ?>sharing_table` (
   KEY `group_id` (`group_id`),
   KEY `object_id` (`object_id`)  
 ) ENGINE=<?php echo $engine ?> <?php echo $default_charset ?>;
+
+CREATE TABLE `<?php echo $table_prefix ?>sharing_table_flags` (
+  `id` INTEGER UNSIGNED NOT NULL AUTO_INCREMENT,
+  `permission_group_id` INTEGER UNSIGNED NOT NULL,
+  `member_id` INTEGER UNSIGNED NOT NULL,
+  `execution_date` DATETIME NOT NULL,
+  `permission_string` TEXT <?php echo $default_collation ?> NOT NULL,
+  `created_by_id` INTEGER UNSIGNED NOT NULL,
+  PRIMARY KEY (`id`)
+)
+ENGINE = <?php echo $engine ?>;
 
 CREATE TABLE `<?php echo $table_prefix ?>contact_passwords` (
   `id` int(10) NOT NULL AUTO_INCREMENT,

@@ -221,7 +221,10 @@
 					<td class="td-pr"><?php echo label_tag(lang('wfax'), $genid.'profileFormWFaxNumber') ?> </td>
 					<td><?php echo text_field('contact[w_fax_number]', array_var($contact_data, 'w_fax_number'), array('id' => $genid.'profileFormWFaxNumber', 'tabindex' => '120', 'maxlength' => 50)) ?></td>
 				</tr><tr>
-					<td class="td-pr"><?php echo label_tag(lang('wassistant'), $genid.'profileFormWAssistantNumber') ?> </td>
+					<td class="td-pr"><?php echo label_tag(lang('wassistant'), $genid.'profileFormWAssistantName') ?> </td>
+					<td><?php echo text_field('contact[w_assistant_name]', array_var($contact_data, 'w_assistant_name'), array('id' => $genid.'profileFormWAssistantName', 'tabindex' => '125', 'maxlength' => 50)) ?></td>
+				</tr><tr>
+					<td class="td-pr"><?php echo label_tag(lang('assistant number'), $genid.'profileFormWAssistantNumber') ?> </td>
 					<td><?php echo text_field('contact[w_assistant_number]', array_var($contact_data, 'w_assistant_number'), array('id' => $genid.'profileFormWAssistantNumber', 'tabindex' => '125', 'maxlength' => 50)) ?></td>
 				</tr><tr>
 					<td class="td-pr"><?php echo label_tag(lang('wcallback'), $genid.'profileFormWCallbackNumber') ?></td>

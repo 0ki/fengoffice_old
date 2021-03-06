@@ -973,7 +973,11 @@ class TaskController extends ApplicationController {
 		$externalMilestones = ProjectMilestones::findAll(array('conditions' => $ext_milestone_conditions));
 		
 		// Get Users Info
-		$users = allowed_users_in_context(ProjectTasks::instance()->getObjectTypeId(), active_context(), ACCESS_LEVEL_READ, '', true);
+		if (logged_user()->isGuest()) {
+			$users = array(logged_user());
+		} else {
+			$users = allowed_users_in_context(ProjectTasks::instance()->getObjectTypeId(), active_context(), ACCESS_LEVEL_READ, '', true);
+		}
 		$allUsers = Contacts::getAllUsers(null, true);
 		
 		$user_ids = array(-1);

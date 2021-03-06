@@ -1,5 +1,5 @@
 
-	About Feng Office 2.6.2.2
+	About Feng Office 2.6.3
 	================================
 	
 	Feng Office is a Collaboration Platform and Project Management System.
@@ -101,37 +101,54 @@
 	
 	Changelog
 	=========
-
+	
+	Since 2.6.3-beta
+	----------------
+	bugfix: send email inline images attached instead of the link to tmp folder.
+	bugfix: superadmin not viewing all elements.
+	bugfix: task drag & drop error after deleting a task.
+	bugfix: ical feed does not work.
+	bugfix: cannot upload file in IE when a filtering by a member.
+	bugfix: when uploading files, use a generated name instead of filename to save it in tmp.
+	bugfix: send email inline images attached instead of the link to tmp folder.
+	bugfix: task drag & drop error when grouping by milestone.
+	bugfix: view day in calendar is not showing some tasks names.
+	bugfix: line break in timeslots comments.
+	bugfix: quick add task in milestone.
+	bugfix: time report does not list results if a cp condition is added.
+	bugfix: day calendar view show all task duration.
+	bugfix: time reports grouping by clients & projects fixed.
+	bugfix: time report - missing langs in group names when grouping by task.
+	bugfix: edit person and company notes text box size.
+	bugfix: when upload a new revision of a file keep old linked objects.
+	bugfix: dont allow guest users to see other guest users.
+	
+	
 	Since 2.6.2.1
 	----------------
+	bugfix: download actions were logged as 'read' instead of 'download'.
+
+	feature: user group config handler	
+	feature: permissions save in background process updated.
+	feature: hook to override action veiw in ajax requests.
+	feature: hook to edit application logs when saving them.
+	feature: hook to edit template properties when instantiating.
+	feature: allow to invoke hooks with dynamic list of parameters.
 	
-	module: expenses	
-	module: objectives
-	
-	feature: set tasks skills requirements for users
-	feature: gantt – task dependencies through drag and drop
-	feature: gantt – complete or open tasks from view
-	feature: calendar feed link recovered from Feng 1
-	feature: new custom time report
-	
+	Since 2.6.2
+	----------------
+	feature: save permissions in background upgraded.
 	bugfix: custom report export to csv.
 	bugfix: gantt undefined alert when a link task target is not present.
 	bugfix: gmt errors in calendar when displaying tasks or dragging tasks.
-	bugfix: when uploading a new revision of a file keep old linked objects.
+	bugfix: when upload a new revision of a file keep old linked objects.
 	bugfix: edit person and company notes text box size.
 	bugfix: members selectors combos breadcrumbs errors.
 	bugfix: milestones gmt problems in calendar view date.
 	bugfix: don't use gmt in task dates if config option Use time in task dates is  disabled.
-	bugfix: day calendar view shows all tasks duration.
-	bugfix: quick adding a task when grouping by milestone sometimes failed.
+	bugfix: day calendar view show all task duration.
+	bugfix: quick add task in milestone.
 	bugfix: line break in timeslots comments.
-	bugfix: view day in calendar is not showing some tasks names.
-	bugfix: performance issue when deleting member
-	bugfix: performance issue when changing member parent
-	bugfix: vcard import
-	bugfix: file upload error when there is no support for multiple file upload
-	bugfix: javascript error when editing a completed task.
-	
 	
 	Since 2.6.2-rc
 	----------------

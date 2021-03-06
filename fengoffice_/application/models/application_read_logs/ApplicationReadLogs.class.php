@@ -21,7 +21,7 @@ class ApplicationReadLogs extends BaseApplicationReadLogs {
 	 * @param boolean $save Save log object before you save it
 	 * @return ApplicationReadLog
 	 */
-	static function createLog(ApplicationDataObject $object, $workspaces, $action = null, $save = true, $log_data = '') {
+	static function createLog(ApplicationDataObject $object, $action = null, $save = true, $log_data = '') {
 		if(is_null($action)) {
 			$action = self::ACTION_READ;
 		} // if
@@ -88,13 +88,13 @@ class ApplicationReadLogs extends BaseApplicationReadLogs {
 	 * @param integer $offset
 	 * @return array
 	 */
-	static function getObjectLogs($object, $limit = null, $offset = null) {
+	static function getObjectLogs($object, $limit = null, $offset = null, $extra_conditions = "") {
 
 		return self::findAll(array(
-                    'conditions' => array('`rel_object_id` = (?)', $object->getId()),
-                    'order' => '`created_on` DESC',
-                    'limit' => $limit,
-                    'offset' => $offset,
+			'conditions' => array('`rel_object_id` = (?)' . $extra_conditions, $object->getId()),
+			'order' => '`created_on` DESC',
+			'limit' => $limit,
+			'offset' => $offset,
 		)); // findAll
 	} // getObjectLogs
 

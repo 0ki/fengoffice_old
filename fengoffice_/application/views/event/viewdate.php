@@ -61,8 +61,8 @@ $genid = gen_id();
 	if($task_filter != "hide"){
 		$tasks = ProjectTasks::getRangeTasksByUser($dtv, $dtv, ($user_filter != -1 ? $user : null), $task_filter);
 	}
-	// FIXME
-	$birthdays = array(); //Contacts::instance()->getRangeContactsByBirthday($dtv, $dtv);
+	
+	$birthdays = array();//Contacts::instance()->getRangeContactsByBirthday($dtv, $dtv, active_context_members(false));
 	
 	foreach ($result as $key => $event){
 		if ($event->getTypeId() > 1){

@@ -151,7 +151,8 @@ Ext.onReady(function(){
 				        			menu: {
 				        				items: og.contextManager.getDimensionMenu(),
 				        				cls: "context-menu"
-				        			}
+				        			},
+				        			hidden: !og.preferences['can_modify_navigation_panel']
 				        	    },
 				        	    '->',
 				        	    {	

@@ -856,7 +856,20 @@ class MailController extends ApplicationController {
 						} else {
 							$images = null;
 						}
-
+						
+						// Inline images
+						preg_match_all("/<img[^>]*src=[\"'][^\"']*[\"']/", $body, $matches);
+						foreach ($matches as $match) {
+							$pos = strpos($match[0], 'src="');
+							$url = substr($match[0], $pos + 5);
+							$url = substr($url, 0, -1);
+							if (str_starts_with($url, ROOT_URL."/tmp/")) {
+								$path = str_replace(ROOT_URL, ROOT, $url);
+								if (!is_array($images)) $images = array();
+								$images[$url] = $path;
+							}
+						}
+						
 						$mail->setSentDate(DateTimeValueLib::now());
 						$mail->setReceivedDate(DateTimeValueLib::now());
 						

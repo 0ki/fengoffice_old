@@ -127,7 +127,8 @@ INSERT INTO `<?php echo $table_prefix ?>cron_events` (`name`, `recursive`, `dela
 	('clear_tmp_folder', '1', '1440', '1', '1', '0000-00-00 00:00:00'),
 	('check_upgrade', '1', '1440', '1', '0', '0000-00-00 00:00:00'),
 	('import_google_calendar', '1', '10', '0', '0', '0000-00-00 00:00:00'),
-	('export_google_calendar', '1', '10', '0', '0', '0000-00-00 00:00:00');
+	('export_google_calendar', '1', '10', '0', '0', '0000-00-00 00:00:00'),
+	('check_sharing_table_flags', '1', '10', '1', '1', '0000-00-00 00:00:00');
 	
 INSERT INTO `<?php echo $table_prefix ?>object_reminder_types` (`name`) VALUES
   ('reminder_email'),
@@ -282,6 +283,7 @@ INSERT INTO `<?php echo $table_prefix ?>contact_config_options` (`category_name`
  ('dashboard', 'overviewAsList', '0', 'BoolConfigHandler', '1', '0', 'View Overview as list'),
  ('general', 'contacts_per_page', '50', 'IntegerConfigHandler', '0', '1200', NULL),
  ('listing preferences', 'breadcrumb_member_count', '5', 'IntegerConfigHandler', '0', '5', NULL),
+ ('general', 'can_modify_navigation_panel', '1', 'BoolConfigHandler', 1, 0, ''),
  ('general', 'timeReportDate', '4', 'IntegerConfigHandler', 1, 0, ''),
  ('general', 'timeReportDateStart', '0000-00-00 00:00:00', 'DateTimeConfigHandler', 1, 0, ''),
  ('general', 'timeReportDateEnd', '0000-00-00 00:00:00', 'DateTimeConfigHandler', 1, 0, ''),
@@ -289,6 +291,7 @@ INSERT INTO `<?php echo $table_prefix ?>contact_config_options` (`category_name`
  ('general', 'timeReportTimeslotType', '2', 'IntegerConfigHandler', 1, 0, ''),
  ('general', 'timeReportGroupBy', '0,0,0', 'StringConfigHandler', 1, 0, ''),
  ('general', 'timeReportAltGroupBy', '0,0,0', 'StringConfigHandler', 1, 0, ''),
+ ('general', 'timeReportShowEstimatedTime', '1', 'BoolConfigHandler', 1, 0, ''),
  ('general', 'timeReportShowBilling', '0', 'BoolConfigHandler', 1, 0, '');
  
 

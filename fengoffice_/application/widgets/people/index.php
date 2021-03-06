@@ -84,6 +84,6 @@
 	$render_add = can_manage_security(logged_user());
 	$genid = gen_id();
 	
-	if ($total > 0 || $render_add) {
+	if (($total > 0 || $render_add) && !logged_user()->isGuest()) {
 		include_once 'template.php';
 	}

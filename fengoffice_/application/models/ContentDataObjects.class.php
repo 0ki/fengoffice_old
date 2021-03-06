@@ -465,7 +465,7 @@ abstract class ContentDataObjects extends DataManager {
 					AND sh.group_id  IN (SELECT permission_group_id FROM ".TABLE_PREFIX."contact_permission_groups WHERE contact_id = $uid)
 			)";
 			
-			if ($this instanceof Contacts && $this->object_type_name == 'contact' && can_manage_contacts(logged_user())) {
+			if (logged_user()->isAdministrator() ||($this instanceof Contacts && $this->object_type_name == 'contact' && can_manage_contacts(logged_user()))) {
 				$permissions_condition = "true";
 			}
 			

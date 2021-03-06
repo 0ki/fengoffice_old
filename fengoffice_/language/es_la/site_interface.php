@@ -408,6 +408,7 @@
 	'phone 2' => 'Tel. 2',
 	'fax' => 'Fax',
 	'assistant' => 'Asistente',
+	'assistant number' => 'Número del asistente',
 	'callback' => 'Callback',
 	'mobile' => 'Celular',
 	'pager' => 'Pager',

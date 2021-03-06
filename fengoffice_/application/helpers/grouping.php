@@ -40,7 +40,12 @@
 		$max_level = 0;
 		
 		foreach ($objects as $object) {
-			$object_id = $object instanceof Timeslot && $object->getColumnValue('rel_object_id') > 0 ? $object->getRelObjectId() : $object->getId();
+			if (($object instanceof Timeslot || $object instanceof ApplicationReadLog || $object instanceof ApplicationLog) && $object->getColumnValue('rel_object_id') > 0) {
+				$object_id = $object->getRelObjectId();
+			} else {
+				$object_id = $object->getId();
+			}
+			
 			$members = ObjectMembers::getMembersByObjectAndDimension($object_id, $dimension_id, "AND om.is_optimization = 0");
 			if (is_array($members) && count($members) > 0) {
 				if (count($members) > 1) {

@@ -186,9 +186,9 @@ ogTasks.drawTaskForm = function(container_id, data){
 	}
 	
 	html +="<div id='member_selectors_quick_add'>";
-	og.config.quick_add_task_combos.forEach(function(entry) {
-		html += dimCombo (entry);
-	});	
+	for (x in og.config.quick_add_task_combos) {
+		html += dimCombo (og.config.quick_add_task_combos[x]);
+	}
 	html +="</div>";
 	// </MEMBERS SELECTORS>
 	

@@ -42,4 +42,18 @@ class Hook {
 			}
 		}
 	}
+	
+	/**
+	 * Allow to call hooks with dynamic parameters
+	 */
+	static function invoke($function) { // Hook with dynamic arguments.
+		$args = func_get_args ();
+		unset ( $args [0] ); // Remove $function from arguments.
+		foreach ( self::$hooks as $hook ) {
+			$callback = $hook . "_" . $function;
+			if (function_exists ( $callback )) {
+				call_user_func_array ( $callback, $args );
+			}
+		}
+	}
 }

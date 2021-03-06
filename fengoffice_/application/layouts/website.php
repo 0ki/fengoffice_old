@@ -410,7 +410,8 @@ og.preferences = {
 	'access_member_after_add': <?php echo user_config_option('access_member_after_add') ? '1' : '0' ?>,
 	'access_member_after_add_remember': <?php echo user_config_option('access_member_after_add_remember') ? '1' : '0' ?>,
 	'listing_preferences': [],
-	'breadcrumb_member_count': <?php echo user_config_option('breadcrumb_member_count') ?>
+	'breadcrumb_member_count': <?php echo user_config_option('breadcrumb_member_count') ?>,
+	'can_modify_navigation_panel': <?php echo user_config_option('can_modify_navigation_panel') ? '1' : '0' ?>
 };
 <?php
 	$listing_preferences = ContactConfigOptions::getOptionsByCategoryName('listing preferences');
@@ -532,7 +533,6 @@ og.dimensionPanels = [
 			hidden: <?php echo (int) ! $dimension->getIsRoot(); ?>,
 			isManageable: <?php echo (int) $dimension->getIsManageable() ?>,
 			quickAdd: <?php echo ( $dimension->getOptions(1) && isset($dimension->getOptions(1)->quickAdd) && $dimension->getOptions(1)->quickAdd ) ? 'true' : 'false'  ?>,
-					
 			minHeight: 10
 			//animate: false,
 			//animCollapse: false

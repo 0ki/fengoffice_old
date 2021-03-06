@@ -112,7 +112,7 @@ class ProjectTasks extends BaseProjectTasks {
 		//set dates to gmt 0 for sql
 		$from_date->advance(-logged_user()->getTimezone() * (3600));
 		$to_date->advance(-logged_user()->getTimezone() * (3600));	
-		
+			
 		$assignedFilter = '';
 		if ($assignedUser instanceof Contact) {
 			$assignedFilter = ' AND (`assigned_to_contact_id` = ' . $assignedUser->getId () . ' OR `assigned_to_contact_id` = \'' . $assignedUser->getCompanyId () . '\') ';

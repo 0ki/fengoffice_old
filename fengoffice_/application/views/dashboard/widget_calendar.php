@@ -307,7 +307,7 @@
 							
 						$contact = $event;
 											
-						$bday = $contact->getOBirthday();
+						$bday = $contact->getBirthday();
 
 						$now = mktime(0, 0, 0, $dtv->getMonth(), $dtv->getDay(), $dtv->getYear());
 						

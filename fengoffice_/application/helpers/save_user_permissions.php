@@ -44,7 +44,68 @@ try {
 		'root_perm_genid' => $root_permissions_genid,
 	);
 	
-	save_permissions($pg_id, $is_guest, $perms, true);
+	// save permissions
+	try {
+		DB::beginWork();
+		$result = save_permissions($pg_id, $is_guest, $perms, true, false, false);
+		DB::commit();
+	} catch (Exception $e) {
+		DB::rollback();
+		throw $e;
+	}
+	
+	// update sharing table
+	try {
+		// create flag for this $pg_id
+		DB::beginWork();
+		$flag = new SharingTableFlag();
+		$flag->setPermissionGroupId($pg_id);
+		$flag->setMemberId(0);
+		$flag->setPermissionString($permissions);
+		$flag->setExecutionDate(DateTimeValueLib::now());
+		$flag->setCreatedById(logged_user()->getId());
+		$flag->save();
+		DB::commit();
+		
+		$root_permissions_sharing_table_add = array();
+		$root_permissions_sharing_table_delete = array();
+		
+		foreach ($root_permissions as $name => $value) {
+			if (str_starts_with($name, $rp_genid . 'rg_root_')) {
+				$rp_ot = substr($name, strrpos($name, '_')+1);
+				
+				if (is_numeric($rp_ot) && $rp_ot > 0 && $value == 0) {
+					$root_permissions_sharing_table_delete[] = $rp_ot;
+				}
+				if (!is_numeric($rp_ot) || $rp_ot <= 0 || $value < 1) continue;
+				
+				$root_permissions_sharing_table_add[] = $rp_ot;
+			}
+		}
+		$rp_info = array('root_permissions_sharing_table_delete' => $root_permissions_sharing_table_delete, 'root_permissions_sharing_table_add' => $root_permissions_sharing_table_add);
+		
+		// update sharing table
+		DB::beginWork();
+		$sharingTablecontroller = new SharingTableController();
+		$sharingTablecontroller->afterPermissionChanged($pg_id, json_decode($permissions), $rp_info);
+		// delete flag
+		$flag->delete();
+		DB::commit();
+		
+	} catch (Exception $e) {
+		DB::rollback();
+		throw $e;
+	}
+	
+	// fire hooks
+	try {
+		DB::beginWork();
+		Hook::fire('after_save_contact_permissions', $pg_id, $pg_id);
+		DB::commit();
+	} catch (Exception $e) {
+		DB::rollback();
+		throw $e;
+	}
 	
 	@unlink($permissions_filename);
 	@unlink($sys_permissions_filename);

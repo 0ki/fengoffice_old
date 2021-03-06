@@ -824,6 +824,7 @@ ogTasks.getTask = function(id){
 }
 
 ogTasks.removeTask = function(id){
+	rx__TasksDrag.removeTaskToMove(id);
 	for (var i = 0; i < this.Tasks.length; i++) {
 		if (this.Tasks[i].id == id){
 			if (this.Tasks[i].milestoneId > 0) {

@@ -786,6 +786,7 @@ class AccessController extends ApplicationController {
 				$user->save();
 				set_user_config_option('reset_password', '', $user->getId());
 				flash_success(lang('success reset password'));
+				CompanyWebsite::instance()->logUserOut();
 				$this->redirectTo('access', 'login');
 			}catch(Exception $e){
 				flash_error($e->getMessage());

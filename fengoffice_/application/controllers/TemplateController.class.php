@@ -259,7 +259,6 @@ class TemplateController extends ApplicationController {
 				'description' => $cotemplate->getDescription(),
 			); // array
 			foreach($cotemplate->getObjects() as $obj){
-				if (!$obj instanceof ContentDataObject) continue;
 				$object_properties[$obj->getObjectId()] = TemplateObjectProperties::getPropertiesByTemplateObject(get_id(), $obj->getObjectId());
 			}
 			
@@ -654,6 +653,11 @@ class TemplateController extends ApplicationController {
 					}
 					$copy->save();
 				}
+				/**
+				 * Allow to override property value in the new instantiated object
+				 */
+				$args = array('property' => $property, 'object' => $copy, 'value' => $value, 'parameterValues' => $parameterValues);
+				Hook::fire('instantiate_template_properties', $args, $ret);
 			}
 			
 			// subscribe assigned to
@@ -796,6 +800,11 @@ class TemplateController extends ApplicationController {
 		$props = array();
 		$type = "ProjectTasks";
 		eval('$objectProperties = '.$type.'::getTemplateObjectProperties();');
+		/**
+		 * Allow to add/edit/delete template object properties
+		 */
+		Hook::fire('get_template_object_properties', $type, $objectProperties);
+		
 		foreach($objectProperties as $property){
 			$props[] = array('id' => $property['id'], 'name' => lang('field '.$type.' '.$property['id']), 'type' => $property['type']);
 		}

@@ -29,7 +29,7 @@ function complete_migration_print($text) {
 	if (COMPLETE_MIGRATION_OUT == 'console') {
 		echo $text;
 	} else if (COMPLETE_MIGRATION_OUT == 'file') {
-		file_put_contents(ROOT . "/complete_migration_out.txt", $text);
+		file_put_contents(ROOT . "/complete_migration_out.txt", $text, FILE_APPEND);
 	}
 }
 
@@ -49,7 +49,7 @@ if (!complete_migration_check_table_exists(TABLE_PREFIX . "processed_objects", D
 				) ENGINE = InnoDB;");
 }
 
-
+try {
 
 $sql = "";
 $first_row = true;
@@ -174,4 +174,9 @@ if (COMPLETE_MIGRATION_OUT != 'console') {
 	if (isset($status_message)) $_SESSION['status_messages']['complete_migration'] = $status_message;
 
 	redirect_to(ROOT_URL . "/" . PUBLIC_FOLDER ."/upgrade/", false);
+}
+
+} catch (Exception $e) {
+	echo "ERROR: ".$e->getMessage()."\n";
+	echo "Trace:\n".$e->getTraceAsString()."\n";
 }

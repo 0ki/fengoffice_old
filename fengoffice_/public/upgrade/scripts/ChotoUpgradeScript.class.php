@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Choto upgrade script will upgrade FengOffice 2.5.1 to FengOffice 2.6.2.2
+ * Choto upgrade script will upgrade FengOffice 2.5.1 to FengOffice 2.6.3
  *
  * @package ScriptUpgrader.scripts
  * @version 1.0
@@ -40,7 +40,7 @@ class ChotoUpgradeScript extends ScriptUpgraderScript {
 	function __construct(Output $output) {
 		parent::__construct($output);
 		$this->setVersionFrom('2.5.1.5');
-		$this->setVersionTo('2.6.2.2');
+		$this->setVersionTo('2.6.3');
 	} // __construct
 
 	function getCheckIsWritable() {
@@ -157,12 +157,12 @@ class ChotoUpgradeScript extends ScriptUpgraderScript {
 					INSERT INTO `".$t_prefix."contact_config_options` (`category_name`, `name`, `default_value`, `config_handler_class`, `is_system`, `option_order`, `dev_comment`) VALUES
 					('task panel', 'quick_add_task_view_dimensions_combos', '', 'ManageableDimensionsConfigHandler', '0', '0', 'dimensions ids for skip')
 					ON DUPLICATE KEY UPDATE `name`=`name`;
-										
+					
 					INSERT INTO `".$t_prefix."contact_config_options` (`category_name`, `name`, `default_value`, `config_handler_class`, `is_system`, `option_order`, `dev_comment`) VALUES
 					('time panel', 'add_timeslot_view_dimensions_combos', '', 'ManageableDimensionsConfigHandler', '0', '0', 'dimensions ids for skip'),
 					('task panel', 'show_notify_checkbox_in_quick_add', '0', 'BoolConfigHandler', 0, 0, 'Show notification checkbox in quick add task view')
 					ON DUPLICATE KEY UPDATE `name`=`name`;
-										 
+					
 					UPDATE `".$t_prefix."contact_config_categories` 
 					 SET is_system = 0
 					 WHERE name='time panel';
@@ -170,7 +170,8 @@ class ChotoUpgradeScript extends ScriptUpgraderScript {
 				
 				$upgrade_script .= "
 					INSERT INTO `".$t_prefix."config_options` (`category_name`, `name`, `value`, `config_handler_class`, `is_system`, `option_order`, `dev_comment`) VALUES
-					 ('general', 'milestone_selector_filter', 'current_and_parents', 'MilestoneSelectorFilterConfigHandler', 0, 0, NULL);
+					 ('general', 'milestone_selector_filter', 'current_and_parents', 'MilestoneSelectorFilterConfigHandler', 0, 0, NULL)
+					ON DUPLICATE KEY UPDATE `name`=`name`;
 				";
 				$upgrade_script .= "
 					UPDATE ".$t_prefix."dimension_object_type_contents SET is_multiple=1 
@@ -188,16 +189,16 @@ class ChotoUpgradeScript extends ScriptUpgraderScript {
 					UPDATE `".$t_prefix."config_options` SET `value` = '1' WHERE `name` = 'use tasks dependencies';
 				";
 			}
-						
+			
 			if (version_compare($installed_version, '2.6.0.2') < 0) {
 				$upgrade_script .= "
-					UPDATE `".$t_prefix."contact_config_options`
-					 SET default_value = ''
-					 WHERE name='quick_add_task_view_dimensions_combos';
+				UPDATE `".$t_prefix."contact_config_options`
+				SET default_value = ''
+				WHERE name='quick_add_task_view_dimensions_combos';
 					
-					UPDATE `".$t_prefix."contact_config_options`
-					 SET default_value = ''
-					 WHERE name='add_timeslot_view_dimensions_combos';
+				UPDATE `".$t_prefix."contact_config_options`
+				SET default_value = ''
+				WHERE name='add_timeslot_view_dimensions_combos';
 				";
 			}
 			
@@ -218,6 +219,44 @@ class ChotoUpgradeScript extends ScriptUpgraderScript {
 				$upgrade_script .= "
 					INSERT INTO `".$t_prefix."contact_config_options` (`category_name`, `name`, `default_value`, `config_handler_class`, `is_system`, `option_order`, `dev_comment`) VALUES 
 						('general', 'timeReportShowEstimatedTime', '1', 'BoolConfigHandler', 1, 0, '')
+					ON DUPLICATE KEY UPDATE name=name;
+				";
+			}
+			
+			if (version_compare($installed_version, '2.6.3-beta') < 0) {
+				
+				if (!$this->checkTableExists($t_prefix."sharing_table_flags", $this->database_connection)) {
+					$upgrade_script .= "
+						CREATE TABLE `".$t_prefix."sharing_table_flags` (
+						  `id` INTEGER UNSIGNED NOT NULL AUTO_INCREMENT,
+						  `permission_group_id` INTEGER UNSIGNED NOT NULL,
+						  `member_id` INTEGER UNSIGNED NOT NULL,
+						  `execution_date` DATETIME NOT NULL,
+						  `permission_string` TEXT collate utf8_unicode_ci NOT NULL,
+						  `created_by_id` INTEGER UNSIGNED NOT NULL,
+						  PRIMARY KEY (`id`)
+						)
+						ENGINE = InnoDB;
+					";
+				}
+				
+				$upgrade_script .= "
+					INSERT INTO `".$t_prefix."cron_events` (`name`, `recursive`, `delay`, `is_system`, `enabled`, `date`) VALUES
+						('check_sharing_table_flags', '1', '10', '1', '1', '0000-00-00 00:00:00')
+					ON DUPLICATE KEY UPDATE `name`=`name`;
+				";
+			}
+			
+			if (version_compare($installed_version, '2.6.3-rc') < 0) {
+			
+				if (!$this->checkColumnExists($t_prefix."contact_telephones", "name", $this->database_connection)) {
+					$upgrade_script .= "
+						ALTER TABLE `".$t_prefix."contact_telephones` ADD COLUMN `name` VARCHAR(256) NOT NULL DEFAULT '';
+					";
+				}
+				$upgrade_script .= "
+					INSERT INTO `".$t_prefix."contact_config_options` (`category_name`, `name`, `default_value`, `config_handler_class`, `is_system`, `option_order`, `dev_comment`) VALUES 
+						('general', 'can_modify_navigation_panel', '1', 'BoolConfigHandler', 1, 0, '')
 					ON DUPLICATE KEY UPDATE name=name;
 				";
 			}

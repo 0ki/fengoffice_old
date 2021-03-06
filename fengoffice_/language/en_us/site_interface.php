@@ -527,6 +527,7 @@ return array(
   'phone 2' => 'Phone 2',
   'fax' => 'Fax',
   'assistant' => 'Assistant',
+  'assistant number' => 'Assistant number',
   'callback' => 'Callback',
   'mobile' => 'Mobile',
   'pager' => 'Pager',

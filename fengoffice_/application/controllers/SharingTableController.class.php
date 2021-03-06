@@ -89,6 +89,8 @@ class  SharingTableController extends ApplicationController {
 		// DELETE THE AFFECTED OBJECTS FROM SHARING TABLE
 		foreach ($all_del_conditions as $delete_conditions) {
 			
+			if (!is_array($delete_conditions) || count($delete_conditions) == 0) continue;
+			
 			// check if the permission group still can view any of the affected objects (if they are classified in another dimension member)
 			$del_objs = DB::executeAll("SELECT object_id $from WHERE ".implode(' OR ' , $delete_conditions ));
 			$del_objs = array_flat($del_objs);

@@ -113,7 +113,8 @@ function core_dim_create_member_associations(Contact $contact, $contact_member, 
 	
 	$affected_dimensions = array();
 	if ($contact->isUser()) {
-		$del_sub_query = "SELECT member_id FROM ".TABLE_PREFIX."contact_member_permissions WHERE permission_group_id='".$contact->getPermissionGroupId()."'";
+		$contact_pgs = $contact->getPermissionGroupIds();
+		$del_sub_query = "SELECT member_id FROM ".TABLE_PREFIX."contact_member_permissions WHERE permission_group_id in (".implode(',', $contact_pgs).")";
 	} else {
 		$del_sub_query = "SELECT member_id FROM ".TABLE_PREFIX."object_members WHERE object_id='".$contact->getId()."'";
 	}

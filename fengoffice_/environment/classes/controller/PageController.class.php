@@ -84,6 +84,9 @@ abstract class PageController extends Controller {
 		if(!is_null($template)) $this->setTemplate($template);
 		if(!is_null($layout)) $this->setLayout($layout);
 
+		/**
+		 * Allow to override views
+		 */
 		Hook::fire('override_action_view', $this, $ret);
 		
 		// Get template and layout paths
@@ -109,6 +112,11 @@ abstract class PageController extends Controller {
 	function getContent($template = null) {
 		if(!is_null($template)) $this->setTemplate($template);
 
+		/**
+		 * Allow to override views when ajax request is sent
+		 */
+		Hook::fire('override_action_view', $this, $ret);
+		
 		$template_path = $this->getTemplatePath();
 		$layout_path = $this->getLayoutPath();
 

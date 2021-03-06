@@ -185,6 +185,7 @@ try {
 if (Env::isDebuggingTime()) {
 	TimeIt::stop();
 	if (array_var($_REQUEST, 'a') != 'popup_reminders') {
+		Env::useHelper('format');
 		$report = TimeIt::getTimeReportByType();
 		$report .= "\nMemory Usage: " . format_filesize(memory_get_usage(true));
 		file_put_contents('cache/log.time', "Request: ".print_r($_REQUEST,1)."\nTime Report:\n------------\n$report\n--------------------------------------\n", FILE_APPEND);

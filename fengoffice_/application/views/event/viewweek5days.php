@@ -67,8 +67,7 @@ if (!$max_events_to_show) $max_events_to_show = 3;
     	$tasks = ProjectTasks::getRangeTasksByUser($date_start, $date_end, ($user_filter != -1 ? $user : null), $task_filter);
     }
     
-    // FIXME
-	$birthdays = array(); //Contacts::instance()->getRangeContactsByBirthday($date_start, $date_end);
+    $birthdays = array();//Contacts::instance()->getRangeContactsByBirthday($date_start, $date_end, active_context_members(false));
 
 	$tmp_tasks = array();
 	foreach ($tasks as $task) {
@@ -170,7 +169,7 @@ if (!$max_events_to_show) $max_events_to_show = 3;
 
 		if (is_array($birthdays)) {
 			foreach($birthdays as $c) {
-				if ($dates[$day_of_week]->getTimestamp() == mktime(0,0,0,$c->getOBirthday()->getMonth(),$c->getOBirthday()->getDay(),$dates[$day_of_week]->getYear())) {
+				if ($dates[$day_of_week]->getTimestamp() == mktime(0,0,0,$c->getBirthday()->getMonth(),$c->getBirthday()->getDay(),$dates[$day_of_week]->getYear())) {
 					$alldayevents[$day_of_week][] = $c;
 				}
 			}
@@ -401,7 +400,7 @@ if (!$max_events_to_show) $max_events_to_show = 3;
 										$objType = 'contact';
 										$subject = clean($event->getObjectName());
 										$img_url = image_url('/16x16/contacts.png');
-										$due_date = new DateTimeValue(mktime(0,0,0, $event->getOBirthday()->getMonth(), $event->getOBirthday()->getDay(), $dates[$day_of_week]->getYear()));
+										$due_date = new DateTimeValue(mktime(0,0,0, $event->getBirthday()->getMonth(), $event->getBirthday()->getDay(), $dates[$day_of_week]->getYear()));
 										$divtype = '<span class="italic">' . lang('birthday') . '</span> - ';
 									}
 									$tipBody = str_replace("\r", '', $tipBody);

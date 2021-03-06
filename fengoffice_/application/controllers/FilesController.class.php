@@ -581,14 +581,14 @@ class FilesController extends ApplicationController {
 			//Add properties
 			$object_controller->add_to_members($file, $member_ids);
 				
-			//If New file
+			//If New file 
 			if($upload_option == -1){
 				//Add links
 				$object_controller->link_to_new_object($file);
 				$object_controller->add_subscribers($file);
-				$object_controller->add_custom_properties($file);
+				$object_controller->add_custom_properties($file);								
 			}
-			
+				
 			ApplicationLogs::createLog($file,ApplicationLogs::ACTION_ADD);
 			return $file->getId();
 		}catch(Exception $e) {
@@ -922,7 +922,7 @@ class FilesController extends ApplicationController {
 		$multiple = isset($_FILES['file_file']) && is_array($_FILES['file_file']['name']);
 		if($multiple){
 			foreach ($_FILES['file_file']['name'] as $file) {
-				$fname[] = ROOT . "/tmp/$file";
+				$fname[] = ROOT . "/tmp/".gen_id();
 			}
 		}else{
 			$fname = ROOT . "/tmp/$id";

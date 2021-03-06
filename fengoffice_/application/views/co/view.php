@@ -60,8 +60,9 @@
 			<?php if (isset($mail_conversation_block) && $mail_conversation_block != '') echo $mail_conversation_block;
 						
 				if (!isset($show_linked_objects)) $show_linked_objects = true;
-				if($object->isLinkableObject() && !$object->isTrashed()&& $show_linked_objects)
+				if($object->isLinkableObject() && !$object->isTrashed()&& $show_linked_objects) {
 					echo render_object_links_main($object, $object->canEdit(logged_user()));
+				}
 				  ?>
 		</td></tr>
 		

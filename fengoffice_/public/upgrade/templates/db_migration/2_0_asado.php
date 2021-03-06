@@ -710,6 +710,29 @@ INSERT INTO `fo_template_object_properties` (`template_id`, `object_id`, `proper
  FROM `og_template_object_properties` `c`;
 
 
+
+INSERT INTO `fo_template_tasks`(`template_id`, `session_id`, `object_id`, `parent_id`, `text`, `due_date`, `start_date`, `assigned_to_contact_id`, `assigned_on`, `assigned_by_id`, `time_estimate`, `completed_on`, `completed_by_id`, `started_on`, `started_by_id`, `priority`, `state`, `order`, `milestone_id`, `is_template`, `from_template_id`, `from_template_object_id`, `repeat_end`, `repeat_forever`, `repeat_num`, `repeat_d`, `repeat_m`, `repeat_y`, `repeat_by`, `object_subtype`, `percent_completed`, `use_due_time`, `use_start_time`, `original_task_id`, `type_content`)
+  SELECT fo_template_objects.template_id,'0' AS `session_id` ,fo_project_tasks.`object_id`, `parent_id`, `text`, `due_date`, `start_date`, `assigned_to_contact_id`, `assigned_on`, `assigned_by_id`, `time_estimate`, `completed_on`, `completed_by_id`, `started_on`, `started_by_id`, `priority`, `state`, `order`, `milestone_id`, `is_template`, `from_template_id`, `from_template_object_id`, `repeat_end`, `repeat_forever`, `repeat_num`, `repeat_d`, `repeat_m`, `repeat_y`, `repeat_by`, `object_subtype`, `percent_completed`, `use_due_time`, `use_start_time`, `original_task_id`, `type_content`
+	FROM `fo_template_objects`
+	INNER JOIN `fo_project_tasks` ON fo_template_objects.object_id = fo_project_tasks.object_id AND fo_project_tasks.is_template =1
+ON DUPLICATE KEY UPDATE session_id = 0;
+
+INSERT INTO `fo_template_tasks`(`template_id`, `session_id`, `object_id`, `parent_id`, `text`, `due_date`, `start_date`, `assigned_to_contact_id`, `assigned_on`, `assigned_by_id`, `time_estimate`, `completed_on`, `completed_by_id`, `started_on`, `started_by_id`, `priority`, `state`, `order`, `milestone_id`, `is_template`, `from_template_id`, `from_template_object_id`, `repeat_end`, `repeat_forever`, `repeat_num`, `repeat_d`, `repeat_m`, `repeat_y`, `repeat_by`, `object_subtype`, `percent_completed`, `use_due_time`, `use_start_time`, `original_task_id`, `type_content`)
+  SELECT '0' AS `template_id`,'0' AS `session_id`, pt.*
+	FROM `fo_project_tasks` AS pt
+	WHERE pt.parent_id IN (
+    SELECT pt2.`object_id` FROM `fo_template_tasks` AS pt2
+  )
+ON DUPLICATE KEY UPDATE fo_template_tasks.parent_id = pt.parent_id;
+
+UPDATE fo_template_tasks AS t1, fo_template_tasks AS t2 SET t1.template_id=t2.template_id
+WHERE t1.parent_id=t2.object_id;
+
+UPDATE fo_objects o INNER JOIN fo_project_tasks t on t.object_id=o.id
+SET o.object_type_id=(SELECT id from fo_object_types WHERE name='project_tasks')
+WHERE t.is_template=1;
+ 
+ 
  -- timeslots
 
 INSERT INTO `fo_objects` (`name`, `f1_id`, `object_type_id`, `created_on`, `created_by_id`, `updated_on`, `updated_by_id`)

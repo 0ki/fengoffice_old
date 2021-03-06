@@ -49,9 +49,16 @@ class Contacts extends BaseContacts {
 		return Contacts::instance()->count($conditions);
 	}
 	
-	static function getAllUsers($extra_conditions = "", $include_disabled = false) {
+	/**
+	 * @param string $extra_conditions: Extra conditions for users query (default '')
+	 * @param boolean $include_disabled: Include or not the disabled users (default false)
+	 * @param string $order_by: Query order (default "first_name, surname, username")
+	 * @return array of Contact
+	 */
+	static function getAllUsers($extra_conditions = "", $include_disabled = false, $order_by = "") {
+		if ($order_by == "") $order_by = "first_name, surname, username";
 		if (!$include_disabled) $extra_conditions .= " AND `disabled` = 0";
-		return self::findAll(array("conditions" => "`user_type` <> 0 $extra_conditions", "order" => "first_name ASC"));
+		return self::findAll(array("conditions" => "`user_type` <> 0 $extra_conditions", "order" => $order_by));
 	}
 	
 	
@@ -168,7 +175,7 @@ class Contacts extends BaseContacts {
 		return self::findAll(array('conditions' => $conditions));
 	}
 	
-	function getRangeContactsByBirthday($from, $to, $tags = '', $project = null) {
+	function getRangeContactsByBirthday($from, $to, $member_ids=null) {
 		if (!$from instanceof DateTimeValue || !$to instanceof DateTimeValue || $from->getTimestamp() > $to->getTimestamp()) {
 			return array();
 		}
@@ -180,13 +187,15 @@ class Contacts extends BaseContacts {
 		$year1 = $from->getYear();
 		$year2 = $to->getYear();
 		if ($year1 == $year2) {
-			$condition = 'DAYOFYEAR(`birthday`) >= DAYOFYEAR(' . DB::escape($from) . ')' .
-					' AND DAYOFYEAR(`birthday`) <= DAYOFYEAR(' . DB::escape($to) . ')';
+			$condition = 'DAYOFYEAR(`birthday`) >= DAYOFYEAR(' . DB::escape($from) . ')' . ' AND DAYOFYEAR(`birthday`) <= DAYOFYEAR(' . DB::escape($to) . ')';
 		} else if ($year2 - $year1 == 1) {
-			$condition = 'DAYOFYEAR(`birthday`) >= DAYOFYEAR(' . DB::escape($from) . ')' .
-					' OR DAYOFYEAR(`birthday`) <= DAYOFYEAR(' . DB::escape($to) . ')';
+			$condition = '(DAYOFYEAR(`birthday`) >= DAYOFYEAR(' . DB::escape($from) . ')' . ' OR DAYOFYEAR(`birthday`) <= DAYOFYEAR(' . DB::escape($to) . '))';
 		} else {
 			$condition = "`birthday` <> '0000-00-00 00:00:00'";
+		}
+		
+		if (!is_null($member_ids) && count($member_ids) > 0) {
+			$condition .= " AND object_id IN (SELECT om.object_id FROM ".TABLE_PREFIX."object_members om WHERE om.member_id IN (".implode(',', $member_ids)."))";
 		}
 		
 		return $this->getAllowedContacts($condition);
@@ -207,7 +216,8 @@ class Contacts extends BaseContacts {
 			'contact[w_phone_number]' => lang('phone'),
 			'contact[w_phone_number2]' => lang('phone 2'),
 			'contact[w_fax_number]' => lang('fax'),
-			'contact[w_assistant_number]' => lang('assistant'),
+			'contact[w_assistant_name]' => lang('assistant'),
+			'contact[w_assistant_number]' => lang('assistant number'),
 			'contact[w_callback_number]' => lang('callback'),
 			
 			'contact[h_web_page]' => lang('website'),

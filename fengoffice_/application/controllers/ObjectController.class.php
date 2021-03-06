@@ -1408,8 +1408,14 @@ class ObjectController extends ApplicationController {
 			return;
 		}
 		
-		$logs = ApplicationLogs::getObjectLogs($obj,false,true);
-		$logs_read = ApplicationReadLogs::getObjectLogs($obj);
+		// if logged user is guest don't show other users logs
+		$extra_conditions = "";
+		if (logged_user()->isGuest()) {
+			$extra_conditions = " AND `created_by_id` = ".logged_user()->getId();
+		}
+		
+		$logs = ApplicationLogs::getObjectLogs($obj, false, true, null, null, $extra_conditions);
+		$logs_read = ApplicationReadLogs::getObjectLogs($obj, null, null, $extra_conditions);
 		
 		tpl_assign('object',$obj);
 		tpl_assign('logs',$logs);

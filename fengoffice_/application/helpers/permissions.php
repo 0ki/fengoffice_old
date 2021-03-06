@@ -269,6 +269,9 @@
 	 * @return boolean
 	 */
 	function can_read_sharing_table(Contact $user, $object_id) {
+		if($user->isAdministrator()){
+			return true;
+		}
 		$perm = SharingTables::instance()->findOne(array('conditions' => array("object_id=? AND group_id IN (SELECT permission_group_id FROM ".TABLE_PREFIX."contact_permission_groups WHERE contact_id = '".$user->getId()."')", $object_id)));
 		return !is_null($perm);
 	}
@@ -567,6 +570,13 @@
 					
 				}
 				
+				if ($dim->deniesAllForContact($pg_id)) {
+					$cmp_count = ContactMemberPermissions::count("`permission_group_id` = $pg_id and member_id in (select m.id from ".TABLE_PREFIX."members m where m.dimension_id=".$dim->getId().")");
+					if ($cmp_count > 0) {
+						$dim->setContactDimensionPermission($pg_id, 'check');
+					}
+				}
+				
 				if ($dim->hasAllowAllForContact($pg_id)) {
 					if (isset($members[$dim->getId()])) {
 						foreach ($members[$dim->getId()] as $mem) {
@@ -630,7 +640,7 @@
 	}
 	
 	
-	function save_permissions($pg_id, $is_guest = false, $permissions_data = null, $save_cmps = true) {
+	function save_permissions($pg_id, $is_guest = false, $permissions_data = null, $save_cmps = true, $update_sharing_table = true, $fire_hook = true) {
 	
 		if (is_null($permissions_data)) {
 			
@@ -663,7 +673,6 @@
 			$permissionsString = array_var($permissions_data, 'permissions');
 			
 		}
-		
 		
 		$changed_members = array();
 				
@@ -794,15 +803,18 @@
 				throw $e;
 			}
 			
-			try {
-				$sharingTablecontroller = new SharingTableController();
-				$rp_info = array('root_permissions_sharing_table_delete' => $root_permissions_sharing_table_delete, 'root_permissions_sharing_table_add' => $root_permissions_sharing_table_add);
-				$sharingTablecontroller->afterPermissionChanged($pg_id, $permissions, $rp_info);
-			} catch (Exception $e) {
-				DB::rollback();
-				Logger::log("Error saving permissions to sharing table for permission group $pg_id: ".$e->getMessage()."\n".$e->getTraceAsString());
-				throw $e;
+			
+			if ($update_sharing_table) {
+				try {
+					$sharingTablecontroller = new SharingTableController();
+					$rp_info = array('root_permissions_sharing_table_delete' => $root_permissions_sharing_table_delete, 'root_permissions_sharing_table_add' => $root_permissions_sharing_table_add);
+					$sharingTablecontroller->afterPermissionChanged($pg_id, $permissions, $rp_info);
+				} catch (Exception $e) {
+					Logger::log("Error saving permissions to sharing table for permission group $pg_id: ".$e->getMessage()."\n".$e->getTraceAsString());
+					throw $e;
+				}
 			}
+			
 			/* cuando saco permisos sobre un tipo de objeto que no saque sobre todos los tipos
 			foreach ($allowed_members_ids as $key=>$mids){
 				$mbm=Members::findById($key);
@@ -901,7 +913,10 @@
 			Logger::log("Error setting dimension permissions for permission group $pg_id: ".$e->getMessage()."\n".$e->getTraceAsString());
 			throw $e;
 		}
-		Hook::fire('after_save_contact_permissions', $pg_id, $pg_id);
+		
+		if ($fire_hook) {
+			Hook::fire('after_save_contact_permissions', $pg_id, $pg_id);
+		}
 	}
 	
 	
@@ -1002,7 +1017,7 @@
 		);
 	}
 	
-	function save_member_permissions($member, $permissionsString = null, $save_cmps = true) {
+	function save_member_permissions($member, $permissionsString = null, $save_cmps = true, $update_sharing_table = true, $fire_hook = true) {
 		@set_time_limit(0);
 		ini_set('memory_limit', '1024M');
 
@@ -1017,7 +1032,9 @@
 		$sharingTablecontroller = new SharingTableController();
 		$changed_pgs = array();
 		
+		
 		if (isset($permissions) && is_array($permissions)) {
+			
 			$allowed_pg_ids= array();
 			foreach ($permissions as &$perm) {
 				if ($save_cmps) {
@@ -1063,8 +1080,10 @@
 			foreach ($permissions as $p) {
 				if (!$p->m) $p->m = $member->getId();
 			}
-			foreach ($changed_pgs as $pg_id) {
-				$sharingTablecontroller->afterPermissionChanged($pg_id, $permissions);
+			if ($update_sharing_table) {
+				foreach ($changed_pgs as $pg_id) {
+					$sharingTablecontroller->afterPermissionChanged($pg_id, $permissions);
+				}
 			}
 			
 			
@@ -1081,8 +1100,6 @@
 				$root_cmp->save();
 				
 			}
-			
-		
 		}
 		
 		// check the status of the dimension to set 'allow_all', 'deny_all' or 'check'
@@ -1127,7 +1144,11 @@
 			}
 		}
 		
-		Hook::fire('after_save_member_permissions', $member, $member);
+		if ($fire_hook) {
+			Hook::fire('after_save_member_permissions', $member, $member);
+		}
+		
+		return array('changed_pgs' => $changed_pgs, 'member' => $member);
 	}
 
 	/**
@@ -1191,10 +1212,15 @@
 			if (trim($apg) == '') unset($allowed_permission_groups[$k]);
 		}
 		if (count($allowed_permission_groups) > 0) {
+			$isSuperAdmin = " OR user_type IN (SELECT id FROM ".TABLE_PREFIX."permission_groups WHERE type='roles' AND name = 'Super Administrator')";
 			$result = Contacts::instance()->findAll(array(
-				'conditions' => "disabled=0 AND id IN (SELECT DISTINCT contact_id FROM ".TABLE_PREFIX."contact_permission_groups
-								WHERE permission_group_id IN (".implode(",",$allowed_permission_groups).") $extra_conditions)",
-				'order' => 'name'));
+				'conditions' => "disabled=0 AND (
+											id IN (SELECT DISTINCT contact_id FROM ".TABLE_PREFIX."contact_permission_groups
+											WHERE permission_group_id IN (".implode(",",$allowed_permission_groups).") 
+											$isSuperAdmin
+											)
+								$extra_conditions)",
+				'order' => 'name'));			
 		}
 		
 		return $result;

@@ -67,10 +67,12 @@ og.MemberTree = function(config) {
 	    	   id: 'toggle',
 	    	   handler : function(e,t,p){
 	    		   p.toggleCollapse();
-	    	   }
+	    	   },
+	    	   hidden: !og.preferences['can_modify_navigation_panel']
 	       }, 
     	   {
     		   id: 'close',
+    		   hidden: !og.preferences['can_modify_navigation_panel'],
     		   handler: function(e,t,p){
 	    	   		p.removeFromContext();
 	    	   		og.contextManager.setDimensionVisibility('dimension-panel-' + config.dimensionId, false);

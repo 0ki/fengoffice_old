@@ -1022,12 +1022,14 @@ function create_user($user_data, $permissionsString) {
 	// Set role permissions for active members
 	$active_context = active_context();
 	$sel_members = array();
-	foreach ($active_context as $selection) {
-		if ($selection instanceof Member) {
-			$sel_members[] = $selection;
-			$has_project_permissions = ContactMemberPermissions::instance()->count("permission_group_id = '".$contact->getPermissionGroupId()."' AND member_id = ".$selection->getId()) > 0;
-			if (!$has_project_permissions) {
-				RoleObjectTypePermissions::createDefaultUserPermissions($contact, $selection);
+	if (is_array($active_context)) {
+		foreach ($active_context as $selection) {
+			if ($selection instanceof Member) {
+				$sel_members[] = $selection;
+				$has_project_permissions = ContactMemberPermissions::instance()->count("permission_group_id = '".$contact->getPermissionGroupId()."' AND member_id = ".$selection->getId()) > 0;
+				if (!$has_project_permissions) {
+					RoleObjectTypePermissions::createDefaultUserPermissions($contact, $selection);
+				}
 			}
 		}
 	}

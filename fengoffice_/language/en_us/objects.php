@@ -178,6 +178,7 @@
    	'log read task' => 'The user has accessed the task',
     'log read message' => 'The user has accessed the note',
     'log read file' => 'The user has accessed the document',
+	'log download file' => 'The user downloaded the document',
     'log read mail' => 'The user has accessed the mail',
     'log read event' => 'The user has accessed the event',
   	'log read weblink' => 'The user has accessed the Web Link',
