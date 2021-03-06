@@ -362,12 +362,12 @@
   
     <div class='task-name-container col-left-sp col-right-sp' style='padding-left: 5px;'>
       <div class='task-name col-name'>
-          <input type="text" onfocus="this.disabled='disabled';ogTasks.drawAddNewTaskForm(ogTasks.Groups[0].group_id,null,null,true)" value="" name="task[name]" placeholder="{{lang 'task'}}..." maxlength="255" size="255" id="ogTasksPanelListATTitle" style="width: 96%;" onblur="this.disabled='';">
+          <input type="text" onfocus="this.disabled='disabled';ogTasks.drawAddNewTaskForm(0,null,null,true)" value="" name="task[name]" placeholder="{{lang 'task'}}..." maxlength="255" size="255" id="ogTasksPanelListATTitle" style="width: 96%;" onblur="this.disabled='';">
       </div>      
     </div>
 
     <div class="coInputButtons" style="margin-top:2px;margin-left:10px;">
-    <button type="button" class="tasksActionsBtn tasksBtn addBtn" onclick="ogTasks.drawAddNewTaskForm(ogTasks.Groups[0].group_id,null,null,true)">
+    <button type="button" class="tasksActionsBtn tasksBtn addBtn" onclick="ogTasks.drawAddNewTaskForm(0,null,null,true)">
               {{lang 'add task'}}
     </button>
     </div>
@@ -377,9 +377,8 @@
 
 <script id="task-list-group-totals-template" type="text/x-handlebars-template"> 
 {{!-- group totals--}}
-  <div class="task-list-row-template task-list-group-totals-template">
-    <div class='task-row-avatar' style='width: 100px;margin:0;height: 1px;'>
-      
+  <div id="group_totals_{{draw_options.groupId}}" class="task-list-row-template task-list-group-totals-template">
+    <div class='task-row-avatar' style='width: 85px;margin:0;height: 1px;'>      
     </div>
 	
 	{{#if draw_options.show_by}}
@@ -425,7 +424,7 @@
 	{{#each format_group_totals}}
     <div class='task-row-obj-container task-date-container col-right-sp col-name'>
       <div class='task-row-obj'>
-         {{{this}}}
+         {{{text}}}
       </div>
     </div>	
 	{{/each}}    
@@ -454,15 +453,16 @@
       </div>      
     </div>
 
-  </div> 
-
-
-   
-
-
-   
-    
-
-  </div>   
+    {{#if draw_options.showMore}} 
+    <div style="clear: left;">          
+           <a class="internalLink nobr" style="margin-left: 15px;font-size: 12px;" href="#" onclick="ogTasks.showMoreTasks('{{draw_options.groupId}}');return false;" id="show_more_group_{{draw_options.groupId}}">
+            {{lang 'show more'}}../
+           </a>
+           <a class="internalLink nobr" style="font-size: 12px;" href="#" onclick="ogTasks.showAllTasks('{{draw_options.groupId}}');return false;" id="show_all_group_{{draw_options.groupId}}">
+            {{lang 'show all'}}..
+           </a>    
+    </div> 
+    {{/if}}
+  </div>  
 </script>
 

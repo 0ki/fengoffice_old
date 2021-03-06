@@ -84,7 +84,7 @@
 <script>
 og.resizeCommentsText = function() {
 	var container_w = $('.objectComments .comment .commentBody').width();
-	$('.objectComments .comment .commentText').css('width', (container_w - 70)+'px');
+	$('.objectComments .comment .commentText').css('width', (container_w - 90)+'px');
 }
 
 $(function() {

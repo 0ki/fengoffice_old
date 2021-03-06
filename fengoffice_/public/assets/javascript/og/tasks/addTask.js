@@ -818,60 +818,10 @@ ogTasks.SubmitNewTask = function(task_id,view_popup){
 ogTasks.drawTaskRowAfterEdit = function(data) {
 	if (!data || !data.task) return;
 	
-	var task = ogTasks.getTask(data.task.id);
-	if (!task){
-		var task = new ogTasksTask();
-		task.setFromTdata(data.task);
-		if (data.task.s) {
-			task.statusOnCreate = data.task.s;
-		}
-		task.isCreatedClientSide = true;
-		ogTasks.Tasks[ogTasks.Tasks.length] = task;
-		var parent = ogTasks.getTask(task.parentId);
-		if (parent){
-			task.parent = parent;
-			parent.subtasks[parent.subtasks.length] = task;
-		}
-
-		if (data.subtasks) {
-			for (i = 0; i < data.subtasks.length; i++) {
-				var task = new ogTasksTask();
-				task.setFromTdata(data.subtasks[i]);
-				if (data.subtasks[i].s) {
-					task.statusOnCreate = data.subtasks[i].s;
-				}
-				task.isCreatedClientSide = true;
-				ogTasks.Tasks[ogTasks.Tasks.length] = task;
-				var parent = ogTasks.getTask(task.parentId);
-				if (parent) {
-					task.parent = parent;
-					parent.subtasks[parent.subtasks.length] = task;
-				}
-			}
-		}
-	} else {
-		task.setFromTdata(data.task);
-	}
+	var task = ogTasksCache.addTasks(data.task);
 	
-	if (data.subtasks) {
-		for (i=0; i<data.subtasks.length; i++) {
-			var subtask = ogTasks.getTask(data.subtasks[i].id);
-			if (subtask) {
-				subtask.setFromTdata(data.subtasks[i]);
-			}
-		}
-	}
-
-	if (data.parent) {
-		var parent = ogTasks.getTask(data.parent.id);
-		if (parent) {
-			parent.setFromTdata(data.parent);
-		}
-	}
-
-	ogTasks.redrawGroups = false;
-	ogTasks.draw();
-	ogTasks.redrawGroups = true;
+	//get the groups thtat this task belongs to and draw
+	ogTasks.getGroupsForTask(task.id);		
 }
 
 

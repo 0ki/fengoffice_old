@@ -1827,7 +1827,7 @@ class FilesController extends ApplicationController {
 				'jt_field' => 'file_id',
 				'e_field' => 'object_id',
 			);
-			$extra_conditions .= " AND `jt`.`object_id` = (SELECT max(`x`.`object_id`) FROM fo_project_file_revisions `x` WHERE `x`.`file_id` = `e`.`object_id`)";
+			$extra_conditions .= " AND `jt`.`object_id` = (SELECT max(`x`.`object_id`) FROM ".TABLE_PREFIX."project_file_revisions `x` WHERE `x`.`file_id` = `e`.`object_id`)";
 		}else if ($order == 'customProp') {
 			$order = 'IF(ISNULL(jt.value),1,0),jt.value';
 			$join_params['join_type'] = "LEFT ";

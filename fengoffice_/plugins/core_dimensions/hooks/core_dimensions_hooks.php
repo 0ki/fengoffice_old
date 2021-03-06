@@ -308,20 +308,25 @@ function core_dim_add_contact_member_associations($contact_member, $member) {
 }
 
 function core_dim_remove_contacts_member_associations(Member $member) {
+	$persons_dim = Dimensions::findByCode("feng_persons");
 	// one way
 	$associations = DimensionMemberAssociations::getAssociatations ( $member->getDimensionId(), $member->getObjectTypeId() );
 	foreach ( $associations as $a ) {
-		$condition = "association_id = ".$a->getId()." AND member_id = ".$member->getId()." AND property_member_id IN 
-			(SELECT m.id FROM ".TABLE_PREFIX."members m WHERE m.object_type_id=".$a->getAssociatedObjectType()." AND m.dimension_id=".$a->getAssociatedDimensionMemberAssociationId().")";
-		MemberPropertyMembers::instance()->delete($condition);
+		if ($a->getAssociatedDimensionMemberAssociationId() == $persons_dim->getId()) {
+			$condition = "association_id = ".$a->getId()." AND member_id = ".$member->getId()." AND property_member_id IN 
+				(SELECT m.id FROM ".TABLE_PREFIX."members m WHERE m.object_type_id=".$a->getAssociatedObjectType()." AND m.dimension_id=".$a->getAssociatedDimensionMemberAssociationId().")";
+			MemberPropertyMembers::instance()->delete($condition);
+		}
 	}
 	
 	// reverse way
 	$associations = DimensionMemberAssociations::findAll(array("conditions" => array("`associated_dimension_id` = ? AND `associated_object_type_id` = ?", $member->getDimensionId(), $member->getObjectTypeId())));
 	foreach ( $associations as $a ) {
-		$condition = "association_id = ".$a->getId()." AND property_member_id = ".$member->getId()." AND member_id IN 
-			(SELECT m.id FROM ".TABLE_PREFIX."members m WHERE m.object_type_id=".$a->getObjectTypeId()." AND m.dimension_id=".$a->getDimensionId().")";
-		MemberPropertyMembers::instance()->delete($condition);
+		if ($a->getDimensionId() == $persons_dim->getId()) {
+			$condition = "association_id = ".$a->getId()." AND property_member_id = ".$member->getId()." AND member_id IN 
+				(SELECT m.id FROM ".TABLE_PREFIX."members m WHERE m.object_type_id=".$a->getObjectTypeId()." AND m.dimension_id=".$a->getDimensionId().")";
+			MemberPropertyMembers::instance()->delete($condition);
+		}
 	}
 }
 

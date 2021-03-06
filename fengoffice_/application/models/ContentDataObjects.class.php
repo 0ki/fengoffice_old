@@ -430,6 +430,13 @@ abstract class ContentDataObjects extends DataManager {
 			$SQL_LIMIT = '' ;
 		}
 		
+		// Prepare Group By SQL $group_by = array_var($args,'group_by');
+		if (array_var($args,'group_by')){
+			$SQL_GROUP_BY = "GROUP BY ".array_var($args,'group_by');
+		}else{
+			$SQL_GROUP_BY = '' ;
+		}
+		
 		$SQL_CONTEXT_CONDITION = " true ";
 		if (!empty($members) && count($members)) {
 			$SQL_CONTEXT_CONDITION = "(EXISTS (SELECT om.object_id
@@ -484,8 +491,15 @@ abstract class ContentDataObjects extends DataManager {
 					AND	$SQL_CONTEXT_CONDITION
 					AND $SQL_TYPE_CONDITION
 					AND $SQL_TRASHED_CONDITION $SQL_ARCHIVED_CONDITION $SQL_EXTRA_CONDITIONS
+				$SQL_GROUP_BY
 				$SQL_ORDER
 				$SQL_LIMIT";
+			
+			if (isset($args['query_wraper_start'])){
+				$query_wraper_start = $args['query_wraper_start'];
+				$query_wraper_end = $args['query_wraper_end'];
+				$sql = $query_wraper_start.$sql.$query_wraper_end;
+			}
 			
 			$sql_total = "
 				SELECT count(o.id) as total FROM ".TABLE_PREFIX."objects o
@@ -495,7 +509,9 @@ abstract class ContentDataObjects extends DataManager {
 					$permissions_condition
 					AND	$SQL_CONTEXT_CONDITION
 					AND $SQL_TYPE_CONDITION
-					AND $SQL_TRASHED_CONDITION $SQL_ARCHIVED_CONDITION $SQL_EXTRA_CONDITIONS";
+					AND $SQL_TRASHED_CONDITION $SQL_ARCHIVED_CONDITION $SQL_EXTRA_CONDITIONS
+				$SQL_GROUP_BY			
+			";
 
 			
 		    if(!$only_count_results){

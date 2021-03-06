@@ -36,4 +36,4 @@
 	'how to purchase desc' => 'Información acerca de nuestros diferentes planes y beneficios', 
 	'add ticket' => 'Agregar un nuevo ticket de soporte',
 	'add ticket desc' => "Para obtener ayuda personalizada acerca de Feng Office",
-); ?>
+);

@@ -80,7 +80,7 @@ CREATE TABLE  `<?php echo $table_prefix ?>mail_accounts` (
   `sync_ssl` tinyint(1) NOT NULL default '0',
   `sync_ssl_port` int(11) NOT NULL default '993',
   `sync_folder` varchar(100) <?php echo $default_collation ?> NOT NULL,
-  `member_id` int(11) <?php echo $default_collation ?> NOT NULL,
+  `member_id` varchar(100) <?php echo $default_collation ?> NOT NULL,
   
   PRIMARY KEY  (`id`),
   INDEX `contact_id` (`contact_id`)

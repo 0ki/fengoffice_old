@@ -1406,11 +1406,7 @@ class Contact extends BaseContact {
     
 
     function isGuest() {
-    	if(preg_match('/Guest/', $this->getUserTypeName())){
-    		return true;
-    	}else{
-    		return false;
-    	}
+    	return in_array($this->getUserTypeName(), array('Guest', 'Guest Customer', 'Non-Exec Director'));
     }
     
     

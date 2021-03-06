@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Mondongo upgrade script will upgrade FengOffice 2.7.1.1 to FengOffice 3.0.6
+ * Mondongo upgrade script will upgrade FengOffice 2.7.1.1 to FengOffice 3.0.7
  *
  * @package ScriptUpgrader.scripts
  * @version 1.0
@@ -40,7 +40,7 @@ class MondongoUpgradeScript extends ScriptUpgraderScript {
 	function __construct(Output $output) {
 		parent::__construct($output);
 		$this->setVersionFrom('2.7.1.1');
-		$this->setVersionTo('3.0.6');
+		$this->setVersionTo('3.0.7');
 	} // __construct
 
 	function getCheckIsWritable() {
@@ -112,8 +112,8 @@ class MondongoUpgradeScript extends ScriptUpgraderScript {
 			}
 			
 			$upgrade_script .= "
-				INSERT INTO ".$t_prefix."tab_panels (id,title,icon_cls,default_controller,default_action,type,ordering) VALUES
-				('more-panel','getting started','ico-more-tab','more','index','system',100)
+				INSERT INTO ".$t_prefix."tab_panels (id, title, icon_cls, default_controller, default_action, type, ordering, refresh_on_context_change, initial_controller, initial_action, enabled, plugin_id, object_type_id) VALUES
+				('more-panel','getting started','ico-more-tab','more','index','system',100,0,'','',1,0,0)
 				ON DUPLICATE KEY UPDATE id=id;
 				
 				INSERT INTO ".$t_prefix."tab_panel_permissions (permission_group_id, tab_panel_id)
@@ -271,6 +271,22 @@ class MondongoUpgradeScript extends ScriptUpgraderScript {
 				INSERT INTO `".$t_prefix."contact_config_options` (`category_name`, `name`, `default_value`, `config_handler_class`, `is_system`, `option_order`, `dev_comment`) VALUES
 					('calendar panel', 'show_multiple_color_events', '0', 'BoolConfigHandler', 0, 0, '')
 				ON DUPLICATE KEY UPDATE name=name;
+			";
+		}
+		
+		if (version_compare($installed_version, '3.0.7') < 0) {
+			$upgrade_script .= "
+				INSERT INTO `".$t_prefix."contact_config_options` (`category_name`, `name`, `default_value`, `config_handler_class`, `is_system`, `option_order`, `dev_comment`) VALUES
+					('task panel', 'tasksShowSubtasksStructure', '1', 'BoolConfigHandler', 1, 0, '')
+				ON DUPLICATE KEY UPDATE name=name;
+				
+				UPDATE `".$t_prefix."project_tasks` SET `assigned_to_contact_id`=0 WHERE `assigned_to_contact_id` IS NULL;
+				UPDATE `".$t_prefix."project_tasks` SET `completed_by_id`=0 WHERE `completed_by_id` IS NULL;
+				UPDATE `".$t_prefix."project_tasks` SET `milestone_id`=0 WHERE `milestone_id` IS NULL;
+				
+				UPDATE ".$t_prefix."system_permissions SET can_task_assignee=0 WHERE permission_group_id IN (
+				  SELECT c.permission_group_id FROM ".$t_prefix."contacts c WHERE c.user_type IN (SELECT pg.id FROM ".$t_prefix."permission_groups pg WHERE pg.name IN ('Guest', 'Guest Customer', 'Non-Exec Director'))
+				);
 			";
 		}
 		

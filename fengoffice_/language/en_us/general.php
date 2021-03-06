@@ -399,6 +399,20 @@ return array(
 	'contact data' => 'Contact data',
 	'company data' => 'Company data',
 	
+	'before this year' => 'Before this year',
+	'this year (before last month)' => 'This year (before last month)',
+	'last month' => 'Last month',
+	'this month(before last week)' => 'This month (before last week)',
+	'last week' => 'Last week',
+	'this week(before yesterday)' => 'This week (before yesterday)',
+	'yesterday' => 'Yesterday',
+	'this week(later tomorrow)' => 'This week (after tomorrow)',
+	'this month(after next week)' => 'This month (after next week)',
+	'next month' => 'Next month',
+	'next three months(after next month)' => 'Next three months (after next month)',
+	'this year' => 'This year',
+	'after this year' => 'After this year',
+	
 	'menu home' => 'Home',
 	'select group to add user' => 'Select a group from the dropdown list below to add the user to the group',
 );

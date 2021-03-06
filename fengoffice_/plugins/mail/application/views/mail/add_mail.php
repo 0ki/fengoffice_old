@@ -31,7 +31,7 @@ sig.actualHtmlSignature = '';
 
 </script>
 <div id="<?php echo $genid ?>main_div" style="height:100%; overflow-y: hidden;">
-<form style="height:100%;background-color:white;" id="<?php echo $genid ?>form" name="frmMail"  class="internalForm" action="<?php echo $mail->getSendMailUrl()?>" method="post"  onsubmit="return og.mailSetBody('<?php echo $genid ?>')">
+<form style="height:100%;background-color:white;" id="<?php echo $genid ?>form" name="frmMail"  class="internalForm" action="<?php echo $mail->getSendMailUrl()?>" method="post"  onsubmit="return og.checkFrom() && og.mailSetBody('<?php echo $genid ?>')">
 <input type="hidden" name="instanceName" value="<?php echo $genid?>" />
 <input type="hidden" name="mail[body]" value="" />
 <input type="hidden" name="mail[isDraft]" id="<?php echo $genid ?>isDraft" value="true" />
@@ -151,12 +151,25 @@ sig.actualHtmlSignature = '';
     	</td></tr></table>
 	</div>
 	
+	<?php $def_acc_id = isset($default_account) ? $default_account->getId() : (count($mail_accounts) > 0 ? $mail_accounts[0]->getId() : 0); ?>
+	<input id="<?php echo $genid?>def_acc_id" type="hidden" name="def_acc_id" value="<?php echo $def_acc_id; ?>"/>
+	
+	<div id="add_mail_account" style="<?php echo ($def_acc_id != array_var($mail_data, 'account_id') ? "" : "display:none;")?> padding:5px 0;">
+	  <table><tr><td style="width:60px">
+	    <label for="mailAccount"><?php echo lang('mail from')?></label>
+	  </td><td>
+	    <?php echo render_select_mail_account('mail[account_id]',  $mail_accounts, isset($mail_data['account_id']) ? $mail_data['account_id'] : (isset($default_account) ? $default_account->getId() : (count($mail_accounts) > 0 ? $mail_accounts[0]->getId() : 0)),
+	    array('id' => $genid . 'mailAccount', 'tabindex'=>'44', 'onchange' => "og.changeSignature('$genid', this.value);", "style" => "border:1px solid #B5B8C8;")) ?>
+	    <span class="desc" style="margin-left:10px;"><?php echo lang('mail account desc') ?></span>
+	  </td></tr></table>
+	</div>
+	
 	<?php $categories = array(); Hook::fire('object_edit_categories', $object, $categories); ?>
 	
 	<div style="padding-top:5px">
-		<?php if (count($mail_accounts) > 1) { ?>
-		<a href="#" class="option" onclick="og.toggleAndBolden('add_mail_account', this);og.resizeMailDiv();"><?php echo lang('mail from') ?></a> - 
-		<?php } ?>
+
+		<a href="#" class="option" onclick="og.toggleAndBolden('add_mail_account', this);og.resizeMailDiv();" id="<?php echo $genid?>mailAccountCombo"><?php echo lang('mail from') ?></a> - 
+
 		<a href="#" class="option" onclick="og.toggleAndBolden('add_mail_CC', this);og.resizeMailDiv();"><?php echo lang('mail CC') ?></a> - 
 		<a href="#" class="option" onclick="og.toggleAndBolden('add_mail_BCC', this);og.resizeMailDiv();"><?php echo lang('mail BCC') ?></a> - 
 		<a href="#" class="option" onclick="og.toggleAndBolden('add_mail_options', this);og.resizeMailDiv();"><?php echo lang('mail format options') ?></a> -
@@ -168,12 +181,6 @@ sig.actualHtmlSignature = '';
 		<?php } ?>
 	</div>
 
-	<div id="add_mail_account" style="display:none;">
-	    <label for="mailAccount"><?php echo lang('mail from')?>: 
-	    <span class="desc"><?php echo lang('mail account desc') ?></span></label>
-	    <?php echo render_select_mail_account('mail[account_id]',  $mail_accounts, isset($mail_data['account_id']) ? $mail_data['account_id'] : (isset($default_account) ? $default_account->getId() : (count($mail_accounts) > 0 ? $mail_accounts[0]->getId() : 0)),
-	    array('id' => $genid . 'mailAccount', 'tabindex'=>'44', 'onchange' => "og.changeSignature('$genid', this.value);")) ?>
-	</div>
   
 	<div id="add_mail_options" style="display:none;">
 		<fieldset>
@@ -436,4 +443,24 @@ og.checkAttach = function() {
 	}
 }
 
+og.checkFrom = function() {
+	var sel_acc = $('#' + genid + 'mailAccount').val();
+	var def_acc = $('#' + genid + 'def_acc_id').val();
+	if (def_acc == 0) return true;
+	
+	if (sel_acc != def_acc) {
+		var acc_combo = document.getElementById(genid + 'mailAccount');
+		var acc_name = acc_combo.options[acc_combo.selectedIndex].text;
+		if (! confirm(lang("are you sure you want to send the email using account x", acc_name)) ) {
+			if (!$('#' + genid + 'mailAccount').is(":visible")) {
+				$('#' + genid + 'mailAccountCombo').click();
+			}
+			$('#' + genid + 'mailAccount').focus();
+		} else {
+			return true;
+		}
+	} else {
+		return true;
+	}
+}
 </script>

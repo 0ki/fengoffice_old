@@ -478,11 +478,11 @@ class MailUtilities {
 			
 			// CLASSIFY MAILS IF THE ACCOUNT HAS A DIMENSION MEMBER AND NOT CLASSIFIED WITH CONVERSATION
 			$account_owner = Contacts::findById($account->getContactId());
-			if ($account->getMemberId() != 0 && !$classified_with_conversation) {
-				$member = $account->getMember() ;
-				if ($member && $member instanceof Member ) {
-					$member_ids[] = $member->getId();
-			 	}
+			if ($account->getMemberId() != '' && !$classified_with_conversation) {
+				$acc_mem_ids = explode(',', $account->getMemberId());
+				foreach ($acc_mem_ids as $acc_mem_id) {
+					$member_ids[] = $acc_mem_id;
+				}
 			}
 			
 			if (count($member_ids) > 0) {

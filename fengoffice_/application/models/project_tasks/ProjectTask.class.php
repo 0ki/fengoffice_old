@@ -808,6 +808,30 @@ class ProjectTask extends BaseProjectTask {
 
 		return $this->all_tasks;
 	} // getTasks
+	
+	/**
+	 * Return all tasks from this list
+	 *
+	 * @access public
+	 * @param void
+	 * @return array
+	 */
+	function getSubTasksIds() {
+		$subtasks_ids = array();
+		$condition = ' AND `parent_id` = ' . DB::escape($this->getId());
+				
+		$subtasks_rows = ProjectTasks::instance()->listing(array(
+				"select_columns" => array("`object_id`"),
+				"extra_conditions" => $condition,
+				"count_results" => false,
+				"raw_data" => true,
+		))->objects;
+		for ($i = 0; $i < count($subtasks_rows); $i++){
+			$subtasks_ids[] = (int)$subtasks_rows[$i]['object_id'];
+		}
+		
+		return $subtasks_ids;
+	} // getTasks
 
 	/**
 	 * Return all tasks from this list
@@ -1401,107 +1425,25 @@ class ProjectTask extends BaseProjectTask {
 	 */
 
 	function getArrayInfo($full = false){
-		if(config_option("wysiwyg_tasks")){
-			if($this->getTypeContent() == "text"){
-				$desc = nl2br(htmlspecialchars($this->getText()));
-			}else{
-				$desc = purify_html(nl2br($this->getText()));
-			}
-		}else{
-			if($this->getTypeContent() == "text"){
-				$desc = htmlspecialchars($this->getText());
-			}else{
-				$desc = html_to_text(html_entity_decode(nl2br($this->getText()), null, "UTF-8"));
-			}
+		$task = $this;
+		$col_names = $task->getColumns();
+		$ob_col_names = $task->getObject()->getColumns();
+		$raw_data = array();
+		
+		foreach($ob_col_names as $ob_col_name) {
+			$raw_data[$ob_col_name] = $task->getColumnValue($ob_col_name);
 		}
-
-		$member_ids = ObjectMembers::instance()->getCachedObjectMembers($this->getId());
-		$result = array(
-			'id' => $this->getId(),
-			't' => $this->getObjectName(),
-			'desc' => $desc,
-			'members' => $member_ids,
-			'c' => $this->getCreatedOn() instanceof DateTimeValue ? $this->getCreatedOn()->getTimestamp() : 0,
-			'cid' => $this->getCreatedById(),
-			'otype' => $this->getObjectSubtype(),
-			'pc' => $this->getPercentCompleted(),
-			'memPath' => str_replace('"',"'", str_replace("'", "\'", json_encode($this->getMembersIdsToDisplayPath())))
-		);
-
-		if ($full) {
-			$result['description'] = $this->getText();
-		}
-
-		$result['mas'] = $this->getColumnValue('multi_assignment',0);
-			
-		if ($this->isCompleted()) {
-			$result['s'] = 1;
-		}
-			
-		if ($this->getParentId() > 0) {
-			$result['pid'] = $this->getParentId();
-		}
-		//if ($this->getPriority() != 200)
-		$result['pr'] = $this->getPriority();
-
-		if ($this->getMilestoneId() > 0) {
-			$result['mid'] = $this->getMilestoneId();
+		foreach($col_names as $col_name) {
+			$raw_data[$col_name] = $task->getColumnValue($col_name);
 		}
 		
-		if ($this->getAssignedById() > 0) {
-			$result['assigned_by_id'] = $this->getAssignedById();
-		}
-			
-		if ($this->getAssignedToContactId() > 0) {
-			$result['atid'] = $this->getAssignedToContactId();
-		}
-		$result['atName'] = $this->getAssignedToName();
-
-		if ($this->getCompletedById() > 0) {
-			$result['cbid'] = $this->getCompletedById();
-			$result['con'] = $this->getCompletedOn()->getTimestamp();
-		}
-			
-		if ($this->getDueDate() instanceof DateTimeValue) {
-			$result['dd'] = $this->getDueDate()->getTimestamp() + logged_user()->getTimezone() * 3600;
-			$result['udt'] = $this->getUseDueTime() ? 1 : 0;
-		}
-		if ($this->getStartDate() instanceof DateTimeValue) {
-			$result['sd'] = $this->getStartDate()->getTimestamp() + logged_user()->getTimezone() * 3600;
-			$result['ust'] = $this->getUseStartTime() ? 1 : 0;
-		}
-
-		$time_estimate = $this->getTimeEstimate() ;
-		$result['te'] = $this->getTimeEstimate();
-		if ($time_estimate > 0) $result['et'] = DateTimeValue::FormatTimeDiff(new DateTimeValue(0), new DateTimeValue($time_estimate * 60), 'hm', 60) ;
-
-
-		$result['tz'] = logged_user()->getTimezone() * 3600;
-
-		$ot = $this->getOpenTimeslots();
-
-		if ($ot){
-			$users = array();
-			$time = array();
-			$paused = array();
-			foreach ($ot as $t){
-				if (!$t instanceof Timeslot) continue;
-				$time[] = $t->getSeconds();
-				$users[] = $t->getContactId();
-				$paused[] = $t->isPaused()?1:0;
-				if ($t->isPaused() && $t->getContactId() == logged_user()->getId())
-				$result['wpt'] = $t->getPausedOn()->getTimestamp();
+		foreach($raw_data as $key => $raw){
+			if($raw instanceof DateTimeValue){
+				$raw_data[$key] = $raw->toMySQL();
 			}
-			$result['wt'] = $time;
-			$result['wid'] = $users;
-			$result['wp'] = $paused;
 		}
-
-		if ($this->isRepetitive()) {
-			$result['rep'] = 1;
-		}
-		
-		return $result;
+				
+		return ProjectTasks::getArrayInfo($raw_data, $full);		
 	}
 	
 	function isRepetitive() {

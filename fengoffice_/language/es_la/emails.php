@@ -34,7 +34,7 @@
     'visit feel free to log in' => 'Una vez quede la contraseña establecida, por favor diríjase a {0} y acceda con su nombre de usuario <b>{1}</b> o con su dirección de correo electrónico {2}',
 	'mail to' => 'Para',
 	'mail account' => 'Cuenta',
-	'mail account desc' => ' Cuenta desde donde se ha enviado el mail',
+	'mail account desc' => ' Cuenta desde la cual se enviará el mail',
 	'mail subject' => 'Asunto',
 	'mail CC' => 'CC',
 	'mail CC desc' => ' Los destinatarios copia carbónico recibirán una copia idéntica del mail',

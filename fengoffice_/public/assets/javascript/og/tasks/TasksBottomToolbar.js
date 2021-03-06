@@ -67,9 +67,11 @@ og.TasksBottomToolbar = function(config) {
         		ogTasks.setAllCheckedValue(false);
         		ogTasks.setAllExpandedValue(false);
         		ogTasks.expandedGroups = [];
-				ogTasks.draw();
+				
         		var url = og.getUrl('account', 'update_user_preference', {name: 'tasksGroupBy', value:record.data.value});
 				og.openLink(url,{hideLoading:true});
+				
+				ogTasks.draw();
         	}
         }
     });
@@ -98,10 +100,12 @@ og.TasksBottomToolbar = function(config) {
         listeners: {
         	'select' : function(combo, record) {
 				ogTasks.redrawGroups = false;
-				ogTasks.draw();
+				
 				ogTasks.redrawGroups = true;
 				var url = og.getUrl('account', 'update_user_preference', {name: 'tasksOrderBy', value:record.data.value});
 				og.openLink(url,{hideLoading:true});
+				
+				ogTasks.draw();
         	}
         }
     });

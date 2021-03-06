@@ -748,11 +748,12 @@ class MemberController extends ApplicationController {
 			
 			Hook::fire('delete_member', $member, $ret);
 
+			$parent_id = $member->getParentMemberId();
 			
 			$ok = $member->delete(false);
 			if ($ok) {
 				evt_add("reload dimension tree", array('dim_id' => $dim_id, 'node' => null));
-				evt_add("select dimension member", array('dim_id' => $dim_id, 'node' => 'root'));
+				evt_add("try to select member", array('dimension_id' => $dim_id, 'id' => $parent_id));
 			}
 			
 			DB::commit();

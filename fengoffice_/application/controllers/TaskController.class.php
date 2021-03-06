@@ -542,25 +542,8 @@ class TaskController extends ApplicationController {
 				$data['desc'] = $desc;
 			}
 			
-			if (array_var($_REQUEST, 'task_info')) {
-				$col_names = $task->getColumns();
-				$ob_col_names = $task->getObject()->getColumns();
-				$raw_data = array();
-				
-				foreach($ob_col_names as $ob_col_name) {
-					$raw_data[$ob_col_name] = $task->getColumnValue($ob_col_name);
-				}
-				foreach($col_names as $col_name) {
-					$raw_data[$col_name] = $task->getColumnValue($col_name);
-				}				
-				
-				foreach($raw_data as $key => $raw){
-					if($raw instanceof DateTimeValue){
-						$raw_data[$key] = $raw->toMySQL();
-					}
-				}
-								
-				$data['task'] = ProjectTasks::getArrayInfo($raw_data);				
+			if (array_var($_REQUEST, 'task_info')) {												
+				$data['task'] = $task->getArrayInfo();				
 			}
 		}
 		ajx_extra_data($data);
@@ -648,7 +631,7 @@ class TaskController extends ApplicationController {
 						break;
 					case 'delete':
 						if ($task->canDelete(logged_user())){
-							$tasksToReturn[] = array('id' => $task->getId());
+							$tasksToReturn[] = $task->getArrayInfo();
 							$task->trash();
 							$application_logs[] = array($task, ApplicationLogs::ACTION_TRASH);
 							if($options == "news" || $options == "all"){
@@ -775,22 +758,19 @@ class TaskController extends ApplicationController {
 
 	}
 
-	function new_list_tasks(){
-		//load config options into cache for better performance
-		load_user_config_options_by_category_name('task panel');
-		 
+	private function get_tasks_request_conditions(){
 		// get query parameters, save user preferences if necessary
-		$status = array_var($_GET,'status',null);
+		$status = array_var($_REQUEST,'status',null);
 		if (is_null($status) || $status == '') {
 			$status = user_config_option('task panel status',2);
 		} else
-		if (user_config_option('task panel status') != $status) {
-			set_user_config_option('task panel status', $status, logged_user()->getId());
-		}
-
+			if (user_config_option('task panel status') != $status) {
+				set_user_config_option('task panel status', $status, logged_user()->getId());
+			}
+		
 		$previous_filter = user_config_option('task panel filter', 'no_filter');
-
-		$filter_from_date =getDateValue(array_var($_GET, 'from_date'));
+		
+		$filter_from_date =getDateValue(array_var($_REQUEST, 'from_date'));
 		if ($filter_from_date instanceof DateTimeValue) {
 			$copFromDate = $filter_from_date;
 			$filter_from_date = $filter_from_date->toMySQL();
@@ -798,14 +778,14 @@ class TaskController extends ApplicationController {
 		
 		$tasks_from_date = '';
 		
-		$filter_to_date =getDateValue(array_var($_GET, 'to_date'));		
+		$filter_to_date =getDateValue(array_var($_REQUEST, 'to_date'));
 		if ($filter_to_date instanceof DateTimeValue) {
 			$copToDate = $filter_to_date;
 			$filter_to_date = $filter_to_date->toMySQL();
-		}		
+		}
 		$tasks_to_date = '';
 		if (user_config_option('tasksDateStart') != $filter_from_date){
-			if($filter_from_date != '0000-00-00 00:00:00' || array_var($_GET, 'resetDateStart')){
+			if($filter_from_date != '0000-00-00 00:00:00' || array_var($_REQUEST, 'resetDateStart')){
 				set_user_config_option('tasksDateStart', $copFromDate , logged_user()->getId());
 			}else{
 				$filter_from_date = user_config_option('tasksDateStart');
@@ -813,15 +793,15 @@ class TaskController extends ApplicationController {
 		}
 		
 		if (user_config_option('tasksDateEnd') != $filter_to_date) {
-			if( $filter_to_date != '0000-00-00 00:00:00'|| array_var($_GET, 'resetDateEnd')){
+			if( $filter_to_date != '0000-00-00 00:00:00'|| array_var($_REQUEST, 'resetDateEnd')){
 				set_user_config_option('tasksDateEnd', $copToDate , logged_user()->getId());
 			}else{
 				$filter_to_date = user_config_option('tasksDateEnd');
 			}
 		}
-				
+		
 		if ((($filter_from_date != '0000-00-00 00:00:00')) || (($filter_to_date != '0000-00-00 00:00:00'))){
-			if(($filter_from_date != '0000-00-00 00:00:00')){ 
+			if(($filter_from_date != '0000-00-00 00:00:00')){
 				$dateFrom = DateTimeValueLib::dateFromFormatAndString(DATE_MYSQL, $filter_from_date);
 				$dateFrom->advance(logged_user()->getTimezone() * -3600);
 				$dateFrom = $dateFrom->toMySQL();
@@ -835,52 +815,52 @@ class TaskController extends ApplicationController {
 				$dateTo = $dateTo->toMySQL();
 			}
 			if((($filter_from_date != '0000-00-00 00:00:00')) && (($filter_to_date != '0000-00-00 00:00:00'))){
-				
+		
 				$tasks_from_date = " AND (((`start_date` BETWEEN '" . $dateFrom ."' AND '".$dateTo."') AND `start_date` != ". DB::escape(EMPTY_DATETIME) .") OR ((`due_date` BETWEEN '" . $dateFrom ."' AND '".$dateTo."') AND `due_date` != ". DB::escape(EMPTY_DATETIME) ."))";
 			}elseif (($filter_from_date != '0000-00-00 00:00:00')){
 				$tasks_from_date = " AND (`start_date` > '" . $dateFrom ."' OR `due_date` > '" . $dateFrom."') ";
 			}else{
-			
+					
 				$tasks_from_date = "AND ((`start_date` < '".$dateTo."' AND `start_date` != ". DB::escape(EMPTY_DATETIME) .") OR (`due_date` < '".$dateTo."' AND `due_date` != ".DB::escape(EMPTY_DATETIME)."))";
 		
 			}
 		}else{
-				$tasks_from_date = "";
+			$tasks_from_date = "";
 		}
-		$filter = array_var($_GET, 'filter');
+		$filter = array_var($_REQUEST, 'filter');
 		if (is_null($filter) || $filter == '') {
 			$filter = $previous_filter;
 		} else if ($previous_filter != $filter) {
 			set_user_config_option('task panel filter', $filter, logged_user()->getId());
 		}
-
+		
 		if ($filter != 'no_filter'){
-			$filter_value = array_var($_GET,'fval');
+			$filter_value = array_var($_REQUEST,'fval');
 			if (is_null($filter_value) || $filter_value == '') {
 				$filter_value = user_config_option('task panel filter value', null, logged_user()->getId());
 				set_user_config_option('task panel filter value', $filter_value, logged_user()->getId());
 				$filter = $previous_filter;
 				set_user_config_option('task panel filter', $filter, logged_user()->getId());
 			} else
-			if (user_config_option('task panel filter value') != $filter_value) {
-				set_user_config_option('task panel filter value', $filter_value, logged_user()->getId());
-			}
+				if (user_config_option('task panel filter value') != $filter_value) {
+					set_user_config_option('task panel filter value', $filter_value, logged_user()->getId());
+				}
 		}
-		$isJson = array_var($_GET,'isJson',false);
+	/*	$isJson = array_var($_GET,'isJson',false);
 		if ($isJson) ajx_current("empty");
-
-		$template_condition = "`is_template` = 0 ";
-
+		*/
+		$template_condition = "`e`.`is_template` = 0 ";
+		
 		//Get the task query conditions
 		$task_filter_condition = "";
-                
+		
 		switch($filter){
 			case 'assigned_to':
 				$assigned_to = $filter_value;
 				if ($assigned_to > 0) {
 					$task_filter_condition = " AND (`assigned_to_contact_id` = " . $assigned_to . ") ";
 				} else {
-					if ($assigned_to == -1) 
+					if ($assigned_to == -1)
 						$task_filter_condition = " AND `assigned_to_contact_id` = 0";
 				}
 				break;
@@ -932,7 +912,7 @@ class TaskController extends ApplicationController {
 			default:
 				flash_error(lang('task filter criteria not recognised', $filter));
 		}
-
+		
 		$task_status_condition = "";
 		$now_date = DateTimeValueLib::now();
 		$now_date->advance(logged_user()->getTimezone() * 3600);
@@ -966,27 +946,887 @@ class TaskController extends ApplicationController {
 				foreach($subs_rows as $row) $subs[] = $row['object_id'];
 				unset($res20, $subs_rows, $row);
 				$task_status_condition = " AND `completed_on` = " . DB::escape(EMPTY_DATETIME) . " AND `id` IN(" . implode(',', $subs) . ")";
-				break;				
+				break;
 			case 2: // All tasks
 				break;
 			default:
 				throw new Exception('Task status "' . $status . '" not recognised');
 		}
-
+		
 		$task_assignment_conditions = "";
 		if (!SystemPermissions::userHasSystemPermission(logged_user(), 'can_see_assigned_to_other_tasks')) {
 			$task_assignment_conditions = " AND assigned_to_contact_id = ".logged_user()->getId();
 		}
 		
 		$conditions = "AND $template_condition $task_filter_condition $task_status_condition $task_assignment_conditions $tasks_from_date";
-		//Now get the tasks
-		$tasks = ProjectTasks::instance()->listing(array(
-			"extra_conditions" => $conditions,
-			"start" => 0,
-			"limit" => user_config_option('task_display_limit', 999),
-			"count_results" => false,
-			"raw_data" => true,
+		
+		$data = array();
+		$data['conditions'] = $conditions;
+		$data['filterValue'] = isset($filter_value) ? $filter_value : '';
+		$data['filter'] = $filter;
+		$data['status'] = $status;
+		$data['limit'] = array_var($_REQUEST,'limit',user_config_option('task_display_limit', 999));;
+		
+		return $data;
+	}
+	
+	
+	//TASK GROUP HELPER START
+	private function getGroupTotals($conditions, $group_time_estimate = null, $join_on_extra = null){
+		if(is_null($join_on_extra)){
+			$join_on_extra = "";
+		}
+		$totals = array();
+		//group totals
+		$join_params['join_type'] = "LEFT ";
+		$join_params['table'] = TABLE_PREFIX."timeslots";
+		$join_params['jt_field'] = "rel_object_id";
+		$join_params['e_field'] = "object_id";
+		$join_params['on_extra'] = $join_on_extra;
+		
+		$group_totals_times = ProjectTasks::instance()->listing(array(
+				"select_columns" => array("SUM(TIMESTAMPDIFF(MINUTE,start_time,end_time)) - SUM(subtract/60) AS group_time_worked "),
+				"extra_conditions" => $conditions,
+				"join_params"=> $join_params,
+				"count_results" => false,
+				"raw_data" => true,
 		))->objects;
+		
+		if(is_null($group_time_estimate)){
+			$group_totals = ProjectTasks::instance()->listing(array(
+					"select_columns" => array("SUM(time_estimate) AS group_time_estimate "),
+					"extra_conditions" => $conditions,				
+					"count_results" => false,
+					"raw_data" => true,
+			))->objects;
+			$group_time_estimate = $group_totals[0]['group_time_estimate'];
+		}
+				
+		$totals['estimatedTime'] = str_replace(',',',<br>',DateTimeValue::FormatTimeDiff(new DateTimeValue(0), new DateTimeValue($group_time_estimate * 60), 'hm', 60));
+				
+		$group_time_worked = $group_totals_times[0]['group_time_worked'];
+		$group_time_worked = is_null($group_time_worked) ? 0 : $group_time_worked;
+		$totals['worked_time'] = $group_time_worked;
+		$totals['worked_time_string'] = ($group_time_worked <= 0) ? "" : str_replace(',',',<br>',DateTimeValue::FormatTimeDiff(new DateTimeValue(0), new DateTimeValue($group_time_worked * 60), 'hm', 60));
+		
+		$group_time_pending = $group_time_estimate - $group_time_worked;
+		$group_time_pending = (is_null($group_time_pending) || $group_time_pending < 0) ? 0 : $group_time_pending;
+		$totals['pending_time'] = $group_time_pending;
+		$totals['pending_time_string'] = ($group_time_pending <= 0) ? "" : str_replace(',',',<br>',DateTimeValue::FormatTimeDiff(new DateTimeValue(0), new DateTimeValue($group_time_pending * 60), 'hm', 60));
+				
+		return $totals;
+	}
+	
+	private function getDateGroups($date_field, $conditions, $show_more_conditions, $list_subtasks_cond){
+		$groupId = $show_more_conditions['groupId'];
+		$start = $show_more_conditions['start'];
+		$limit = $show_more_conditions['limit'];
+		$groups_conditions = $this->getDateGroupsConditions($date_field);
+				
+		$groups = array();
+		foreach($groups_conditions as $group_conditions){
+			if(!is_null($groupId) && $group_conditions['id'] != $groupId){
+				continue;
+			}
+			
+			$group_conditions_cond = $conditions ." AND ". $group_conditions['conditions'];
+			
+			
+			
+			
+			$group = ProjectTasks::instance()->listing(array(
+					"select_columns" => array("COUNT(o.id) AS total "),
+					"extra_conditions" => $group_conditions_cond.$list_subtasks_cond,
+					"count_results" => false,
+					"raw_data" => true,
+			))->objects;
+			
+			if($group[0]["total"] > 0){
+				$group[0]["group_name"] = $group_conditions['group_name'];
+				$group[0]["group_order"] = $group_conditions['group_order'];
+				$group[0]["group_id"] = $group_conditions['id'];								
+				
+				$group[0]['group_tasks'] = $this->getTasksInGroup($group_conditions_cond.$list_subtasks_cond, $start, $limit);
+				
+				//group totals
+				$totals = $this->getGroupTotals($group_conditions_cond);
+				foreach($totals as $key => $total){
+					$group[0][$key] = $total;
+				}
+												
+				$groups[] = $group[0];
+			}			
+		}		
+		
+		return $groups;
+	}
+	
+	private function getDateGroupsConditions($date_field){
+		$date_field = "`".$date_field."`";
+		$date_groups = array();
+		
+		$current = DateTimeValueLib::now();
+		$current->advance(logged_user()->getTimezone() * 3600);
+		
+		//Relative dates
+		$relative = array();
+		$relative['first_day_of_year'] = strToTime('first day of January this year', $current->getTimestamp());
+		$relative['first_day_of_last_month'] = strToTime('first day of previous month', $current->getTimestamp());
+		$relative['first_day_of_this_month'] = strToTime('first day of this month', $current->getTimestamp());
+		$relative['first_day_of_last_week'] = strToTime('-1 days monday last week', $current->getTimestamp());
+		$relative['first_day_of_this_week'] = strToTime('-1 days monday this week', $current->getTimestamp());
+		$relative['yesterday'] = strToTime('yesterday', $current->getTimestamp());
+		$relative['today'] = strToTime('today', $current->getTimestamp());
+		$relative['tomorrow'] = strToTime('tomorrow', $current->getTimestamp());		
+		$relative['last_day_of_this_week'] = strToTime('saturday this week', $current->getTimestamp());
+		$relative['first_day_of_next_week'] = strToTime('-1 days monday next week', $current->getTimestamp());
+		$relative['last_day_of_next_week'] = strToTime('saturday next week', $current->getTimestamp());
+		$relative['last_day_of_this_month'] = strToTime('last day of this month', $current->getTimestamp());
+		$relative['last_day_of_next_month'] = strToTime('last day of next month', $current->getTimestamp());
+		$relative['last_day_of_next_3_months'] = strToTime('last day of +3 month', $current->getTimestamp());
+		$relative['last_day_of_this_year'] = strToTime('last day of december this year', $current->getTimestamp());
+		
+		foreach($relative as &$value)
+		{
+		     $value = DateTimeValueLib::makeFromString(date(DATE_MYSQL,$value));
+		}
+		$not_empty_date = " AND ".$date_field." <> '0000-00-00 00:00:00'";
+				
+		//before this year //check if last month is on last year
+		$group_1 = array();
+		$group_1['group_name'] = lang('before this year');
+		$group_1['group_order'] = 1;
+		$group_1['id'] = 'group_before_this_year';
+		if($relative['first_day_of_year']->beginningOfDay() < $relative['first_day_of_last_month']->beginningOfDay()){
+			$group_1['conditions'] = $date_field." < '".$relative['first_day_of_year']->beginningOfDay()->toMySQL()."'".$not_empty_date;
+		}else{
+			$group_1['conditions'] = $date_field." < '".$relative['first_day_of_last_month']->beginningOfDay()->toMySQL()."'".$not_empty_date;
+		}
+		$date_groups[] = $group_1;
+		
+		//this year (before last month)
+		if($relative['first_day_of_year']->beginningOfDay() < $relative['first_day_of_last_month']->beginningOfDay()){
+			$group_2 = array();
+			$group_2['group_name'] = lang('this year (before last month)');
+			$group_2['group_order'] = 2;
+			$group_2['id'] = 'group_this_year_before_last_month';
+			$condition = $date_field." >= '".$relative['first_day_of_year']->beginningOfDay()->toMySQL()."'";
+			$condition .= " AND ".$date_field." < '".$relative['first_day_of_last_month']->beginningOfDay()->toMySQL()."'";
+			$date_groups['conditions'] = $condition;
+			$date_groups[] = $group_2;
+		}
+		
+		//last month
+		$group_3 = array();
+		$group_3['group_name'] = lang('last month');
+		$group_3['group_order'] = 3;
+		$group_3['id'] = 'group_last_month';
+		$condition = $date_field." >= '".$relative['first_day_of_last_month']->beginningOfDay()->toMySQL()."'";
+		$condition .= " AND ".$date_field." < '".$relative['first_day_of_this_month']->beginningOfDay()->toMySQL()."'";
+		$group_3['conditions'] = $condition;
+		$date_groups[] = $group_3;
+		
+		//this month(before last week)
+		if($relative['first_day_of_this_month']->beginningOfDay() < $relative['first_day_of_last_week']->beginningOfDay()){
+			$group_4 = array();
+			$group_4['group_name'] = lang('this month(before last week)');
+			$group_4['group_order'] = 4;
+			$group_4['id'] = 'group_this_month_before_last_week';
+			$condition = $date_field." >= '".$relative['first_day_of_this_month']->beginningOfDay()->toMySQL()."'";
+			$condition .= " AND ".$date_field." < '".$relative['first_day_of_last_week']->beginningOfDay()->toMySQL()."'";
+			$group_4['conditions'] = $condition;
+			$date_groups[] = $group_4;
+		}
+		
+		//last week (week start on sunday and finish on saturday)
+		$group_5 = array();
+		$group_5['group_name'] = lang('last week');
+		$group_5['group_order'] = 5;
+		$group_5['id'] = 'group_last_week';		
+		$condition = $date_field." >= '".$relative['first_day_of_last_week']->beginningOfDay()->toMySQL()."'";
+		$condition .= " AND ".$date_field." < '".$relative['first_day_of_this_week']->beginningOfDay()->toMySQL()."'";
+		$group_5['conditions'] = $condition;
+		$date_groups[] = $group_5;
+		
+		//this week(before yesterday)
+		if($relative['first_day_of_this_week']->beginningOfDay() < $relative['yesterday']->beginningOfDay()){
+			$group_6 = array();
+			$group_6['group_name'] = lang('this week(before yesterday)');
+			$group_6['group_order'] = 6;
+			$group_6['id'] = 'group_this_week_before_yesterday';
+			$condition = $date_field." >= '".$relative['first_day_of_this_week']->beginningOfDay()->toMySQL()."'";
+			$condition .= " AND ".$date_field." < '".$relative['yesterday']->beginningOfDay()->toMySQL()."'";
+			$group_6['conditions'] = $condition;
+			$date_groups[] = $group_6;
+		}
+		
+		//yesterday
+		$group_7 = array();
+		$group_7['group_name'] = lang('yesterday');
+		$group_7['group_order'] = 7;
+		$group_7['id'] = 'group_yesterday';
+		$condition = $date_field." >= '".$relative['yesterday']->beginningOfDay()->toMySQL()."'";
+		$condition .= " AND ".$date_field." <= '".$relative['yesterday']->endOfDay()->toMySQL()."'";
+		$group_7['conditions'] = $condition;
+		$date_groups[] = $group_7;
+		
+		//today
+		$group_8 = array();
+		$group_8['group_name'] = lang('today');
+		$group_8['group_order'] = 8;
+		$group_8['id'] = 'group_today';
+		$condition = $date_field." >= '".$relative['today']->beginningOfDay()->toMySQL()."'";
+		$condition .= " AND ".$date_field." <= '".$relative['today']->endOfDay()->toMySQL()."'";
+		$group_8['conditions'] = $condition;
+		$date_groups[] = $group_8;
+		
+		//tomorrow
+		$group_9 = array();
+		$group_9['group_name'] = lang('tomorrow');
+		$group_9['group_order'] = 9;
+		$group_9['id'] = 'group_tomorrow';
+		$condition = $date_field." >= '".$relative['tomorrow']->beginningOfDay()->toMySQL()."'";
+		$condition .= " AND ".$date_field." <= '".$relative['tomorrow']->endOfDay()->toMySQL()."'";
+		$group_9['conditions'] = $condition;
+		$date_groups[] = $group_9;
+		
+		//this week(later tomorrow)
+		if($relative['tomorrow']->beginningOfDay() < $relative['last_day_of_this_week']->beginningOfDay()){
+			$group_10 = array();
+			$group_10['group_name'] = lang('this week(later tomorrow)');
+			$group_10['group_order'] = 10;
+			$group_10['id'] = 'group_this_week_later_tomorrow';
+			$condition = $date_field." > '".$relative['tomorrow']->endOfDay()->toMySQL()."'";
+			$condition .= " AND ".$date_field." <= '".$relative['last_day_of_this_week']->endOfDay()->toMySQL()."'";
+			$group_10['conditions'] = $condition;
+			$date_groups[] = $group_10;
+		}
+		
+		//next week
+		$group_11 = array();
+		$group_11['group_name'] = lang('next week');
+		$group_11['group_order'] = 11;
+		$group_11['id'] = 'group_next_week';
+		$condition = $date_field." >= '".$relative['first_day_of_next_week']->beginningOfDay()->toMySQL()."'";
+		$condition .= " AND ".$date_field." <= '".$relative['last_day_of_next_week']->endOfDay()->toMySQL()."'";
+		$group_11['conditions'] = $condition;
+		$date_groups[] = $group_11;
+		
+		//this month(after next week)
+		if($relative['last_day_of_next_week']->beginningOfDay() < $relative['last_day_of_this_month']->beginningOfDay()){
+			$group_12 = array();
+			$group_12['group_name'] = lang('this month(after next week)');
+			$group_12['group_order'] = 12;
+			$group_12['id'] = 'group_this_month_after_next_week';
+			$condition = $date_field." > '".$relative['last_day_of_next_week']->endOfDay()->toMySQL()."'";
+			$condition .= " AND ".$date_field." <= '".$relative['last_day_of_this_month']->endOfDay()->toMySQL()."'";
+			$group_12['conditions'] = $condition;
+			$date_groups[] = $group_12;
+		}
+		
+		//next month  //before next week
+		$group_13 = array();
+		$group_13['group_name'] = lang('next month');
+		$group_13['group_order'] = 13;
+		$group_13['id'] = 'group_next_month';
+		if($relative['last_day_of_next_week']->beginningOfDay() < $relative['last_day_of_this_month']->beginningOfDay()){
+			$condition = $date_field." > '".$relative['last_day_of_this_month']->endOfDay()->toMySQL()."'";
+			$condition .= " AND ".$date_field." <= '".$relative['last_day_of_next_month']->endOfDay()->toMySQL()."'";
+			$group_13['conditions'] = $condition;
+		}else{
+			$condition = $date_field." > '".$relative['last_day_of_next_week']->endOfDay()->toMySQL()."'";
+			$condition .= " AND ".$date_field." <= '".$relative['last_day_of_next_month']->endOfDay()->toMySQL()."'";
+			$group_13['conditions'] = $condition;
+		}
+		$date_groups[] = $group_13;
+		
+		//next three months(after next month)
+		$group_14 = array();
+		$group_14['group_name'] = lang('next three months(after next month)');
+		$group_14['group_order'] = 14;
+		$group_14['id'] = 'group_next_three_months_after_next_month';
+		$condition = $date_field." > '".$relative['last_day_of_next_month']->endOfDay()->toMySQL()."'";
+		$condition .= " AND ".$date_field." <= '".$relative['last_day_of_next_3_months']->endOfDay()->toMySQL()."'";
+		$group_14['conditions'] = $condition;
+		$date_groups[] = $group_14;
+		
+		//this year
+		if($relative['last_day_of_next_3_months']->beginningOfDay() < $relative['last_day_of_this_year']->beginningOfDay()){
+			$group_15 = array();
+			$group_15['group_name'] = lang('this year');
+			$group_15['group_order'] = 15;
+			$group_15['id'] = 'group_this_year';
+			$condition = $date_field." > '".$relative['last_day_of_next_3_months']->endOfDay()->toMySQL()."'";
+			$condition .= " AND ".$date_field." <= '".$relative['last_day_of_this_year']->endOfDay()->toMySQL()."'";
+			$group_15['conditions'] = $condition;
+			$date_groups[] = $group_15;
+		}
+		
+		//after this year //before next three months
+		$group_16 = array();
+		$group_16['group_name'] = lang('after this year');
+		$group_16['group_order'] = 16;
+		$group_16['id'] = 'group_after_this_year';
+		if($relative['last_day_of_next_3_months']->beginningOfDay() < $relative['last_day_of_this_year']->beginningOfDay()){
+			$condition = $date_field." > '".$relative['last_day_of_this_year']->endOfDay()->toMySQL()."'".$not_empty_date;
+			$group_16['conditions'] = $condition;
+		}else{
+			$condition = $date_field." > '".$relative['last_day_of_next_3_months']->endOfDay()->toMySQL()."'".$not_empty_date;
+			$group_16['conditions'] = $condition;
+		}
+		$date_groups[] = $group_16;
+		
+		//no date EMPTY_DATETIME
+		$group_17 = array();
+		$group_17['group_name'] = lang('unknown');
+		$group_17['group_order'] = 17;
+		$group_17['id'] = 'group_undefined';
+		$group_17['conditions'] = $date_field." = '".EMPTY_DATETIME."'";
+		$date_groups[] = $group_17;
+				
+		return $date_groups;
+	}
+	
+	private function getPriorityGroups($conditions,$show_more_conditions,$list_subtasks_cond){
+		$priority_field = "`priority`";
+		$groupId = $show_more_conditions['groupId'];
+		$start = $show_more_conditions['start'];
+		$limit = $show_more_conditions['limit'];
+		
+		$groups = ProjectTasks::instance()->listing(array(
+				"select_columns" => array($priority_field." AS group_id ", $priority_field." AS group_name ", "COUNT(o.id) AS total"),				
+				"extra_conditions" => $conditions.$list_subtasks_cond,
+				"group_by" => " `group_name`",
+				"count_results" => false,
+				"raw_data" => true,
+		))->objects;
+		
+		$more_group_ret = array();
+		foreach($groups as $key => $group){
+			if(!is_null($groupId) && $group['group_id'] != $groupId){
+				continue;
+			}
+			$group_conditions = " AND ".$priority_field." = '".$group['group_id']."'";
+			$groups[$key]['group_tasks'] = $this->getTasksInGroup($conditions.$group_conditions.$list_subtasks_cond, $start, $limit);
+			
+			$groups[$key]['group_name'] = lang('priority '.$group['group_id']);
+			switch ($group['group_id']) {
+				case 100:
+					$groups[$key]['group_icon'] = 'ico-task-low-priority';
+					$groups[$key]['group_order'] = 1;
+					break;
+				case 200:
+					$groups[$key]['group_icon'] = 'ico-task';
+					$groups[$key]['group_order'] = 2;
+					break;
+				case 300:
+					$groups[$key]['group_icon'] = 'ico-task-high-priority';
+					$groups[$key]['group_order'] = 3;
+					break;
+				case 400:
+					$groups[$key]['group_icon'] = 'ico-task-high-priority';
+					$groups[$key]['group_order'] = 4;
+					break;
+			}
+						
+			//group totals
+			$totals = $this->getGroupTotals($conditions.$group_conditions);
+			foreach($totals as $total_key => $total){
+				$groups[$key][$total_key] = $total;
+			}
+			
+			if(!is_null($groupId)){
+				$more_group_ret[] = $groups[$key];
+			}
+		}		
+		
+		if(!is_null($groupId)){
+			return $more_group_ret;	
+		}else{
+			return $groups;
+		}			
+	}
+	
+	private function getMilestoneGroups($conditions,$show_more_conditions,$list_subtasks_cond){
+		$milestone_field = "`milestone_id`";
+		$groupId = $show_more_conditions['groupId'];
+		$start = $show_more_conditions['start'];
+		$limit = $show_more_conditions['limit'];
+	
+		$groups = ProjectTasks::instance()->listing(array(
+				"select_columns" => array($milestone_field." AS group_id ", $milestone_field." AS group_name ", "COUNT(o.id) AS total"),
+				"extra_conditions" => $conditions.$list_subtasks_cond,
+				"group_by" => " `group_name`",
+				"count_results" => false,
+				"raw_data" => true,
+		))->objects;
+	
+		$more_group_ret = array();
+		foreach($groups as $key => $group){
+			if(!is_null($groupId) && $group['group_id'] != $groupId){
+				continue;
+			}
+			$group_conditions = " AND ".$milestone_field." = '".$group['group_id']."'";
+			$groups[$key]['group_tasks'] = $this->getTasksInGroup($conditions.$group_conditions.$list_subtasks_cond, $start, $limit);
+
+			if($group['group_id'] > 0){
+				$milestone = ProjectMilestones::findById($group['group_id']);
+				$groups[$key]['group_name'] = $milestone->getName();
+			}else{
+				$groups[$key]['group_name'] = lang('unclassified');
+			}
+			$groups[$key]['group_icon'] = 'ico-milestone';
+				
+			//group totals
+			$totals = $this->getGroupTotals($conditions.$group_conditions);
+			foreach($totals as $total_key => $total){
+				$groups[$key][$total_key] = $total;
+			}
+				
+			if(!is_null($groupId)){
+				$more_group_ret[] = $groups[$key];
+			}
+		}
+		
+		if(user_config_option('tasksShowEmptyMilestones')){
+			$milestone = ProjectMilestones::getMilestonesInfo($mid);
+			//group totals
+			$join_params['join_type'] = "LEFT ";
+			$join_params['table'] = TABLE_PREFIX."project_tasks";
+			$join_params['jt_field'] = "milestone_id";
+			$join_params['e_field'] = "object_id";
+						
+			$empty_milestones = ProjectMilestones::instance()->listing(array(
+					"select_columns" => array("`e`.`object_id` AS group_id ", "`name` AS group_name "),
+					"extra_conditions" => $conditions." AND `jt`.`object_id` IS NULL",
+					"join_params"=> $join_params,
+					"count_results" => false,
+					"raw_data" => true,
+			))->objects;
+			
+			foreach($empty_milestones as $keym => $empty_milestone){
+				$empty_group = array();
+				$empty_group['group_name'] = $empty_milestone['group_name'];
+				$empty_group['id'] = $empty_milestone['group_id'];
+				$empty_group['group_icon'] = 'ico-milestone';
+				$empty_group['group_tasks'] = array();
+				$groups[] = $empty_group;
+			}
+			
+		}
+	
+		if(!is_null($groupId)){
+			return $more_group_ret;
+		}else{
+			return $groups;
+		}
+	}
+		
+	private function getUsersGroups($user_field,$conditions,$show_more_conditions,$list_subtasks_cond){
+		$unknown_text = 'unknown';
+		switch($user_field){
+			case 'assigned_to':
+				$user_field = "`assigned_to_contact_id`";
+				$unknown_text = 'unassigned';
+				break;
+			case 'created_by':
+				$user_field = "`created_by_id`";				
+				break;
+			case 'completed_by':
+				$user_field = "`completed_by_id`";
+				$unknown_text = 'pending';
+				break;
+			default:
+				return array();
+		}
+		$groupId = $show_more_conditions['groupId'];
+		$start = $show_more_conditions['start'];
+		$limit = $show_more_conditions['limit'];
+		
+		$users_groups = array();
+			
+		$groups = ProjectTasks::instance()->listing(array(
+				"select_columns" => array($user_field." AS group_id ", $user_field." AS group_name ", "COUNT(o.id) AS total"),				
+				"extra_conditions" => $conditions.$list_subtasks_cond,
+				"group_by" => " `group_name`",
+				"count_results" => false,
+				"raw_data" => true,
+		))->objects;
+		
+		$more_group_ret = array();
+		foreach($groups as $key => $group){
+			if(!is_null($groupId) && $group['group_id'] != $groupId){
+				continue;
+			}
+			
+			$group_conditions = " AND ".$user_field." = '".$group['group_id']."'";	
+			$groups[$key]['group_tasks'] = $this->getTasksInGroup($conditions.$group_conditions.$list_subtasks_cond, $start, $limit);
+			
+			$contact = Contacts::findById($group['group_id']);
+			if($contact instanceof Contact){
+				$groups[$key]['group_name'] = $contact->getName();
+				$groups[$key]['group_icon'] = 'ico-user';
+			}else{
+				$groups[$key]['group_name'] = lang($unknown_text);
+				$groups[$key]['group_icon'] = 'ico-user';
+			}		
+
+			//group totals
+			$totals = $this->getGroupTotals($conditions.$group_conditions);
+			foreach($totals as $total_key => $total){
+				$groups[$key][$total_key] = $total;
+			}
+			
+			if(!is_null($groupId)){
+				$more_group_ret[] = $groups[$key];
+			}
+		}
+				
+		if(!is_null($groupId)){
+			return $more_group_ret;	
+		}else{
+			return $groups;
+		}	
+	}
+	
+	private function getStatusGroups($conditions,$show_more_conditions,$list_subtasks_cond){
+		$groupId = $show_more_conditions['groupId'];
+		$start = $show_more_conditions['start'];
+		$limit = $show_more_conditions['limit'];
+		
+		$groups = ProjectTasks::instance()->listing(array(
+				"select_columns" => array("(completed_by_id > 0) AS group_id ", "(completed_by_id > 0) AS group_name ", "COUNT(o.id) AS total"),
+				"extra_conditions" => $conditions.$list_subtasks_cond,
+				"group_by" => " `group_name`",
+				"count_results" => false,
+				"raw_data" => true,
+		))->objects;
+		
+		$more_group_ret = array();
+		foreach($groups as $key => $group){
+			if(!is_null($groupId) && $group['group_id'] != $groupId){
+				continue;
+			}
+			
+			$group_conditions = "";
+			if($group['group_id']){
+				$group_conditions = " AND completed_by_id > 0 ";
+				$groups[$key]['group_name'] = lang('complete');
+				$groups[$key]['group_icon'] = 'ico-complete';
+			}else{
+				$group_conditions = " AND completed_by_id = 0 ";
+				$groups[$key]['group_name'] = lang('incomplete');
+				$groups[$key]['group_icon'] = 'ico-delete';
+			}
+			
+			if($group_conditions != ""){
+				$groups[$key]['group_tasks'] = $this->getTasksInGroup($conditions.$group_conditions.$list_subtasks_cond, $start, $limit);
+				
+				//group totals
+				$totals = $this->getGroupTotals($conditions.$group_conditions);
+				foreach($totals as $total_key => $total){
+					$groups[$key][$total_key] = $total;
+				}
+			}
+			
+			if(!is_null($groupId)){
+				$more_group_ret[] = $groups[$key];
+			}
+		}
+		
+		if(!is_null($groupId)){
+			return $more_group_ret;	
+		}else{
+			return $groups;
+		}	
+	}
+	
+	private function getDimensionGroups($dim_id,$conditions,$show_more_conditions,$list_subtasks_cond){
+		$groupId = $show_more_conditions['groupId'];
+		$start = $show_more_conditions['start'];
+		$limit = $show_more_conditions['limit'];
+	
+		$join_params['join_type'] = "INNER ";
+		$join_params['table'] = TABLE_PREFIX."object_members";
+		$join_params['jt_field'] = "object_id";
+		$join_params['e_field'] = "object_id";
+		
+		//this condition is used when we want show more task for a member
+		$member_more_cond = "";
+		if(!is_null($groupId) &&  $groupId > 0){
+			$member_more_cond = " AND  `jt`.`member_id` = $groupId";
+		}
+		
+		$join_params['on_extra'] = " INNER  JOIN `".TABLE_PREFIX."members` `jtm` ON `jt`.`member_id` = `jtm`.`id` AND `jtm`.`dimension_id` = $dim_id AND `jt`.`is_optimization` = 0 $member_more_cond";
+		
+		if(is_null($groupId) || $groupId > 0){
+			$groups = ProjectTasks::instance()->listing(array(
+					"select_columns" => array("`jtm`.`id` AS group_id " , "`jtm`.`name` AS group_name ", "`jtm`.`color` AS group_icon ", "SUM(time_estimate) AS group_time_estimate ", "COUNT(`e`.`object_id`) AS total"),
+					"extra_conditions" => $conditions.$list_subtasks_cond,
+					"group_by" => " `jtm`.`id`",
+					"join_params"=> $join_params,
+					"count_results" => false,
+					"raw_data" => true,
+			))->objects;
+		
+		
+			foreach($groups as $key => $group){
+				if(!is_null($groupId) && $group['group_id'] != $groupId){
+					continue;
+				}
+					
+				
+				$group_conditions = " AND `jtm`.`id` = ".$group['group_id'];
+							
+				$groups[$key]['group_tasks'] = $this->getTasksInGroup($conditions.$group_conditions.$list_subtasks_cond, $start, $limit, $join_params);
+		
+				//group totals
+				$group_time_estimate = ProjectTasks::instance()->listing(array(
+						"select_columns" => array("SUM(time_estimate) AS group_time_estimate "),
+						"extra_conditions" => $conditions.$group_conditions,
+						"join_params"=> $join_params,
+						"count_results" => false,
+						"raw_data" => true,
+				))->objects;
+				$group_time_estimate = $group_time_estimate[0]['group_time_estimate'];
+				
+				$join_on_extra = " INNER  JOIN `".TABLE_PREFIX."object_members` `jtom` ON `e`.`object_id` = `jtom`.`object_id` ";
+				$join_on_extra .= " INNER  JOIN `".TABLE_PREFIX."members` `jtm` ON `jtom`.`member_id` = `jtm`.`id` AND `jtm`.`dimension_id` = $dim_id AND `jtom`.`is_optimization` = 0";
+							
+				$totals = $this->getGroupTotals($conditions.$group_conditions, $group_time_estimate, $join_on_extra);
+				
+				foreach($totals as $total_key => $total){
+					$groups[$key][$total_key] = $total;
+				}
+								
+				$groups[$key]['group_icon'] = "ico-color".$group['group_icon'];			
+			}		
+		}
+		
+		//START unknown group
+		if(is_null($groupId) ||  $groupId == 0){
+			$unknown_group['group_id'] = 0;
+			$unknown_group['group_name'] = lang('unknown');;
+			$join_params['join_type'] = "LEFT ";
+			$join_params['on_extra'] = " LEFT  JOIN `".TABLE_PREFIX."members` `jtm` ON `jt`.`member_id` = `jtm`.`id` AND `jtm`.`dimension_id` = $dim_id AND `jt`.`is_optimization` = 0";
+			
+			$unknown_group['group_tasks'] = $this->getTasksInGroup($conditions.$list_subtasks_cond, $start, $limit, $join_params, " `e`.`object_id` HAVING SUM(`jtm`.`dimension_id`) is null");
+			
+			$unknown_group_totals = ProjectTasks::instance()->listing(array(
+					"select_columns" => array("time_estimate"),
+					"extra_conditions" => $conditions,
+					"group_by" => " `e`.`object_id` HAVING SUM(`jtm`.`dimension_id`) is null",
+					"join_params"=> $join_params,
+					"count_results" => false,
+					"raw_data" => true,
+					"query_wraper_start" => "SELECT count(*)  AS total  , SUM(time_estimate) AS group_time_estimate FROM (",
+					"query_wraper_end" => " ) AS temporal ",
+			))->objects;
+			
+			$unknown_group['total'] = $unknown_group_totals[0]['total'];
+			$unknown_group['group_time_estimate'] = $unknown_group_totals[0]['group_time_estimate'];
+			$unknown_group['estimatedTime'] = str_replace(',',',<br>',DateTimeValue::FormatTimeDiff(new DateTimeValue(0), new DateTimeValue($unknown_group['group_time_estimate'] * 60), 'hm', 60));
+			$groups[] = $unknown_group;
+		}
+		//END unknown group
+		
+		return $groups;
+	}
+	
+	private function getNothingGroups($conditions,$show_more_conditions,$list_subtasks_cond){
+		$groupId = $show_more_conditions['groupId'];
+		$start = $show_more_conditions['start'];
+		$limit = $show_more_conditions['limit'];
+	
+		$groups = ProjectTasks::instance()->listing(array(
+				"select_columns" => array("COUNT(o.id) AS total"),
+				"extra_conditions" => $conditions.$list_subtasks_cond,
+				"count_results" => false,
+				"raw_data" => true,
+		))->objects;
+			
+		$more_group_ret = array();
+		foreach($groups as $key => $group){
+							
+			$group_conditions = "";
+			$groups[$key]['group_id'] = "nothing";
+			$groups[$key]['group_name'] = lang('tasks');
+			$groups[$key]['group_icon'] = 'ico-task';
+							
+			$groups[$key]['group_tasks'] = $this->getTasksInGroup($conditions.$group_conditions.$list_subtasks_cond, $start, $limit);
+	
+			//group totals
+			$totals = $this->getGroupTotals($conditions.$group_conditions);
+			foreach($totals as $total_key => $total){
+					$groups[$key][$total_key] = $total;
+			}
+		}	
+		return $groups;		
+	}
+	
+	private function getTasksInGroup($conditions, $start, $limit, $join_params = null, $group_by = null){
+		$order = user_config_option('tasksOrderBy');
+		$order_dir = 'DESC';
+		switch($order){
+			case 'name':
+				$order_dir = 'ASC';
+				break;
+			case 'assigned_to':
+				$order = 'assigned_to_contact_id';
+				$order_dir = 'ASC';
+				break;
+			case 'due_date':
+			case 'created_on':
+			case 'completed_on':
+				$order = "($order='0000-00-00 00:00:00'), $order";
+				$order_dir = 'ASC';
+				break;			
+		}
+		
+		$tasks = ProjectTasks::instance()->listing(array(
+				"select_columns" => array("e.*","o.*"),
+				"extra_conditions" => $conditions,
+				"join_params"=> $join_params,
+				"group_by" => $group_by,
+				"start" => $start,
+				"limit" => $limit,
+				"order" => $order,
+				"order_dir" => $order_dir,
+				"count_results" => false,
+				"raw_data" => true,
+		))->objects;
+		
+		$tasks_array = array();
+		foreach ($tasks as $task){
+			$tasks_array[] = ProjectTasks::getArrayInfo($task);
+		}
+		return $tasks_array;
+	}
+	
+	private function getGroups($groupBy,$conditions,$show_more_conditions){
+		$groups = array();
+		
+		$group_by_date = array('due_date','start_date','created_on','completed_on');
+		$group_by_priority = array('priority');
+		$group_by_user = array('assigned_to','created_by','completed_by');
+		$group_by_status = array('status');
+		$group_by_nothing = array('nothing');
+		$group_by_milestone = array('milestone');
+		
+		
+				
+		//subtasks structure
+		$list_subtasks = user_config_option('tasksShowSubtasksStructure');
+		$list_subtasks_cond = "";
+		if($list_subtasks){
+			$list_subtasks_cond = " AND `parent_id` = 0";
+		}
+		
+		//Group by date
+		if(in_array($groupBy,$group_by_date)){
+			$groups = $this->getDateGroups($groupBy,$conditions,$show_more_conditions,$list_subtasks_cond);			
+		//Group by priority
+		}elseif(in_array($groupBy,$group_by_priority)){
+			$groups = $this->getPriorityGroups($conditions,$show_more_conditions,$list_subtasks_cond);
+		//Group by users
+		}elseif(in_array($groupBy,$group_by_user)){
+			$groups = $this->getUsersGroups($groupBy,$conditions,$show_more_conditions,$list_subtasks_cond);
+		//Group by status
+		}elseif(in_array($groupBy,$group_by_status)){
+			$groups = $this->getStatusGroups($conditions,$show_more_conditions,$list_subtasks_cond);
+		//Group by milestone
+		}elseif(in_array($groupBy,$group_by_milestone)){
+			$groups = $this->getMilestoneGroups($conditions,$show_more_conditions,$list_subtasks_cond);
+		//Group by nothing
+		}elseif(in_array($groupBy,$group_by_nothing)){
+			$groups = $this->getNothingGroups($conditions,$show_more_conditions,$list_subtasks_cond);
+		//Group by dimension
+		}elseif(substr( $groupBy, 0, 10 ) === "dimension_"){			
+			$dim_id = (int) substr( $groupBy, 10);			
+			$groups = $this->getDimensionGroups($dim_id,$conditions,$show_more_conditions,$list_subtasks_cond);
+		}
+		
+		return $groups;
+	}
+	
+	//Return the groups where the task belongs to
+	function get_groups_for_task(){
+		ajx_current("empty");
+		$task_id = array_var($_REQUEST,'taskId',0);
+		$conditions= " AND `e`.`object_id` = $task_id";
+		$groupBy = user_config_option('tasksGroupBy');
+		$groups = $this->getGroups($groupBy,$conditions);
+		
+		if(is_null($groups)){
+			$groups = array();
+		}
+		$data['taskId'] = $task_id;
+		$data['groups'] = $groups;
+		ajx_extra_data($data);
+	}
+	//TASK GROUP HELPER END
+	
+	function get_tasks_groups_list() {
+		ajx_current("empty");
+		$data = array();
+		$request_conditions = $this->get_tasks_request_conditions();
+		$conditions = $request_conditions['conditions'];
+		
+		$groupId = array_var($_REQUEST,'groupId',null);
+		$start = array_var($_REQUEST,'start',0);
+		$limit = array_var($_REQUEST,'limit', user_config_option('noOfTasks'));		
+		$show_more_conditions = array("groupId" => $groupId,"start" => $start,"limit" => $limit);
+		
+		//Groups
+		$groupBy = user_config_option('tasksGroupBy');
+		$groups = $this->getGroups($groupBy,$conditions,$show_more_conditions);		
+		
+		if(is_null($groups)){
+			$groups = array();
+		}
+		$data['groups'] = $groups;
+		ajx_extra_data($data);
+	}
+	
+	function get_tasks() {
+		ajx_current("empty");
+		$data = array();
+		$tasks_array = array();
+		
+		$tasks_ids = array_map('intval',json_decode(array_var($_REQUEST, 'tasks_ids', null )));		
+		if (is_array($tasks_ids)){						
+			$conditions = " AND `object_id` IN (".implode(',', $tasks_ids).")";
+		
+			$tasks = ProjectTasks::instance()->listing(array(
+					"extra_conditions" => $conditions,
+					"count_results" => false,
+					"raw_data" => true,
+			))->objects;
+			
+			$tasks_array = array();
+			foreach ($tasks as $task){
+				$tasks_array[] = ProjectTasks::getArrayInfo($task);
+			}			
+		}
+		
+		$data['tasks'] = $tasks_array;
+		ajx_extra_data($data);
+	}
+	
+	function new_list_tasks(){
+		//load config options into cache for better performance
+		load_user_config_options_by_category_name('task panel');
+		 
+		$isJson = array_var($_GET,'isJson',false);
+		if ($isJson) ajx_current("empty");
+		
+		$request_conditions = $this->get_tasks_request_conditions();
+		$conditions = $request_conditions['conditions'];
+		$filter_value = $request_conditions['filterValue'];
+		$filter = $request_conditions['filter'];
+		$status = $request_conditions['status'];
+				
+		$tasks = array();
 		
 		$pendingstr = $status == 0 ? " AND `completed_on` = " . DB::escape(EMPTY_DATETIME) . " " : "";
 		$milestone_conditions = " AND `is_template` = false " . $pendingstr;
@@ -1122,6 +1962,7 @@ class TaskController extends ApplicationController {
 				'showEndDates' => user_config_option('tasksShowEndDates'),
 				'showBy' => user_config_option('tasksShowAssignedBy'),
 				'showClassification' => user_config_option('tasksShowClassification'),
+				'showSubtasksStructure' => user_config_option('tasksShowSubtasksStructure'),
 				'showTags' => user_config_option('tasksShowTags',0),
 				'showEmptyMilestones' => user_config_option('tasksShowEmptyMilestones',1),
 				'showTimeEstimates' => user_config_option('tasksShowTimeEstimates',1),
@@ -1544,7 +2385,7 @@ class TaskController extends ApplicationController {
 				}
 				$isSailent = true;
 				// notify asignee
-				if(array_var($task_data, 'send_notification') == 'checked') {
+				if($task->getAssignedToContactId() != $task->getAssignedById()) {
 					$isSailent = false;
 					try {
 						Notifier::taskAssigned($task);

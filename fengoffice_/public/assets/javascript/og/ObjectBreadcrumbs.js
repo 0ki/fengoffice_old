@@ -19,7 +19,8 @@ og.eventManager.addListener('replace all empty breadcrumb',function(){
 		og.initBreadcrumbsBtns(btns);
 	}
 	
-	var members = og.getMembersFromServer(og.emptyBreadcrumbsToRefresh,callback,og.emptyBreadcrumbsToRefresh.slice());
+	var copy = og.emptyBreadcrumbsToRefresh.slice(0);
+	var members = og.getMembersFromServer(og.emptyBreadcrumbsToRefresh,callback,copy);
 
 	//empty the array after refresh
 	og.emptyBreadcrumbsToRefresh.length = 0;

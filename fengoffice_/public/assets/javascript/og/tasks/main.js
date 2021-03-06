@@ -65,6 +65,7 @@ ogTasksTask = function(){
 	this.workspacePaths;
 	
 	this.subtasks = [];
+	this.subtasksIds = [];
 	this.parent;
 	
 	this.divInfo = [];
@@ -85,46 +86,48 @@ ogTasksTask.prototype.flatten = function(){
 
 ogTasksTask.prototype.setFromTdata = function(tdata){
 	this.id = tdata.id;
-	this.title = tdata.t;
-	this.description = tdata.desc;
-	this.createdOn = tdata.c;
-	this.createdBy = tdata.cid;
+	this.title = tdata.name;
+	this.description = tdata.description;
+	this.createdOn = tdata.createdOn;
+	this.createdBy = tdata.createdById;
 		
 	var dummyDate = new Date();
 
-	if (tdata.s) this.status = tdata.s; else this.status = 0;
-	if (tdata.pid) this.parentId = tdata.pid; else this.parentId = 0;
-	if (tdata.pr) this.priority = tdata.pr; else this.priority = 200;
-	if (tdata.mid) this.milestoneId = tdata.mid; else this.milestoneId = null;
-	if (tdata.atid) this.assignedToId = tdata.atid; else this.assignedToId = null;
-	if (tdata.assigned_by_id) this.assignedById = tdata.assigned_by_id; else this.assignedById = null;
-	if (tdata.dd) this.dueDate = tdata.dd; else this.dueDate = null;
-	if (tdata.sd) this.startDate = tdata.sd; else this.startDate = null;
-	if (tdata.wid) this.workingOnIds = tdata.wid; else this.workingOnIds = null;
-	if (tdata.wt) this.workingOnTimes = tdata.wt; else this.workingOnTimes = null;
-	if (tdata.wp) this.workingOnPauses = tdata.wp; else this.workingOnPauses = null;
-	if (tdata.wpt) this.pauseTime = tdata.wpt; else this.pauseTime = null;
-	if (tdata.cbid) this.completedById = tdata.cbid; else this.completedById = null;
-	if (tdata.con) this.completedOn = tdata.con; else this.completedOn = null;
-	if (tdata.rep) this.repetitive = true;
+	if (tdata.status) this.status = tdata.status; else this.status = 0;
+	if (tdata.parentId) this.parentId = tdata.parentId; else this.parentId = 0;
+	if (tdata.priority) this.priority = tdata.priority; else this.priority = 200;
+	if (tdata.milestoneId) this.milestoneId = tdata.milestoneId; else this.milestoneId = null;
+	if (tdata.assignedToContactId) this.assignedToId = tdata.assignedToContactId; else this.assignedToId = null;
+	if (tdata.assignedById) this.assignedById = tdata.assignedById; else this.assignedById = null;
+	if (tdata.dueDate) this.dueDate = tdata.dueDate; else this.dueDate = null;
+	if (tdata.startDate) this.startDate = tdata.startDate; else this.startDate = null;
+	if (tdata.workingOnIds) this.workingOnIds = tdata.workingOnIds; else this.workingOnIds = null;
+	if (tdata.workingOnTimes) this.workingOnTimes = tdata.workingOnTimes; else this.workingOnTimes = null;
+	if (tdata.workingOnPauses) this.workingOnPauses = tdata.workingOnPauses; else this.workingOnPauses = null;
+	if (tdata.pauseTime) this.pauseTime = tdata.pauseTime; else this.pauseTime = null;
+	if (tdata.completedById) this.completedById = tdata.completedById; else this.completedById = null;
+	if (tdata.completedOn) this.completedOn = tdata.completedOn; else this.completedOn = null;
+	if (tdata.repetitive) this.repetitive = true;
 	if (tdata.isread) this.isRead = true; else this.isRead = false;
 	if (tdata.otype) this.otype = tdata.otype; else this.otype = null;
-	if (tdata.pc) this.percentCompleted = tdata.pc; else this.percentCompleted = 0;
+	if (tdata.percentCompleted) this.percentCompleted = tdata.percentCompleted; else this.percentCompleted = 0;
 	if (tdata.members) this.members = tdata.members; else this.members = [];
-	//if (tdata.estimatedTime) this.estimatedTime =  Math.round( tdata.estimatedTime * 10  / 60 ) / 10; else this.estimatedTime = '' ;
-	if (tdata.et) this.estimatedTime = tdata.et; else this.estimatedTime = '';
+	
+	if (tdata.timeEstimateString) this.estimatedTime = tdata.timeEstimateString; else this.estimatedTime = '';
 	
 	if (tdata.pending_time) this.pending_time = tdata.pending_time; else this.pending_time = 0;
 	if (tdata.pending_time_string) this.pending_time_string = tdata.pending_time_string; else this.pending_time_string = '';
 	if (tdata.worked_time) this.worked_time = tdata.worked_time; else this.worked_time = 0;
 	if (tdata.worked_time_string) this.worked_time_string = tdata.worked_time_string; else this.worked_time_string = '';
 	
-	if (tdata.te) this.TimeEstimate = tdata.te; else this.TimeEstimate = 0;
+	if (tdata.timeEstimate) this.TimeEstimate = tdata.timeEstimate; else this.TimeEstimate = 0;
 	if (tdata.depCount) this.depCount = tdata.depCount; else this.depCount = null;
 	if (tdata.memPath) this.memPath = tdata.memPath; else this.memPath = [];
-	if (tdata.udt) this.useDueTime = tdata.udt;
-	if (tdata.ust) this.useStartTime = tdata.ust;
-	if (tdata.mas) this.multiAssignment = tdata.mas;
+	if (tdata.useDueTime) this.useDueTime = tdata.useDueTime;
+	if (tdata.useStartTime) this.useStartTime = tdata.useStartTime;
+	if (tdata.multiAssignment) this.multiAssignment = tdata.multiAssignment;
+	
+	if (tdata.subtasksIds) this.subtasksIds = tdata.subtasksIds;
 }
 
 ogTasksMilestone = function(id, title, dueDate, totalTasks, completedTasks, isInternal, isUrgent){
@@ -186,29 +189,7 @@ ogTasks.loadDataFromHF = function(){
 ogTasks.loadData = function(data){
 	
 	var i;
-	this.Tasks = [];
-	for (var i = 0; i < data['tasks'].length; i++){
-		var tdata = data['tasks'][i];
-		if (tdata.id){
-			var task = new ogTasksTask();
-			task.setFromTdata(tdata);
-			if (tdata.s)
-				task.statusOnCreate = tdata.s;
-			this.Tasks[ogTasks.Tasks.length] = task;
-		}
-	}
-	
-	//Set task parent information
-	for (var i = 0; i < this.Tasks.length; i++){
-		if (this.Tasks[i].parentId > 0){
-			var parent = this.getTask(this.Tasks[i].parentId);
-			if (parent){
-				this.Tasks[i].parent = parent;
-				parent.subtasks[parent.subtasks.length] = this.Tasks[i];
-			}
-		}
-	}
-	
+		
 	this.Users = [];
 	for (var i = 0; i < data['users'].length; i++){
 		var udata = data['users'][i];
@@ -307,417 +288,10 @@ ogTasks.getBottomParent = function(task){
 		return task;
 }
 
-ogTasks.getGroupData = function(displayCriteria, groups,tasks){
-	var groupData = [];
-	var i;
-	var td = this.getTimeDistances();
-	for (var i = 0; i < groups.length; i++){
-		var groupId = groups[i];
-		var name;
-		switch (displayCriteria.group_by){
-			case 'assigned_to': name = lang('unassigned'); break;
-			case 'nothing': name = lang('tasks'); break;
-			case 'completed_by':
-			case 'completed_on':
-				name = lang('pending'); break;
-			case 'due_date': name = lang('no due date');break;
-			case 'start_date': name = lang('no start date');break;
-			default:
-				name = lang('ungrouped');
-		}
-		var icon = '';
-		var id = i;
-		var urgent = false;
-		if (groupId != 'unclassified'){
-			switch(displayCriteria.group_by){
-				case 'milestone':
-					icon = 'ico-milestone';
-					var milestone = this.getMilestone(groupId);
-					if (milestone){
-						name = milestone.title; 
-						urgent = milestone.isUrgent;
-					}
-					break;
-				case 'priority' : 
-					switch(groupId){
-						case 100: name = lang('low'); icon = 'ico-task-low-priority'; break;
-						case 200: name = lang('normal'); icon = 'ico-task'; break;
-						case 300: name = lang('high'); icon = 'ico-task-high-priority'; break;
-						case 400: name = lang('urgent'); icon = 'ico-task-high-priority'; break;
-						default:
-					} break;
-				case 'workspace' : 
-					icon = 'ico-color' + og.getWorkspaceColor(groupId);
-					name = og.getFullWorkspacePath(groupId, true);
-					break;
-				case 'assigned_to' : 
-					var contact = this.getUser(groupId, true);
-					if (contact){
-						var company_name = "";
-						if (contact.companyId > 0) {
-							comp = this.getCompany(contact.companyId);
-							if (comp) company_name = " : " + comp.name;
-							icon = 'ico-user';
-						} else {
-							icon = 'ico-company';
-						}
-						name = contact.name + company_name;
-					} else {
-						var comp = this.getCompany(groupId);
-						if (comp){
-							name = comp.name;
-							icon = 'ico-company';
-						} else {
-							name = lang('company not found', groupId);
-							icon = 'ico-unknown';
-						}
-					}
-					
-					break;
-				case 'due_date' : name = td[groupId]; break;
-				case 'start_date' : name = td[groupId]; break;
-				case 'created_on' : name = td[groupId]; break;
-				case 'completed_on' : name = td[groupId]; break;
-				case 'created_by' : 
-				case 'completed_by' : 
-					var user = this.getUser(groupId);
-					if (user) name = user.name;
-					icon = 'ico-user'; 
-					break;
-				case 'status' :
-					if (groupId == 0){
-						icon = 'ico-delete';
-						name = lang('incomplete');
-					} else {
-						icon = 'ico-complete';
-						name = lang('complete');
-					}
-					break;
-				case 'subtype' : name = this.getObjectSubtype(groupId) ? this.getObjectSubtype(groupId).name : lang('ungrouped') ; break;
-				default:
-					if (displayCriteria.group_by.indexOf('dimension_') == 0) {
-						// Group by dimension
-						var dim_id = displayCriteria.group_by.replace('dimension_', '');
-						var members = og.getMemberFromOgDimensions(groupId);
-						var member = members[0];
-						
-						if (member.id == groupId) {
-							name = member.name;
-							icon = member.ico;	
-							break;
-						}						
-					}
-			}
-		}
-		var solo = false;
-		var expanded = false;
-		if (!this.redrawGroups){
-			var group = this.getGroup(groupId);
-			if (group){
-				solo = group.solo;
-				expanded = group.isExpanded;
-			}
-		}
-		
-		if (!tasks[i])
-			tasks[i] = [];
-		
-		groupData[groupData.length] = {
-			group_name: name,
-			group_id: groupId,
-			group_icon: icon,
-			group_tasks: tasks[i],
-			solo: solo,
-			isExpanded: expanded,
-			isChecked: false,
-			isUrgent: urgent
-		}
-	}
-	return groupData;
-}
-
-ogTasks.groupTasks = function(displayCriteria, tasksContainer){
-	var groups = [];
-	var tasks = [];
-	groups[0] = 'unclassified';
-	tasks[0] = [];
-	if (!this.redrawGroups) {
-		for (var i = 0; i < this.Groups.length - 1; i++) {
-			groups[i+1] = this.Groups[i].group_id;
-		}
-	}
-	
-	var tmp = {};
-	for (var j = 0; j < tasksContainer.length; j++){
-		var t = tasksContainer[j];
-		if (!tmp[t.parentId]) tmp[t.parentId] = [];
-		tmp[t.parentId].push(t);
-	}
-	var tmpTasksContainer = [];
-	for (x in tmp){
-		for (var k = 0; k < tmp[x].length; k++){
-			if (tmp[x][k]) tmpTasksContainer.push(tmp[x][k]);
-		}
-	}
-	tasksContainer = tmpTasksContainer;
-	
-	for (var i = 0; i < tasksContainer.length; i++){
-		var taskIn = true;
-		var task = tasksContainer[i];
-		task.subtasks = [];		
-		if(task.parent){
-			if(displayCriteria.group_by == "assigned_to" || displayCriteria.group_by == "created_by" || displayCriteria.group_by == "priority" || displayCriteria.group_by == "completed_by" || displayCriteria.group_by == "status"){
-				taskIn = true;
-			}else{
-				taskIn = false;
-				var parent = this.getTask(task.parentId);
-				parent.subtasks.push(task);	
-			}
-		}		
-		if (taskIn){
-			var this_task_groups = [];
-			var group = null;
-			switch(displayCriteria.group_by){
-				case 'milestone': group = (task.milestoneId?(this.getMilestone(task.milestoneId)?task.milestoneId:null):null); break;
-				case 'priority' : group = (task.priority?task.priority:200); break;
-				case 'assigned_to' : group = (task.assignedToId?task.assignedToId:null); break;
-				case 'due_date' : group = (task.dueDate?this.getTimeDistance(task.dueDate):null); break;
-				case 'start_date' : group = (task.startDate?this.getTimeDistance(task.startDate):null); break;
-				case 'created_on' : group = this.getTimeDistance(task.createdOn); break;
-				case 'completed_on' : group = (task.completedOn? this.getTimeDistance(task.completedOn):null); break;
-				case 'created_by' : group = task.createdBy; break;
-				case 'status' : group = task.status; break;
-				case 'completed_by' : group = (task.completedById?task.completedById:null); break;
-				case 'subtype' : group = task.otype; break;
-				default:
-					if (displayCriteria.group_by.indexOf('dimension_') == 0) {
-						// Group by dimension
-						var dim_id = displayCriteria.group_by.replace('dimension_', '');
-						for (k=0; k<task.members.length; k++) {
-							for (var j in og.dimensions[dim_id]) {
-								if (og.dimensions[dim_id][j] && typeof(og.dimensions[dim_id][j]) != 'function' && og.dimensions[dim_id][j].id == task.members[k]) {
-									group = task.members[k];
-									this_task_groups.push(group);
-									break;
-								}
-							}
-						}
-						if (this_task_groups.length == 0) {
-							this_task_groups.push(groups[0]);
-						}
-					}
-			}
-			
-			if (displayCriteria.group_by.indexOf('dimension_') != 0) {
-				this_task_groups.push(group);
-			}
-			for (var x=0; x<this_task_groups.length; x++) {
-				group = this_task_groups[x];
-				if (group || group == 0){
-					if (groups.indexOf(group) < 0){
-						groups[groups.length] = group;
-						tasks[tasks.length] = [];
-					}
-					if (!tasks[groups.indexOf(group)])
-						 tasks[groups.indexOf(group)] = [];
-					var tasksArray = tasks[groups.indexOf(group)]; 
-					tasksArray[tasksArray.length]= task;
-				} else {
-					tasks[0][tasks[0].length] = task;
-				}
-			}
-		}
-		if (task.parentId > 0 && this.getTask(task.parentId) != null){
-			var parent = this.getTask(task.parentId);
-			var cond1;
-			var cond2;
-			var cond3 = true;
-			switch(displayCriteria.group_by){
-			case 'priority' : cond1 = task.priority; cond2 = parent.priority; break;
-			case 'assigned_to' : cond1 = task.assignedToId; cond2 = parent.assignedToId; break;
-			case 'created_by' : cond1 = task.createdBy; cond2 = parent.createdBy; break;
-			case 'status' : cond1 = task.status; cond2 = parent.status; break;
-			case 'completed_by' : cond1 = task.completedById; cond2 = parent.completedById; break;
-			default:
-				cond3 = false;
-			}
-			if(cond3 && cond1 == cond2){
-				parent.subtasks.push(task);
-				if(cond1 != null){
-					var groupT = tasks[groups.indexOf(cond1)];
-					groupT.splice(groupT.indexOf(task), 1);
-				}else{
-					var groupT = tasks[0];
-					groupT.splice(groupT.indexOf(task), 1);
-				}
-			}
-		}
-	}
-	if (displayCriteria.group_by == 'milestone'){ 			//Show all milestones
-	
-		var bottomToolbar = Ext.getCmp('tasksPanelBottomToolbarObject');
-		var filters = bottomToolbar.getFilters();
-		
-		for(var i = 0; i < this.Milestones.length; i++) {
-			if (groups.indexOf(this.Milestones[i].id) < 0){
-				if (filters.filter != 'milestone' || filters.fval == this.Milestones[i].id){
-					groups[groups.length] = this.Milestones[i].id;
-					tasks[tasks.length] = [];
-				}
-			}
-		}
-	}
-	var groupData = this.getGroupData(displayCriteria,groups,tasks);
-	return this.orderGroups(displayCriteria, groupData);
-}
-
-
 
 //************************************
 //*		Ordering Algorithms
 //************************************
-
-ogTasks.orderGroups = function(displayCriteria,groups){
-	//Take the unclassified tasks to the bottom
-	var unclassifiedGroup = groups[0];
-	for (var i = 1; i < groups.length; i++) {
-		groups[i-1] = groups[i];
-	}
-	groups[groups.length - 1] = unclassifiedGroup;
-	
-	//Order the rest
-	switch(displayCriteria.group_by){
-		case 'created_by' :
-		case 'completed_by' :
-			for (var i = 0; i < groups.length - 2; i++) {
-				for (var j = i+1; j < groups.length - 1; j++) {
-					if (groups[i].group_name.toUpperCase() > groups[j].group_name.toUpperCase()){
-						var aux = groups[i];
-						groups[i] = groups[j];
-						groups[j] = aux;
-					}
-				}
-			}
-			break;
-		case 'milestone':
-			for (var i = 0; i < groups.length-1; i++) {
-				groups[i].duedate = this.getMilestone(groups[i].group_id).dueDate;
-			}
-			for (var i = 0; i < groups.length - 2; i++) {
-				for (var j = i+1; j < groups.length - 1; j++) {
-					if (groups[i].duedate > groups[j].duedate){
-						var aux = groups[i];
-						groups[i] = groups[j];
-						groups[j] = aux;
-					}
-				}
-			}
-			break;
-		case 'assigned_to' :
-		case 'due_date' :
-		case 'start_date' :
-		case 'status' :
-			for (var i = 0; i < groups.length - 2; i++) {
-				for (var j = i+1; j < groups.length - 1; j++) {
-					if (groups[i].group_id > groups[j].group_id){
-						var aux = groups[i];
-						groups[i] = groups[j];
-						groups[j] = aux;
-					}
-				}
-			}
-			break;
-		case 'created_on' :
-		case 'completed_on' :
-		case 'priority' :
-			for (var i = 0; i < groups.length - 2; i++) {
-				for (var j = i+1; j < groups.length - 1; j++) {
-					if (groups[i].group_id < groups[j].group_id){
-						var aux = groups[i];
-						groups[i] = groups[j];
-						groups[j] = aux;
-					}
-				}
-			}
-			break;
-		default:
-			if (displayCriteria.group_by.indexOf('dimension_') == 0) {
-				for (var i = 0; i < groups.length - 2; i++) {
-					for (var j = i+1; j < groups.length - 1; j++) {
-						if (groups[i].group_name.toUpperCase() > groups[j].group_name.toUpperCase()){
-							var aux = groups[i];
-							groups[i] = groups[j];
-							groups[j] = aux;
-						}
-					}
-				}
-			}
-	}
-	return groups;
-}
-
-ogTasks.orderTasks = function(displayCriteria, tasks){
-	for (var i = 0; i < tasks.length - 1; i++){
-		for (var j = i+1; j < tasks.length; j++){
-			var swap = false;
-			var resolveByName = false;
-			switch(displayCriteria.order_by){
-				case 'priority' : 
-					if (tasks[i].priority < tasks[j].priority) {
-						swap = true;
-					} else {
-						if (tasks[i].priority == tasks[j].priority){
-							//take into account the due date
-							swap = (tasks[i].dueDate && tasks[j].dueDate && tasks[i].dueDate > tasks[j].dueDate) || (tasks[j].dueDate && !tasks[i].dueDate);
-							if (!swap)
-								resolveByName = (tasks[i].dueDate && tasks[j].dueDate && tasks[i].dueDate == tasks[j].dueDate) || (!tasks[j].dueDate && !tasks[i].dueDate) ;
-						} else
-							swap = false;
-					}
-					break;
-				case 'name' : 
-					swap = tasks[i].title.toUpperCase() > tasks[j].title.toUpperCase();
-					break;
-				case 'due_date' : 
-					swap = (tasks[i].dueDate && tasks[j].dueDate && tasks[i].dueDate > tasks[j].dueDate) || (tasks[j].dueDate && !tasks[i].dueDate) ;
-					if (!swap)
-						resolveByName = (tasks[i].dueDate && tasks[j].dueDate && tasks[i].dueDate == tasks[j].dueDate) || (!tasks[j].dueDate && !tasks[i].dueDate) ;
-					break;
-				case 'created_on' : 
-					swap = (tasks[i].createdOn && tasks[j].createdOn && tasks[i].createdOn > tasks[j].createdOn) || (tasks[j].createdOn && !tasks[i].createdOn) ;
-					break;
-				case 'completed_on' : 
-					swap = tasks[i].completedOn < tasks[j].completedOn;
-					break;
-				case 'assigned_to' : //TODO: Correct this sorting method
-					swap = (tasks[i].assignedToId && tasks[j].assignedToId && tasks[i].assignedToId < tasks[j].assignedToId) || (tasks[j].assignedToId && !tasks[i].assignedToId);
-					if (!swap)
-						resolveByName = (tasks[i].assignedToId && tasks[j].assignedToId && tasks[i].assignedToId == tasks[j].assignedToId) || (!tasks[j].assignedToId && !tasks[i].assignedToId);
-					break;
-				case 'start_date' : 
-					swap = (tasks[i].startDate && tasks[j].startDate && tasks[i].startDate > tasks[j].startDate) || (tasks[j].startDate && !tasks[i].startDate) ;
-					if (!swap)
-						resolveByName = (tasks[i].startDate && tasks[j].startDate && tasks[i].startDate == tasks[j].startDate) || (!tasks[j].startDate && !tasks[i].startDate) ;
-					break;
-                                case 'percent_completed' : 
-					swap = tasks[j].percentCompleted > tasks[i].percentCompleted;
-					break;
-				default:
-			}
-			if (!swap && resolveByName){
-				swap = tasks[i].title.toUpperCase() > tasks[j].title.toUpperCase();
-			}
-			if (swap){
-				var aux = tasks[i];
-				tasks[i] = tasks[j];
-				tasks[j] = aux;
-			}
-		}
-	}
-	return tasks;
-}
-
-
 ogTasks.TaskSelected = function(checkbox, task_id, group_id){
 	var task = this.getTask(task_id);
 	task.isChecked = checkbox.checked;
@@ -733,8 +307,11 @@ ogTasks.GroupSelected = function(checkbox, group_id){
 	this.expandGroup(group_id);
 	var group = this.getGroup(group_id);
 	var tasks = [];
-	for(var i = 0; i < group.group_tasks.length; i++)
-		tasks = tasks.concat(group.group_tasks[i].flatten());
+	
+	for (var i in group.group_tasks) {
+		tasks.push(group.group_tasks[i]);
+	}
+			
 
 	for (var i = 0; i < tasks.length; i++){
 		tasks[i].isChecked = checkbox.checked;
@@ -774,27 +351,20 @@ ogTasks.executeAction = function(actionName, ids, options){
 			if (success && ! data.errorCode) {
 				for (var i = 0; i < data.tasks.length; i++){
 					var tdata = data.tasks[i];
+					var task = ogTasksCache.addTasks(tdata);
 					if (actionName == 'delete' || actionName == 'archive'){
-						var task = this.getTask(tdata.id);
-						if (task){
-							var tasksToRemove = task.flatten();
-							for (var j = 0; j < tasksToRemove.length; j++)
-								this.removeTask(tasksToRemove[j].id);
-							if (task.parent)
-								for (var j = 0; j < task.parent.subtasks.length; j++)
-									if (task.parent.subtasks[j].id == task.id)
-										task.parent.subtasks.splice(j,1);
-						}
-					} else {
-						var task = ogTasks.getTask(tdata.id);
-						task.setFromTdata(tdata);
+						//remove task from cache	
+						ogTasksCache.removeTask(task);
+						ogTasks.removeTaskFromView(task);
+					}else{						
+						ogTasks.UpdateTask(task.id,false);	
 					}
 				}
-				this.redrawGroups = false;
-				this.draw();
-				this.redrawGroups = true;
+				
 				var topToolbar = Ext.getCmp('tasksPanelTopToolbarObject');
 				topToolbar.updateCheckedStatus();
+				
+				ogTasks.refreshGroupsTotals();
 			} else {
 			
 			}
@@ -811,9 +381,10 @@ ogTasks.setAllCheckedValue = function(checked){
 
 ogTasks.getSelectedIds = function(){
 	var result = [];
-	for (var i = 0; i < this.Tasks.length; i++) {
-		if (this.Tasks[i].isChecked) {
-			result[result.length] = this.Tasks[i].id;
+	for(var prop in ogTasksCache.Tasks) {
+		var task = ogTasksCache.Tasks[prop];
+		if (task.isChecked) {
+			result.push(task.id);
 		}
 	}
 	return result;
@@ -839,12 +410,7 @@ ogTasks.getUserCompanyName = function(assigned_to){
 }
 
 ogTasks.getTask = function(id){
-	for (var i = 0; i < this.Tasks.length; i++) {
-		if (this.Tasks[i].id == id) {
-			return this.Tasks[i];
-		}
-	}
-	return null;
+	return ogTasksCache.getTask(id);	
 }
 
 ogTasks.removeTask = function(id){
@@ -915,15 +481,6 @@ ogTasks.getCompany = function(id){
 	return null;
 }
 
-ogTasks.getGroup = function(id){
-	for (var i = 0; i < this.Groups.length; i++) {
-		if (this.Groups[i].group_id == id) {
-			return this.Groups[i];
-		}
-	}
-	return null;
-}
-
 ogTasks.getObjectSubtype = function(id){
 	for (var i = 0; i < this.ObjectSubtypes.length; i++) {
 		if (this.ObjectSubtypes[i].id == id) {
@@ -953,111 +510,6 @@ ogTasks.setSubtasksFromData = function(task, subtdata){
 		}
 		ogTasks.setSubtasksFromData(subt, subtdata);
 	}
-}
-
-/*
-*	Returns the time distance values and labels
-*/
-ogTasks.getTimeDistances = function(){
-	var result = [];
-	result[3] = lang('before this year');
-	result[4] = lang('this year (before last month)');
-	result[5] = lang('last m');
-	result[6] = lang('this month(before last week)');
-	result[7] = lang('last w');
-	result[8] = lang('this week(before yesterday)');
-	result[9] = lang('yesterday');
-	result[10] = lang('today');
-	result[11] = lang('tomorrow');
-	result[12] = lang('this week(later tomorrow)');
-	result[13] = lang('next week');
-	result[14] = lang('this month(after next week)');
-	result[15] = lang('next month');
-	result[16] = lang('next three months(after next month)');
-	result[17] = lang('this year');
-	result[18] = lang('after this year');
-	return result;
-}
-
-/*
-*	Given a specific datetime, returns the time distance for the datetime
-*/
-ogTasks.getTimeDistance = function(timestamp){
-	var tz = og.loggedUser.tz ? og.loggedUser.tz : 0;
-	var today = new Date();
-	var todayGMTUser = new Date(today.valueOf() + today.getTimezoneOffset() * 60000 + tz * 3600 * 1000);//getTimezoneOffset because new date take local tz
-	var date = new Date(timestamp * 1000);
-	var dateGMTUser = new Date(timestamp * 1000 + date.getTimezoneOffset() * 60000);
-	today = todayGMTUser;
-	date = dateGMTUser;
-	date.clearTime();
-	today.clearTime();
-	var day = 24*60*60*1000; //milliseconds in a day
-	var startday = 0;//(og.preferences['start_monday']) * day;
-	if(og.preferences['start_monday'] == 0){startday = day;};
-	var currentday = new Date ();
-	var sundayafter = new Date();
-	sundayafter.setTime((today.getTime() + ((7-today.getDay()) * day))-startday);
-	var sundaybefore = new Date();
-	sundaybefore.setTime((today.getTime() - (currentday.getDay() * day))-startday);
-	var lastweek = new Date();
-	lastweek.setTime(sundaybefore.getTime() - (7 * day));
-	var nextweek = new Date();
-	nextweek.setTime(sundayafter.getTime() + (7 * day));
-	var yesterday = new Date();
-	yesterday.setTime(today.getTime() - day);
-	var tomorrow = new Date();
-	tomorrow.setTime(today.getTime() + day);
-	var ano = Math.abs(date.getFullYear() - currentday.getFullYear());
-	
-	if(date < yesterday){
-		if(date > sundaybefore){
-			return 8;//this week(before yesterday
-		}else if(date > lastweek){
-			return 7;//last week
-		}else if(date.getMonth() == today.getMonth() && date.getFullYear() == currentday.getFullYear()){
-			return 6;//this month(before last week)
-		}else if(date.getFullYear()+1 >= currentday.getFullYear() ){
-					if(date.getMonth()-ano*12 == today.getMonth()-1){
-						return 5;//last month
-					}else if(date.getFullYear() == currentday.getFullYear()){
-						return 4;//this year (before last month)
-					}else{
-						return 3;//before this year
-					}
-				
-		}else{
-			return 3;//before this year
-		}		
-	}else if((date - yesterday) == 0){
-		return 9;//yesterday
-		
-	}else if ((date - today) == 0){
-		return 10;//today
-	}else if((date - tomorrow) == 0){
-		return 11;//tomorrow
-	}else if(date > tomorrow){
-			if(date <= sundayafter){
-				return 12;//this week(later tomorrow)
-			}else if(date <= nextweek){
-				return 13;//next week	
-			}else if(date.getMonth() == today.getMonth() && date.getFullYear() == currentday.getFullYear()){
-				return 14;//this month(after next week)
-			}else if(date.getFullYear() <= currentday.getFullYear() + 1){
-						if(date.getMonth() + ano * 12 == today.getMonth()+1){
-							return 15;//next month
-						}else if(date.getMonth() + ano * 12 < today.getMonth()+4){
-							return 16;//next three months(after next month)
-						}else if(date.getFullYear() == currentday.getFullYear()){
-							return 17;//this year(after next 3 month)
-						}else{
-							return 18;//after this year
-						}
-					
-			}else{
-				return 18;//after this year
-			}		
-	};	
 }
 
 //--------------------------------
@@ -1143,14 +595,6 @@ ogTasks.flattenTasks = function(tasks){
 	return result;
 }
 
-ogTasks.existsSoloGroup = function(){
-	for (var i = 0; i < this.Groups.length; i++) {
-		if (this.Groups[i].solo) {
-			return true;
-		}
-	}
-	return false;
-}
 
 //Written for edit task view
 og.addTaskUserChanged = function(genid, user_id){
@@ -1165,9 +609,6 @@ og.addTaskUserChanged = function(genid, user_id){
 }
 
 $(function (){
-	og.eventManager.addListener('after ogTasks.Groups list completely loaded',function(){
-		var btns = $(".tasksActionsBtn").toArray();			
-		og.initPopoverBtns(btns);
-	});
+	
 	
  });

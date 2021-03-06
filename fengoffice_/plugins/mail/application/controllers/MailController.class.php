@@ -619,7 +619,11 @@ class MailController extends ApplicationController {
 					$mail->setBodyHtml('');
 				}
 				$mail->setFrom($account->getEmailAddress());
-				$mail->setFromName(logged_user()->getObjectName());
+				if ($accountUser->getIsDefault()) {
+					$mail->setFromName(logged_user()->getObjectName());
+				} else {
+					$mail->setFromName($accountUser->getSenderName());
+				}
 
 				$mail->save();
 				//$mail->setIsRead(logged_user()->getId(), true);
@@ -644,8 +648,11 @@ class MailController extends ApplicationController {
 					}
 				}
 				// autoclassify sent email if not classified
-				if ($account->getMember() instanceof Member && !$classified_with_conversation) {
-					$member_ids[] = $account->getMember()->getId();
+				if (!$classified_with_conversation) {
+					$acc_mem_ids = explode(',', $account->getMemberId());
+					foreach ($acc_mem_ids as $acc_mem_id) {
+						$member_ids[] = $acc_mem_id;
+					}
 				}
 				
 				$object_controller = new ObjectController();
@@ -842,7 +849,15 @@ class MailController extends ApplicationController {
 					
 						$errorMailId = $mail->getId();
 						$to = $mail->getTo();
-						$from = array($account->getEmailAddress() => $account->getFromName());
+						if (!$accountUser instanceof MailAccountContact) {
+							$from = array($account->getEmailAddress() => $account->getFromName());
+						} else {
+							if (logged_user() instanceof Contact && $accountUser->getIsDefault()) {
+								$from = array($account->getEmailAddress() => logged_user()->getObjectName());
+							} else {
+								$from = array($account->getEmailAddress() => $accountUser->getSenderName());
+							}
+						}
 						$subject = $mail->getSubject();
 						$body = $mail->getBodyHtml() != '' ? $mail->getBodyHtml() : $mail->getBodyPlain();
 						$cc = $mail->getCc();
@@ -1905,14 +1920,14 @@ class MailController extends ApplicationController {
 					$mailAccount->setSyncPass(MailUtilities::ENCRYPT_DECRYPT($mailAccount_data['sync_pass']));						
 					$mailAccount->setSyncFolder($outbox_folder);					
 				}
+				
 				$member_ids = json_decode(array_var($_POST, 'members'));
-				if ( count($member_ids) > 0  ){
-					$member = $member_ids[0];
-				}else{
-					if ($mail_account_user instanceof Contact) $member = $mail_account_user->getPersonalMemberId();
-					else $member = 0;
+				$member_ids_str = "";
+				foreach ($member_ids as $mid) {
+					if (is_numeric($mid)) $member_ids_str .= ($member_ids_str == "" ? "" : ",") . $mid;
 				}
-				$mailAccount->setMemberId($member);
+				$mailAccount->setMemberId($member_ids_str);
+				
 				DB::beginWork();
 				$mailAccount->save();
 				
@@ -2077,7 +2092,6 @@ class MailController extends ApplicationController {
 		          'del_from_server' => $mailAccount->getDelFromServer(),
 				  'mark_read_on_server' => $mailAccount->getMarkReadOnServer(),
 		          'outgoing_transport_type' => $mailAccount->getOutgoingTrasnportType(),
-				  'workspace' => $mailAccount->getColumnValue('workspace',0),			
 			); // array
 			if(config_option('sent_mails_sync')){								
 				$sync_details = array('sync_server' => $mailAccount->getSyncServer(),
@@ -2186,12 +2200,11 @@ class MailController extends ApplicationController {
 					}
 					
 					$member_ids = json_decode(array_var($_POST, 'members'));
-					if ( count($member_ids) > 0  ){
-						$member = $member_ids[0];
-					}else{
-						$member = 0;
+					$member_ids_str = "";
+					foreach ($member_ids as $mid) {
+						if (is_numeric($mid)) $member_ids_str .= ($member_ids_str == "" ? "" : ",") . $mid;
 					}
-					$mailAccount->setMemberId($member);
+					$mailAccount->setMemberId($member_ids_str);
 					
 					$mailAccount->save();
 					

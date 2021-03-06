@@ -239,7 +239,7 @@ og.eventManager.addListener('try to select member',
 	function (member) {
 		var interval = setInterval(function(){
 			var tree = Ext.getCmp("dimension-panel-" + member.dimension_id);
-			var treenode = tree ? tree.getNodeById(member.id) : null;
+			var treenode = tree ? (member.id > 0 ? tree.getNodeById(member.id) : tree.getRootNode()) : null;
 			if (treenode) {
 				treenode.fireEvent('click', treenode);
 				clearInterval(interval);
@@ -257,7 +257,7 @@ og.eventManager.addListener('try to expand member',
 				treenode.expand();
 				clearInterval(interval);
 			}
-		}, 900);
+		}, 600);
 	}
 );
 

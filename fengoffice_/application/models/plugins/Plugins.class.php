@@ -34,9 +34,7 @@
 	 */
   	function getActive() {
   		if ( $this->active == null ) {
-  			$this->active = $this->findAll(array("conditions" => array(
-  				" is_installed = 1 AND is_activated = 1"
-  			)));	
+  			$this->active = $this->findAll(array("conditions" => array(" is_installed = 1 AND is_activated = 1"), "order" => "priority"));
   		}
   		return $this->active ;
   	}

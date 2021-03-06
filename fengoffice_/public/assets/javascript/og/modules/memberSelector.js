@@ -96,8 +96,8 @@ member_selector.add_relation = function(dimension_id, genid, member_id, show_act
 		var show_actions = true;
 	}
 	
-
-	var selected_member_ids = Ext.util.JSON.decode(Ext.fly(Ext.get(genid + member_selector[genid].hiddenFieldName)).getValue());
+	var json_sel_ids = $.parseJSON(document.getElementById(genid + member_selector[genid].hiddenFieldName).value);
+	var selected_member_ids = json_sel_ids ? json_sel_ids : [];
 	
 	//check if is selected
 	var ind = selected_member_ids.indexOf(member_id);
@@ -151,7 +151,8 @@ member_selector.add_relation = function(dimension_id, genid, member_id, show_act
 
 	// refresh member_ids input
 	var member_ids_input = Ext.fly(Ext.get(genid + member_selector[genid].hiddenFieldName));
-	var member_ids = Ext.util.JSON.decode(member_ids_input.getValue());
+	var json_mem_ids = $.parseJSON(member_ids_input.getValue());
+	var member_ids = json_mem_ids ? json_mem_ids : [];
 	member_ids.push(member.id);
 	member_ids_input.dom.value = Ext.util.JSON.encode(member_ids);
 

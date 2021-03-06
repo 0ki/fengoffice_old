@@ -106,4 +106,8 @@
 		 AND p.`name` IN ('Super Administrator','Administrator','Manager','Executive')
 		ON DUPLICATE KEY UPDATE role_id=role_id;");
 	}
+	
+	function mail_update_10_11() {
+		DB::execute("ALTER TABLE `".TABLE_PREFIX."mail_accounts` MODIFY COLUMN `member_id` VARCHAR(100) NOT NULL;");
+	}
 

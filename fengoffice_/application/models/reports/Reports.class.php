@@ -568,6 +568,10 @@ class Reports extends BaseReports {
 									}
 								}
 							}
+							
+							if (!$to_print && $field == "name") {
+								$row_values[$field] = '<a target="new-'.$object->getId().'" href="' . $object->getViewUrl() . '">'.$value.'</a>';
+							}
 						}
 					} else {
 						

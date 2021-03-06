@@ -6,4 +6,5 @@
 	'user config option name mails_per_page' => 'Mails per page',
   	'user config option desc mails_per_page' => 'Amount of emails listed (avoid 0 and negative numbers). Take into account that the larger the number, the more time it will take to load the emails.',
 	'by subject or address' => 'Search by subject or address',
+	'are you sure you want to send the email using account x' => 'Are you sure you want to send the email using account {0} ?',
 );

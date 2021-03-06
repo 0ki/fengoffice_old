@@ -794,6 +794,12 @@ og.ContactManager = function() {
 					});
 				},
 				scope: this
+			},
+			'columnmove': {
+				fn: function(old_index, new_index) {
+					og.eventManager.fireEvent('replace all empty breadcrumb', null);
+				},
+				scope: this
 			}
 		}
     });

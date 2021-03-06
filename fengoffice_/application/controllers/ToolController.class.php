@@ -481,8 +481,8 @@ addLangs(langObj);');
 		if ($to) {
 			$missing = array();
 			$files = array();
+			
 			$this->load_language_files($files, LANG_DIR . "/$from");
-			$this->load_language_files_plugins($from_files, LANG_DIR . "/$from", PLUGIN_LANG_DIR);
 			foreach ($files as $file) {
 				if (is_file(LANG_DIR . "/$to/$file")) {
 					$missing[$file] = array();
@@ -497,6 +497,23 @@ addLangs(langObj);');
 					$missing[$file] = "missing file";
 				}
 			}
+			
+			$this->load_language_files_plugins($plugins, LANG_DIR . "/$from", PLUGIN_LANG_DIR);
+			foreach ($plugins as $plugin) {
+				if (is_file(PLUGIN_LANG_DIR . "/$plugin/" . LANG_DIR . "/$to/lang.php")) {
+					$missing[$plugin] = array();
+					$ft = $this->load_file_translations($from, $plugin);
+					$tt = $this->load_file_translations($to, $plugin);
+					foreach ($ft as $k => $v) {
+						if (!isset($tt[$k])) {
+							$missing[$plugin][$k] = $v;
+						}
+					}
+				} else {
+					$missing[$plugin] = "missing file";
+				}
+			}
+			
 			tpl_assign('missing', $missing);
 		}
 	}

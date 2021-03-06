@@ -421,71 +421,75 @@ class ProjectTasks extends BaseProjectTasks {
 		$tmp_task->setId($raw_data['id']);
 		$tmp_task->setAssignedToContactId($raw_data['assigned_to_contact_id']);
 		
+		
 		$result = array(
-			'id' => $raw_data['id'],
-			't' => $raw_data['name'],
-			'desc' => $desc,
+			'id' => (int)$raw_data['id'],
+			'name' => $raw_data['name'],
+			'description' => $desc,
 			'members' => $member_ids,
-			'c' => strtotime($raw_data['created_on']),
-			'cid' => (int)$raw_data['created_by_id'],
+			'createdOn' => strtotime($raw_data['created_on']),
+			'createdById' => (int)$raw_data['created_by_id'],
 			'otype' => $raw_data['object_subtype'],
-			'pc' => (int)$raw_data['percent_completed'],			
+			'percentCompleted' => (int)$raw_data['percent_completed'],			
 			'memPath' => str_replace('"',"'", str_replace("'", "\'", json_encode($tmp_task->getMembersIdsToDisplayPath())))
 		);
 
-		$result['mas'] = (int)array_var($raw_data, 'multi_assignment');
+		$result['multiAssignment'] = (int)array_var($raw_data, 'multi_assignment');
 			
 		if ($raw_data['completed_by_id'] > 0) {
-			$result['s'] = 1;
+			$result['status'] = 1;
 		}
 			
 		if ($raw_data['parent_id'] > 0) {
-			$result['pid'] = (int)$raw_data['parent_id'];
+			$result['parentId'] = (int)$raw_data['parent_id'];
 		}
+		
+		$result['subtasksIds'] = $tmp_task->getSubTasksIds();
+				
 		//if ($this->getPriority() != 200)
-		$result['pr'] = (int)$raw_data['priority'];
+		$result['priority'] = (int)$raw_data['priority'];
 
 		if ($raw_data['milestone_id'] > 0) {
-			$result['mid'] = (int)$raw_data['milestone_id'];
+			$result['milestoneId'] = (int)$raw_data['milestone_id'];
 		}
 		
 		if ($raw_data['assigned_by_id'] > 0) {
-			$result['assigned_by_id'] = (int)$raw_data['assigned_by_id'];
+			$result['assignedById'] = (int)$raw_data['assigned_by_id'];
 		}
 			
 		if ($raw_data['assigned_to_contact_id'] > 0) {
-			$result['atid'] = (int)$raw_data['assigned_to_contact_id'];
+			$result['assignedToContactId'] = (int)$raw_data['assigned_to_contact_id'];
 		}
 		$result['atName'] = $tmp_task->getAssignedToName();
 
 		if ($raw_data['completed_by_id'] > 0) {
-			$result['cbid'] = (int)$raw_data['completed_by_id'];
-			$result['con'] = strtotime($raw_data['completed_on']);;
+			$result['completedById'] = (int)$raw_data['completed_by_id'];
+			$result['completedOn'] = strtotime($raw_data['completed_on']);;
 		}
 			
 		if ($raw_data['due_date'] != EMPTY_DATETIME) {
-			$result['udt'] = $raw_data['use_due_time'] ? 1 : 0;
-			if($result['udt']){
-				$result['dd'] = strtotime($raw_data['due_date']) + logged_user()->getTimezone() * 3600;
+			$result['useDueTime'] = $raw_data['use_due_time'] ? 1 : 0;
+			if($result['useDueTime']){
+				$result['dueDate'] = strtotime($raw_data['due_date']) + logged_user()->getTimezone() * 3600;
 			}else{
-				$result['dd'] = strtotime($raw_data['due_date']);
+				$result['dueDate'] = strtotime($raw_data['due_date']);
 			}			
 		}
 		if ($raw_data['start_date'] != EMPTY_DATETIME) {
-			$result['ust'] = $raw_data['use_start_time'] ? 1 : 0;			
-			if($result['ust']){
-				$result['sd'] = strtotime($raw_data['start_date']) + logged_user()->getTimezone() * 3600;
+			$result['useStartTime'] = $raw_data['use_start_time'] ? 1 : 0;			
+			if($result['useStartTime']){
+				$result['startDate'] = strtotime($raw_data['start_date']) + logged_user()->getTimezone() * 3600;
 			}else{
-				$result['sd'] = strtotime($raw_data['start_date']);
+				$result['startDate'] = strtotime($raw_data['start_date']);
 			}			
 		}
 
 		$time_estimate = $raw_data['time_estimate'];
-		$result['te'] = $raw_data['time_estimate'];
-		if ($time_estimate > 0) $result['et'] = str_replace(',',',<br>',DateTimeValue::FormatTimeDiff(new DateTimeValue(0), new DateTimeValue($time_estimate * 60), 'hm', 60));
+		$result['timeEstimate'] = $raw_data['time_estimate'];
+		if ($time_estimate > 0) $result['timeEstimateString'] = str_replace(',',',<br>',DateTimeValue::FormatTimeDiff(new DateTimeValue(0), new DateTimeValue($time_estimate * 60), 'hm', 60));
 		
 
-		$result['tz'] = logged_user()->getTimezone() * 3600;
+		$result['timeZone'] = logged_user()->getTimezone() * 3600;
 
 		$ot = $tmp_task->getOpenTimeslots();
 
@@ -499,12 +503,12 @@ class ProjectTasks extends BaseProjectTasks {
 				$users[] = $t->getContactId();
 				$paused[] = $t->isPaused()?1:0;
 				if ($t->isPaused() && $t->getContactId() == logged_user()->getId()) {
-					$result['wpt'] = $t->getPausedOn()->getTimestamp();
+					$result['pauseTime'] = $t->getPausedOn()->getTimestamp();
 				}
 			}
-			$result['wt'] = $time;
-			$result['wid'] = $users;
-			$result['wp'] = $paused;
+			$result['workingOnTimes'] = $time;
+			$result['workingOnIds'] = $users;
+			$result['workingOnPauses'] = $paused;
 		}
 				
 		$total_minutes = $tmp_task->getTotalMinutes();
@@ -525,7 +529,7 @@ class ProjectTasks extends BaseProjectTasks {
 		}
 		
 		if ($raw_data['repeat_forever'] > 0 || $raw_data['repeat_num'] > 0 || ($raw_data['repeat_end'] != EMPTY_DATETIME && $raw_data['repeat_end'] != '')) {
-			$result['rep'] = 1;
+			$result['repetitive'] = 1;
 		}
 		
 		return $result;

@@ -200,7 +200,7 @@ if (strlen($loc) > 2) $loc = substr($loc, 0, 2);
 					if ($mailAccount->isNew()) {
 						render_member_selectors(MailContents::instance()->getObjectTypeId(), $genid, null, array('select_current_context' => true, 'hide_label' => true)); 						
 					} else {
-						render_member_selectors(MailContents::instance()->getObjectTypeId(), $genid, $mailAccount->getMemberIds()); 
+						render_member_selectors(MailContents::instance()->getObjectTypeId(), $genid, explode(',', $mailAccount->getMemberId())); 
 					}
 				?>
 			<span class="desc"><?php echo lang ('classify mails on workspace desc') ?> </span>

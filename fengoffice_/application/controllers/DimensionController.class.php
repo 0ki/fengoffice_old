@@ -659,7 +659,7 @@ class DimensionController extends ApplicationController {
 					"depth" => $m->getDepth(),
 					"to_show" => $m->getName() . ($path != "" ? " ($path)" : ""),
 					"dim" => $m->getDimensionId(),
-					"ico" => $m->getIconClass(),
+					"ico" => "ico-color".$m->getColor() . " " . $m->getIconClass(),
 				);
 			} else {
 				//Do not use contact member cache for superadmins
@@ -687,7 +687,7 @@ class DimensionController extends ApplicationController {
 					"options"  => $memberOptions,
 					"depth" => $m->getDepth(),
 					"cls" => $additional_member_class,
-					"iconCls" => $m->getIconClass(),
+					"iconCls" => "ico-color".$m->getColor() . " " . $m->getIconClass(),
 					"selectable" => isset($selectable) ? $selectable : false,
 					"dimension_id" => $m->getDimensionId(),
 					"object_type_id" => $m->getObjectTypeId(),

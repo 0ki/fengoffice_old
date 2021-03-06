@@ -261,12 +261,6 @@ class MailAccount extends BaseMailAccount {
 		}
 		parent::delete();
 	}
-	
-	
-	function getMember(){
-		
-		return Members::instance()->findById($this->getMemberId());
-	}
 
 	/**
 	 * Return smtp username that should be used according to smtp_use_Auth settings  
@@ -317,9 +311,10 @@ class MailAccount extends BaseMailAccount {
 		}
 	}
 	
-	/*
+	/**
 	 * Return an array of memmber Ids
 	 * Compatibility function: Mail accounts can be only in 1 member
+	 * @deprecated
 	 */
 	function getMemberIds() {
 		$memberId = $this->getMemberId();

@@ -1,5 +1,5 @@
 
-	About Feng Office 3.0.6
+	About Feng Office 3.0.7
 	================================
 	
 	Feng Office is a Collaboration Platform and Project Management System.
@@ -105,6 +105,24 @@
 	Changelog
 	=========
 	
+	Since 3.0.6
+	----------------
+	feature: in custom reports, show name column as a link to the listed object and open the link in a new feng tab.
+	feature: add projects to available object types when configuring autonumeric prefixes.
+	feature: crpm types plugin - new dimension Client type, Project type and Project status.
+	feature: when replying an email of other account, a warning must appear telling that email will be sent using that account and give the posibility to change the account before sending the email.
+	
+	bugfix: upgrade script to 3.0 fails when inserting in tab_panels if not all columns are specified depending in mysql server configuration.
+	bugfix: dont use the same "from name" when sending mails with different account.
+	bugfix: cannot autoclassify mails in more than one workspace.
+	bugfix: checklang translation tool does not show plugin missing/incomplete translation files.
+	bugfix: non-exec directors should not be task assingable.
+	bugfix: header breadcrumbs are not reloaded when deleting a workspace.
+	bugfix: when reordering workspaces, tags, clients and projects columns in any listing (notes, documents, etc), the values of these columns are lost for all rows, must reload the list to reappear.
+	bugfix: send notification when a task is assigned.
+		
+	performance: ajax load on tasks list.
+
 	Since 3.0.5.1
 	----------------
 	feature: multiple status factors for each status.

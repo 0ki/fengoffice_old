@@ -2634,8 +2634,8 @@ og.clearDimensionSelection = function() {
 og.renderDimCol = function(value, p, r) {
 	var dim_id = p.id.replace(/dim_/, '');
 	var text = '';
-	
 	var mpath = Ext.util.JSON.decode(r.data.memPath);
+	//console.log(value);console.log(p);console.log(r);console.log(mpath);console.log("-------------------------");
 	if (mpath) {
 		var mpath_aux = {};
 		mpath_aux[dim_id] = {};
