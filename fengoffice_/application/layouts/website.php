@@ -537,9 +537,15 @@ og.dimensionPanels = [
 		if (!$first) echo ",";
 		$first = false;
 		
+		if (defined(JSON_NUMERIC_CHECK)) {
+			$reloadDimensions = json_encode( DimensionMemberAssociations::instance()->getDimensionsToReloadByObjectType($dimension->getId()), JSON_NUMERIC_CHECK );
+		} else {
+			$reloadDimensions = json_encode( DimensionMemberAssociations::instance()->getDimensionsToReloadByObjectType($dimension->getId()) );
+		}
+		
 		?>
 		{	
-			reloadDimensions: <?php echo json_encode( DimensionMemberAssociations::instance()->getDimensionsToReloadByObjectType($dimension->getId()), JSON_NUMERIC_CHECK ); ?>,
+			reloadDimensions: <?php echo $reloadDimensions ?>,
 			xtype: 'member-tree',
 			id: 'dimension-panel-<?php echo $dimension->getId() ; ?>',
 			lines: false,

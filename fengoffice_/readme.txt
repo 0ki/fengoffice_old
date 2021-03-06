@@ -1,5 +1,5 @@
 
-	About Feng Office 3.4.2-rc2
+	About Feng Office 3.4.2
 	================================
 	
 	Feng Office is a Collaboration Platform and Project Management System.
@@ -105,6 +105,11 @@
 	
 	Changelog
 	=========
+	
+	Since 3.4.2-rc2
+	----------------
+	bugfix: dont use JSON_NUMERIC_CHECK constant if not defined (is a php predefined constant).
+	language: nl_nl updated.
 	
 	Since 3.4.2-rc
 	----------------

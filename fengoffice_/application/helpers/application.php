@@ -1321,13 +1321,19 @@ function render_dimension_trees($content_object_type_id, $genid = null, $selecte
 							$is_required = true;
 						
 						if (!isset($id)) $id = gen_id();
+						
+						if (defined(JSON_NUMERIC_CHECK)) {
+							$reloadDimensions = json_encode( DimensionMemberAssociations::instance()->getDimensionsToReloadByObjectType($dimension_id), JSON_NUMERIC_CHECK );
+						} else {
+							$reloadDimensions = json_encode( DimensionMemberAssociations::instance()->getDimensionsToReloadByObjectType($dimension_id) );
+						}
 					?>
 					var config = {
 							title: '<?php echo $dimension_name ?>',
 							dimensionId: <?php echo $dimension_id ?>,
 							objectTypeId: <?php echo $content_object_type_id ?>,
 							required: <?php echo $is_required ?>,
-							reloadDimensions: <?php echo json_encode( DimensionMemberAssociations::instance()->getDimensionsToReloadByObjectType($dimension_id), JSON_NUMERIC_CHECK ); ?>,
+							reloadDimensions: <?php echo $reloadDimensions ?>,
 							isMultiple: <?php echo $dimension['is_multiple'] ?>,
 							selModel: <?php echo ($dimension['is_multiple'])?
 								'new Ext.tree.MultiSelectionModel()':

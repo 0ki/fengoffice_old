@@ -72,6 +72,13 @@
 	}
 	if (str_ends_with($listeners_str, ",")) $listeners_str = substr($listeners_str, 0, -1);
 	$listeners_str .= "}";
+	
+	if (defined(JSON_NUMERIC_CHECK)) {
+		$reloadDimensions = json_encode( DimensionMemberAssociations::instance()->getDimensionsToReloadByObjectType($dimension_id), JSON_NUMERIC_CHECK );
+	} else {
+		$reloadDimensions = json_encode( DimensionMemberAssociations::instance()->getDimensionsToReloadByObjectType($dimension_id) );
+	}
+	
 	?>
 
 	member_selector['<?php echo $genid; ?>'].properties['<?php echo $dimension_id ?>'] = {
@@ -79,7 +86,7 @@
 		dimensionId: <?php echo $dimension_id ?>,
 		objectTypeId: '<?php echo $content_object_type_id ?>',
 		required: <?php echo $is_required ? '1' : '0'?>,
-		reloadDimensions: <?php echo json_encode( DimensionMemberAssociations::instance()->getDimensionsToReloadByObjectType($dimension_id), JSON_NUMERIC_CHECK ); ?>,
+		reloadDimensions: <?php echo $reloadDimensions ?>,
 		isMultiple: <?php echo $dimension['is_multiple'] ? '1' : '0'?>,
 		allowedMemberTypes: <?php echo json_encode($allowed_member_type_ids)?>,
 		listeners: <?php echo $listeners_str ?>
