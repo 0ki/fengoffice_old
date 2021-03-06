@@ -316,22 +316,58 @@
     * @return string
     */
     function getModifyUrl() {
-    	if(0==strcmp('sprd',$this->getTypeString()))
+    	if (strcmp('sprd', $this->getTypeString()) == 0) {
       		return get_url('files', 'add_spreadsheet', array(
-	        'id' => $this->getId(), 
-	        'active_project' => $this->getProjectId())
-      		); // get_url
-    	else if(0==strcmp('txt',$this->getTypeString()))
+					'id' => $this->getId(), 
+					'active_project' => $this->getProjectId())
+				);
+		} else if (strcmp('txt', $this->getTypeString()) == 0) {
       		return get_url('files', 'add_document', array(
-	        'id' => $this->getId(), 
-	        'active_project' => $this->getProjectId())
-      		); // get_url
-    	else if(0==strcmp('prsn',$this->getTypeString()))
+					'id' => $this->getId(), 
+					'active_project' => $this->getProjectId())
+				);
+    	} else if (strcmp('prsn', $this->getTypeString()) == 0) {
       		return get_url('files', 'add_presentation', array(
-	        'id' => $this->getId(), 
-	        'active_project' => $this->getProjectId())
-      		); // get_url
-    } // getModifyUrl 
+					'id' => $this->getId(), 
+					'active_project' => $this->getProjectId())
+				);
+		} else {
+			return get_url('files', 'edit_file', array(
+					'id' => $this->getId(),
+					'active_project' => $this->getProjectId())
+				);
+		}
+    } // getModifyUrl
+	
+	/**
+    * Return file viewing URL
+    *
+    * @param void
+    * @return string
+    */
+    function getOpenUrl() {
+    	if (strcmp('sprd', $this->getTypeString()) == 0) {
+      		return get_url('files', 'add_spreadsheet', array(
+					'id' => $this->getId(), 
+					'active_project' => $this->getProjectId())
+				);
+		} else if (strcmp('txt', $this->getTypeString()) == 0) {
+      		return get_url('files', 'add_document', array(
+					'id' => $this->getId(), 
+					'active_project' => $this->getProjectId())
+				);
+    	} else if (strcmp('prsn', $this->getTypeString()) == 0) {
+      		return get_url('files', 'add_presentation', array(
+					'id' => $this->getId(), 
+					'active_project' => $this->getProjectId())
+				);
+		} else {
+			return get_url('files', 'download_file', array(
+					'id' => $this->getId(),
+					'active_project' => $this->getProjectId())
+				);
+		}
+    } // getOpenUrl 
        
     /**
     * Return slideshow URL

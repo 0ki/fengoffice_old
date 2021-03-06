@@ -39,7 +39,23 @@
       $tags = array();
       foreach($rows as $row) $tags[] = $row['tag'];
       return $tags;
-    } // getTagNamesByObject 
+    } // getTagNamesByObject
+	
+	/**
+    * Return tag names as array ordered by occurrence
+    *
+    * @access public
+    * @return array
+    */
+    function getTagNames() {
+      $rows = DB::executeAll('SELECT DISTINCT `tag`, count(`tag`) `count` FROM ' .  self::instance()->getTableName(true) . 'GROUP BY `tag` ORDER BY `count` DESC');
+      
+      if(!is_array($rows)) return null;
+      
+      $tags = array();
+      foreach($rows as $row) $tags[] = $row['tag'];
+      return $tags;
+    } // getTagNames
     
     /**
     * Return tag names as array for project file id

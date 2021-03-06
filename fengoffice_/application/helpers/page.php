@@ -876,6 +876,27 @@
   } // get_stylesheet_url
   
   /**
+  * Return URL of a file dependante on the current theme
+  *
+  * @param string $file_name
+  * @return string
+  */
+  function get_theme_url($file_name) {
+	static $theme = null;
+    
+    if(is_null($theme)) {
+      if(function_exists('config_option')) {
+        $theme = config_option('theme');
+      } // if
+      if(trim($theme) == '') {
+        $theme = DEFAULT_THEME;
+      } // if
+    } // if
+	
+	return get_public_url("assets/themes/$theme/$file_name");
+  }
+  
+  /**
   * Return image URl
   *
   * @param string $file_name

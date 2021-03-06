@@ -530,11 +530,10 @@
   * @param $menu_option
   * @return null
   */
-  function render_menu($menu_option, $active_projects, $application_log_entries) {
-    tpl_assign('selected_menu_option', $menu_option);
+  function render_menu($tags, $active_projects, $recent_files) {
+    tpl_assign('tags', $tags);
 	tpl_assign('active_projects', $active_projects);
-	tpl_assign('application_logs_entries', $application_log_entries);
-    //tpl_assign('_userbox_projects', $user->getActiveProjects());
+	tpl_assign('recent_files', $recent_files);
     return tpl_fetch(get_template_path('render_menu', 'menu'));
   } // render_menu
 

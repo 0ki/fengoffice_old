@@ -1,8 +1,49 @@
-#files_layout {
-	width: 100%;
-	height: 100%;
+.fm-ico {
+	float: left;
+	height: 24px;
+	margin-right: 10px;
 }
 
-#files_layout_left {
-	width: 140px;
+.fsize {
+	color: #777;
+}
+
+.fm-ico-new {
+	background-image: url(../../images/file/new.png) !important;
+}
+.fm-ico-doc {
+	background-image: url(../../images/file/doc.png) !important;
+}
+.fm-ico-sprd {
+	background-image: url(../../images/file/sprd.png) !important;
+}
+.fm-ico-prsn {
+	background-image: url(../../images/file/prsn.png) !important;
+}
+.fm-ico-upload {
+	background-image: url(../../images/file/upload.png) !important;
+}
+.fm-ico-tag {
+	background-image: url(../../images/file/tag.png) !important;
+}
+.fm-ico-delete {
+	background-image: url(../../images/file/del.png) !important;
+}
+.fm-ico-more {
+	background-image: url(../../images/file/more.png) !important;
+}
+.fm-ico-download {
+	background-image: url(../../images/file/download.png) !important;
+}
+.fm-ico-properties {
+	background-image: url(../../images/file/properties.png) !important;
+}
+.fm-ico-revisions {
+	background-image: url(../../images/file/revisions.png) !important;
+}
+.fm-ico-slideshow {
+	background-image: url(../../images/file/slideshow.png) !important;
+}
+.fm-ico-addtag {
+	background-image: url(../../images/file/tag.png) !important;
 }

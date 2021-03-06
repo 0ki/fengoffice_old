@@ -118,9 +118,15 @@
     'footer powered' => 'Powered by <a href="%s">%s</a>',
 	
 	// Menu
-	'browse documents' => 'Browse documents',
+	'all documents' => 'All documents',
+	'created by me' => 'Created by me',
+	'by project' => 'By project',
+	'by tag' => 'By tag',
+	'by type' => 'By type',
 	'recent documents' => 'Recent documents',
-	'select' => 'Select',
+	'select project' => 'Select project',
+	'show hide menu' => 'Show/Hide Menu',
+	'help' => 'Help',
     
   ); // array
 

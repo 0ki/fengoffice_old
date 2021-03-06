@@ -5,54 +5,109 @@
  *  Slides navigation
  */
 
-// load data
-var slides = new Array();
-var doms = new Array();
+/**
+ *  class SlimeyNavigation - implements functionality for navigating through slides
+ *  	container: div where the navigation will reside
+ */
+var SlimeyNavigation = function(container) {
+	this.container = container;
+	this.slides = new Array();
+	this.doms = new Array();
 
-var currentSlide;
+	// initialize slides content
+    var file = unescapeSLIM($("slimContent").value);
+    var divslides = file.split('<div class="slide">');
+    this.slides[0] = '';
+    for (var i=1; i < divslides.length; i++) {
+        this.slides[i] = divslides[i].substr(0, divslides[i].lastIndexOf("</div>"));
+    }
 
-function clickSlide() {
-	// get clicked slide number
-    var num = parseInt(this.id.substring(5));
+    // initialize html
+    var spacer = this.createSpacerDiv(1);
+    container.appendChild(spacer);
+    for (i=1; i < this.slides.length; i++) {
+        var slide = this.createSlideDiv(i);
+        container.appendChild(slide);
+        var spacer = this.createSpacerDiv(i + 1);
+        container.appendChild(spacer);
+    }
 
-	var action = new SlimeyChangeSlideAction(num);
-	SlimeyEditor.getInstance().performAction(action);
+	this.currentSlide = 0;
+    if (this.slides.length > 1) {
+        // select first slide
+        this.getSlide(1);
+    }
 }
 
-function getSlide(num) {
-    if (num == currentSlide) {
+/** singleton */
+SlimeyNavigation.instance = null;
+
+/**
+ *  initialize the navigation's instance
+ */
+SlimeyNavigation.initInstance = function(containerID) {
+	SlimeyNavigation.instance = new SlimeyNavigation($(containerID));
+}
+
+/**
+ *  returns the single SlimeyNavigation instance
+ */
+SlimeyNavigation.getInstance = function() {
+	if (SlimeyNavigation.instance == null) {
+		SlimeyNavigation.instance = new SlimeyNavigation($('slimeyNavigation'), window);
+	}
+	return SlimeyNavigation.instance;
+}
+
+/**
+ *  returns the navigation's container
+ */
+SlimeyNavigation.prototype.getContainer = function() {
+	return this.container;
+}
+
+SlimeyNavigation.prototype.getSlide = function(num) {
+    if (num == this.currentSlide) {
         return;
     }
 
     // save current slide and view clicked slide
-    if (currentSlide != 0) {
+    if (this.currentSlide != 0) {
         var html = SlimeyEditor.getInstance().getHTML();
-        $('slide' + currentSlide).className = 'slidePreview';
-		$('slide' + currentSlide).parentNode.className = 'slideBorder';
-        slides[currentSlide] = html;
+        $('slide' + this.currentSlide).className = 'slidePreview';
+		$('slide' + this.currentSlide).parentNode.className = 'slideBorder';
+        this.slides[this.currentSlide] = html;
 
-		doms[currentSlide] = document.createElement('div');
-		SlimeyEditor.getInstance().getDOM(doms[currentSlide]);
+		this.doms[this.currentSlide] = document.createElement('div');
+		SlimeyEditor.getInstance().getDOM(this.doms[this.currentSlide]);
 		
-        $('slide' + currentSlide).innerHTML = html;
+        $('slide' + this.currentSlide).innerHTML = html;
     }
-   	//SlimeyEditor.getInstance().setHTML(slides[num]);
-	if (doms[num]) {
-		SlimeyEditor.getInstance().setDOM(doms[num]);
+	if (this.doms[num]) {
+		SlimeyEditor.getInstance().setDOM(this.doms[num]);
 	} else {
-		SlimeyEditor.getInstance().setHTML(slides[num]);
+		SlimeyEditor.getInstance().setHTML(this.slides[num]);
 	}
 
-    currentSlide = num;
-    $('slide' + currentSlide).className = 'slidePreviewSel';
-	$('slide' + currentSlide).parentNode.className = 'slideBorderSel';
+    this.currentSlide = num;
+    $('slide' + this.currentSlide).className = 'slidePreviewSel';
+	$('slide' + this.currentSlide).parentNode.className = 'slideBorderSel';
 
     return false;
 }
 
-function insertNewSlide(num, html, dom) {
+SlimeyNavigation.prototype.saveCurrentSlide = function() {
+	var html = SlimeyEditor.getInstance().getHTML();
+	this.slides[this.currentSlide] = html;
+	var previewDiv = $('slide' + this.currentSlide);
+	if (previewDiv) {
+		previewDiv.innerHTML = html;
+	}
+}
+
+SlimeyNavigation.prototype.insertNewSlide = function(num, html, dom) {
 	if (!html) {
-		html = '<div style="font-size: 200%; font-weight: bold; font-family: sans-serif; position: absolute; left: 40%; top: 0%; border: 2px solid transparent;">Edit Me!</div>';
+		html = '<div style="font-size: 200%; font-weight: bold; font-family: sans-serif; position: absolute; left: 40%; top: 0%;">Edit Me!</div>';
 	}
 
     var thisSpacer = $('spacer' + num);
@@ -75,29 +130,29 @@ function insertNewSlide(num, html, dom) {
     }
 
     // shift slide data
-    for (i=slides.length - 1; i >= num; i--) {
-        slides[i + 1] = slides[i];
-		doms[i + 1] = doms[i];
+    for (i=this.slides.length - 1; i >= num; i--) {
+        this.slides[i + 1] = this.slides[i];
+		this.doms[i + 1] = this.doms[i];
     }
-    slides[num] = html;
-	doms[num] = dom;
+    this.slides[num] = html;
+	this.doms[num] = dom;
 
     // add new slide and spacer to DOM
     var parent = thisSpacer.parentNode;
-    var newSpacer = createSpacerDiv(num);
+    var newSpacer = this.createSpacerDiv(num);
     parent.insertBefore(newSpacer, thisSpacer);
-    var newSlide = createSlideDiv(num);
+    var newSlide = this.createSlideDiv(num);
     parent.insertBefore(newSlide, thisSpacer);
 
     // select newly added slide
-    if (currentSlide >= num) {
-        currentSlide++;
+    if (this.currentSlide >= num) {
+        this.currentSlide++;
     }
-    getSlide(num);
+    this.getSlide(num);
 }
 
-function deleteSlide(num) {
-    if (num < 1 || num > slides.length) {
+SlimeyNavigation.prototype.deleteSlide = function(num) {
+    if (num < 1 || num > this.slides.length) {
         alert("No slide to delete!");
         return;
     }
@@ -123,56 +178,59 @@ function deleteSlide(num) {
         spacer = $('spacer' + (i + 1));
     }
     // shift slide data
-    for (i=num; i < slides.length - 1; i++) {
-        slides[i] = slides[i + 1];
-		doms[i] = doms[i + 1];
+    for (i=num; i < this.slides.length - 1; i++) {
+        this.slides[i] = this.slides[i + 1];
+		this.doms[i] = this.doms[i + 1];
     }
-    slides.length--;
-	doms.length--;
+    this.slides.length--;
+	this.doms.length--;
 
     // select another slide
-    currentSlide = 0;
-    if (num < slides.length && num > 0) {
+    this.currentSlide = 0;
+    if (num < this.slides.length && num > 0) {
         slide = $('slide' + num);
-        getSlide(num);
-    } else if (slides.length > 1) {
-        slide = $('slide' + (slides.length - 1));
-        getSlide(slides.length - 1);
+        this.getSlide(num);
+    } else if (this.slides.length > 1) {
+        slide = $('slide' + (this.slides.length - 1));
+        this.getSlide(this.slides.length - 1);
     } else {
 		SlimeyEditor.getInstance().setHTML('<h1 align="center" style="color: #999999"><i>Click "Add New" to add a slide.</i><h1>');
 	}
 }
 
-function getSLIMContent() {
+SlimeyNavigation.prototype.getSLIMContent = function() {
     // save current edited text
     var html = SlimeyEditor.getInstance().getHTML();
-    slides[currentSlide] = html;
+    this.slides[this.currentSlide] = html;
 
     // generate SLIM content
     var slim = '';
-    for (i=1; i < slides.length; i++) {
-        slim += '<div class="slide">' + slides[i] + '</div>';
+    for (i=1; i < this.slides.length; i++) {
+        slim += '<div class="slide">' + this.slides[i] + '</div>';
     }
 	
 	return slim;
 }
 
-function createSlideDiv(num) {
+SlimeyNavigation.prototype.createSlideDiv = function(num) {
     var slide = document.createElement('div');
     slide.className = 'slidePreview';
     slide.id = 'slide' + num;
     slide.title = "Slide " + num;
 	slide.style.position = 'relative';
-    slide.innerHTML = slides[num];
-    slide.onclick = clickSlide;
-
+    slide.innerHTML = this.slides[num];
+    slide.onclick = function() {
+		var num = parseInt(this.id.substring(5));
+		var action = new SlimeyChangeSlideAction(num);
+		SlimeyEditor.getInstance().performAction(action);
+	};
 	slide.onmouseover = function() {
 		this.className = 'slidePreviewH';
 		this.parentNode.className = 'slideBorderH';
 	};
     slide.onmouseout = function() {
 		var num = parseInt(this.id.substring(5));
-		var sel = (num == currentSlide?'Sel':'');
+		var sel = (num == SlimeyNavigation.getInstance().currentSlide?'Sel':'');
 		this.className = 'slidePreview' + sel;
 		this.parentNode.className = 'slideBorder' + sel;
 	};
@@ -183,7 +241,7 @@ function createSlideDiv(num) {
     return border;
 }
 
-function createSpacerDiv(num) {
+SlimeyNavigation.prototype.createSpacerDiv = function(num) {
     var spacer = document.createElement('div');
     spacer.className = 'previewSpacer';
     spacer.id = 'spacer' + num;
@@ -198,29 +256,14 @@ function createSpacerDiv(num) {
     return spacer;
 }
 
-function initNavigation() {
-    // initialize slides content
-    var file = unescapeSLIM($("slimContent").value);
-    var divslides = file.split('<div class="slide">');
-    slides[0] = '';
-    for (var i=1; i < divslides.length; i++) {
-        slides[i] = divslides[i].substr(0, divslides[i].lastIndexOf("</div>"));
-    }
+SlimeyNavigation.prototype.addNewSlide = function() {
+	var action = new SlimeyInsertSlideAction(this.currentSlide + 1);
+	SlimeyEditor.getInstance().performAction(action);
+}
 
-    // initialize html
-    var container = $('previewContainer');
-    var spacer = createSpacerDiv(1);
-    container.appendChild(spacer);
-    for (i=1; i < slides.length; i++) {
-        var slide = createSlideDiv(i);
-        container.appendChild(slide);
-        var spacer = createSpacerDiv(i + 1);
-        container.appendChild(spacer);
-    }
-
-	currentSlide = 0;
-    if (slides.length > 1) {
-        // select first slide
-        getSlide(1);
-    }
+SlimeyNavigation.prototype.deleteCurrentSlide = function() {
+	if (this.currentSlide > 0) {
+		var action = new SlimeyDeleteSlideAction(this.currentSlide);
+		SlimeyEditor.getInstance().performAction(action);
+	}
 }

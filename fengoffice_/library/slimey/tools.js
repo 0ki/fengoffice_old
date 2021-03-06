@@ -5,12 +5,9 @@
  *  Tool class definitions
  */
 
-var rootDir = '';
-var imagesDir = rootDir + 'images/';
-
 function createImageButton(name, title, slimeyTool) {
 	var img = document.createElement('img');
-	img.src = imagesDir + name + '.png';
+	img.src = slimeyImagesDir + name + '.png';
 	img.className = 'slimeyTool';
 	img.title = title;
 	img.slimeyTool = slimeyTool;
@@ -20,26 +17,26 @@ function createImageButton(name, title, slimeyTool) {
 	img.style.cursor = 'pointer';
 	img.onmouseover = function() {
 		if (this.slimeyTool.enabled && !this.slimeyTool.toggled) {
-			this.src = imagesDir + name + 'h.png';
+			this.src = slimeyImagesDir + name + 'h.png';
 		}
 	};
 	img.onmouseout = function() {
 		if (this.slimeyTool.enabled) {
 			if (this.slimeyTool.toggled) {
-				this.src = imagesDir + name + 'd.png';
+				this.src = slimeyImagesDir + name + 'd.png';
 			} else {
-				this.src = imagesDir + name + '.png';
+				this.src = slimeyImagesDir + name + '.png';
 			}
 		}
 	};
 	img.onmousedown = function() {
 		if (this.slimeyTool.enabled) {
-			this.src = imagesDir + name + 'd.png';
+			this.src = slimeyImagesDir + name + 'd.png';
 		}
 	};
 	img.onmouseup = function() {
 		if (this.slimeyTool.enabled) {
-			this.src = imagesDir + name + 'h.png';
+			this.src = slimeyImagesDir + name + 'h.png';
 		}
 	};
 	img.onclick = function() {
@@ -162,7 +159,7 @@ SlimeyInsertImageTool.prototype = new SlimeyTool();
  *  inserts a new image into the editor
  */
 SlimeyInsertImageTool.prototype.execute = function() {
-	chooseImage(this.imageChosen);
+	chooseImage(this.imageChosen, this.element);
 }
 
 SlimeyInsertImageTool.prototype.imageChosen = function(url) {
@@ -263,7 +260,7 @@ SlimeyEditContentTool.prototype.execute = function() {
 	if (selected.tagName == 'UL' || selected.tagName == 'OL') {
 		val = '<li>' + val + '</li>';
 		val = val.replace(/\n/g, '</li><li>');
-	} else if (selected.tagName == 'P') {
+	} else if (selected.tagName == 'DIV') {
 		val = val.replace(/\n/g, '<br>');
 	}
 	var action = new SlimeyEditContentAction(val);
@@ -278,7 +275,7 @@ SlimeyEditContentTool.prototype.notifySelectionChange = function() {
 		if (selected.tagName == 'UL' || selected.tagName == 'OL') {
 			val = val.replace(/<\/li><li>/gi, '\n');
 			val = val.replace(/<li>|<\/li>/gi, '');
-		} else if (selected.tagName == 'P') {
+		} else if (selected.tagName == 'DIV') {
 			val = val.replace(/<br>/gi, '\n');
 		}
 		if (val != this.element.value) {
@@ -310,7 +307,7 @@ var SlimeyFontColorTool = function() {
 	SlimeyEditor.getInstance().addSelectionChangeListener(this);
 
 	this.enabled = false;
-	this.element.src = imagesDir + this.name + 'x.png';
+	this.element.src = slimeyImagesDir + this.name + 'x.png';
 	this.element.style.cursor = 'default';
 }
 
@@ -323,7 +320,7 @@ SlimeyFontColorTool.prototype = new SlimeyTool();
  *  changes the font color of the selected element in the editor
  */
 SlimeyFontColorTool.prototype.execute = function() {
-	chooseColor(this.colorChosen);
+	chooseColor(this.colorChosen, this.element);
 }
 
 SlimeyFontColorTool.prototype.colorChosen = function(color) {
@@ -337,11 +334,11 @@ SlimeyFontColorTool.prototype.notifySelectionChange = function() {
 	var selected = SlimeyEditor.getInstance().getSelected();
 	if (selected && selected.editable) {
 		this.enabled = true;
-		this.element.src = imagesDir + this.name + '.png';
+		this.element.src = slimeyImagesDir + this.name + '.png';
 		this.element.style.cursor = 'pointer';
 	} else {
 		this.enabled = false;
-		this.element.src = imagesDir + this.name + 'x.png';
+		this.element.src = slimeyImagesDir + this.name + 'x.png';
 		this.element.style.cursor = 'default';
 	}
 }
@@ -582,7 +579,7 @@ var SlimeyDeleteTool = function() {
 	SlimeyEditor.getInstance().addSelectionChangeListener(this);
 
 	this.enabled = false;
-	img.src = imagesDir + this.name + 'x.png';
+	img.src = slimeyImagesDir + this.name + 'x.png';
 	this.element.style.cursor = 'default';
 }
 
@@ -606,11 +603,11 @@ SlimeyDeleteTool.prototype.notifySelectionChange = function() {
 	var selected = SlimeyEditor.getInstance().getSelected();
 	if (selected) {
 		this.enabled = true;
-		this.element.src = imagesDir + this.name + '.png';
+		this.element.src = slimeyImagesDir + this.name + '.png';
 		this.element.style.cursor = 'pointer';
 	} else {
 		this.enabled = false;
-		this.element.src = imagesDir + this.name + 'x.png';
+		this.element.src = slimeyImagesDir + this.name + 'x.png';
 		this.element.style.cursor = 'default';
 	}
 }
@@ -629,7 +626,7 @@ var SlimeyUndoTool = function() {
 	SlimeyEditor.getInstance().addActionPerformedListener(this);
 
 	this.enabled = false;
-	this.element.src = imagesDir + this.name + 'x.png';
+	this.element.src = slimeyImagesDir + this.name + 'x.png';
 	this.element.style.cursor = 'default';
 }
 
@@ -648,11 +645,11 @@ SlimeyUndoTool.prototype.execute = function() {
 SlimeyUndoTool.prototype.notifyActionPerformed = function() {
 	if (SlimeyEditor.getInstance().undoStack.isEmpty()) {
 		this.enabled = false;
-		this.element.src = imagesDir + this.name + 'x.png';
+		this.element.src = slimeyImagesDir + this.name + 'x.png';
 		this.element.style.cursor = 'default';
 	} else {
 		this.enabled = true;
-		this.element.src = imagesDir + this.name + '.png';
+		this.element.src = slimeyImagesDir + this.name + '.png';
 		this.element.style.cursor = 'pointer';
 	}
 }
@@ -671,7 +668,7 @@ var SlimeyRedoTool = function() {
 	SlimeyEditor.getInstance().addActionPerformedListener(this);
 
 	this.enabled = false;
-	this.element.src = imagesDir + this.name + 'x.png';
+	this.element.src = slimeyImagesDir + this.name + 'x.png';
 	this.element.style.cursor = 'default';
 }
 
@@ -690,11 +687,11 @@ SlimeyRedoTool.prototype.execute = function() {
 SlimeyRedoTool.prototype.notifyActionPerformed = function() {
 	if (SlimeyEditor.getInstance().redoStack.isEmpty()) {
 		this.enabled = false;
-		this.element.src = imagesDir + this.name + 'x.png';
+		this.element.src = slimeyImagesDir + this.name + 'x.png';
 		this.element.style.cursor = 'default';
 	} else {
 		this.enabled = true;
-		this.element.src = imagesDir + this.name + '.png';
+		this.element.src = slimeyImagesDir + this.name + '.png';
 		this.element.style.cursor = 'pointer';
 	}
 }
@@ -723,7 +720,7 @@ var SlimeyStyleToggleTool = function(name, title, property, value1, value2) {
 	SlimeyEditor.getInstance().addActionPerformedListener(this);
 
 	this.enabled = false;
-	this.element.src = imagesDir + this.name + 'x.png';
+	this.element.src = slimeyImagesDir + this.name + 'x.png';
 	this.element.style.cursor = 'default';
 }
 
@@ -742,11 +739,11 @@ SlimeyStyleToggleTool.prototype.execute = function() {
 		if (selected.style[this.property] == this.value1) {
 			action = new SlimeyEditStyleAction(this.property, this.value2);
 			this.toggled = false;
-			this.element.src = imagesDir + this.name + '.png';
+			this.element.src = slimeyImagesDir + this.name + '.png';
 		} else {
 			action = new SlimeyEditStyleAction(this.property, this.value1);
 			this.toggled = true;
-			this.element.src = imagesDir + this.name + 'd.png';
+			this.element.src = slimeyImagesDir + this.name + 'd.png';
 		}
 		SlimeyEditor.getInstance().performAction(action);
 	}
@@ -758,15 +755,15 @@ SlimeyStyleToggleTool.prototype.notifySelectionChange = function() {
 		this.enabled = true;
 		if (selected.style[this.property] == this.value1) {
 			this.toggled = true;
-			this.element.src = imagesDir + this.name + 'd.png';
+			this.element.src = slimeyImagesDir + this.name + 'd.png';
 		} else {
 			this.toggled = false;
-			this.element.src = imagesDir + this.name + '.png';
+			this.element.src = slimeyImagesDir + this.name + '.png';
 		}
 		this.element.style.cursor = 'pointer';
 	} else {
 		this.enabled = false;
-		this.element.src = imagesDir + this.name + 'x.png';
+		this.element.src = slimeyImagesDir + this.name + 'x.png';
 		this.element.style.cursor = 'default';
 	}
 }
@@ -787,7 +784,7 @@ var SlimeySendToBackTool = function() {
 	SlimeyEditor.getInstance().addSelectionChangeListener(this);
 
 	this.enabled = false;
-	this.element.src = imagesDir + this.name + 'x.png';
+	this.element.src = slimeyImagesDir + this.name + 'x.png';
 	this.element.style.cursor = 'default';
 }
 
@@ -811,11 +808,11 @@ SlimeySendToBackTool.prototype.notifySelectionChange = function() {
 	var selected = SlimeyEditor.getInstance().getSelected();
 	if (selected) {
 		this.enabled = true;
-		this.element.src = imagesDir + this.name + '.png';
+		this.element.src = slimeyImagesDir + this.name + '.png';
 		this.element.style.cursor = 'pointer';
 	} else {
 		this.enabled = false;
-		this.element.src = imagesDir + this.name + 'x.png';
+		this.element.src = slimeyImagesDir + this.name + 'x.png';
 		this.element.style.cursor = 'default';
 	}
 }
@@ -834,7 +831,7 @@ var SlimeyBringToFrontTool = function() {
 	SlimeyEditor.getInstance().addSelectionChangeListener(this);
 
 	this.enabled = false;
-	this.element.src = imagesDir + this.name + 'x.png';
+	this.element.src = slimeyImagesDir + this.name + 'x.png';
 	this.element.style.cursor = 'default';
 }
 
@@ -858,11 +855,11 @@ SlimeyBringToFrontTool.prototype.notifySelectionChange = function() {
 	var selected = SlimeyEditor.getInstance().getSelected();
 	if (selected) {
 		this.enabled = true;
-		this.element.src = imagesDir + this.name + '.png';
+		this.element.src = slimeyImagesDir + this.name + '.png';
 		this.element.style.cursor = 'pointer';
 	} else {
 		this.enabled = false;
-		this.element.src = imagesDir + this.name + 'x.png';
+		this.element.src = slimeyImagesDir + this.name + 'x.png';
 		this.element.style.cursor = 'default';
 	}
 }
@@ -896,11 +893,7 @@ SlimeyViewSourceTool.prototype.execute = function() {
 		ta = document.createElement('textarea');
 		ta.id = 'slimeyViewSource';
 		ta.style.border = '4px solid deepskyblue';
-		ta.style.width = '80%';
-		ta.style.height = '80%';
 		ta.style.position = 'absolute';
-		ta.style.left = '10%';
-		ta.style.top = '10%';
 		ta.style.zIndex = '100000';
 		ta.style.visibility = 'hidden';
 		ta.slimeyTool = this;
@@ -912,22 +905,28 @@ SlimeyViewSourceTool.prototype.execute = function() {
 			if (e.which == 27) {
 				this.style.visibility = 'hidden';
 				this.slimeyTool.toggled = false;
-				this.slimeyTool.element.src = imagesDir + this.slimeyTool.name + '.png';
+				this.slimeyTool.element.src = slimeyImagesDir + this.slimeyTool.name + '.png';
 				this.blur();
 			}
 		}
 		document.body.appendChild(ta);
 	}
 	if (!this.toggled) {
+		var obj = SlimeyEditor.getInstance().getContainer();
+		var offset = getOffsetPosition(obj);
+		ta.style.left = offset.x + 'px';
+		ta.style.top = offset.y + 'px';
+		ta.style.width = obj.offsetWidth + 'px';
+		ta.style.height = obj.offsetHeight + 'px';
 		ta.value = html;
 		ta.style.visibility = 'visible';
 		this.toggled = true;
-		this.element.src = imagesDir + this.name + 'd.png';
+		this.element.src = slimeyImagesDir + this.name + 'd.png';
 		ta.focus();
 	} else {
 		ta.style.visibility = 'hidden';
 		this.toggled = false;
-		this.element.src = imagesDir + this.name + '.png';
+		this.element.src = slimeyImagesDir + this.name + '.png';
 		ta.blur();
 	}
 }
@@ -945,9 +944,9 @@ var SlimeySaveTool = function() {
 
 	SlimeyEditor.getInstance().addActionPerformedListener(this);
 
-	this.enabled = false;
-	this.element.src = imagesDir + this.name + 'x.png';
-	this.element.style.cursor = 'default';
+	//this.enabled = false;
+	this.element.src = slimeyImagesDir + this.name + '.png';
+	this.element.style.cursor = 'pointer';
 }
 
 /**
@@ -960,16 +959,16 @@ SlimeySaveTool.prototype = new SlimeyTool();
  */
 SlimeySaveTool.prototype.execute = function() {
 	var filename = $('filename').value;
-	if (!filename) {
-		filename = prompt('Enter a name for the slideshow:', '');
-		if (!filename) {
-			return;
-		} else {
-			$('filename').value = filename;
-		}
+	if (filename) {
+		this.filenameChosen(filename);
+	} else {
+		getInput(this.filenameChosen, this.element);
 	}
-	
-	var slim = getSLIMContent();
+}
+
+SlimeySaveTool.prototype.filenameChosen = function(filename) {
+	$('filename').value = filename;
+	var slim = SlimeyNavigation.getInstance().getSLIMContent();
 	$('slimContent').value = escapeSLIM(slim);
 	$('slimeyForm').submit();
 }
@@ -977,11 +976,11 @@ SlimeySaveTool.prototype.execute = function() {
 SlimeySaveTool.prototype.notifyActionPerformed = function() {
 	if (!SlimeyEditor.getInstance().undoStack.isEmpty()) {
 		this.enabled = true;
-		this.element.src = imagesDir + this.name + '.png';
+		this.element.src = slimeyImagesDir + this.name + '.png';
 		this.element.style.cursor = 'pointer';
 	} else {
 		this.enabled = false;
-		this.element.src = imagesDir + this.name + 'x.png';
+		this.element.src = slimeyImagesDir + this.name + 'x.png';
 		this.element.style.cursor = 'default';
 	}
 }
@@ -1012,7 +1011,7 @@ SlimeyPreviewTool.prototype.execute = function() {
 	var left = screen.width * 0.1;
 	var width = screen.width * 0.8;
 	var height = screen.height * 0.8;
-	window.open(rootDir + 'slime.html', 'slimePreview', 'top=' + top + ',left=' + left + ',width=' + width + ',height=' + height + ',status=no,menubar=no,location=no,toolbar=no,scrollbars=no,directories=no,resizable=yes')
+	window.open(slimeyRootDir + 'slime.html', 'slimePreview', 'top=' + top + ',left=' + left + ',width=' + width + ',height=' + height + ',status=no,menubar=no,location=no,toolbar=no,scrollbars=no,directories=no,resizable=yes')
 }
 
 /*---------------------------------------------------------------------------*/

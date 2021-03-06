@@ -16,7 +16,11 @@
     */
     function __construct() {
       parent::__construct();
-      prepare_company_website_controller($this, 'project_website');
+      if ($_GET['ajax']) {
+		prepare_company_website_controller($this, 'ajax');
+	  } else {
+		prepare_company_website_controller($this, 'website');
+	  }
     } // __construct
     
     /**
@@ -45,7 +49,6 @@
       
       $project = active_project();
       
-      $this->setLayout('project_website');
       tpl_assign('project_log_entries', $project->getProjectLog(
         config_option('project_logs_per_page', 20)
       ));
@@ -227,7 +230,6 @@
     */
     function add() {
       $this->setTemplate('add_project');
-      $this->setLayout('administration');
       
       if(!Project::canAdd(logged_user())) {
         flash_error(lang('no access permissions'));
@@ -324,7 +326,6 @@
     */
     function edit() {
       $this->setTemplate('add_project');
-      $this->setLayout('administration');
       
       $project = Projects::findById(get_id());
       if(!($project instanceof Project)) {

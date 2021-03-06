@@ -44,8 +44,7 @@ var SlimeyInsertAction = function(tagname) {
 
 	var elem = SlimeyEditor.getInstance().getContainer().ownerDocument.createElement(tagname);
 	/* set element attributes */
-	elem.style.border = '2px solid transparent';
-	elem.originalBorder = elem.style.border;
+	elem.className = 'slimeyElement';
 	elem.style.position = 'absolute';
 	elem.style.left = '40%';
 	elem.style.top = '30%';
@@ -53,12 +52,14 @@ var SlimeyInsertAction = function(tagname) {
 	elem.style.cursor = 'move';
 	elem.onmousedown = slimeyDrag;
 	elem.onclick = slimeyClick;
+	elem.ondblclick = slimeyEdit;
 	elem.onmouseover = slimeyHighlight;
 	elem.onmouseout = slimeyLowshadow;
 	elem.style.fontFamily = 'sans-serif';
 	elem.style.fontSize = '160%';
 	elem.style.margin = '0px';
 	elem.style.padding = '0px';
+	elem.style.border = '0px';
 	elem.style.zIndex = 10000;
 	if (elem.tagName == 'DIV') {
 		//elem.style.width = '20%';
@@ -70,6 +71,7 @@ var SlimeyInsertAction = function(tagname) {
 		elem.style.width = '20%';
 		elem.style.height = '20%';
 		elem.resizable = true;
+		elem.title = 'Drag the bottom right corner to resize';
 	} else {
 		if (elem.tagName == 'UL') {
 			elem.innerHTML = '<li>Some Text</li>';
@@ -79,6 +81,7 @@ var SlimeyInsertAction = function(tagname) {
 			elem.innerHTML = 'Some Text';
 		}
 		elem.editable = true;
+		elem.title = 'Double click to edit content';
 	}
 
 	this.element = elem;
@@ -417,15 +420,15 @@ SlimeyChangeSlideAction.prototype = new SlimeyAction();
  *  changes the current slide
  */
 SlimeyChangeSlideAction.prototype.perform = function() {
-	this.previousSlide = currentSlide;
-	getSlide(this.num);
+	this.previousSlide = SlimeyNavigation.getInstance().currentSlide;
+	SlimeyNavigation.getInstance().getSlide(this.num);
 }
 
 /**
  *  returns to the previous slide
  */
 SlimeyChangeSlideAction.prototype.undo = function() {
-	getSlide(this.previousSlide);
+	SlimeyNavigation.getInstance().getSlide(this.previousSlide);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -449,14 +452,14 @@ SlimeyInsertSlideAction.prototype = new SlimeyAction();
  *  insert the new slide
  */
 SlimeyInsertSlideAction.prototype.perform = function() {
-	insertNewSlide(this.num);
+	SlimeyNavigation.getInstance().insertNewSlide(this.num);
 }
 
 /**
  *  remove the inserted slide
  */
 SlimeyInsertSlideAction.prototype.undo = function() {
-	deleteSlide(this.num);
+	SlimeyNavigation.getInstance().deleteSlide(this.num);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -483,14 +486,14 @@ SlimeyDeleteSlideAction.prototype.perform = function() {
 	this.html = SlimeyEditor.getInstance().getHTML();
 	this.dom = document.createElement('div');
 	SlimeyEditor.getInstance().getDOM(this.dom);
-	deleteSlide(this.num);
+	SlimeyNavigation.getInstance().deleteSlide(this.num);
 }
 
 /**
  *  reinsert the deleted slide
  */
 SlimeyDeleteSlideAction.prototype.undo = function() {
-	insertNewSlide(this.num, this.html, this.dom);
+	SlimeyNavigation.getInstance().insertNewSlide(this.num, this.html, this.dom);
 }
 
 /*---------------------------------------------------------------------------*/

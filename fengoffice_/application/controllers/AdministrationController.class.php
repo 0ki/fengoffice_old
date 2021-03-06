@@ -17,7 +17,11 @@
     */
     function __construct() {
       parent::__construct();
-      prepare_company_website_controller($this, 'administration');
+      if ($_GET['ajax']) {
+		prepare_company_website_controller($this, 'ajax');
+	  } else {
+		prepare_company_website_controller($this, 'website');
+	  }
       
       // Access permissios
       if(!logged_user()->isAdministrator(owner_company())) {

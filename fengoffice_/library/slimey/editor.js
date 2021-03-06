@@ -9,8 +9,8 @@
  *  class SlimeyEditor - implements functionality for the editor
  *  	container: div where the editor will reside
  */
-var SlimeyEditor = function(container, frame) {
-	this.frame = frame;
+var SlimeyEditor = function(container) {
+	/* initialize variables */
 	this.current = null;
 	this.selected = null;
 	this.container = container;
@@ -19,26 +19,53 @@ var SlimeyEditor = function(container, frame) {
 	this.selectionChangeListeners = new Array();
 	this.actionPerformedListeners = new Array();
 
+	/* create content editor */
+	this.contentEditor = document.createElement('textarea');
+	this.contentEditor.id = 'contentEditor';
+	this.contentEditor.style.position = 'absolute';
+	this.contentEditor.style.zIndex = '20000';
+	this.contentEditor.style.overflow = 'visible';
+	this.contentEditor.style.visibility = 'hidden';
+	this.contentEditor.style.top = -1000;
+	this.contentEditor.style.backgroundColor = '#FFFFEE';
+	this.contentEditor.onblur = function() {
+		var val = this.value;
+		if (this.editElement.tagName == 'UL' || this.editElement.tagName == 'OL') {
+			val = '<li>' + val + '</li>';
+			val = val.replace(/\n/g, '</li><li>');
+		} else if (this.editElement.tagName == 'DIV') {
+			val = val.replace(/\n/g, '<br>');
+		}
+		var action = new SlimeyEditContentAction(val);
+		SlimeyEditor.getInstance().performAction(action);
+		this.style.visibility = 'hidden';
+		this.style.top = -1000;
+	};
+	this.contentEditor.onkeyup = function(e) {
+		if (!e) var e = window.event;
+		if (e.keyCode == 27) {
+			this.onblur();
+		}
+	};
+	this.contentEditor.onclick = function(e) {
+		if (!e) e = window.event;
+		stopPropagation(e);
+		return false;
+	}
+	this.contentEditor.systemElement = true;
+	container.appendChild(this.contentEditor);
+
 	/* create resize handle */
-	this.resizeHandle = frame.document.createElement('div');
+	this.resizeHandle = document.createElement('div');
 	this.resizeHandle.id = 'resizeHandle';
 	this.resizeHandle.style.zIndex = 100000000;
 	this.resizeHandle.style.position = 'absolute';
-	this.resizeHandle.style.width = '8px';
-	this.resizeHandle.style.height = '8px';
-	this.resizeHandle.style.fontSize = '1px';
-	this.resizeHandle.style.lineHeight = '1px';
-	this.resizeHandle.style.backgroundColor = 'blue';
-	this.resizeHandle.style.cursor = 'se-resize';
 	this.resizeHandle.style.visibility = 'hidden';
 	this.resizeHandle.onmousedown = slimeyDrag;
 	this.resizeHandle.systemElement = true;
 	container.appendChild(this.resizeHandle);
 
-	container.onmousemove = slimeyMove;
-	container.onmouseup = slimeyDrop;
-	container.onclick = slimeyDeselect;
-	
+	/* define container's style */
 	container.style.width = '100%';
 	container.style.height = '100%';
 	container.style.position = 'relative';
@@ -47,8 +74,13 @@ var SlimeyEditor = function(container, frame) {
 	container.style.overflow = 'hidden';
 	container.style.fontSize = '25px';
 	container.style.cursor = 'default';
-	
-	window.onresize = window.onload = slimeyResize;
+
+	/* add event handlers */
+	addEventHandler(container, "mousemove", slimeyMove);
+	addEventHandler(container, "mouseup", slimeyDrop);
+	addEventHandler(container, "click", slimeyDeselect);
+	addEventHandler(window, "resize", slimeyResize);
+	addEventHandler(window, "load", slimeyResize);
 }
 
 /** singleton */
@@ -57,8 +89,8 @@ SlimeyEditor.instance = null;
 /**
  *  initialize the editor's instance
  */
-SlimeyEditor.initInstance = function(containerID, frame) {
-	SlimeyEditor.instance = new SlimeyEditor($(containerID, frame), frame);
+SlimeyEditor.initInstance = function(containerID) {
+	SlimeyEditor.instance = new SlimeyEditor($(containerID));
 }
 
 /**
@@ -83,7 +115,7 @@ SlimeyEditor.prototype.getContainer = function() {
  */
 SlimeyEditor.prototype.getHTML = function() {
 	if (this.selected) {
-		this.selected.style.border = this.selected.originalBorder;
+		this.selected.className = 'slimeyElement';
 	}
 
 	var html = '';
@@ -108,7 +140,7 @@ SlimeyEditor.prototype.getHTML = function() {
 	}
 
 	if (this.selected) {
-		this.selected.style.border = '2px dotted green';
+		this.selected.className = 'slimeySelectedElement';
 	}
 
 	return html;
@@ -126,12 +158,15 @@ SlimeyEditor.prototype.setHTML = function(html) {
 			elem.onclick = slimeyClick;
 			elem.onmouseover = slimeyHighlight;
 			elem.onmouseout = slimeyLowshadow;
+			elem.ondblclick = slimeyEdit;
 			if (elem.tagName == 'IMG') {
 				elem.resizable = true;
+				elem.title = 'Drag the bottom right corner to resize';
 			} else {
 				elem.editable = true;
+				elem.title = 'Double click to edit content';
 			}
-			elem.originalBorder = elem.style.border;
+			elem.className = 'slimeyElement';
 			if (!elem.style.zIndex) {
 				elem.style.zIndex = 10000;
 			}
@@ -139,6 +174,7 @@ SlimeyEditor.prototype.setHTML = function(html) {
 		}
 	}
 	this.container.appendChild(this.resizeHandle);
+	this.container.appendChild(this.contentEditor);
 }
 
 /**
@@ -193,8 +229,7 @@ SlimeyEditor.prototype.select = function(obj) {
 		this.deselect();
 	}
 	this.selected = obj;
-	obj.style.border = '2px dotted green';
-	obj.previousBorder = obj.style.border;
+	obj.className = 'slimeySelectedElement';
 	this.notifySelectionChange();
 	if (obj.resizable) {
 		this.resizeHandle.style.visibility = 'visible';
@@ -208,7 +243,7 @@ SlimeyEditor.prototype.select = function(obj) {
  */
 SlimeyEditor.prototype.deselect = function() {
 	if (this.selected) {
-		this.selected.style.border = this.selected.originalBorder;
+		this.selected.className = 'slimeyElement';
 	}
 	this.selected = null;
 	this.resizeHandle.style.visibility = 'hidden';
@@ -225,12 +260,7 @@ SlimeyEditor.prototype.performAction = function(action) {
 	this.notifyActionPerformed();
 
 	/* save the current slide's content after performing an action */
-	var html = this.getHTML();
-    slides[currentSlide] = html;
-	var previewDiv = $('slide' + currentSlide);
-	if (previewDiv) {
-		previewDiv.innerHTML = html;
-	}
+	SlimeyNavigation.getInstance().saveCurrentSlide();
 }
 
 /**
@@ -245,12 +275,7 @@ SlimeyEditor.prototype.undo = function() {
 	this.notifyActionPerformed();
 
 	/* save the current slide's content after performing an action */
-	var html = this.getHTML();
-    slides[currentSlide] = html;
-	var previewDiv = $('slide' + currentSlide);
-	if (previewDiv) {
-		previewDiv.innerHTML = html;
-	}
+	SlimeyNavigation.getInstance().saveCurrentSlide();
 }
 
 /**
@@ -265,12 +290,7 @@ SlimeyEditor.prototype.redo = function() {
 	this.notifyActionPerformed();
 
 	/* save the current slide's content after performing an action */
-	var html = this.getHTML();
-    slides[currentSlide] = html;
-	var previewDiv = $('slide' + currentSlide);
-	if (previewDiv) {
-		previewDiv.innerHTML = html;
-	}
+	SlimeyNavigation.getInstance().saveCurrentSlide();
 }
 
 /*--- SlimeyEditor listener ---*/
@@ -321,6 +341,42 @@ SlimeyEditor.prototype.click = function(obj, e) {
 	if (obj != this.selected) {
 		this.select(obj);
 	}
+}
+
+
+/**
+ *  handles double click events - begins editing of an element's content
+ *  	obj: clicked element
+ *  	e: mouseclick event
+ */
+SlimeyEditor.prototype.dblclick = function(obj, e) {
+	if (obj != this.selected) {
+		this.select(obj);
+	}
+	if (!obj.editable) {
+		return;
+	}
+	this.contentEditor.editElement = obj;
+	this.contentEditor.style.visibility = 'visible';
+	this.contentEditor.style.fontFamily = obj.style.fontFamily;
+	this.contentEditor.style.color = obj.style.color;
+	this.contentEditor.style.fontSize = obj.style.fontSize;
+	this.contentEditor.style.fontWeight = obj.style.fontWeight;
+	this.contentEditor.style.fontStyle = obj.style.fontStyle;
+	this.contentEditor.style.textDecoration = obj.style.textDecoration;
+	this.contentEditor.style.left = obj.style.left;
+	this.contentEditor.style.top = obj.style.top;
+	this.contentEditor.style.width = obj.offsetWidth + 50 + 'px';
+	this.contentEditor.style.height = obj.offsetHeight + 20 + 'px';
+	var val = obj.innerHTML;
+	if (obj.tagName == 'UL' || obj.tagName == 'OL') {
+		val = val.replace(/<\/li><li>/gi, '\n');
+		val = val.replace(/<li>|<\/li>/gi, '');
+	} else if (obj.tagName == 'DIV') {
+		val = val.replace(/<br>/gi, '\n');
+	}
+	this.contentEditor.value = val;
+	this.contentEditor.focus();
 }
 
 /**
@@ -407,7 +463,7 @@ SlimeyEditor.prototype.resized = function() {
 
 SlimeyEditor.prototype.printDebug = function(text) {
 	/*if (! this.debug) {
-		this.debug = this.frame.document.createElement('div');
+		this.debug = document.createElement('div');
 		this.debug.style.position = 'absolute';
 		this.debug.style.right = '0px';
 		this.debug.style.top = '0px';
@@ -426,12 +482,15 @@ function slimeyClick(e) {
 }
 
 function slimeyHighlight() {
-	this.previousBorder = this.style.border;
-	this.style.border = '2px solid orange';
+	this.className = 'slimeyHighlightedElement';
 }
 
 function slimeyLowshadow() {
-	this.style.border = this.previousBorder;
+	if (this == SlimeyEditor.getInstance().getSelected()) {
+		this.className = 'slimeySelectedElement';
+	} else {
+		this.className = 'slimeyElement';
+	}
 }
 
 function slimeyDrag(e) {
@@ -444,9 +503,11 @@ function slimeyDrag(e) {
 
 function slimeyMove(e) {
 	if (!e) var e = window.event;
-	SlimeyEditor.getInstance().move(e);
-	
-	stopPropagation(e);
+	try {
+		SlimeyEditor.getInstance().move(e);
+		
+		stopPropagation(e);
+	} catch(e) {}
 	return false;
 }
 
@@ -455,9 +516,20 @@ function slimeyDrop(e) {
 }
 
 function slimeyDeselect(e) {
-	SlimeyEditor.getInstance().deselect();
+	try {
+		SlimeyEditor.getInstance().deselect();
+	} catch (e) {}
 }
 
 function slimeyResize() {
-	SlimeyEditor.getInstance().resized();
+	try {
+		SlimeyEditor.getInstance().resized();
+	} catch (e) {}
+}
+
+function slimeyEdit(e) {
+	SlimeyEditor.getInstance().dblclick(this, e);
+	
+	stopPropagation(e);
+	return false;
 }

@@ -1,27 +1,5 @@
 <?php
-  set_page_title($file->isNew() ? lang('upload file') : lang('edit file'));
-  /*project_tabbed_navigation(PROJECT_TAB_FILES);
-  project_crumbs(array(
-    array(lang('files'), get_url('files')),
-    array($file->isNew() ? lang('add file') : lang('edit file'))
-  ));
-  if(ProjectFile::canAdd(logged_user(), active_project())) {
-    if($current_folder instanceof ProjectFolder) {
-      add_page_action(lang('add document'), $current_folder->getAddDocumentUrl());
-      add_page_action(lang('add spreadsheet'), $current_folder->getAddSpreadsheetUrl());
-      add_page_action(lang('add presentation'), $current_folder->getAddPresentationUrl());
-      add_page_action(lang('upload file'), $current_folder->getAddFileUrl());
-    } else {
-      add_page_action(lang('add document'), get_url('files', 'add_document'));
-      add_page_action(lang('add spreadsheet'), get_url('files', 'add_spreadsheet'));
-      add_page_action(lang('add presentation'), get_url('files', 'add_presentation'));
-      add_page_action(lang('upload file'), get_url('files', 'add_file'));
-    } // if
-  } // if
-//  if(ProjectFolder::canAdd(logged_user(), active_project())) {
-//    add_page_action(lang('add folder'), get_url('files', 'add_folder'));
-//  } // if
-  */
+  set_page_title($file->isNew() ? lang('upload file') : lang('edit file') . ": " . $file->getFilename());
   add_stylesheet_to_page('project/files.css');
 ?>
 <script type="text/javascript" src="<?php echo get_javascript_url('modules/addFileForm.js') ?>"></script>
@@ -126,11 +104,34 @@ function add_user(source)
 	}	
 }
 </script>
+
+  <fieldset>
+    <legend><?php echo lang('project') ?></legend>
+	<select id="file[project_id]" name="file[project_id]">
+		<?php
+		$active_projects = logged_user()->getActiveProjects();
+		if ($file->isNew()) {
+			$projId = active_project()->getId();
+		} else {
+			$projId = $file->getProjectId();
+		}
+		if (isset($active_projects) && is_array($active_projects) && count($active_projects)) {
+			foreach($active_projects as $project) {
+		?>
+		<option value="<?php echo $project->getId() ?>"<?php if ($projId == $project->getId()) { echo ' selected="selected"'; } ?>><?php echo clean($project->getName()) ?></option>
+		<?php
+			}
+		}
+		?>
+	</select>
+  </fieldset> 
+
 <fieldset>
 
     <legend><?php echo lang('permission') ?></legend>
     <?php echo render_sharing_users('users_for_sharing',array('id'=>'users_for_sharing')) . ' '; 
 	echo input_field('addUserForSharing',lang('add user'),array('type' => 'button', 'onclick' => 'javascript:add_user("combo")')). ' ';
+	echo "<br />";
     echo input_field('users_for_sharing_text','',array('id'=>'users_for_sharing2')). ' ';
 	echo input_field('addUserForSharing',lang('add user'),array('type' => 'button', 'onclick' => 'javascript:add_user("text")')). ' ';
 	echo input_field('permission_groups',$users_csv,array('type' => 'hidden', 'id' => 'permission_groups'))?>
@@ -231,6 +232,5 @@ function preProcessTags()
 		}
 	}	
 	document.getElementById('file[tags]').value= txt.substring(0,txt.length-1);
-	//alert(document.getElementById('file[tags]').value);
 }
 </script>

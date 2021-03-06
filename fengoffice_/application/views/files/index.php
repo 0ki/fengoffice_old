@@ -1,237 +1,345 @@
-
 <?php
-// Marcos Saiz 01/10/07
-//CREDITS:
-/***********************************************
-
-* CSS Horizontal List Menu- by JavaScript Kit (www.javascriptkit.com)
-* Menu interface credits: http://www.dynamicdrive.com/style/csslibrary/item/glossy-vertical-menu/ 
-* This notice must stay intact for usage
-* Visit JavaScript Kit at http://www.javascriptkit.com/ for this script and 100s more
-
-***********************************************/
-// This one was taken from http://www.javascriptkit.com/script/script2/csstopmenu.shtml
-/***********************************************
-* Flip Menu- by Osem Websystems (http://www.osem.nl/)
-* Visit JavaScript Kit at http://www.javascriptkit.com/ for this script and 100s more
-***********************************************/
-
-
-  set_page_title(lang('documents'));
-  //project_tabbed_navigation(PROJECT_TAB_FILES);
-  $files_crumbs = array(
-    0 => array(lang('files'), get_url('files'))
-  ); // array
-  if($current_folder instanceof ProjectFolder) {
-    $files_crumbs[] = array($current_folder->getName(), $current_folder->getBrowseUrl($order));
-  } // if
-  $files_crumbs[] = array(lang('index'));
-  
-  project_crumbs($files_crumbs);
-  add_javascript_to_page('file/slideshow.js');
-  add_javascript_to_page('file/filehorizontalmenu.js');
-  add_javascript_to_page('file/filetreemenu.js');
-  add_javascript_to_page('file/filesortablelist.js');
-  add_stylesheet_to_page('file/filehorizontalmenu.css');
-  add_stylesheet_to_page('file/filesortablelist.css');
-  add_stylesheet_to_page('file/filetreemenu.css');
-  add_stylesheet_to_page('file/files.css');
-  add_stylesheet_to_page('project/files.css');
+	set_page_title(lang('documents'));
+	//project_tabbed_navigation(PROJECT_TAB_FILES);
+	$files_crumbs = array(
+		0 => array(lang('files'), get_url('files'))
+	); // array
+	if($current_folder instanceof ProjectFolder) {
+		$files_crumbs[] = array($current_folder->getName(), $current_folder->getBrowseUrl($order));
+	} // if
+	$files_crumbs[] = array(lang('index'));
+	
+	project_crumbs($files_crumbs);
+	
+	add_stylesheet_to_page('file/files.css');
+	add_javascript_to_page('file/slideshow.js');
 
 ?>
 
+<div id="file-manager"></div>
 
-<table id="files_layout" class="layout">
-<tr><td colspan="2">
-	<!-- horizontal menu -->
-	<div class="horizontalcssmenu">
-		<ul id="cssmenu1">
-			<li>
-				<a href="<?php echo get_url('files', 'add_document')?>">
-					<img src="<?php echo get_image_url('filetypes/doc.png')?>" title="<?php echo  lang('new document');?>">
-				</a>
-			</li>
-			<li>
-				<a href="<?php echo get_url('files', 'add_spreadsheet')?>">
-					<img src="<?php echo get_image_url('filetypes/sprd.png')?>" title="<?php echo  lang('new spreadsheet');?>">
-				</a>
-			</li>
-			<li>
-				<a href="<?php echo get_url('files', 'add_presentation')?>">
-					<img src="<?php echo get_image_url('filetypes/prsn.png')?>" title="<?php echo  lang('new presentation');?>">
-				</a>
-			</li>
-			<li>
-				<a href="<?php echo get_url('files', 'add_file')?>"><?php echo lang('upload')?></a>
-			</li>
-			<li>
-				<a href="#"><?php echo lang('tag')?></a>
-				<ul>
-					<?php if (count($tags) <= 0) { ?>
-					<li>
-						<i>No tags yet</i>
-					</li>
-					<?php } ?>
-					<?php foreach($tags as $tag ) { ?>
-					<?php $baseurl = get_url('files', 'tag_file');?>
-					<li>
-						<a href="javascript: tagFile('<?php  echo  $tag; ?>','<?php echo $baseurl?>');"><?php  echo  $tag; ?></a>
-					</li>
-					<?php } ?> 
-					<?php $baseurl = get_url('files', 'tag_file');?>
-					<li>
-						<input id="newtag" type="text" value="new tag" onfocus="if (document.getElementById('newtag').value=='new tag') document.getElementById('newtag').value='';"
-								onblur="if (document.getElementById('newtag').value=='') document.getElementById('newtag').value='new tag';"/>
-						<input type="button" value="Add tag" name="addTag" id="addTag" onclick="tagFile(document.getElementById('newtag').value,'<?php echo $baseurl?>'); " />
-					</li>
-				</ul>
-			</li>
-			<?php $baseurl = get_url('files', 'delete_files');?>
-			<li>
-				<a href="javascript: if( confirm('<?php echo lang('confirm delete file')?>') ) deleteFiles('<?php echo $baseurl ?>');"><?php echo lang('delete')?></a>
-			</li>
-			<li>
-				<a href="#"><?php echo lang('more')?></a>
-				<ul>
-					<li>
-						<a href="javascript:runSlideshow('<?php echo get_url('files', 'slideshow') ?>')"><?php echo lang('slideshow')?></a>
-					</li>
-					<!--li><a href="#"><?php echo lang('sharing')?></a></li-->
-					<li>
-						<a href="javascript:goToProperties('<?php echo get_url('files', 'edit_file') ?>')"><?php echo lang('properties')?></a>
-					</li>
-					<li>
-						<a href="javascript:revisions('<?php echo get_url('files', 'file_details') . ',' .   active_project()->getId() ?>')"><?php echo lang('revisions and comments')?></a>
-					</li>
-					<li>
-						<a href="javascript:download('<?php echo get_url('files', 'download_file') . ',' .   active_project()->getId() ?>')"><?php echo lang('download')?></a>
-					</li>
-				</ul>
-			</li>
-		</ul>
-		<br style="clear: left;" />
-	</div>
+<script type="text/javascript">
+function initFileManager() {
+	var lang = new Array();
+	lang["project"] = "<?php echo lang("project") ?>";
+	lang["tag"] = "<?php echo lang("tag") ?>";
+	lang["type"] = "<?php echo lang("type") ?>";
+	lang["all"] = "<?php echo lang("all") ?>";
+	lang["user"] = "<?php echo lang("user") ?>";
 
-</td></tr>
-<tr>
-<td id="files_layout_left">
+	var pageSize = <?php echo config_option('files_per_page') ?>;
+	var fileFilter = "<?php echo ($allParam?"&all=true":"") . ($projectParam?"&project=" . $projectParam:"") .
+				($tagParam?"&tag=" . $tagParam:"") .
+				($userParam?"&user=" . $userParam:"") .
+				($typeParam?"&type=" . $typeParam:"");
+	?>";
+	if (fileFilter) {
+		Cookies.set('fileFilter', fileFilter);
+	} else {
+		fileFilter = Cookies.get('fileFilter');
+	}
+	
+	var store = new Ext.data.Store({
+        proxy: new Ext.data.HttpProxy(new Ext.data.Connection({
+			method: 'GET',
+            url: '<?php echo str_replace("&amp;", "&", get_url('files', 'list_files')) ?>' + fileFilter
+        })),
+        reader: new Ext.data.JsonReader({
+            root: 'files',
+            totalProperty: 'totalCount',
+            id: 'id',
+            fields: [
+                'name', 'type', 'tags', 'createdBy', 'createdById',
+                {name: 'dateCreated', type: 'date', dateFormat: 'timestamp'},
+				'updatedBy', 'updatedById',
+				{name: 'dateUpdated', type: 'date', dateFormat: 'timestamp'},
+				'icon', 'size', 'project', 'projectId'
+            ]
+        }),
+        remoteSort: true,
+		listeners: {
+			'load': function() {
+				if (store.getTotalCount() <= pageSize) {
+					store.remoteSort = false;
+				}
+				var title = "<?php echo lang('documents') ?>:&nbsp;&nbsp;&nbsp;";
+				if (store.reader.jsonData.project) {
+					title += " " + lang["project"] + " = " + store.reader.jsonData.project;
+				}
+				if (store.reader.jsonData.user) {
+					title += " " + lang["user"] + " = " + store.reader.jsonData.user;
+				}
+				if (store.reader.jsonData.type) {
+					title += " " + lang["type"] + " = " + store.reader.jsonData.type;
+				}
+				if (store.reader.jsonData.tag) {
+					title += " " + lang["tag"] + " = " + store.reader.jsonData.tag;
+				}
+				contentPanel.setTitle(title);
+			}
+		}
+    });
+    store.setDefaultSort('dateUpdated', 'desc');
 
-	<!-- Tree -->
-	<div align="left">
-		<ul class="flipMenu" id="flipMenu">
-			<li>
-				<a href="<?php echo get_url('files', 'index') ?>"><?php echo lang('all elements')?></a>
-				<!--<ul>
-					<li style="list-style-image: url(flip_google.gif)"><a href="#">Created by me</a></li>
-					<li><a href="#">Flagged</a></li>
-					<li><a href="#">Hidden</a></li>
-					<li><a href="#">Trash</a></li>
-					<li><a href="#">Editable</a></li>
-					<li><a href="#">Non-editable</a></li>
-				</ul>-->
-			</li>
-			<li>
-				<a href="#"><?php echo lang('tags')?></a>
-				<ul>
-					<?php if (count($tags) <= 0) { ?>
-					<li>
-						<i>No tags yet</i>
-					</li>
-					<?php } ?>
-					<?php foreach($tags as $tag ) { ?>
-					<li>
-						<a href="<?php echo get_url('files', 'index',array ('tagfilter' => $tag )) ?>"><?php  echo $tag ; ?></a>
-					</li>
-					<?php } ?>
-				</ul>
-			</li>
-			<li>
-				<a href="#">By Type</a>
-				<ul>
-					<li><a href="<?php echo get_url('files', 'index', array ('typefilter' => 'txt' )) ?>">Document</a></li>
-					<li><a href="<?php echo get_url('files', 'index', array ('typefilter' => 'sprd' )) ?>" >Spreadsheet</a></li>
-					<li><a href="<?php echo get_url('files', 'index', array ('typefilter' => 'prsn' )) ?>">Presentation</a></li>
-					<li><a href="<?php echo get_url('files', 'index') ?>">All</a></li>
-				</ul>
-			</li>
-			<li>
-				<a href="#">Shared with</a>
-				<ul>
-					<li>
-						<a href="#"><i>None</i></a>
-					</li>
-				</ul>
-			</li>
-		</ul>
-		<!--a href="javascript:closeAllFlips()"><?php echo lang('collapse all')?></a>
-		<a href="javascript:openAllFlips()"><?php echo lang('expand all')?></a-->
-	</div>
+    function renderFilename(value, p, r) {
+        return String.format(
+                '<img src="{3}" class="fm-ico"><b><a href="{2}">{0}</a></b><br/><span class="fsize">{4} kb</span>',
+                value, r.data.name, "<?php echo get_url('files', 'open_file') ?>&id=" + r.id, r.data.icon, Math.ceil(r.data.size / 1024));
+    }
+    function renderLastUpdate(value, p, r) {
+        return String.format('{0}<br/>&nbsp;&nbsp;&nbsp;<i>by <a href="{2}">{1}</a></i>', value.dateFormat('M j, Y, g:i a'), r.data.updatedBy,
+				"<?php echo get_url('user', 'card') ?>&id=" + r.data.updatedById);
+    }
+	function renderCreated(value, p, r) {
+        return String.format('{0}<br/>&nbsp;&nbsp;&nbsp;<i>by <a href="{2}">{1}</a></i>', value.dateFormat('M j, Y, g:i a'), r.data.createdBy,
+				"<?php echo get_url('user', 'card') ?>&id=" + r.data.createdById);
+    }
+	function renderProject(value, p, r) {
+		return String.format('<a href="{1}">{0}</a>', value, "<?php echo get_url('project', 'index') ?>&active_project=" + r.data.projectId);
+	}
 
-</td><td>
+	sm = new Ext.grid.CheckboxSelectionModel();
+	sm.on('selectionchange',
+		function() {
+			if (sm.getCount() <= 0) {
+				actions.tag.setDisabled(true);
+				actions.delFile.setDisabled(true);
+				actions.more.setDisabled(true);
+			} else {
+				actions.tag.setDisabled(false);
+				actions.delFile.setDisabled(false);
+				actions.more.setDisabled(false);
+				if (sm.getSelected().data.type == 'prsn') {
+					moreActions.slideshow.setDisabled(false);
+				} else {
+					moreActions.slideshow.setDisabled(true);
+				}
+			}
+		});
+    var cm = new Ext.grid.ColumnModel([
+		sm,
+		{
+			id: 'filename',
+			header: "Name",
+			dataIndex: 'name',
+			width: 120,
+			renderer: renderFilename
+        },
+		{
+			id: 'type',
+			header: 'Type',
+			dataIndex: 'type',
+			width: 120,
+			hidden: true,
+			sortable: false
+		},
+		{
+			id: 'project',
+			header: "Project",
+			dataIndex: 'project',
+			width: 120,
+			renderer: renderProject,
+			sortable: false
+        },
+		{
+			id: 'tags',
+			header: "Tags",
+			dataIndex: 'tags',
+			width: 120,
+			sortable: false
+        },
+		{
+			id: 'last',
+			header: "Last Update",
+			dataIndex: 'dateUpdated',
+			width: 150,
+			renderer: renderLastUpdate
+        },
+		{
+			id: 'created',
+			header: "Created on",
+			dataIndex: 'dateCreated',
+			width: 150,
+			renderer: renderCreated,
+			hidden: true
+		}]);
+    cm.defaultSortable = true;
+	
+	moreActions = {
+		download: new Ext.Action({
+			text: 'Download',
+			iconCls: 'fm-ico-download',
+			handler: function() { download('<?php echo str_replace("&amp;", "&", get_url('files', 'download_file')) ?>'); }
+		}),
+		properties: new Ext.Action({
+			text: 'Properties',
+			iconCls: 'fm-ico-properties',
+			handler: function() { properties('<?php echo str_replace("&amp;", "&", get_url('files', 'edit_file')) ?>'); }
+		}),
+		revisions: new Ext.Action({
+			text: 'Revisions & Comments',
+			iconCls: 'fm-ico-revisions',
+			handler: function() { revisions('<?php echo str_replace("&amp;", "&", get_url('files', 'file_details')) ?>'); }
+		}),
+		slideshow: new Ext.Action({
+			text: 'Slideshow',
+			iconCls: 'fm-ico-slideshow',
+			handler: function() { runSlideshow('<?php echo str_replace("&amp;", "&", get_url('files', 'slideshow')) ?>'); },
+			disabled: true
+		})
+	}
+	
+	actions = {
+		newFile: new Ext.Action({
+			text: 'New',
+            tooltip: 'Create a file',
+            iconCls: 'fm-ico-new',
+			menu: {items: [
+				{text: 'Document', iconCls: 'fm-ico-doc', handler: function() { gotoUrl('<?php echo str_replace("&amp;", "&", get_url('files', 'add_document')) ?>'); }},
+				{text: 'Spreadsheet', iconCls: 'fm-ico-sprd', handler: function() { gotoUrl('<?php echo str_replace("&amp;", "&", get_url('files', 'add_spreadsheet')) ?>'); }},
+				{text: 'Presentation', iconCls: 'fm-ico-prsn', handler: function() { gotoUrl('<?php echo str_replace("&amp;", "&", get_url('files', 'add_presentation')) ?>'); }}
+			]}
+		}),
+		upload: new Ext.Action({
+			text: 'Upload',
+            tooltip: 'Upload a file',
+            iconCls: 'fm-ico-upload',
+			handler: function() { gotoUrl('<?php echo str_replace("&amp;", "&", get_url('files', 'add_file')) ?>'); }
+		}),
+		tag: new Ext.Action({
+			text: 'Tag',
+            tooltip: 'Tag selected files',
+            iconCls: 'fm-ico-tag',
+			disabled: true,
+			menu: {items: [
+				<?php foreach($tags as $tag ) { ?>
+					{text: '<?php echo $tag ?>', handler: function() { tagFiles('<?php  echo  $tag; ?>', '<?php echo str_replace("&amp;", "&", get_url('files', 'tag_file')) ?>'); }},
+				<?php } ?> 
+				'-',
+				{text: 'Add Tag', iconCls: 'fm-ico-addtag', handler: function() { addTag('<?php echo str_replace("&amp;", "&", get_url('files', 'tag_file')) ?>') }}
+			]}
+		}),
+		delFile: new Ext.Action({
+			text: 'Delete',
+            tooltip: 'Delete selected files',
+            iconCls: 'fm-ico-delete',
+			disabled: true,
+			handler: function() { deleteFiles('<?php echo str_replace("&amp;", "&", get_url('files', 'delete_files')) ?>') }
+		}),
+		more: new Ext.Action({
+			text: 'More',
+            tooltip: 'More actions on first selected file',
+            iconCls: 'fm-ico-more',
+			disabled: true,
+			menu: {items: [
+				moreActions.download,
+				moreActions.properties,
+				moreActions.revisions,
+				moreActions.slideshow
+			]}
+		})
+    };
 
-	<!-- Document displaying grid -->
-	<div>
-		<table class="sortable" id="files_table">
-		<!-- Add class="unsortable" to a th tag and you will not be able to sort it -->
-		<tr>
-			<th class="unsortable" width="15">&nbsp;</th>
-			<th><?php echo lang('name') ?></th>
-			<th><?php  echo lang('tags') ?></th>
-			<th><?php  echo lang('users') ?></th>
-			<th><?php  echo lang('last modification') ?></th>
-		</tr>
+    var grid = new Ext.grid.GridPanel({
+        el: 'file-manager',
+        height: 430,
+        store: store,
+		layout: 'fit',
+        cm: cm,
+        sm: new Ext.grid.RowSelectionModel({selectRow:Ext.emptyFn}),
+        loadMask: true,
+        bbar: new Ext.PagingToolbar({
+            pageSize: pageSize,
+            store: store,
+            displayInfo: true,
+            displayMsg: 'Displaying files {0} - {1} of {2}',
+            emptyMsg: "No files to display"
+        }),
+		viewConfig: {
+            forceFit:true
+        },
+		sm: sm,
+		tbar:[
+			actions.newFile,
+			actions.upload,
+			'-',
+            actions.tag,
+			actions.delFile,
+            actions.more
+        ]
+    });
 
-		<?php $counter = 0; ?>
-		<?php foreach($files as $group_by => $grouped_files) { ?>
-		<!--
-		Grouping
-		<tr><td colspan="4" class="groupBy" style="background-color: #888888;"><?php //echo clean($group_by) ?></td></tr>-->
-			<?php foreach($grouped_files as $file) { 
-			$counter +=1; 
-			?>
+	grid.render();
 
-			<!--
-			Private: Rather do it like Google (Owner / Collaborators / Viewers)
-			   <div class="stub_check" style="float:left;">//chck</div>
-				<div class="stub_important" style="float:left;">//!!</div> -->
+    store.load({params:{start:0, limit: pageSize}});
 
-		<tr>
-		<td>
-			<input type="checkbox" id="selected" name="selected" value="<?php  echo $file->getId(); ?>" style="width:15px;"/>
-		</td>
-		<td onclick="gotoURL('<?php echo $file->getModifyUrl() ?>');">
-			<div class="fileIcon" style="display: inline">
-				<img height="10" src="<?php echo $file->getTypeIconUrl() ?>" alt="<?php echo $file->getFilename() ?>" />
-			</div>
-			<b><?php echo clean($file->getFilename()) ?></b>
-		</td>
-		<td><?php echo project_object_tags($file, $file->getProject(),true) ?></td>
-		<td><?php echo lang('version') . ': ' . $file->getLastRevision()->getRevisionNumber()?> </td>
-		<td><?php echo format_descriptive_date($file->getCreatedOn()) ?> by  <?php echo $file->getLastRevision()->getCreatedBy()->getDisplayName() ?>  </td>
-		</tr>
-			<?php } // foreach ?>
-		<?php } // foreach ?>
+};
 
-		<tr class="sortbottom">
-		<td></td>	
-		<td>Showing: <?php echo $counter; ?> files</td>
-		<td></td>
-		<td></td>
-		<td></td>
-		</tr>
-		</table>
-	</div>
+Ext.onReady(initFileManager);
 
-</td></tr>
-<tr><td colspan="2">
+function gotoUrl(url) {
+	location.href = url;
+}
 
-<?php if(isset($files) && is_array($files) && count($files)) { ?>
-<div id="files">
-<?php $this->includeTemplate(get_template_path('order_and_pagination', 'files')) ?>
+function getSelectedFiles() {
+	var selections = sm.getSelections();
+	if (selections.length <= 0) {
+		return '';
+	} else {
+		var ret = '';
+		for (var i=0; i < selections.length; i++) {
+			ret += "," + selections[i].id;
+		}	
+		return ret.substring(1);
+	}
+}
 
-</div>
-<?php } else { ?>
-<p><?php echo lang('no files on the page') ?></p>
-<?php } // if ?>
+function getFirstSelectedFile() {
+	if (sm.hasSelection()) {
+		return sm.getSelected().id;
+	}
+	return '';
+}
 
-</td></tr></table>
+function deleteFiles(baseurl) {
+	if (confirm('<?php echo lang('confirm delete file')?>')) {
+		url = baseurl + "&files=" + getSelectedFiles() ;
+		gotoUrl(url);
+	}
+}
+
+function tagFiles(tag, baseurl) {	
+	url = baseurl + "&tag=" + tag + "&files=" + getSelectedFiles() ;
+	gotoUrl(url);
+}
+
+function properties(baseurl) {
+	url = baseurl + "&id=" + getFirstSelectedFile();
+	gotoUrl(url);
+}
+
+function runSlideshow (baseurl) {
+	url = baseurl + "&fileId=" + getFirstSelectedFile();
+	slideshow(url);
+}
+
+function revisions(baseurl) {
+	url = baseurl + "&id=" + getFirstSelectedFile();
+	gotoUrl(url);
+}
+
+function download(baseurl) {
+	url = baseurl + "&id=" + getFirstSelectedFile();
+	gotoUrl(url);
+}
+
+function addTag(baseurl) {
+	Ext.Msg.prompt('Add Tag', 'Enter the desired tag for the file:',
+		function(btn, text) {
+			if (btn == 'ok') {
+				tagFiles(text, baseurl);
+			}
+		}
+	);
+}
+</script>

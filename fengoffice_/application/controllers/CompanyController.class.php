@@ -16,7 +16,11 @@
     */
     function __construct() {
       parent::__construct();
-      prepare_company_website_controller($this, 'administration');
+      if ($_GET['ajax']) {
+		prepare_company_website_controller($this, 'ajax');
+	  } else {
+		prepare_company_website_controller($this, 'website');
+	  }
     } // __construct
     
     /**
@@ -26,8 +30,6 @@
     * @return null
     */
     function card() {
-      $this->setLayout('dashboard');
-      
       $company = Companies::findById(get_id());
       if(!($company instanceof Company)) {
         flash_error(lang('company dnx'));

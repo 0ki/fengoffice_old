@@ -227,7 +227,7 @@ document.onkeyup = keyUp;
 	if ($error) {
 ?>
 		<div class="slide" style="background-color: white; text-align: center; color: red;">Error: <?php echo $error ?></div>
-<?
+<?php
 	} else {
 		echo $content;
 	}

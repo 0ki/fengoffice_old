@@ -1,0 +1,50 @@
+body {
+	margin: 0px;
+	background-color: #f5f6f9;
+	font-family: verdana, arial;
+	font-size: 12px;
+}
+
+h1 {
+	font-size: 16px;
+	font-weight: bold;
+}
+
+h2 {
+	font-size: 14px;
+	font-weight: bold;
+}
+
+li {
+	margin-top: 5px;
+}
+
+.page {
+	display: none;
+}
+
+#content {
+	position: absolute;
+	left: 0px;
+	top: 0px;
+	padding: 5% 5% 15% 5%;
+	height: 80%;
+	width: 90%;
+	overflow: auto;
+}
+
+.control {
+	position: absolute;
+	bottom: 0px;
+	right: 0px;
+	padding: 5px 20px 20px 5px;
+}
+
+a {
+  color: #003562;
+  text-decoration: none;
+}
+
+a:hover {
+  color: #BA0101;
+}

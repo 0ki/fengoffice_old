@@ -52,6 +52,18 @@
       )); // findAll
     } // getFinishedProjects
     
+    /** Return project by name.
+	*
+	* @param name
+	* @return array
+	*/
+	static function getByName($name) {
+		$conditions = array('`name` = ?', $filename);
+		
+		return self::findOne(array(
+			'conditions' => $conditions
+		));
+	} // getByFilename
   } // Projects 
 
 ?>

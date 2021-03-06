@@ -17,7 +17,11 @@
     */
     function __construct() {
       parent::__construct();
-      prepare_company_website_controller($this, 'account');
+      if ($_GET['ajax']) {
+		prepare_company_website_controller($this, 'ajax');
+	  } else {
+		prepare_company_website_controller($this, 'website');
+	  }
     } // __construct
     
     /**

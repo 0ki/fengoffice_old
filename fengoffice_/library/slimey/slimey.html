@@ -9,60 +9,47 @@
 
 <head>
 	<title>Slimey</title>
-	<script language="javascript" src="functions.js"></script>
-	<script language="javascript" src="stack.js"></script>
-	<script language="javascript" src="editor.js"></script>
-	<script language="javascript" src="navigation.js"></script>
-	<script language="javascript" src="actions.js"></script>
-	<script language="javascript" src="tools.js"></script>
-	<script language="javascript" src="toolbar.js"></script>
-
+	<script language="javascript" src="slimey.js"></script>
 	<link rel="stylesheet" href="slimey.css">
 </head>
 
-<body style="margin: 0px; padding: 0px;">
+<body style="margin: 5px; padding: 0px;">
 
-<table style="width: 100%; height: 100%; table-layout: fixed">
-<tr valign="top">
-<td width="195">
 	<!-- slides -->
-	<div id="previewContainer" class="previewContainer">
-		<div id="previewToolbar" class="previewToolbar">
-			<table><tr>
-				<td>
-					<a title="Add a new slide after the selected one" href="javascript:var action = new SlimeyInsertSlideAction(currentSlide + 1);SlimeyEditor.getInstance().performAction(action);">
-						<img src="images/newslide.png"> Add New
-					</a>
-				</td><td>
-					<a title="Delete selected slide" href="javascript:if (currentSlide > 0) {var action = new SlimeyDeleteSlideAction(currentSlide);SlimeyEditor.getInstance().performAction(action);}">
-						<img src="images/delslide.png"> Delete
-					</a>
-				</td>
-			</tr></table>
+	<div id="slimeyNavigation" style="width: 195px; float: left;">
+		<div id="slimeyPreviewToolbar">
+			<div class="slimeyPreviewToolbarButton">
+				<a title="Add a new slide after the selected one" href="javascript:SlimeyNavigation.getInstance().addNewSlide();">
+					<img src="images/newslide.png"> Add New
+				</a>
+			</div>
+			<div class="slimeyPreviewToolbarButton">
+				<a title="Delete selected slide" href="javascript:SlimeyNavigation.getInstance().deleteCurrentSlide();">
+					<img src="images/delslide.png"> Delete
+				</a>
+			</div>
 		</div>
-</td>
-<td>
-	<!-- editor -->
-	<form name="slimeyForm" id="slimeyForm" method="POST" action="#">
-		<input id="filename" type="hidden" name="filename" value="">
-		<input id="slimContent" type="hidden" name="slimContent" value='<div class="slide"><div style="font-size: 200%; font-weight: bold; font-family: sans-serif; position: absolute; left: 30%; top: 0%; border: 2px solid transparent;">New Slideshow</div></div><div class="slide"><div style="font-size: 200%; font-weight: bold; font-family: sans-serif; position: absolute; left: 30%; top: 0%; border: 2px solid transparent;">Second slide</div></div>'>
-	</form>
+	</div>
 
-	<div id="slimeyToolbar">
+	<!-- editor -->
+	<div style="position: relative; margin-left: 200px; margin-right: 2px; height: 100%;">
+		<div id="slimeyToolbar">
+		</div>
+		<div id="slimeyEditor">
+		</div>
 	</div>
 	
-	<div id="slimeyEditor">
-	</div>
+	<form name="slimeyForm" id="slimeyForm" method="POST" action="#" style="display: none;">
+		<input id="filename" type="hidden" name="filename" value="">
+		<input id="slimContent" type="hidden" name="slimContent" value='<div class="slide"><div style="font-size: 200%; font-weight: bold; font-family: sans-serif; position: absolute; left: 30%; top: 0%;">New Slideshow</div></div><div class="slide"><div style="font-size: 200%; font-weight: bold; font-family: sans-serif; position: absolute; left: 30%; top: 0%;">Second slide</div></div>'>
+	</form>
 	
 	<script>
-		SlimeyEditor.initInstance('slimeyEditor', window);
-		SlimeyToolbar.getInstance();
-		initNavigation();
+		preloadSlimeyImages();
+		SlimeyEditor.initInstance('slimeyEditor');
+		SlimeyToolbar.initInstance('slimeyToolbar');
+		SlimeyNavigation.initInstance('slimeyNavigation');
 	</script>
-
-</td>
-</tr>
-</table>
 
 </body>
 

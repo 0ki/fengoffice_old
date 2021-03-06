@@ -9,11 +9,10 @@
   add_stylesheet_to_page('project/spreadsheet.css');
   add_stylesheet_to_page('project/spreadsheet_grey.css');
   
-  add_javascript_to_page('modules/spreadsheet.js');
+  //add_javascript_to_page('modules/spreadsheet_engine.js');
+  //add_javascript_to_page('modules/spreadsheet_ui.js');
 	
 ?>
-
-<?php add_body_event_to_page('onload','TrimPath.spreadsheet.initDocument();') ?>
 
 <script type="text/javascript" src="<?php echo get_javascript_url('modules/addFileForm.js') ?>"></script>
 <?php if($file->isNew()) { ?>
@@ -84,13 +83,10 @@
   
       <div>
     <?php 
-    if($file->isNew())
-    {
+    if($file->isNew()) {
     	echo label_tag(lang('name'), 'fileFormName');    
     	echo text_field('file[name]', array_var($file_data, 'name'), array('id' => 'fileFormName'));
-    }
-    else 
-    { 
+    } else { 
     	echo input_field('new_revision_spreadsheet','checked', array('type' => 'checkbox' , 'width' => '20' )) . lang('create new revision');
     } 
     ?>
@@ -100,5 +96,11 @@
 onclick="javascript:document.getElementById('TrimSpreadsheet').value =document.getElementById('eldiv').innerHTML.replace('\n',' ')">Save</button>
   <?php //echo submit_button(lang('Save'),'p', "onclick='javascript:alert(eldiv)'") ?>
   <input type="hidden"  id="TrimSpreadsheet"  name="TrimSpreadsheet" /> 
-</form> 
+</form>
+
+<script type="text/javascript" src="<?php echo get_javascript_url('modules/spreadsheet_engine.js') ?>"></script>
+<script type="text/javascript" src="<?php echo get_javascript_url('modules/spreadsheet_ui.js') ?>"></script>
+<script type="text/javascript">
+	TrimPath.spreadsheet.initDocument();
+</script>
 

@@ -217,7 +217,7 @@
   * @param string $layout Project or company website layout. Or any other...
   * @return null
   */
-  function prepare_company_website_controller(PageController $controller, $layout = 'dashboard') {
+  function prepare_company_website_controller(PageController $controller, $layout = 'website') {
     
     // If we don't have logged user prepare referer params and redirect user to login page
     if(!(logged_user() instanceof User)) {

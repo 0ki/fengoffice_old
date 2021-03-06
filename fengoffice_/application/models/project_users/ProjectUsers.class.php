@@ -88,7 +88,7 @@
     } // getProjectsByUser
 	
 	/**
-    * Return the users' personal project
+    * Return the user's personal project
     *
     * @access public
     * @param User $user
@@ -97,9 +97,9 @@
     */
     function getPersonalProjectByUser(User $user) {
       $projects_table = Projects::instance()->getTableName(true);
-      $project_users_table=  ProjectUsers::instance()->getTableName(true);
+      $project_users_table =  ProjectUsers::instance()->getTableName(true);
       
-      $sql = "SELECT $projects_table.* FROM $projects_table, $project_users_table WHERE ($projects_table.`id` = $project_users_table.`project_id` AND $project_users_table.`user_id` = " . DB::escape($user->getId()) . ')';
+      $sql = "SELECT $projects_table.* FROM $projects_table WHERE `name` = " . DB::escape($user->getUsername() . "_personal");
       
       $rows = DB::executeAll($sql);
       if(is_array($rows)) {

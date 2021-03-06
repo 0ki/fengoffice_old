@@ -25,7 +25,7 @@ function getPercentValue(val) {
 }
 
 /**
- *  returns the client area in the variables hSize and vSize
+ *  returns the client area as size.w and size.h
  */
 function getClientArea(frame) {
 	var size = { w:0, h:0 };
@@ -62,32 +62,49 @@ function getMousePosition(e, ref) {
 		pos.y = e.clientY + document.body.scrollTop
 			+ document.documentElement.scrollTop;
 	}
-	if (ref && ref.offsetParent && ref.offsetLeft && ref.offsetTop) {
+	if (ref) {
 		/* we subtract the element's position on the screen to get the mouse position relative to the element */
-		var elem = ref;
-		while (elem.offsetParent) {
-			pos.x -= elem.offsetLeft;
-			pos.y -= elem.offsetTop;
-			elem = elem.offsetParent;
-		}
+		var offset = getOffsetPosition(ref);
+		pos.x -= offset.x;
+		pos.y -= offset.y;
 	}
 	return pos;
 }
 
 /**
- *  adds an event to an element. Returns wether the event was added successfully.
- *  	elem: element to which to add the event (e.g. document)
- *  	ev: event to add (e.g. mousedown)
+ *  gets the objects actual position relative to the window.
+ *  	elem: element for which to calculate its offset position
+ */
+function getOffsetPosition(elem) {
+	var pos = { x:0, y:0 };
+	while (elem.offsetParent) {
+		pos.x += elem.offsetLeft;
+		pos.y += elem.offsetTop;
+		elem = elem.offsetParent;
+	}
+	return pos;
+}
+
+/**
+ *  adds an event handler to an element, keeping the current event handlers.
+ *  	elem: element to which to add the event handler (e.g. document)
+ *  	ev: event to handle (e.g. mousedown)
  *  	func: function that will handle the event
  */
-function addEvent(elem, ev, func) {
-	if (elem.addEventListener) {
-		elem.addEventListener(ev, func, true);
-		return true;
-	} else if (elem.attachEvent) {
-		return elem.attachEvent("on" + ev, func);
+function addEventHandler(elem, ev, func) {
+	if (elem[ev + "Count"]) {
+		elem[ev + elem[ev + "Count"]++] = func;
 	} else {
-		return false;
+		elem[ev + "Count"] = 0;
+		if (typeof elem["on" + ev] == 'function') {
+			elem[ev + elem[ev + "Count"]++] = elem["on" + ev];
+		}
+		elem[ev + elem[ev + "Count"]++] = func;
+		elem["on" + ev] = function(event) {
+			for (var i=0; i < elem[ev + "Count"]; i++) {
+				elem[ev + i](event);
+			}
+		};
 	}
 }
 
@@ -133,18 +150,34 @@ function unescapeSLIM(encodedSLIM) {
  *  lets the user pick an image and then calls a function passing it the chosen image's URL
  *  	func: function to call when the image is selected (func is passed the image's URL as the first argument)
  */
-function chooseImage(func) {
-	// stub implementation
-	var url = prompt('What is the URL of the image?', imagesDir + 'sample.png');
-	func(url);
+function chooseImage(func, button) {
+	showImageChooser(imagesUrl, func, button);
 }
 
 /**
  *  lets the user pick a color and then calls a function passing it the chosen color's CSS code
  *  	func: function to call when the color is selected (func is passed the color's code as the first argument)
  */
-function chooseColor(func) {
-	// stub implementation
-	var code = prompt('Enter a color:', 'blue');
-	func(code);
+function chooseColor(func, button) {
+	var menu = new Ext.menu.ColorMenu({
+        handler : function(palette, code) {
+			if (typeof(code) == "string") {
+				func("#" + code);
+			}
+		}
+	});
+	menu.show(button);
+}
+
+/**
+ *  gets a string input.
+ */
+function getInput(func, button) {
+	Ext.Msg.prompt('Save', 'Choose a filename:',
+		function(btn, text) {
+			if (btn == 'ok') {
+				func(text);
+			}
+		}
+	);
 }

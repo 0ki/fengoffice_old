@@ -142,7 +142,7 @@
     'private task list desc' => 'Private task lists are visible only to owner company members. Members of client companies will not be able to see them.',
     'private comment desc' => 'Private comments are visible only to owner company members. Members of client companies will not be able to see them.',
     'private file desc' => 'Private files are visible only to the members of the owner company. Members of client companies will not be able to see them',
-    
+   
   ); // array
 
 ?>

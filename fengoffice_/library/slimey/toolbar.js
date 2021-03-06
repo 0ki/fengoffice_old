@@ -7,7 +7,7 @@
 
 function createSeparator() {
 	var sep = document.createElement('img');
-	sep.src = imagesDir + 'sep.png';
+	sep.src = slimeyImagesDir + 'sep.png';
 	sep.style.marginLeft = '8px';
 	sep.style.marginRight = '4px';
 	sep.style.verticalAlign = 'middle';
@@ -47,11 +47,18 @@ var SlimeyToolbar = function(container) {
 	this.addTool(new SlimeyViewSourceTool());
 	this.addTool(new SlimeyPreviewTool());
 	this.addBreak();
-	this.addTool(new SlimeyEditContentTool());
+	//this.addTool(new SlimeyEditContentTool());
 }
 
 /** singleton */
 SlimeyToolbar.instance = null;
+
+/**
+ *  initialize the toolbar's instance
+ */
+SlimeyToolbar.initInstance = function(containerID) {
+	SlimeyToolbar.instance = new SlimeyToolbar($(containerID));
+}
 
 /**
  *  returns the single SlimeyToolbar instance
