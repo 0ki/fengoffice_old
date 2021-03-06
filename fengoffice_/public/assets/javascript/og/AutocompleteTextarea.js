@@ -12,6 +12,8 @@ og.render_autocomplete_field = function(config) {
 	var grow_min = config.grow_min ? config.grow_min : 22;
 	var limit = config.limit ? config.limit : 1000;
 	
+	var query_server = store.length == 0;
+	
 	var textarea = new Ext.form.TextArea({
 		renderTo: render_to,
 		id: 'auto_complete_input_' + comp_id,
@@ -45,7 +47,8 @@ og.render_autocomplete_field = function(config) {
 				if (e.keyCode == e.ESC) {
 					this.showHideDropDown(false);
 					return;
-				} 
+				}
+				
 				var value = comp.getValue();
 				var lastComma = value.lastIndexOf(",");
 				if (lastComma >= 0) {
@@ -54,14 +57,49 @@ og.render_autocomplete_field = function(config) {
 				if (value.length > 0) {
 					var to_draw = [];
 					var k=0;
-					while (k < comp.store.length && to_draw.length < limit) {
-						var stv = comp.store[k++];
-						if (stv.toLowerCase().indexOf(value.toLowerCase()) >= 0) to_draw[to_draw.length] = stv;
+					if (!query_server) {
+						while (k < comp.store.length && to_draw.length < limit) {
+							var stv = comp.store[k++];
+							if (stv.toLowerCase().indexOf(value.toLowerCase()) >= 0) to_draw[to_draw.length] = stv;
+						}
+						comp.selectedItem = 0;
+						comp.drawDropDown(to_draw);
+						comp.showHideDropDown(to_draw.length > 0);
+						comp.setSelectedItem(comp.selectedItem);
+					
+					} else {
+						og.tmp_autocomplete_filter_value = value;
+						if (comp.tout) clearTimeout(comp.tout);
+						comp.tout = setTimeout(function(){
+							value = og.tmp_autocomplete_filter_value;
+							if (value == comp.last_value) {
+								return;
+							}
+							comp.last_value = value;
+							if (value.length > 2) {
+								og.openLink(og.getUrl('mail', 'get_allowed_addresses'), {
+									post: {name_filter: value},
+									callback: function(success, data) {
+										comp.store = data.addresses;
+		
+										while (k < comp.store.length && to_draw.length < limit) {
+											var stv = comp.store[k++];
+											if (stv.toLowerCase().indexOf(value.toLowerCase()) >= 0) to_draw[to_draw.length] = stv;
+										}
+										comp.selectedItem = 0;
+										comp.drawDropDown(to_draw);
+										comp.showHideDropDown(to_draw.length > 0);
+										comp.setSelectedItem(comp.selectedItem);
+										comp.tout = null;
+									}
+								});
+							} else {
+								comp.store = [];
+								comp.showHideDropDown(false);
+							}
+						}, 500);
 					}
-					comp.selectedItem = 0;
-					comp.drawDropDown(to_draw);
-					comp.showHideDropDown(to_draw.length > 0);
-					comp.setSelectedItem(comp.selectedItem);
+					
 				} else {
 					comp.showHideDropDown(false);
 				}

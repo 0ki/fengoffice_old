@@ -2506,8 +2506,12 @@ og.openTab = function (id) {
 	Ext.getCmp('tabs-panel').activate(id);
 }
 
-og.reload_subscribers = function(genid, object_type_id) {
-	var uids = App.modules.addMessageForm.getCheckedUsers(genid);
+og.reload_subscribers = function(genid, object_type_id, user_ids) {
+	if (!user_ids) {
+		var uids = App.modules.addMessageForm.getCheckedUsers(genid);
+	} else {
+		var uids = user_ids;
+	}
 	Ext.get(genid + 'add_subscribers_content').load({
 		url: og.getUrl('object', 'render_add_subscribers', {
 			context: Ext.util.JSON.encode(member_selector[genid].sel_context),

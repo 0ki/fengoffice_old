@@ -561,6 +561,8 @@ CREATE TABLE `<?php echo $table_prefix ?>project_files` (
   `type` int(1) NOT NULL DEFAULT 0,
   `url` varchar(255) NULL,
   `mail_id` int(10) unsigned NOT NULL default '0',
+  `attach_to_notification` tinyint(1) unsigned NOT NULL DEFAULT '0',
+  `default_subject` text <?php echo $default_collation ?> NOT NULL,
   PRIMARY KEY  (`object_id`)
 ) ENGINE=<?php echo $engine ?> <?php echo $default_charset ?>;
 

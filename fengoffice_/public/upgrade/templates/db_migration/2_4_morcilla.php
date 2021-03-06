@@ -4,6 +4,7 @@
 -- <?php echo $engine ?> InnoDB
 
 ALTER TABLE `<?php echo $table_prefix ?>contact_addresses` MODIFY COLUMN `street` TEXT CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL;
+ALTER TABLE `<?php echo $table_prefix ?>system_permissions` ADD COLUMN `can_manage_contacts` BOOLEAN NOT NULL DEFAULT 0;
 
 INSERT INTO `<?php echo $table_prefix ?>contact_config_options` (`category_name`, `name`, `default_value`, `config_handler_class`, `is_system`, `option_order`, `dev_comment`) VALUES 
 	('listing preferences', 'breadcrumb_member_count', '5', 'IntegerConfigHandler', '0', '5', NULL)
@@ -104,3 +105,17 @@ WHERE id IN (SELECT object_id FROM `<?php echo $table_prefix ?>template_mileston
 
 UPDATE `<?php echo $table_prefix ?>cron_events` set enabled=0, is_system=1 WHERE name='check_upgrade';
 update <?php echo $table_prefix ?>project_tasks set percent_completed=100 where completed_on <> '0000-00-00 00:00:00';
+
+
+INSERT INTO `<?php echo $table_prefix ?>contact_config_options` (`category_name`, `name`, `default_value`, `config_handler_class`, `is_system`, `option_order`, `dev_comment`)
+VALUES ('mails panel', 'attach_to_notification', '1', 'BoolConfigHandler', '0', '0', NULL)
+ON DUPLICATE KEY UPDATE name=name;
+
+ALTER TABLE `<?php echo $table_prefix ?>project_files` ADD `attach_to_notification` TINYINT( 1 ) NOT NULL DEFAULT 0;
+ALTER TABLE `<?php echo $table_prefix ?>project_files` ADD `default_subject` TEXT;
+
+INSERT INTO `<?php echo $table_prefix ?>config_options` (`category_name`, `name`, `value`, `config_handler_class`, `is_system`, `option_order`, `dev_comment`) 
+VALUES ('general', 'notify_myself_too', 0, 'BoolConfigHandler', '0', '100', '')
+ON DUPLICATE KEY UPDATE name=name;
+
+ALTER TABLE `<?php echo $table_prefix ?>contact_member_permissions` ADD INDEX (`member_id`);

@@ -83,10 +83,10 @@ class CommentController extends ApplicationController {
 					else $comment_head = substr($comment->getText(), 0, $lastpos) . "...";
 				}
 				$comment_head = html_to_text($comment_head);
-				ApplicationLogs::createLog($comment, ApplicationLogs::ACTION_COMMENT, false, false, true, $comment_head);
-
+				
 				DB::commit();
-
+				
+				ApplicationLogs::createLog($comment, ApplicationLogs::ACTION_COMMENT, false, false, true, $comment_head);
 				flash_success(lang('success add comment'));
 
 				ajx_current("reload");
@@ -154,10 +154,10 @@ class CommentController extends ApplicationController {
 				
 				DB::beginWork();
 				$comment->save();
-				ApplicationLogs::createLog($comment, ApplicationLogs::ACTION_EDIT);
 				$object->onEditComment($comment);
 				DB::commit();
-
+				ApplicationLogs::createLog($comment, ApplicationLogs::ACTION_EDIT);
+				
 				flash_success(lang('success edit comment'));
 				ajx_current("back");
 			} catch(Exception $e) {
@@ -200,9 +200,9 @@ class CommentController extends ApplicationController {
 		try {
 			DB::beginWork();
 			$comment->trash();
-			ApplicationLogs::createLog($comment, ApplicationLogs::ACTION_TRASH);
 			DB::commit();
-
+			ApplicationLogs::createLog($comment, ApplicationLogs::ACTION_TRASH);
+			
 			flash_success(lang('success delete comment'));
 			ajx_current("reload");
 		} catch(Exception $e) {

@@ -1,7 +1,4 @@
 <?php
-/**
- * @author Ignacio Vazquez <elpepe.uy at gmail.com>
- */
 class BaseContactWidgets extends DataManager {
 	
 	private static $columns = array (

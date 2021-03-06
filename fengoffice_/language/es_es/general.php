@@ -324,4 +324,8 @@
 	'user settings' => 'Preferencias de usuario',
 	'error add name required' => '{0} no pudo ser agregado, debe especificar un nombre para el mismo.',
 	'permissions for unclassified objects' => 'Permisos para objetos no clasificados',
+	'attach to notification' => 'Adjuntar documento a notificación',
+	'subject for email notification' => 'Asunto a utilizar en el correo de notificación:',
+	'use default subject' => 'Utilizar Asunto por defecto',
+	'enter a custom subject' => 'Ingrese un Asunto personalizado...',
 ); ?>

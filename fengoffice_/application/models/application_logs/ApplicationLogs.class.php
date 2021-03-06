@@ -233,22 +233,42 @@ class ApplicationLogs extends BaseApplicationLogs {
 
 		$members_sql = "";
 		if(count($members) > 0){
-			$object_ids_rows = DB::executeAll("SELECT object_id FROM " . TABLE_PREFIX . "object_members om
-				WHERE member_id IN (" . implode ( ',', $members ) . ")
-				GROUP BY object_id HAVING count(member_id) = ".count($members)."");
-			
-			$object_ids = implode(',', array_flat($object_ids_rows));
-			if ($object_ids == "") $object_ids = "0";
-			$members_sql = "rel_object_id IN ($object_ids)";
+			         $members_sql = "(EXISTS
+										(SELECT om.object_id
+											FROM  ".TABLE_PREFIX."object_members om
+											WHERE	om.member_id IN (" . implode ( ',', $members ) . ") AND rel_object_id = om.object_id
+											GROUP BY object_id
+											HAVING count(member_id) = ".count($members)."
+										)
+									  )";
 		}
 
-		$permissions_sql = "AND (rel_object_id IN (
-			SELECT object_id FROM ".TABLE_PREFIX."sharing_table
-			WHERE group_id  IN (SELECT permission_group_id FROM ".TABLE_PREFIX."contact_permission_groups WHERE contact_id = ".logged_user()->getId().")
-			) OR ((rel_object_id = 0 AND member_id <> 0) AND member_id IN (
-							SELECT member_id FROM ".TABLE_PREFIX."contact_member_permissions WHERE 
-									permission_group_id IN (SELECT permission_group_id FROM ".TABLE_PREFIX."contact_permission_groups WHERE contact_id = ".logged_user()->getId().")
-									AND member_id = ".TABLE_PREFIX."application_logs.member_id)))";
+		$permissions_sql = "AND(
+								(EXISTS
+										(SELECT object_id
+										FROM  ".TABLE_PREFIX."sharing_table sh
+										WHERE rel_object_id = sh.object_id 
+										AND sh.group_id  IN (
+															SELECT permission_group_id FROM ".TABLE_PREFIX."contact_permission_groups WHERE contact_id = ".logged_user()->getId()."
+															)
+										)
+								)
+								OR
+								(
+								 (rel_object_id = 0 AND member_id <> 0)
+								 AND (EXISTS
+								 			(SELECT cmp.member_id
+								 			FROM ".TABLE_PREFIX."contact_member_permissions cmp
+											WHERE ".TABLE_PREFIX."application_logs.member_id = cmp.member_id
+											AND  cmp.permission_group_id IN (
+																			SELECT permission_group_id FROM ".TABLE_PREFIX."contact_permission_groups
+																			WHERE contact_id = ".logged_user()->getId()."
+																			)
+											AND cmp.member_id = ".TABLE_PREFIX."application_logs.member_id
+											)
+									)
+								)
+							)";
 
 		$condition = ($members_sql != "" ? $members_sql . " AND " : "") . $extra_conditions . $permissions_sql;
 		return ApplicationLogs::findAll(array(

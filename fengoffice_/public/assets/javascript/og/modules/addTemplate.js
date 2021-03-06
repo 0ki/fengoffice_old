@@ -606,7 +606,7 @@ og.integerPropertyTypeSel = function(count, obj_id, callback){
 				integerPropTD.innerHTML = selectParam;
 			}
 			if(selectParam == ''){
-				alert(lang('no parameters in template'));
+				alert(lang('no user parameters in template'));
 				integerPropTypeSel.selectedIndex = 0;
 			}
 		}

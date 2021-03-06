@@ -781,9 +781,10 @@ class ObjectController extends ApplicationController {
 					$prop->delete();
 				}
 				tpl_assign('properties',ObjectProperties::getAllPropertiesByObject($obj));
-				ApplicationLogs::createLog($obj, ApplicationLogs::ACTION_EDIT);
+				
 				DB::commit();
-					
+				ApplicationLogs::createLog($obj, ApplicationLogs::ACTION_EDIT);
+				
 				flash_success(lang('success add properties'));
 				$this->redirectToReferer($obj->getObjectUrl());
 			} catch(Exception $e) {
@@ -1008,6 +1009,20 @@ class ObjectController extends ApplicationController {
 		}
 		
 		$filterName = array_var($_GET,'name');
+		
+		$template_object_names = "";
+		$template_extra_condition = "true";
+		
+		if(in_array("template_task", $filters['types']) || in_array("template_milestone", $filters['types'])){
+			$tmpl_task = TemplateTasks::findById(intval($id_no_select));
+			if($tmpl_task instanceof TemplateTask){
+				$template_extra_condition = "o.id IN (SELECT object_id from ".TABLE_PREFIX."template_tasks WHERE `template_id` =".$tmpl_task->getTemplateId().")";
+			}else{
+				$template_extra_condition = "o.id IN (SELECT object_id from ".TABLE_PREFIX."template_tasks WHERE `template_id` =".intval($id_no_select).")";
+			}
+		}else{
+			$template_object_names = "AND name <> 'template_task' AND name <> 'template_milestone'" ;
+		}
 		$result = null;
 		
 		$context = active_context();
@@ -1020,7 +1035,7 @@ class ObjectController extends ApplicationController {
 			$type_condition = " AND name IN ('".implode("','",$types) ."')";  
 		}
 		
-		$res = DB::executeAll("SELECT id from ".TABLE_PREFIX."object_types WHERE type IN ('". implode("','",$obj_type_types)."') AND name <> 'template_task' AND name <> 'template_milestone' AND name <> 'file revision' $type_condition ");
+		$res = DB::executeAll("SELECT id from ".TABLE_PREFIX."object_types WHERE type IN ('". implode("','",$obj_type_types)."') ".$template_object_names." AND name <> 'file revision' $type_condition ");
 		$type_ids = array();
 
 		foreach ($res as $row){
@@ -1033,6 +1048,7 @@ class ObjectController extends ApplicationController {
 		$type_ids_csv = implode(',', $types_ids);
 		$extra_conditions = array() ;
 		$extra_conditions[] = "object_type_id in ($type_ids_csv)";
+		$extra_conditions[] = $template_extra_condition;
 		if ($name_filter) {
 			$extra_conditions[] = "name LIKE '%$name_filter%'" ;
 		}
@@ -1455,8 +1471,8 @@ class ObjectController extends ApplicationController {
 				$errorMessage = null;
 				DB::beginWork();
 				$object->untrash($errorMessage);
-				ApplicationLogs::createLog($object, ApplicationLogs::ACTION_UNTRASH);
 				DB::commit();
+				ApplicationLogs::createLog($object, ApplicationLogs::ACTION_UNTRASH);
 				flash_success(lang("success untrash object"));
 				if ($object instanceof Contact) self::reloadPersonsDimension();
 			} catch (Exception $e) {
@@ -1484,10 +1500,10 @@ class ObjectController extends ApplicationController {
 				$errorMessage = null;
 				DB::beginWork();
 				$object->delete($errorMessage);
-				ApplicationLogs::createLog($object, ApplicationLogs::ACTION_DELETE);
 				flash_success(lang("success delete object"));
 				Hook::fire('after_object_delete_permanently', array($object_id), $ignored);
 				DB::commit();
+				ApplicationLogs::createLog($object, ApplicationLogs::ACTION_DELETE);
 			} catch (Exception $e) {
 				DB::rollback();
 				if (is_null($errorMessage)) Logger::log($e->getMessage());
@@ -1618,8 +1634,8 @@ class ObjectController extends ApplicationController {
 			try {
 				DB::beginWork();
 				$object->unarchive();
-				ApplicationLogs::createLog($object, ApplicationLogs::ACTION_UNARCHIVE);
 				DB::commit();
+				ApplicationLogs::createLog($object, ApplicationLogs::ACTION_UNARCHIVE);
 				flash_success(lang("success unarchive objects", 1));
 				if ($object instanceof Contact) self::reloadPersonsDimension();
 			} catch (Exception $e) {

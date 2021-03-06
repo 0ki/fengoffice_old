@@ -363,6 +363,13 @@ class FilesController extends ApplicationController {
 					$file->setIsVisible(true);
 				}
 				
+				$file->setAttachToNotification(array_var($file_data, 'attach_to_notification'),0);
+				if(array_var($file_data, 'default_subject_sel') == 'subject'){
+					$file->setDefaultSubject(array_var($file_data, 'default_subject_text'));
+				}else{
+					$file->setDefaultSubject('');
+				}
+				
 				$file->save();
 				
 				if($file->getType() == ProjectFiles::TYPE_DOCUMENT){
@@ -405,10 +412,18 @@ class FilesController extends ApplicationController {
 				$object_controller->add_subscribers($file);
 				$object_controller->add_custom_properties($file);
 				
-				ApplicationLogs::createLog($file,ApplicationLogs::ACTION_ADD);
+				if (array_var($file_data, 'notify_myself_too')) {
+					logged_user()->notify_myself = true;
+				}
+				
+								
+				if (array_var($file_data, 'notify_myself_too')) {
+					logged_user()->notify_myself = false;
+				}
 				
 				DB::commit();
-
+				ApplicationLogs::createLog($file,ApplicationLogs::ACTION_ADD);
+				
 				$ajx_file =  array();
 				$ajx_file["file"][]= get_class($file->manager()) . ':' . $file->getId();
 
@@ -440,6 +455,150 @@ class FilesController extends ApplicationController {
 		} // if
 	} // add_file
 	
+	/**
+	 * add_file_form_multi
+	 *
+	 * @access public
+	 * @param $file_data
+	 * @param $uploaded_file
+	 * @param $member_ids
+	 * @return file id
+	 */
+	function add_file_form_multi($file_data, $uploaded_file, $member_ids, $upload_option) {
+		try {
+			if($upload_option != -1){
+				$file = ProjectFiles::findById($upload_option);
+			}else{
+				$file = new ProjectFile();
+			}			
+				
+			$type = array_var($file_data, 'type');
+			$file->setType($type);
+			$file->setFilename(array_var($file_data, 'name'));
+			$file->setFromAttributes($file_data);
+	
+			$file->setIsVisible(true);
+		
+		
+			$file->save();
+		
+			if($file->getType() == ProjectFiles::TYPE_DOCUMENT){
+				// handle uploaded file
+				$revision_comment = array_var($file_data, 'revision_comment');
+				$revision = $file->handleUploadedFile($uploaded_file, true, $revision_comment); // handle uploaded file
+				@unlink($uploaded_file['tmp_name']);
+			}
+					
+			$object_controller = new ObjectController();
+			//$member_ids = json_decode(array_var($_POST, 'members'));
+		
+			//Add properties
+			$object_controller->add_to_members($file, $member_ids);
+				
+		
+			//Add links
+			$object_controller->link_to_new_object($file);
+			$object_controller->add_subscribers($file);
+			$object_controller->add_custom_properties($file);
+		
+			ApplicationLogs::createLog($file,ApplicationLogs::ACTION_ADD);
+			return $file->getId();
+		}catch(Exception $e) {
+			Logger::log("Error when uploading file: ".$e->getMessage()."\n".$e->getTraceAsString());
+				// If we uploaded the file remove it from repository
+				if(isset($revision) && ($revision instanceof ProjectFileRevision) && FileRepository::isInRepository($revision->getRepositoryId())) {
+					FileRepository::deleteFile($revision->getRepositoryId());
+				} // if
+			} // try
+		
+	} // add_file
+	
+	/**
+	 * add_multiple_files
+	 * Use this function to upload multiple files
+	 * @access public
+	 * @param null
+	 */
+	function add_multiple_files() {
+		if (logged_user()->isGuest()) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		}
+	
+		$file_data = array_var($_POST, 'file');
+	
+		$file = new ProjectFile();
+			
+		tpl_assign('file', $file);
+		tpl_assign('file_data', $file_data);
+			
+	
+		if (is_array(array_var($_POST, 'file'))) {
+			
+			$this->setLayout("html");
+				
+			$upload_option = array_var($file_data, 'upload_option',-1);
+			$skipSettings = false;
+			try {
+				DB::beginWork();
+				$upload_id = array_var($file_data, 'upload_id');
+				$uploaded_file = array_var($_SESSION, $upload_id, array());
+				$member_ids = json_decode(array_var($_POST, 'members'));
+				
+				//files ids to return
+				$file_ids = array();
+				
+				foreach ($uploaded_file['name'] as $key => $file_name) {
+					$file_data_mult = $file_data;
+					$file_data_mult['name'] = $file_name;
+					$uploaded_file_mult['name'] = $file_name;
+					$uploaded_file_mult['size'] = $uploaded_file['size'][$key];
+					$uploaded_file_mult['type'] = $uploaded_file['type'][$key];
+					$uploaded_file_mult['tmp_name'] = $uploaded_file['tmp_name'][$key];
+					$uploaded_file_mult['error'] = $uploaded_file['error'][$key];
+					
+					if(count($uploaded_file['name']) != 1){
+						$upload_option = -1;
+					}
+					$file_ids[] = $this->add_file_form_multi($file_data_mult, $uploaded_file_mult, $member_ids, $upload_option);
+				}
+				unset($_SESSION[$upload_id]);
+				DB::commit();
+	
+				$ajx_file =  array();
+				$file_titles = "";
+				//data to return
+				foreach ($file_ids as $file_id) {
+					$file_to_ret = ProjectFiles::findById($file_id);
+					if($file_to_ret instanceof ProjectFile){
+						$ajx_file["file"][]= get_class($file_to_ret->manager()) . ':' . $file_to_ret->getId();
+						$file_titles .= $file_to_ret->getFilename() . "; ";
+					}
+				}
+					
+				flash_success(lang('success add file', $file_titles));
+				if (array_var($_POST, 'popup', false)) {
+					ajx_current("reload");
+				} else {
+					ajx_current("back");
+				}
+				ajx_add("overview-panel", "reload");
+				ajx_extra_data($ajx_file);
+	
+			} catch(Exception $e) {
+				DB::rollback();
+				flash_error($e->getMessage());
+				if ($e instanceof InvalidUploadError) {
+					Logger::log("InvalidUploadError\n".$e->getTraceAsString());
+					Logger::log(print_r($e->getAdditionalParams(), 1));
+				} else {
+					Logger::log("Error when uploading file: ".$e->getMessage()."\n".$e->getTraceAsString());
+				}
+				ajx_current("empty");
+			} // try
+		} // if
+	} // add_file
 	
 	function quick_add_files() {
 		if (logged_user()->isGuest()) {
@@ -539,14 +698,120 @@ class FilesController extends ApplicationController {
 		} // if
 	} // quick_add_files
 	
+	/**
+	 * quick_add_multiple_files
+	 * Use this function to upload multiple files
+	 * @access public
+	 * @param null
+	 */
+	function quick_add_multiple_files() {
+		if (logged_user()->isGuest()) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		}
+		$file_data = array_var($_POST, 'file');
+	
+		$file = new ProjectFile();
+			
+		tpl_assign('file', $file);
+		tpl_assign('file_data', $file_data);
+		tpl_assign('genid', array_var($_GET, 'genid'));
+		tpl_assign('object_id', array_var($_GET, 'object_id'));
+			
+		if (is_array(array_var($_POST, 'file'))) {
+			//$this->setLayout("html");
+			$upload_option = array_var($file_data, 'upload_option',-1);
+			try {
+				DB::beginWork();
+	
+				//members
+				$member_ids = array();
+				$object_controller = new ObjectController();
+				if(count(active_context_members(false)) > 0 ){
+					$member_ids = active_context_members(false);
+				}elseif(array_var($file_data, 'object_id')){
+					$object = Objects::findObject(array_var($file_data, 'object_id'));
+					if ($object instanceof ContentDataObject) {
+						$member_ids = $object->getMemberIds();
+					} else {
+						// add only to logged_user's person member
+					}
+				} else {
+					// add only to logged_user's person member
+				}			
+				
+				$upload_id = array_var($file_data, 'upload_id');
+				$uploaded_file = array_var($_SESSION, $upload_id, array());
+				
+				//files ids to return
+				$file_ids = array();
+				
+				foreach ($uploaded_file['name'] as $key => $file_name) {
+					$file_data_mult = $file_data;
+					$file_data_mult['name'] = $file_name;
+					$uploaded_file_mult['name'] = $file_name;
+					$uploaded_file_mult['size'] = $uploaded_file['size'][$key];
+					$uploaded_file_mult['type'] = $uploaded_file['type'][$key];
+					$uploaded_file_mult['tmp_name'] = $uploaded_file['tmp_name'][$key];
+					$uploaded_file_mult['error'] = $uploaded_file['error'][$key];
+					
+					if(count($uploaded_file['name']) != 1){
+						$upload_option = -1;
+					}
+					
+					$file_ids[] = $this->add_file_form_multi($file_data_mult, $uploaded_file_mult, $member_ids, $upload_option);
+				}
+				unset($_SESSION[$upload_id]);
+	
+				DB::commit();
+				
+				//data to return
+				$files_data_to_return = array();
+				foreach ($file_ids as $file_id) {
+					$file_to_ret = ProjectFiles::findById($file_id);
+					$file_data = array();
+					$file_data["file_id"] = $file_to_ret->getId();
+					$file_data["file_name"] = $file_to_ret->getFilename();
+					$file_data["icocls"] = 'ico-file ico-' . str_replace(".", "_", str_replace("/", "-", $file_to_ret->getTypeString()));
+					$files_data_to_return[] = $file_data;
+				}
+				
+				ajx_extra_data(array("files_data" => $files_data_to_return));
+					
+				ajx_current("empty");
+	
+			} catch(Exception $e) {
+				DB::rollback();
+				flash_error($e->getMessage());
+				ajx_current("empty");
+			} // try
+		} // if
+	} // quick_add_files
+	
 	
 	function temp_file_upload() {
 		ajx_current("empty");
 		$id = array_var($_GET, 'id');
 		$uploaded_file = array_var($_FILES, 'file_file');
-		$fname = ROOT . "/tmp/$id";
+		$multiple = isset($_FILES['file_file']) && is_array($_FILES['file_file']['name']);
+		if($multiple){
+			foreach ($_FILES['file_file']['name'] as $file) {
+				$fname[] = ROOT . "/tmp/$file";
+			}
+		}else{
+			$fname = ROOT . "/tmp/$id";
+		}
+		
+		
 		if (!empty($uploaded_file['tmp_name'])) {
-			copy($uploaded_file['tmp_name'], $fname);
+			if($multiple){
+				foreach ($fname as $key => $file) {
+					copy($uploaded_file['tmp_name'][$key], $file);
+				}
+			}else{
+				copy($uploaded_file['tmp_name'], $fname);
+			}			
 			$_SESSION[$id] = array(
 				'name' => $uploaded_file['name'],
 				'size' => $uploaded_file['size'],
@@ -673,8 +938,8 @@ class FilesController extends ApplicationController {
 				} // if
 				
 				
-				ApplicationLogs::createLog($file, ApplicationLogs::ACTION_EDIT);
 				DB::commit();
+				ApplicationLogs::createLog($file, ApplicationLogs::ACTION_EDIT);
 				unlink($file_dt['tmp_name']);
 
 				flash_success(lang('success save file', $file->getFilename()));
@@ -766,9 +1031,9 @@ class FilesController extends ApplicationController {
 					}
 				}
 				
-				ApplicationLogs::createLog($file, ApplicationLogs::ACTION_ADD);
-
+				
 				DB::commit();
+				ApplicationLogs::createLog($file, ApplicationLogs::ACTION_ADD);
 				flash_success(lang('success save file', $file->getObjectName()));
 				evt_add("document saved", array("id" => $file->getId(), "instance" => array_var($_POST, 'instanceName')));
 				evt_add("new document add save as button", array("id" => $file->getId(), "name" => clean($file->getFilename()), "genid" => array_var($_POST, 'instanceName')));
@@ -826,9 +1091,9 @@ class FilesController extends ApplicationController {
 					ajx_current("back");
 				}
 				
-				ApplicationLogs::createLog($file, ApplicationLogs::ACTION_EDIT);
-
+				
 				DB::commit();
+				ApplicationLogs::createLog($file, ApplicationLogs::ACTION_EDIT);
 				unlink($file_dt['tmp_name']);
 
 				flash_success(lang('success save file', $file->getFilename()));
@@ -878,8 +1143,7 @@ class FilesController extends ApplicationController {
 					$file->checkOut(true, logged_user());
 				}
 				
-				ApplicationLogs::createLog($file, ApplicationLogs::ACTION_ADD);
-
+				
 				$object_controller = new ObjectController();
 				
 				// file is added to current context members
@@ -891,6 +1155,7 @@ class FilesController extends ApplicationController {
 				$object_controller->add_to_members($file, $member_ids);
 				
 				DB::commit();
+				ApplicationLogs::createLog($file, ApplicationLogs::ACTION_ADD);
 				flash_success(lang('success save file', $file->getFilename()));
 				evt_add("presentation saved", array("id" => $file->getId()));
 				unlink($file_dt['tmp_name']);
@@ -945,9 +1210,9 @@ class FilesController extends ApplicationController {
 				$file->save();
 				$file->handleUploadedFile($file_dt, $post_revision, $revision_comment);
 				
-				ApplicationLogs::createLog($file, ApplicationLogs::ACTION_EDIT);
-				
+								
 				DB::commit();
+				ApplicationLogs::createLog($file, ApplicationLogs::ACTION_EDIT);
 				unlink($file_dt['tmp_name']);
 
 				flash_success(lang('success save file', $file->getFilename()));
@@ -992,9 +1257,9 @@ class FilesController extends ApplicationController {
 				//FIXME $file->addToWorkspace(active_or_personal_project());
 				$revision = $file->handleUploadedFile($file_dt, true); // handle uploaded file
 				
-				ApplicationLogs::createLog($file, ApplicationLogs::ACTION_ADD);
-
+				
 				DB::commit();
+				ApplicationLogs::createLog($file, ApplicationLogs::ACTION_ADD);
 				unlink($file_dt['tmp_name']);
 				flash_success(lang('success add file', $file->getFilename()));
 				ajx_extra_data(array("sprdID" => $file->getId()));
@@ -1067,9 +1332,9 @@ class FilesController extends ApplicationController {
 				$file->save();
 				$file->handleUploadedFile($file_dt, $post_revision, $revision_comment);
 				
-				ApplicationLogs::createLog($file,ApplicationLogs::ACTION_EDIT);
-
+				
 				DB::commit();
+				ApplicationLogs::createLog($file,ApplicationLogs::ACTION_EDIT);
 				unlink($file_dt['tmp_name']);
 
 				flash_success(lang('success save file', $file->getFilename()));
@@ -1267,9 +1532,9 @@ class FilesController extends ApplicationController {
 				if (isset($file) && $file->canDelete(logged_user())) {
 					try{
 						DB::beginWork();
-						ApplicationLogs::createLog($file, ApplicationLogs::ACTION_TRASH);
 						$file->trash();
 						DB::commit();
+						ApplicationLogs::createLog($file, ApplicationLogs::ACTION_TRASH);
 						$succ++;
 					} catch(Exception $e){
 						DB::rollback();
@@ -1329,8 +1594,8 @@ class FilesController extends ApplicationController {
 					try{
 						DB::beginWork();
 						$file->archive();
-						ApplicationLogs::createLog($file, ApplicationLogs::ACTION_ARCHIVE);
 						DB::commit();
+						ApplicationLogs::createLog($file, ApplicationLogs::ACTION_ARCHIVE);
 						$succ++;
 					} catch(Exception $e){
 						DB::rollback();
@@ -1545,6 +1810,8 @@ class FilesController extends ApplicationController {
 			$file_data = array(
 				'description' => $file->getDescription(),
 				'edit_name' => $file->getFilename(),
+				'attach_to_notification' => $file->getAttachToNotification(),
+				'default_subject' => $file->getDefaultSubject(),
 				'file_id' => get_id()
 			); // array
 		} // if
@@ -1559,6 +1826,13 @@ class FilesController extends ApplicationController {
 				$post_revision    = $handle_file && array_var($file_data, 'version_file_change') == 'checked'; // post revision?
 				$revision_comment = trim(array_var($file_data, 'revision_comment')); // user comment?
 
+				$file->setAttachToNotification(array_var($file_data, 'attach_to_notification'),0);
+				if(array_var($file_data, 'default_subject_sel') == 'subject'){
+					$file->setDefaultSubject(array_var($file_data, 'default_subject_text'));
+				}else{
+					$file->setDefaultSubject('');
+				}
+				
 				$file->setFromAttributes($file_data);
 				$file->setFilename(array_var($file_data, 'name'));
 				
@@ -1602,10 +1876,18 @@ class FilesController extends ApplicationController {
 
 				$file->resetIsRead();
 				
-				ApplicationLogs::createLog($file, ApplicationLogs::ACTION_EDIT);
-                                
-				DB::commit();
+				if (array_var($file_data, 'notify_myself_too')) {
+					logged_user()->notify_myself = true;
+				}
+				
 								
+				if (array_var($file_data, 'notify_myself_too')) {
+					logged_user()->notify_myself = false;
+				}
+
+				DB::commit();
+				ApplicationLogs::createLog($file, ApplicationLogs::ACTION_EDIT);
+				
 				flash_success(lang('success edit file', $file->getFilename()));
 				ajx_current("back");
 			} catch(Exception $e) {
@@ -1675,6 +1957,13 @@ class FilesController extends ApplicationController {
 				$file->setFilename(array_var($file_data, 'name'));
 				$file->checkIn();
 
+				$file->setAttachToNotification(array_var($file_data, 'attach_to_notification'),0);
+				if(array_var($file_data, 'default_subject_sel') == 'subject'){
+					$file->setDefaultSubject(array_var($file_data, 'default_subject_text'));
+				}else{
+					$file->setDefaultSubject('');
+				}
+				
 				$file->save();
 				
 				if ($handle_file) {
@@ -1695,10 +1984,10 @@ class FilesController extends ApplicationController {
 					$file->subscribeUser(logged_user());
 				} // if
 				
+				DB::commit();
 				ApplicationLogs::createLog($file, ApplicationLogs::ACTION_EDIT);
 				ApplicationLogs::createLog($file, ApplicationLogs::ACTION_CHECKIN);
-				DB::commit();
-
+				
 				flash_success(lang('success add file', $file->getFilename()));
 				ajx_current("back");
 			} catch(Exception $e) {
@@ -1740,11 +2029,9 @@ class FilesController extends ApplicationController {
 		try {
 			DB::beginWork();
 			$file->trash();
-
-			
-			ApplicationLogs::createLog($file, ApplicationLogs::ACTION_TRASH);
 			DB::commit();
-
+			ApplicationLogs::createLog($file, ApplicationLogs::ACTION_TRASH);
+			
 			flash_success(lang('success delete file', $file->getFilename()));
 			if (array_var($_POST, 'popup', false)) {
 				ajx_current("reload");
@@ -1869,10 +2156,9 @@ class FilesController extends ApplicationController {
 				$revision->setComment(array_var($revision_data, 'comment'));
 				$revision->save();
 
-				ApplicationLogs::createLog($revision, ApplicationLogs::ACTION_EDIT);
-
 				DB::commit();
-
+				ApplicationLogs::createLog($revision, ApplicationLogs::ACTION_EDIT);
+				
 				flash_success(lang('success edit file revision'));
 				ajx_current("back");
 			} catch(Exception $e) {
@@ -1926,10 +2212,9 @@ class FilesController extends ApplicationController {
 		try {
 			DB::beginWork();
 			$revision->trash();
-			
-			ApplicationLogs::createLog($revision, ApplicationLogs::ACTION_TRASH);
 			DB::commit();
-
+			ApplicationLogs::createLog($revision, ApplicationLogs::ACTION_TRASH);
+			
 			flash_success(lang('success trash file revision'));
 			ajx_current("reload");
 		} catch(Exception $e) {
@@ -2147,8 +2432,8 @@ class FilesController extends ApplicationController {
 			
 			$revision = $file->handleUploadedFile($file_dt, true, '');
 
-			ApplicationLogs::createLog($file, ApplicationLogs::ACTION_ADD);
 			DB::commit();
+			ApplicationLogs::createLog($file, ApplicationLogs::ACTION_ADD);
 			return true;
 		} catch (Exception $e) {
 			DB::rollback();
@@ -2381,8 +2666,8 @@ class FilesController extends ApplicationController {
 				}
 			}*/
 			$revision = $file->handleUploadedFile($oFile, true, '');
-			ApplicationLogs::createLog($file, ApplicationLogs::ACTION_ADD);
 			DB::commit();
+			ApplicationLogs::createLog($file, ApplicationLogs::ACTION_ADD);
 			echo $this->SendUploadResults( $sErrorNumber, $file->getDownloadUrl() , $file->getFilename() ) ;
 		} catch (Exception $e) {
 			DB::rollback();			

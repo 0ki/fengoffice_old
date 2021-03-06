@@ -113,6 +113,7 @@ og.MemberTree = function(config) {
 									return true;
 								}
 							}
+							sm.clearSelections();	
 							return false;
 						}
 					} else {
@@ -169,8 +170,27 @@ og.MemberTree = function(config) {
 						}
 					});
 				}
+			} else {
+				// if is root node => unclassify
+				if (e.target.getDepth() == 0) {
+					var has_relations = false;
+					var ids = [];
+					for (var i=0; i<e.data.selections.length; i++) {
+						ids.push(e.data.selections[i].data.object_id);
+						if (!has_relations) {
+							var mpath = Ext.util.JSON.decode(e.data.selections[i].data.memPath);
+							if (mpath && mpath[config.dimensionId]) has_relations = true;
+						}
+					}
+					og.openLink(og.getUrl('member', 'add_objects_to_member'),{
+						method: 'POST',
+						post: {objects: Ext.util.JSON.encode(ids), dimension: e.target.getOwnerTree().dimensionId},
+						callback: function(){
+							e.data.grid.load();
+						}
+					});
+				}
 			}
-			
 			return false;
 		}
     });

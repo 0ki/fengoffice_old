@@ -241,7 +241,6 @@
    * @param $options Array of array(value, text)
    * @param $selected Selected value string
    * @param $attributes
-   * @author Pepe - elpepe.uy at gmail dot com
    * @return unknown_type
    */
   function multiple_select_box($name, $options, $selected = array(), $attributes = null) {

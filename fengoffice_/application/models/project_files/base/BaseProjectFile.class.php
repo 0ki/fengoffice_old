@@ -257,6 +257,48 @@
       return $this->setColumnValue('mail_id', $value);
     } // setMailId()
 
+    /** Return value of 'attach_to_notification' field
+    *
+    * @access public
+    * @param void
+    * @return boolean 
+    */
+    function getAttachToNotification() {
+      return $this->getColumnValue('attach_to_notification');
+    } // getAttachtoNotification()
+    
+    /**
+    * Set value of 'attach_to_notification' field
+    *
+    * @access public   
+    * @param integer $value
+    * @return boolean
+    */
+    function setAttachToNotification($value) {
+      return $this->setColumnValue('attach_to_notification', $value);
+    } // setAttachtoNotification() 
+    
+    /** Return value of 'default_subject' field
+    *
+    * @access public
+    * @param void
+    * @return string 
+    */
+    function getDefaultSubject() {
+      return $this->getColumnValue('default_subject');
+    } // getDefaultSubject()
+    
+    /**
+    * Set value of 'default_subject' field
+    *
+    * @access public   
+    * @param string $value
+    * @return boolean
+    */
+    function setDefaultSubject($value) {
+      return $this->setColumnValue('default_subject', $value);
+    } // setDefaultSubject() 
+    
     /**
     * Return manager instance
     *

@@ -24,9 +24,11 @@
 						<select name="<?php echo 'parameterValues['.$parameter['name'].']'; ?>">
 						<?php
 							$companies  = allowed_users_to_assign(active_context());
-							foreach ($companies as $c) {?>
+							foreach ($companies as $c) {
+								if (config_option('can_assign_tasks_to_companies')) { ?>
 								<option value="<?php echo $c['id']; ?>"> <?php echo $c['name']; ?></option>
-							<?php 
+								
+							<?php }
 								$users = $c['users'];
 								if ( count($users) ) {
 									foreach ($users as $usr) {?>																

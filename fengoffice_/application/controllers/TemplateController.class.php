@@ -58,17 +58,19 @@ class TemplateController extends ApplicationController {
 				DB::beginWork();
 				$cotemplate->save();
 				$objects = array_var($_POST, 'objects');
-				foreach ($objects as $objid) {
-					$object = Objects::findObject($objid);
-					if ($object instanceof ProjectTask) {
-						$add_attr_milestones = array_var($_POST, "milestones");
-						if (is_array($add_attr_milestones)) $additional_attributes['milestone'] = array_var($add_attr_milestones, $objid);
+				if(!empty($objects)){
+					foreach ($objects as $objid) {
+						$object = Objects::findObject($objid);
+						$additional_attributes = array();
+						if ($object instanceof ProjectTask) {
+							$add_attr_milestones = array_var($_POST, "milestones");
+							if (is_array($add_attr_milestones)) $additional_attributes['milestone'] = array_var($add_attr_milestones, $objid);
+						}
+						$oid = $cotemplate->addObject($object, $additional_attributes);
+						$object_ids[$objid] = $oid;
+	// 					COTemplates::validateObjectContext($object, $member_ids);
 					}
-					$oid = $cotemplate->addObject($object, $additional_attributes);
-					$object_ids[$objid] = $oid;
-// 					COTemplates::validateObjectContext($object, $member_ids);
 				}
-				
 				$objectPropertyValues = array_var($_POST, 'propValues');
 				$propValueParams = array_var($_POST, 'propValueParam');
 				$propValueOperation = array_var($_POST, 'propValueOperation');
@@ -120,7 +122,7 @@ class TemplateController extends ApplicationController {
 // 				$object_controller = new ObjectController();
 // 				$object_controller->add_to_members($cotemplate, $member_ids);
 				
-				evt_add('reload tab panel', 'tasks-panel');
+//				evt_add('reload tab panel', 'tasks-panel');
 				
 				DB::commit();
 				ApplicationLogs::createLog($cotemplate, ApplicationLogs::ACTION_ADD);
@@ -169,7 +171,8 @@ class TemplateController extends ApplicationController {
 			$objectName = $milestone->getObjectName();
 			$manager = get_class($milestone->manager());
 			$ico = "ico-milestone";
-			$objects[] = $this->prepareObject($objectId, $id, $objectName, $objectTypeName, $manager, null, null, null, $ico);
+			$action = "add";
+			$objects[] = $this->prepareObject($objectId, $id, $objectName, $objectTypeName, $manager, $action,null, null, null, $ico);
 		}
 		
 		foreach ($tasks as $task){
@@ -182,13 +185,14 @@ class TemplateController extends ApplicationController {
 			$subTasks = $task->getSubTasks();
 			$parentId = $task->getParentId();
 			$ico = "ico-task";
-			$objects[] = $this->prepareObject($objectId, $id, $objectName, $objectTypeName, $manager, $milestoneId, $subTasks, $parentId, $ico);
+			$action = "add";
+			$objects[] = $this->prepareObject($objectId, $id, $objectName, $objectTypeName, $manager, $action,$milestoneId, $subTasks, $parentId, $ico);
 		}
 		
 		return $objects;
 	}
 		
-	function prepareObject($objectId, $id, $objectName, $objectTypeName, $manager, $milestoneId = null , $subTasks = null, $parentId = null, $ico = null) {
+	function prepareObject($objectId, $id, $objectName, $objectTypeName, $manager, $action,$milestoneId = null , $subTasks = null, $parentId = null, $ico = null) {
 		$object = array(
 				"object_id" => $objectId,
 				"type" => $objectTypeName,
@@ -198,7 +202,8 @@ class TemplateController extends ApplicationController {
 				"milestone_id" => $milestoneId,
 				"sub_tasks" => $subTasks,
 				"ico" => $ico,
-				"parent_id" => $parentId
+				"parent_id" => $parentId,
+				"action" => $action
 		);
 			
 		return $object;
@@ -239,6 +244,11 @@ class TemplateController extends ApplicationController {
 			foreach($cotemplate->getObjects() as $obj){
 				$object_properties[$obj->getObjectId()] = TemplateObjectProperties::getPropertiesByTemplateObject(get_id(), $obj->getObjectId());
 			}
+			
+			//delete old temporaly template tasks
+			$conditions = array('conditions' => '`session_id` =  '.logged_user()->getId().' AND `template_id` = 0');
+			TemplateTasks::delete($conditions);
+			TemplateMilestones::delete($conditions);
 		} else {
 			$cotemplate->setFromAttributes($template_data);
 			try {
@@ -324,7 +334,7 @@ class TemplateController extends ApplicationController {
 		}
 				
 		$objects = $this->add_template_object_to_view($cotemplate->getId());
-				
+		
 		tpl_assign('object_properties', $object_properties);
 		tpl_assign('parameters', TemplateParameters::getParametersByTemplate(get_id()));
 		tpl_assign('objects', $objects);
@@ -673,6 +683,13 @@ class TemplateController extends ApplicationController {
 		}
 		
 		DB::commit();
+		
+		foreach ($copies as $c) {
+			if ($c instanceof ProjectTask) {
+				ApplicationLogs::createLog($c, ApplicationLogs::ACTION_ADD);
+			}
+		}
+		
 		if (is_array($parameters) && count($parameters) > 0){
 			ajx_current("back");
 		}else{

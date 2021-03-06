@@ -98,20 +98,20 @@ class Notifier {
 
 	
 	static function objectNotification($object, $people, $sender, $notification, $description = null, $descArgs = null, $properties = array(), $links = array()) {
-                if (!is_array($people) || !count($people)) {
-			return;			
-		} 
+		if (!is_array($people) || !count($people)) {
+			return;
+		}
 		if ($sender instanceof Contact) {
-                    $sendername = $sender->getObjectName();
-                    $senderemail = $sender->getEmailAddress();
-                    $senderid = $sender->getId();
+			$sendername = $sender->getObjectName();
+			$senderemail = $sender->getEmailAddress();
+			$senderid = $sender->getId();
 		} else {
-                    $sendername = owner_company()->getObjectName();
-                    $senderemail = owner_company()->getEmailAddress();
-                    if (!is_valid_email($senderemail)) {
-                        $senderemail = 'noreply@fengoffice.com';
-                    }
-                    $senderid = 0;
+			$sendername = owner_company()->getObjectName();
+			$senderemail = owner_company()->getEmailAddress();
+			if (!is_valid_email($senderemail)) {
+				$senderemail = 'noreply@fengoffice.com';
+			}
+			$senderid = 0;
 		}
 		
 		$type = $object->getObjectTypeName();
@@ -130,28 +130,29 @@ class Notifier {
 		$text = "";
 		//text, descripction or revision comment
 		if ($object->columnExists('text') && trim($object->getColumnValue('text'))) {
-                    if($object->getObjectTypeId() == "3" || $object->getObjectTypeId() == "5"){
-                        if(config_option("wysiwyg_tasks") || config_option("wysiwyg_messages")){
-                            $text = purify_html(nl2br($object->getColumnValue('text')));
-                        }else{
-                            $text = escape_html_whitespace("\n" . $object->getColumnValue('text'));
-                        }
-                    }else{
-                        $text = escape_html_whitespace("\n" . $object->getColumnValue('text'));
-                    }                              
+			if($object->getObjectTypeId() == "3" || $object->getObjectTypeId() == "5"){
+				if(config_option("wysiwyg_tasks") || config_option("wysiwyg_messages")){
+					$text = purify_html(nl2br($object->getColumnValue('text')));
+				}else{
+					$text = escape_html_whitespace("\n" . $object->getColumnValue('text'));
+				}
+			}else{
+				$text = escape_html_whitespace("\n" . $object->getColumnValue('text'));
+			}
 		}
 		if ($object->columnExists('description') && trim($object->getColumnValue('description'))) {
-                    if($object->getObjectTypeId() == "3" || $object->getObjectTypeId() == "5"){
-                        if(config_option("wysiwyg_tasks") || config_option("wysiwyg_messages")){
-                            $text = purify_html(nl2br($object->getColumnValue('description')));
-                        }else{
-                            $text = escape_html_whitespace("\n" . $object->getColumnValue('description'));
-                        }
-                    }else{
-                        $text = escape_html_whitespace("\n" . $object->getColumnValue('description'));
-                    }
+			if($object->getObjectTypeId() == "3" || $object->getObjectTypeId() == "5"){
+				if(config_option("wysiwyg_tasks") || config_option("wysiwyg_messages")){
+					$text = purify_html(nl2br($object->getColumnValue('description')));
+				}else{
+					$text = escape_html_whitespace("\n" . $object->getColumnValue('description'));
+				}
+			}else{
+				$text = escape_html_whitespace("\n" . $object->getColumnValue('description'));
+			}
 		}
-                $text_comment = "";
+		
+		$text_comment = "";
 		if ($object instanceof ProjectFile && $object->getType() == ProjectFiles::TYPE_DOCUMENT) {
 			$revision = $object->getLastRevision();
 			if (trim($revision->getComment())) {
@@ -183,230 +184,244 @@ class Notifier {
 		}
 		
 		$attachments = array();
-                try {
-                    if (config_option('show images in document notifications') && $object instanceof ProjectFile && in_array($object->getTypeString(), ProjectFiles::$image_types)) {
-                            if (FileRepository::getBackend() instanceof FileRepository_Backend_FileSystem) {
-                                    $file_path = FileRepository::getBackend()->getFilePath($object->getLastRevision()->getRepositoryId());
-                            } else {
-                                    $file_path = ROOT . "/tmp/" . $object->getFilename();
-                                    $handle = fopen($file_path, 'wb');
-                                    fwrite($handle, $object->getLastRevision()->getFileContent(), $object->getLastRevision()->getFilesize());
-                                    fclose($handle);
-                            }
-                            $attachments[] = array(
-                                    'cid' => gen_id() . substr($senderemail, strpos($senderemail, '@')),
-                                    'path' => $file_path,
-                                    'type' => $object->getTypeString(),
-                                    'disposition' => 'inline',
-                                    'name' => $object->getFilename(),
-                            );
-                    }
-                } catch (FileNotInRepositoryError $e) {
-                        // If no logo is set, don't interrupt notifications.
-                }
+		try {
+			if ($object instanceof ProjectFile && ($object->getAttachToNotification() || config_option('show images in document notifications') && in_array($object->getTypeString(), ProjectFiles::$image_types))) {
+				if (FileRepository::getBackend() instanceof FileRepository_Backend_FileSystem) {
+					$file_path = FileRepository::getBackend()->getFilePath($object->getLastRevision()->getRepositoryId());
+				} else {
+					$file_path = ROOT . "/tmp/" . $object->getFilename();
+					$handle = fopen($file_path, 'wb');
+					fwrite($handle, $object->getLastRevision()->getFileContent(), $object->getLastRevision()->getFilesize());
+					fclose($handle);
+				}
+				$att_disposition = 'attachment';
+				if (config_option('show images in document notifications') && in_array($object->getTypeString(), ProjectFiles::$image_types)) {
+					$att_disposition = 'inline';
+				}
+				$attachments[] = array(
+					'cid' => gen_id() . substr($senderemail, strpos($senderemail, '@')),
+					'path' => $file_path,
+					'type' => $object->getTypeString(),
+					'disposition' => $att_disposition,
+					'name' => $object->getFilename(),
+				);
+			}
+		} catch (FileNotInRepositoryError $e) {
+			// don't interrupt notifications.
+		}
+		
 		tpl_assign('object', $object);
 		tpl_assign('title', $name);//title
-                tpl_assign('by', $assigned_by);//by
-                tpl_assign('asigned', $assigned_to);//assigned to
-                tpl_assign('description', $text);//descripction
-                tpl_assign('revision_comment', $text_comment);//revision_comment
-                tpl_assign('contexts', $contexts);//contexts
-                                
+		tpl_assign('by', $assigned_by);//by
+		tpl_assign('asigned', $assigned_to);//assigned to
+		tpl_assign('description', $text);//descripction
+		tpl_assign('revision_comment', $text_comment);//revision_comment
+		tpl_assign('contexts', $contexts);//contexts
+		
 		$emails = array();		
 		foreach($people as $user) {
-                    if ($object instanceof Comment) {
-                            $subscribers = $object->getRelObject()->getSubscribers();
-                    } else {
-                            $subscribers = $object->getSubscribers();
-                    }                    
-                    //ALL SUBSCRIBERS
-                    if(count($subscribers) > 0){
-                        $string_subscriber = '';
-                        $total_s = count($subscribers);
-                        $c = 0;
-                        foreach ($subscribers as $subscriber){
-                            $c++;
-                            if($c == $total_s && $total_s > 1){
-                                $string_subscriber .= lang('and');
-                            }else if($c > 1){
-                                $string_subscriber .= ", ";
-                            }
+			if (logged_user() instanceof Contact && logged_user()->getId() == $user->getId()) {
+				$user->notify_myself = logged_user()->notify_myself;
+			}
+			if ($object instanceof Comment) {
+				$subscribers = $object->getRelObject()->getSubscribers();
+			} else {
+				$subscribers = $object->getSubscribers();
+			}
+			//ALL SUBSCRIBERS
+			if(count($subscribers) > 0){
+				$string_subscriber = '';
+				$total_s = count($subscribers);
+				$c = 0;
+				foreach ($subscribers as $subscriber){
+					$c++;
+					if($c == $total_s && $total_s > 1){
+						$string_subscriber .= lang('and');
+					}else if($c > 1){
+						$string_subscriber .= ", ";
+					}
 
-                            $string_subscriber .= $subscriber->getFirstName();
-                            if($subscriber->getSurname() != "")
-                                $string_subscriber .=" " . $subscriber->getSurname();
+					$string_subscriber .= $subscriber->getFirstName();
+					if($subscriber->getSurname() != "")
+					$string_subscriber .=" " . $subscriber->getSurname();
 
-                        }
-                        tpl_assign('subscribers', $string_subscriber);// subscribers
-                    }
-                    if ($user instanceof Contact && $user->getId() != $senderid && $object->canView($user)) {
-                        // send notification on user's locale and with user info
-                        $locale = $user->getLocale();
-                        Localization::instance()->loadSettings($locale, ROOT . '/language');
-                        
-                        if ($object instanceof Comment) {
-                            $object_comment = Objects::findObject($object->getRelObjectId());
-                            $object_type_name = $object_comment->getObjectTypeName();
-                        } else {
-                            $object_type_name = '';
-                        }
+				}
+				tpl_assign('subscribers', $string_subscriber);// subscribers
+			}
+			if ($user instanceof Contact && ($user->getId() != $senderid || $user->notify_myself) && $object->canView($user)) {
+				// send notification on user's locale and with user info
+				$locale = $user->getLocale();
+				Localization::instance()->loadSettings($locale, ROOT . '/language');
 
-                        $object_type = strtolower(lang($object_type_name));
-                        if($object_type_name != ""){
-                            tpl_assign('object_comment_name',lang("the " . strtolower($object_type_name) . " notification"));//object_comment_name
-                        }
-                        
-                        if (!isset($description)) {
-                            $descArgs = array(clean($name), $sendername, $object_type, $object->getCreatedByDisplayName());
-                            $description = "$notification notification $type desc";
-                        }else{//reminders
-                            $date = "";
-                            //due
-                            if ($object->columnExists('due_date') && $object->getColumnValue('due_date')) {
-                                if ($object->getColumnValue('due_date') instanceof DateTimeValue) {
-                                    $date = Localization::instance()->formatDescriptiveDate($object->getColumnValue('due_date'), $user->getTimezone());
-                                    $time = Localization::instance()->formatTime($object->getColumnValue('due_date'), $user->getTimezone());
-                                    if($time > 0)
-                                        $date .= " " . $time;
-                                }
-                            }
-                            //start
-                            if ($object->columnExists('start') && $object->getColumnValue('start')) {
-                                if ($object->getColumnValue('start') instanceof DateTimeValue) {
-                                    $date = Localization::instance()->formatDescriptiveDate($object->getColumnValue('start'), $user->getTimezone());
-                                    $time = Localization::instance()->formatTime($object->getColumnValue('start'), $user->getTimezone());
-                                    if($time > 0)
-                                            $date .= " " . $time;
-                                }
-                            }
-                            $descArgs = array(clean($name), $sendername, $object_type, $object->getCreatedByDisplayName(),$date);
-                        }                        
-                        tpl_assign('description_title', langA($description, $descArgs));//description_title     
-                        
-                        tpl_assign('priority', '');//priority
-                        if ($object->columnExists('priority') && trim($object->getColumnValue('priority'))) {
-                            if ($object->getColumnValue('priority') >= ProjectTasks::PRIORITY_URGENT) {
-                                $priorityColor = "#FF0000";
-                                $priority = lang('urgent priority');
-                            }else if ($object->getColumnValue('priority') >= ProjectTasks::PRIORITY_HIGH) {
-                                $priorityColor = "#FF9088";
-                                $priority = lang('high priority');
-                            } else if ($object->getColumnValue('priority') <= ProjectTasks::PRIORITY_LOW) {
-                                $priorityColor = "white";
-                                $priority = lang('low priority');
-                            }else{
-                                $priorityColor = "#DAE3F0";
-                                $priority = lang('normal priority');
-                            }
-                            tpl_assign('priority', array($priority,$priorityColor));//priority
-                        }
-                        
-                        //ESPECIAL ASSIGNED FOR EVENTS
-                        tpl_assign('start', '');//start
-                        tpl_assign('time', '');//time
-                        tpl_assign('duration', '');//duration
-                        tpl_assign('guests', '');// invitations
-                        tpl_assign('start_date', '');//start_date
-                        tpl_assign('due_date', '');//due_date
-                        if ($object->getObjectTypeId() == 11) {
-                            //start
-                            if ($object->getStart() instanceof DateTimeValue) {
-                                $date = Localization::instance()->formatDescriptiveDate($object->getStart(), $user->getTimezone());
-                                $time = Localization::instance()->formatTime($object->getStart(), $user->getTimezone());
-                                tpl_assign('start', $date);//start
-                                if ($object->getTypeId() != 2) {
-                                    tpl_assign('time', $time);//time   
-                                }
-                            }
+				if ($object instanceof Comment) {
+					$object_comment = Objects::findObject($object->getRelObjectId());
+					$object_type_name = $object_comment->getObjectTypeName();
+				} else {
+					$object_type_name = '';
+				}
 
-                            if ($object->getTypeId() != 2) {
-                                //duration
-                                if ($object->getDuration() instanceof DateTimeValue) {
-                                    $durtime = $object->getDuration()->getTimestamp() - $object->getStart()->getTimestamp();
-                                    $durhr  = ($durtime / 3600) % 24;   //seconds per hour
-                                    tpl_assign('duration', $durhr." hs");//duration                                  
-                                }
-                            }else{
-                                tpl_assign('duration', lang('all day event'));//duration
-                            }
+				$object_type = strtolower(lang($object_type_name));
+				if($object_type_name != ""){
+					tpl_assign('object_comment_name',lang("the " . strtolower($object_type_name) . " notification"));//object_comment_name
+				}
 
-                            //invitations
-                            $guests = "";
-                            $send_link = array();
-                            $invitations = EventInvitations::findAll(array ('conditions' => 'event_id = ' . $object->getId()));
-                            if (isset($invitations) && is_array($invitations)) {
-                                foreach ($invitations as $inv) {
-                                    $inv_user = Contacts::findById($inv->getContactId());
-                                    if ($inv_user instanceof Contact) {
-                                        if (can_access($inv_user, $object->getMembers(),ProjectEvents::instance()->getObjectTypeId(), ACCESS_LEVEL_READ)) {
-                                            $state_desc = lang('pending response');
-                                            if ($inv->getInvitationState() == 1) $state_desc = lang('yes');
-                                            else if ($inv->getInvitationState() == 2) $state_desc = lang('no');
-                                            else if ($inv->getInvitationState() == 3) $state_desc = lang('maybe');
-                                            $guests .= '<div style="line-height: 20px; clear:both;">';
-											$guests .= '<div style="width: 35%;line-height: 20px; float: left;">' . clean($inv_user->getObjectName()) . '</div>';
-											$guests .= '<div style="line-height: 20px; float: left;">' . $state_desc . '</div></div>';
-                                        }
-                                        if($inv->getInvitationState() == 0){
-                                            $send_link[] = $inv_user->getId();
-                                        }
-                                    }
-                                }
-                            }
-                            tpl_assign('guests', $guests);// invitations
-                        }else{//start date, due date or start                            
-                            if ($object->columnExists('start_date') && $object->getColumnValue('start_date')) {
-                                if ($object->getColumnValue('start_date') instanceof DateTimeValue) {
-                                    $date = Localization::instance()->formatDescriptiveDate($object->getColumnValue('start_date'), $user->getTimezone());
-                                    $time = Localization::instance()->formatTime($object->getColumnValue('start_date'), $user->getTimezone());
-                                    if($time > 0)
-                                        $date .= " " . $time;
-                                }
-                                tpl_assign('start_date', $date);//start_date
-                            }   
-                            if ($object->columnExists('due_date') && $object->getColumnValue('due_date')) {
-                                if ($object->getColumnValue('due_date') instanceof DateTimeValue) {
-                                    $date = Localization::instance()->formatDescriptiveDate($object->getColumnValue('due_date'), $user->getTimezone());
-                                    $time = Localization::instance()->formatTime($object->getColumnValue('due_date'), $user->getTimezone());
-                                    if($time > 0)
-                                        $date .= " " . $time;
-                                }
-                                tpl_assign('due_date', $date);//due_date
-                            }
-                        }
+				if (!isset($description)) {
+					$descArgs = array(clean($name), $sendername, $object_type, $object->getCreatedByDisplayName());
+					$description = "$notification notification $type desc";
+				}else{//reminders
+					$date = "";
+					//due
+					if ($object->columnExists('due_date') && $object->getColumnValue('due_date')) {
+						if ($object->getColumnValue('due_date') instanceof DateTimeValue) {
+							$date = Localization::instance()->formatDescriptiveDate($object->getColumnValue('due_date'), $user->getTimezone());
+							$time = Localization::instance()->formatTime($object->getColumnValue('due_date'), $user->getTimezone());
+							if($time > 0)
+							$date .= " " . $time;
+						}
+					}
+					//start
+					if ($object->columnExists('start') && $object->getColumnValue('start')) {
+						if ($object->getColumnValue('start') instanceof DateTimeValue) {
+							$date = Localization::instance()->formatDescriptiveDate($object->getColumnValue('start'), $user->getTimezone());
+							$time = Localization::instance()->formatTime($object->getColumnValue('start'), $user->getTimezone());
+							if($time > 0)
+							$date .= " " . $time;
+						}
+					}
+					$descArgs = array(clean($name), $sendername, $object_type, $object->getCreatedByDisplayName(),$date);
+				}
+				tpl_assign('description_title', langA($description, $descArgs));//description_title
 
-                        $toemail = $user->getEmailAddress();
-                        try {
-                        	$content = FileRepository::getBackend()->getFileContent(owner_company()->getPictureFile());
-                        	if ($content != "") {
-	                        	$file_path = ROOT . "/tmp/logo_empresa.png";
-	                        	$handle = fopen($file_path, 'wb');
-	                        	if ($handle) {
-	                        		fwrite($handle, $content);
-	                        		fclose($handle);
-	                        		$attachments['logo'] = array(
+				tpl_assign('priority', '');//priority
+				if ($object->columnExists('priority') && trim($object->getColumnValue('priority'))) {
+					if ($object->getColumnValue('priority') >= ProjectTasks::PRIORITY_URGENT) {
+						$priorityColor = "#FF0000";
+						$priority = lang('urgent priority');
+					}else if ($object->getColumnValue('priority') >= ProjectTasks::PRIORITY_HIGH) {
+						$priorityColor = "#FF9088";
+						$priority = lang('high priority');
+					} else if ($object->getColumnValue('priority') <= ProjectTasks::PRIORITY_LOW) {
+						$priorityColor = "white";
+						$priority = lang('low priority');
+					}else{
+						$priorityColor = "#DAE3F0";
+						$priority = lang('normal priority');
+					}
+					tpl_assign('priority', array($priority,$priorityColor));//priority
+				}
+
+				//ESPECIAL ASSIGNED FOR EVENTS
+				tpl_assign('start', '');//start
+				tpl_assign('time', '');//time
+				tpl_assign('duration', '');//duration
+				tpl_assign('guests', '');// invitations
+				tpl_assign('start_date', '');//start_date
+				tpl_assign('due_date', '');//due_date
+				if ($object->getObjectTypeId() == 11) {
+					//start
+					if ($object->getStart() instanceof DateTimeValue) {
+						$date = Localization::instance()->formatDescriptiveDate($object->getStart(), $user->getTimezone());
+						$time = Localization::instance()->formatTime($object->getStart(), $user->getTimezone());
+						tpl_assign('start', $date);//start
+						if ($object->getTypeId() != 2) {
+							tpl_assign('time', $time);//time
+						}
+					}
+
+					if ($object->getTypeId() != 2) {
+						//duration
+						if ($object->getDuration() instanceof DateTimeValue) {
+							$durtime = $object->getDuration()->getTimestamp() - $object->getStart()->getTimestamp();
+							$durhr  = ($durtime / 3600) % 24;   //seconds per hour
+							tpl_assign('duration', $durhr." hs");//duration
+						}
+					}else{
+						tpl_assign('duration', lang('all day event'));//duration
+					}
+
+					//invitations
+					$guests = "";
+					$send_link = array();
+					$invitations = EventInvitations::findAll(array ('conditions' => 'event_id = ' . $object->getId()));
+					if (isset($invitations) && is_array($invitations)) {
+						foreach ($invitations as $inv) {
+							$inv_user = Contacts::findById($inv->getContactId());
+							if ($inv_user instanceof Contact) {
+								if (can_access($inv_user, $object->getMembers(),ProjectEvents::instance()->getObjectTypeId(), ACCESS_LEVEL_READ)) {
+									$state_desc = lang('pending response');
+									if ($inv->getInvitationState() == 1) $state_desc = lang('yes');
+									else if ($inv->getInvitationState() == 2) $state_desc = lang('no');
+									else if ($inv->getInvitationState() == 3) $state_desc = lang('maybe');
+									$guests .= '<div style="line-height: 20px; clear:both;">';
+									$guests .= '<div style="width: 35%;line-height: 20px; float: left;">' . clean($inv_user->getObjectName()) . '</div>';
+									$guests .= '<div style="line-height: 20px; float: left;">' . $state_desc . '</div></div>';
+								}
+								if($inv->getInvitationState() == 0){
+									$send_link[] = $inv_user->getId();
+								}
+							}
+						}
+					}
+					tpl_assign('guests', $guests);// invitations
+				}else{//start date, due date or start
+					if ($object->columnExists('start_date') && $object->getColumnValue('start_date')) {
+						if ($object->getColumnValue('start_date') instanceof DateTimeValue) {
+							$date = Localization::instance()->formatDescriptiveDate($object->getColumnValue('start_date'), $user->getTimezone());
+							$time = Localization::instance()->formatTime($object->getColumnValue('start_date'), $user->getTimezone());
+							if($time > 0)
+							$date .= " " . $time;
+						}
+						tpl_assign('start_date', $date);//start_date
+					}
+					if ($object->columnExists('due_date') && $object->getColumnValue('due_date')) {
+						if ($object->getColumnValue('due_date') instanceof DateTimeValue) {
+							$date = Localization::instance()->formatDescriptiveDate($object->getColumnValue('due_date'), $user->getTimezone());
+							$time = Localization::instance()->formatTime($object->getColumnValue('due_date'), $user->getTimezone());
+							if($time > 0)
+							$date .= " " . $time;
+						}
+						tpl_assign('due_date', $date);//due_date
+					}
+				}
+
+				$toemail = $user->getEmailAddress();
+				try {
+					$content = FileRepository::getBackend()->getFileContent(owner_company()->getPictureFile());
+					if ($content != "") {
+						$file_path = ROOT . "/tmp/logo_empresa.png";
+						$handle = fopen($file_path, 'wb');
+						if ($handle) {
+							fwrite($handle, $content);
+							fclose($handle);
+							$attachments['logo'] = array(
 	                                    'cid' => gen_id() . substr($toemail, strpos($toemail, '@')),
 	                                    'path' => $file_path,
 	                                    'type' => 'image/png',
 	                                    'disposition' => 'inline',
 	                                    'name' => 'logo_empresa.png',
-	                        		);
-	                        	}
-                        	}
-                        } catch (FileNotInRepositoryError $e) {
-                        	unset($attachments['logo']);
-                        }
-                        tpl_assign('attachments', $attachments);// attachments
-                        $from = self::prepareEmailAddress($senderemail, $sendername);
-                        if (!$toemail) continue;
-                        $emails[] = array(
-                                "to" => array(self::prepareEmailAddress($toemail, $user->getObjectName())),
-                                "from" => self::prepareEmailAddress($senderemail, $sendername),
-                                "subject" => $subject = htmlspecialchars_decode(langA("$notification notification $type", $descArgs)),
-                                "body" => tpl_fetch(get_template_path('general', 'notifier')),
-                                "attachments" => $attachments,
-                        );
-                    }
+							);
+						}
+					}
+				} catch (FileNotInRepositoryError $e) {
+					unset($attachments['logo']);
+				}
+				tpl_assign('attachments', $attachments);// attachments
+				$from = self::prepareEmailAddress($senderemail, $sendername);
+				if (!$toemail) continue;
+				
+				$subject = htmlspecialchars_decode(langA("$notification notification $type", $descArgs));
+				if ($object instanceof ProjectFile && $object->getDefaultSubject() != ""){
+					$subject = $object->getDefaultSubject();
+					tpl_assign('description_title', $subject);
+				}
+				$emails[] = array(
+					"to" => array(self::prepareEmailAddress($toemail, $user->getObjectName())),
+					"from" => self::prepareEmailAddress($senderemail, $sendername),
+					"subject" => $subject,
+					"body" => tpl_fetch(get_template_path('general', 'notifier')),
+					"attachments" => $attachments,
+				);
+			}
 		} 
 		$locale = logged_user() instanceof Contact ? logged_user()->getLocale() : DEFAULT_LOCALIZATION;
 		Localization::instance()->loadSettings($locale, ROOT . '/language');
@@ -520,30 +535,29 @@ class Notifier {
 		$locale = logged_user() instanceof Contact ? logged_user()->getLocale() : DEFAULT_LOCALIZATION;
 		Localization::instance()->loadSettings($locale, ROOT . '/language');
 	} // newUserAccount
-
-	static function newUserAccountLinkPassword(Contact $user, $raw_password, $token = null) {
+        
+        static function newUserAccountLinkPassword(Contact $user, $raw_password, $token = null) {
 		tpl_assign('new_account', $user);
 		tpl_assign('raw_password', $raw_password);
-		tpl_assign('type_notifier',"link_pass");
-
-		//generate password
-		$new_password = $user->resetPassword(true);
-		tpl_assign('token',$token);
+                tpl_assign('type_notifier',"link_pass");
+                
+                //generate password                
+                $new_password = $user->resetPassword(true);
+		tpl_assign('token',$token);                
 
 		$sender = $user->getCreatedBy() instanceof Contact ? $user->getCreatedBy() : owner_company()->getCreatedBy();
-
+		
 		$locale = $user->getLocale();
 		Localization::instance()->loadSettings($locale, ROOT . '/language');
 		$toemail = $user->getEmailAddress();
-		if ($toemail) {
-			self::queueEmail(
-				array(self::prepareEmailAddress($toemail, $user->getObjectName())),
-				self::prepareEmailAddress($sender->getEmailAddress(), $sender->getObjectName()),
-				lang('your account created'),
-				tpl_fetch(get_template_path('new_account', 'notifier'))
-			); // send
-		}
-
+		if (!$toemail) continue;
+		self::queueEmail(
+			array(self::prepareEmailAddress($toemail, $user->getObjectName())),
+			self::prepareEmailAddress($sender->getEmailAddress(), $sender->getObjectName()),
+			lang('your account created'),
+			tpl_fetch(get_template_path('new_account', 'notifier'))
+		); // send
+		
 		$locale = logged_user() instanceof Contact ? logged_user()->getLocale() : DEFAULT_LOCALIZATION;
 		Localization::instance()->loadSettings($locale, ROOT . '/language');
 	} // newUserAccount
@@ -1304,7 +1318,9 @@ class Notifier {
 			$qm->setFrom($from);
 			$qm->setSubject($subject);
 			$qm->setBody($body);
-			if ($qm->columnExists('attachments')) $qm->setColumnValue('attachments', json_encode($attachments));
+			if ($qm->columnExists('attachments')) {
+				$qm->setColumnValue('attachments', json_encode($attachments));
+			}
 			$qm->save();
 		} else {
 			self::sendEmail($to, $from, $subject, $body, $type, $encoding, $attachments);

@@ -3,8 +3,8 @@
 	"workspace description" => "Workspace Description",
 	"field workspace show_description_in_overview" => "Show description on the workspace overview page?",
 
-	'add new relation workspaces' => 'Classify to a workspace',
-	'add new relation tags' => 'Classify with a tag',
+	'add new relation workspaces' => 'Type to select workspace',
+	'add new relation tags' => 'Type to select tag',
 
 	'add new workspace' => 'Add a new workspace',
 	'add your first workspace' => 'Add your first workspace',

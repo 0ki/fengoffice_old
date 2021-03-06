@@ -11,6 +11,7 @@ class Contact extends BaseContact {
 	
 	protected $is_read_markable = false;
 	
+	public $notify_myself;
 	
 	/**
 	 * If contact is a company, cache the company users for subsequent calls

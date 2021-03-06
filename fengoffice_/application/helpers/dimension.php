@@ -1,4 +1,5 @@
 <?php
+require_javascript('og/modules/addMessageForm.js');
 
 function render_member_selectors($content_object_type_id, $genid = null, $selected_member_ids = null, $options = array(), $skipped_dimensions = null, $simulate_required = null) {
 	
@@ -33,7 +34,10 @@ function render_member_selectors($content_object_type_id, $genid = null, $select
 			if (is_null($selected_member_ids)) $selected_member_ids = array();
 			
 			// Set view variables
-			$selected_members = count($selected_member_ids) > 0 ? Members::findAll(array('conditions' => 'id IN ('.implode(',', $selected_member_ids).')')) : array();
+			$manageable_conds = ' AND dimension_id IN (SELECT id from '.TABLE_PREFIX.'dimensions WHERE is_manageable=1)';
+			$selected_members = count($selected_member_ids) > 0 ? Members::findAll(array('conditions' => 'id IN ('.implode(',', $selected_member_ids).') '.$manageable_conds)) : array();
+			$selected_member_ids = array();
+			foreach ($selected_members as $sm) $selected_member_ids[] = $sm->getId();
 			$selected_members_json = "[".implode(',', $selected_member_ids)."]";
 			$component_id = "$genid-member-selectors-panel-$content_object_type_id";
 			$object_is_new = is_null($selected_members);

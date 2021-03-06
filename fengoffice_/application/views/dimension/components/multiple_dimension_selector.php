@@ -29,21 +29,23 @@
 		foreach ($selected_members as $selected_member) {
 			if ($selected_member->getDimensionId() == $dimension_id) $dimension_selected_members[] = $selected_member;
 		}
-		
 		$autocomplete_options = array();
+/*
+Logger::log(__FILE__." : ".__LINE__." - $dimension_id - ".date('H:i:s'));
 		if (!isset($dim_controller)) $dim_controller = new DimensionController();
 		$members = $dim_controller->initial_list_dimension_members($dimension_id, $content_object_type_id, $allowed_member_type_ids, false, "", null, false, null, true, $initial_selected_members, ACCESS_LEVEL_WRITE);
-		
+Logger::log(__FILE__." : ".__LINE__." - $dimension_id - ".date('H:i:s'));
 		foreach ($members as $m) {
 			if (can_add_to_member(logged_user(), $m, active_context(), $content_object_type_id)) {
 				$autocomplete_options[] = array($m['id'], $m['name'], $m['path'], $m['to_show'], $m['ico'], $m['dim']);
 				$members_dimension[$m['id']] = $m['dim'];
 			}
 		}
-		
+Logger::log(__FILE__." : ".__LINE__." - $dimension_id - ".date('H:i:s'));
+*/
 		$expgenid = gen_id();
+
 ?>
-	
 	<div id="<?php echo $genid; ?>member-seleector-dim<?php echo $dimension_id?>" class="single-dimension-selector" <?php echo $is_ie ? 'style="max-width:350px;"' : ''?>>
 		<div class="header x-accordion-hd" onclick="og.dashExpand('<?php echo $expgenid?>', 'selector-body-dim<?php echo $dimension_id ?>');">
 			<?php echo $dimension_name?>
@@ -51,14 +53,14 @@
 		</div>
 		<div class="selector-body" id="<?php echo $expgenid?>selector-body-dim<?php echo $dimension_id ?>">
 			<div id="<?php echo $genid; ?>selected-members-dim<?php echo $dimension_id?>" class="selected-members">
-	
+
 	<?php
 		$dimension_has_selection = false; 
 		if (count($dimension_selected_members) > 0) : 
 			$alt_cls = "";
 			foreach ($dimension_selected_members as $selected_member) :
 				$allowed_members = array_keys($members_dimension);
-				if (!in_array($selected_member->getId(), $allowed_members)) continue;
+				if (count($allowed_members) > 0 && !in_array($selected_member->getId(), $allowed_members)) continue;
 				$dimension_has_selection = true;
 				?>
 				<div class="selected-member-div <?php echo $alt_cls?>" id="<?php echo $genid?>selected-member<?php echo $selected_member->getId()?>">
@@ -70,10 +72,9 @@
 						<a href="#" class="coViewAction ico-delete" title="<?php echo lang('remove relation')?>" onclick="member_selector.remove_relation(<?php echo $dimension_id?>,'<?php echo $genid?>', <?php echo $selected_member->getId()?>)"><?php echo lang('remove')?></a>
 					</div>
 				</div>
-	<?php 		$alt_cls = $alt_cls == "" ? "alt-row" : "";
+	<?php		$alt_cls = $alt_cls == "" ? "alt-row" : "";
 				$sel_mem_ids[] = $selected_member->getId();
 		 	endforeach; ?>
-	
 				<div class="separator"></div>
 	<?php endif;?>
 			</div>
@@ -86,7 +87,7 @@
 				);
 				$empty_text = array_var($options, 'empty_text', lang('add new relation ' . $dimension['dimension_code']));
 				echo autocomplete_member_combo("member_autocomplete-dim".$dimension_id, $dimension_id, $autocomplete_options, 
-					$empty_text, array('class' => 'member-name-input'), true, $genid .'add-member-input-dim'. $dimension_id, $combo_listeners);
+					$empty_text, array('class' => 'member-name-input', 'is_ajax' => true), true, $genid .'add-member-input-dim'. $dimension_id, $combo_listeners);
 				?>
 				<div class="clear"></div>
 			</div>
@@ -97,8 +98,9 @@
 	if (!member_selector['<?php echo $genid; ?>']) member_selector['<?php echo $genid; ?>'] = {};
 	if (!member_selector['<?php echo $genid; ?>'].properties) member_selector['<?php echo $genid; ?>'].properties = {};
 	member_selector['<?php echo $genid; ?>'].hiddenFieldName = '<?php echo $hidden_field_name; ?>';
-
+	member_selector['<?php echo $genid; ?>'].otid = '<?php echo $content_object_type_id; ?>';
 	<?php
+	
 	$listeners_str = "{";
 	foreach ($listeners as $event => $function) {
 		$listeners_str .= $event .' : \''. escape_single_quotes($function) .'\',';
@@ -122,9 +124,8 @@
 	}
 
 	</script>
-<?php endforeach; ?>
-	
-<?php 
+<?php endforeach;
+
 	foreach ($listeners as $event => $function) {
 		if ($event == 'after_render_all') {
 			echo '<script>'.escape_single_quotes($function).';</script>';

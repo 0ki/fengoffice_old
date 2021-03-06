@@ -144,6 +144,8 @@ addLangs({
 	'unexpected server response': 'Unexpected server response',
 	'new tab': 'New Tab',
 	'file revision comments required': 'File revision comments are mandatory',
+	'for upload multiple files upgrade your browser' : 'In order to upload multiple files at the same time, please update your browser to its latest stable version.',
+	'upload multiple files' : 'Upload multiple files',
 	
 	/* dashboard */
 	'dashboard': 'Dashboard',
@@ -413,6 +415,7 @@ addLangs({
 	
 	'new milestone': 'New milestone',
 	'new task': 'New task',
+	'new template': 'New template',
 	'error adding task': 'Error adding task',
 	'error adding milestone': 'Error adding milestone',
 	'error fetching tasks': 'Error fetching tasks',
@@ -733,6 +736,7 @@ addLangs({
   	'fixed date': 'Fixed date',
   	'parametric date': 'Parametric',
   	'no parameters in template': 'There are no date parameters defined for this template',
+  	'no user parameters in template': 'There are no user parameters defined for this template',
   	'open property editor': 'Open property editor',
   	'template parameters': 'Parameters',
   	'template property already selected': 'The selected property is already being used',

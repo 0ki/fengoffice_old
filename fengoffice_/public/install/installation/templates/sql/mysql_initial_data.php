@@ -65,6 +65,7 @@ INSERT INTO `<?php echo $table_prefix ?>config_options` (`category_name`, `name`
     ('general', 'let_users_create_objects_in_root', '1', 'BoolConfigHandler', '0', '0', NULL),
     ('general', 'add_default_permissions_for_users', '1', 'BoolConfigHandler', '0', '0', NULL),
 	('task panel', 'tasksShowTimeEstimates', '1', 'BoolConfigHandler', '1', '0', NULL),
+	('general', 'notify_myself_too', '0', 'BoolConfigHandler', '0', '100', ''),
 	('brand_colors', 'brand_colors_head_back', '', 'StringConfigHandler', '1', '0', NULL),
 	('brand_colors', 'brand_colors_head_font', '', 'StringConfigHandler', '1', '0', NULL),
 	('brand_colors', 'brand_colors_tabs_back', '', 'StringConfigHandler', '1', '0', NULL),
@@ -123,7 +124,7 @@ INSERT INTO `<?php echo $table_prefix ?>cron_events` (`name`, `recursive`, `dela
 	('send_notifications_through_cron', '1', '1', '0', '0', '0000-00-00 00:00:00'),
 	('delete_mails_from_server', '1', '1440', '1', '1', '0000-00-00 00:00:00'),
 	('clear_tmp_folder', '1', '1440', '1', '1', '0000-00-00 00:00:00'),
-	('check_upgrade', '1', '1440', '0', '1', '0000-00-00 00:00:00'),
+	('check_upgrade', '1', '1440', '1', '0', '0000-00-00 00:00:00'),
 	('import_google_calendar', '1', '10', '0', '0', '0000-00-00 00:00:00'),
 	('export_google_calendar', '1', '10', '0', '0', '0000-00-00 00:00:00');
 	
@@ -266,6 +267,7 @@ INSERT INTO `<?php echo $table_prefix ?>contact_config_options` (`category_name`
  ('calendar panel', 'event_send_invitations', '1', 'BoolConfigHandler', '0', '0', NULL),
  ('calendar panel', 'event_subscribe_invited', '1', 'BoolConfigHandler', '0', '0', NULL),
  ('mails panel', 'mails_per_page', '50', 'IntegerConfigHandler', '0', '0', NULL),
+ ('mails panel', 'attach_to_notification', '1', 'BoolConfigHandler', '0', '0', NULL),
  ('general', 'access_member_after_add', '1', 'BoolConfigHandler', '0', '1300', NULL),
  ('general', 'access_member_after_add_remember', '0', 'BoolConfigHandler', '0', '1301', NULL),
  ('general', 'sendEmailNotification', '1', 'BoolConfigHandler', '1', '0', 'Send email notification to new user'),

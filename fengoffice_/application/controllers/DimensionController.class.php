@@ -288,7 +288,7 @@ class DimensionController extends ApplicationController {
 		$only_names = array_var($_REQUEST, 'onlyname', false);
 		
 		$name = trim(array_var($_REQUEST, 'query', ''));
-		$extra_cond = $name == "" ? "" : " AND name LIKE '".$name."%'";
+		$extra_cond = $name == "" ? "" : " AND name LIKE '%".$name."%'";
 		
 		$selected_member_ids = json_decode(array_var($_REQUEST, 'selected_ids', "[0]"));
 		$selected_members = Members::findAll(array('conditions' => 'id IN ('.implode(',',$selected_member_ids).')'));

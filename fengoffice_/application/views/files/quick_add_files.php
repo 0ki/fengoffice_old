@@ -40,8 +40,8 @@ $object = $file;
 						"id" => $genid . "fileFormFile",
 						"class" => "title",
 						"size" => "50",
-						"tabindex" => "10",
-						"onchange" => "javascript:og.updateFileName('" . $genid .  "', this.value);"
+						"tabindex" => "10"
+						//"onchange" => "javascript:og.updateFileName('" . $genid .  "', this.value);"
 					)
 				), $ret);
 			?>
@@ -72,6 +72,10 @@ $object = $file;
 	<?php if($file->isNew()) { //----------------------------------------------------ADD   ?>
 
 		<div class="content">
+					<fieldset id="<?php echo $genid ?>multipleFile" style="display: none;">
+						<legend><?php echo lang("files") ?></legend>
+						<div id="<?php echo $genid ?>multipleFileNames" ></div>
+					</fieldset>
 			<div id="<?php echo $genid ?>addFileFilenameCheck" style="display: none">
 				<h2><?php echo lang("checking filename") ?></h2>
 			</div>
@@ -113,6 +117,45 @@ $object = $file;
 		<?php echo lang("filename exists edit") ?>
 	</div>
 <?php } // if ?>
+<script>
+
+//check if support input type=file/multiple
+function supportMultiple() {
+	var el = document.createElement("input");
+	return ("multiple" in el);
+}  
+if(supportMultiple()) {
+	$('#<?php echo $genid ?>quickaddfile').attr("action", "<?php echo get_url('files', 'quick_add_multiple_files') ?>");
+	$('#<?php echo $genid ?>fileFormFile').attr("name", "file_file[]");
+}
+
+$('#<?php echo $genid ?>fileFormFile').change(function (){
+	if(supportMultiple()) {
+        // if select more than one file upload all files as new files
+	    if(this.files.length > 1){
+	    	$('#<?php echo $genid ?>multipleFileNames').empty();
+	    	$('#<?php echo $genid ?>multipleFile').show();
+	    	$('#<?php echo $genid ?>addFileFilenameExists').hide();
+	    	$('#<?php echo $genid ?>addFileFilename').hide();
+	    	var $ul = $("<ul>");
+	    	for (var i = 0; i < this.files.length; ++i) {
+		          var name = this.files.item(i).name;
+		          var $li = $("<li>");
+		          $li.text(name);
+		          $ul.append($li);
+		          
+		        }
+	    	$('#<?php echo $genid ?>multipleFileNames').append($ul);
+		}else{
+			// if select one file check the file name
+			$('#<?php echo $genid ?>multipleFile').hide();
+			og.updateFileName("<?php echo $genid ?>", this.files.item(0).name);
+		}
+    }else{
+	   og.updateFileName("<?php echo $genid ?>", this.value);
+	}
+});
+</script>
 
 </form>
 </div>

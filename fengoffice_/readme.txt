@@ -1,5 +1,5 @@
 
-	About Feng Office 2.4.0.6
+	About Feng Office 2.5-beta
 	================================
 	
 	Feng Office is a Collaboration Platform and Project Management System.
@@ -102,13 +102,68 @@
 	Changelog
 	=========
 	
+	Since 2.4.0.6
+	----------------
+	
+	plugin: new Advanced Reports plugin for the Professional and Enterprise Edition
+
+	feature: multiple files upload support has been added
+	feature: cleaner reports tab
+	feature: time reports can be filtered by custom properties
+	feature: document notification improvements: allow notifying oneself, changing the default subject, choose whether to attach the document to its notification
+	fetaure: unclassify objects dragging them to the "view all" node of a dimension tree
+	feature: file revisions are easier to access
+	feature: new button to add a template from the task tab
+	
+	security: XSS issue prevention fixed in login form
+	
+	performance: mail autocomplete, when contacts > 1000 don't load them all, make a query filtering when user begins to type (after 3 chars)
+	performance: subscribers are rendered using ajax in add/edit forms
+	performance: member selectors loaded using ajax in add/edit forms 
+	performance: render subscribers queries optimized (index added) 
+	performance: add index by member_id in contact_member_permissions in upgrade scripts
+	perfomance: permissions checks in the advanced search take less time so the search is faster
+	perfomance: permissions checks in the general search take less time so the search is faster
+	perfomance: context checks in the general search take less time so the search is faster
+	perfomance: when listing objects, permissions check query has been improved
+	
+	bugfix: remember columns selection in mail list
+	bugfix: set 777 permission to autoloader to prevent future issues
+	bugfix: drag and drop on mails panel don't uncheck selected mails
+	bugfix: when instantiating a template, create logs for its tasks
+	bugfix: on contact list, ordering by email failed
+	bugfix: mysql transaction problem when getting emails
+	bugfix: on template view, refresh view after editing a template task
+	bugfix: when selecting a parent task in template tasks, only show template tasks from that template
+	bugfix: repeating tasks don't allow selecting which days to repeat unless using specific repetition
+	bugfix: attachments that start with "#" are not sent
+	bugfix: max-height for attachments div when composing an email
+	bugfix: undefined variable in message controller
+	bugfix: when loading advanced search view, displays search results for empty string search 
+	bugfix: when using Google Chrome, advanced search submit button breaks
+	bugfix: hardcoded table prefix "fo_" in 2.4 upgrade script
+	bugfix: when creating a superadmin, system permissions are not set
+	bugfix: being able to order by custom property on notes list
+	bugfix: search button disabled until results get displayed
+	bugfix: mails in outbox alert show archived emails, it should not
+	bugfix: don't send reminders for trashed or archived objects
+	bugfix: date custom properties default value does not use user's timezones
+	bugfix: when editing an email account do not synchronize folders with the mail server until user chooses to do it
+	bugfix: email error reporting hook, for log errors on notifications delivery
+	bugfix: when instantiating a template, do not display companies in assign combo unless config option allows so
+	bugfix: fails when adding subtasks from task view
+	bugfix: sending notifications from inside create log function, breaks the mysql transactions
+	
+	
 	Since 2.4.0.5
 	----------------
+	
 	bugfix: Don't send notification when add mail.
 	
 	
 	Since 2.4.0.4
 	----------------
+	
 	bugfix: Deprecated functions usage.
 	bugfix: Emtpy trash can was using a deprecated function with performance issues.
 	bugfix: Missing parameters in function invocation.
@@ -116,11 +171,13 @@
 	
 	Since 2.4.0.3
 	----------------
+	
 	bugfix: can't delete template task, permission denied.
 	
 	
 	Since 2.4.0.2
 	----------------
+	
 	bugfix: langs customer_folder and project_folder.
 	bugfix: can't add contacts from mail.
 	bugfix: on activity widget move action don't display.

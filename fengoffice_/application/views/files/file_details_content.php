@@ -1,4 +1,5 @@
 <?php $file = $object;
+	$maxRevisionsToShow = 5;
 	$revisions = $file->getRevisions();
 	$last_revision = $file->getLastRevision();
 	$genid = gen_id();
@@ -23,7 +24,7 @@
 
 <?php if ($file->isDisplayable()) {?>
 <div>
-	<div style="position: relative; left:0; top: 0; width: 100%; height: 400px; background-color: white">
+	<div id="document-view" style="position: relative; left:0; top: 0; width: 100%; height: 700px; background-color: white">
 		<iframe class="document-preview" style="width:100%;height:100%;border:1px solid #ddd;" src="<?php echo get_sandbox_url("feed", "display_content", array("id" => $file->getId(), "user_id" => logged_user()->getId(), "token" => logged_user()->getTwistedToken())) ?>"></iframe>
 		<a class="ico-expand" style="display: block; width: 16px; height: 16px; cursor: pointer; position: absolute; right: 20px; top: 2px" title="<?php echo lang('expand') ?>" onclick="og.expandDocumentView.call(this)"></a>
 	</div>
@@ -33,6 +34,17 @@
 			$("iframe.document-preview").load(function(){
 				$("iframe.document-preview").contents().find("a").attr("target", "_blank");
 			});
+		});
+		
+		//resize document height
+		var percentView = 70;
+		$( document ).ready(function() {
+			var documentHeidht = $(window).height() * percentView / 100;
+			$("#document-view").height(documentHeidht);
+		});
+		$(window).resize(function() {
+			var documentHeidht = $(window).height() * percentView / 100;
+			$("#document-view").height(documentHeidht);
 		});
 	</script>
 	
@@ -80,8 +92,8 @@
 
 <?php if (count($revisions)){?>
 <fieldset>
-  <legend class="toggle_collapsed" onclick="og.toggle('<?php echo $genid ?>revisions',this)"><?php echo lang('revisions'); ?> (<?php echo count($revisions);?>)</legend>
-<div id="<?php echo $genid ?>revisions" style="display:none">
+  <legend class="toggle_expanded" onclick="og.toggle('<?php echo $genid ?>revisions',this)"><?php echo lang('revisions'); ?> (<?php echo count($revisions);?>)</legend>
+<div id="<?php echo $genid ?>revisions" >
 <table class="revisions">
 <?php  $counter = 0;
 	foreach($revisions as $revision) { 
@@ -89,7 +101,7 @@
 		$counter++; 
 		$bgColor = $counter % 2 ? ($counter == 1? '#FFD39F' : '#DDD') : '#EEE';
 ?>
-	<tr>
+	<tr <?php if($counter > $maxRevisionsToShow){echo 'class="extra_revisions" style="display: none"'; } ?>>
 		<td rowspan=2 class='number' style="background-color:<?php echo $bgColor ?>">
 			<?php if ($file->canDownload(logged_user())){?>
 				<?php if ($file->getType() == ProjectFiles::TYPE_WEBLINK) {?>
@@ -125,7 +137,7 @@
 			<?php } ?>
 		</td>
 	</tr>
-	<tr>
+	<tr <?php if($counter > $maxRevisionsToShow){echo 'class="extra_revisions" style="display: none"'; } ?>>
 		<td class='line_comments'>
 			<div style="padding:2px;padding-left:6px;padding-right:6px;min-height:24px;">
 		<?php if($hasComments) {?>
@@ -138,8 +150,20 @@
 				<a href="<?php echo $revision->getEditUrl() ?>" class="internalLink coViewAction ico-edit" title="<?php echo lang('edit revision comment')?>">&nbsp;</a>
 			<?php }?>
 		</td>
-	</tr>
+	</tr>	
 <?php } // foreach ?>
+
+<?php if($counter >= $maxRevisionsToShow){ ?>
+
+		<tr>
+					<td colspan="2" align="right" style="padding:20px 0 5px; width: 20px; color: #003562;">
+						<span onclick="hideRevisions('<?php echo $genid?>')" id="hidelnk<?php echo $genid?>" style="cursor:pointer; display:none;" title="<?php echo lang('hide') ?>"><?php echo lang('hide') ?></span>
+						<span id="separatorlnk<?php echo $genid?>" style="display:none;"> / </span>
+						<span onclick="showRevisions('<?php echo $genid?>')" id="showlnk<?php echo $genid?>" style="cursor:pointer;" title="<?php echo lang('show more') ?>"><?php echo lang('show more') ?></span>
+					</td>
+		</tr>
+
+<?php } ?>
 </table>
 </div>
 </fieldset>
@@ -177,3 +201,24 @@
 	og.addDomEventHandler(window, 'resize', resizeImage<?php echo $genid ?>);
 	</script>
 <?php } ?>
+<script>
+	var numOfRevToShow = 20;
+	function showRevisions(genid){
+		$('#hidelnk' + genid).show();
+		$(".extra_revisions:hidden:lt("+numOfRevToShow * 2+")").show();
+		if($(".extra_revisions:hidden").length == 0){
+			$('#showlnk' + genid).hide();
+			$('#separatorlnk' + genid).hide();
+		}else{
+			$('#separatorlnk' + genid).show();
+		} 
+	}
+	function hideRevisions(genid){
+		$(".extra_revisions:visible").hide();
+		if($(".extra_revisions:visible").length == 0){
+			$('#hidelnk' + genid).hide();
+			$('#showlnk' + genid).show();
+			$('#separatorlnk' + genid).hide();
+		}
+	}
+</script>

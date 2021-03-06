@@ -74,8 +74,8 @@ class WebpageController extends ApplicationController {
 				$object_controller->add_subscribers($webpage);
                                 $object_controller->add_custom_properties($webpage);
 
-				ApplicationLogs::createLog($webpage, ApplicationLogs::ACTION_ADD);
 				DB::commit();
+				ApplicationLogs::createLog($webpage, ApplicationLogs::ACTION_ADD);
 
 
 				flash_success(lang('success add webpage', $webpage->getObjectName()));
@@ -147,11 +147,11 @@ class WebpageController extends ApplicationController {
 				$object_controller->add_subscribers($webpage);
                                 $object_controller->add_custom_properties($webpage);
 
-				ApplicationLogs::createLog($webpage, ApplicationLogs::ACTION_EDIT);
-
+				
 				$webpage->resetIsRead();
 				
 				DB::commit();
+				ApplicationLogs::createLog($webpage, ApplicationLogs::ACTION_EDIT);
 				
 				flash_success(lang('success edit webpage', $webpage->getObjectName()));
 				ajx_current("back");
@@ -197,8 +197,8 @@ class WebpageController extends ApplicationController {
 
 			DB::beginWork();
 			$webpage->trash();
-			ApplicationLogs::createLog($webpage, ApplicationLogs::ACTION_TRASH);
 			DB::commit();
+			ApplicationLogs::createLog($webpage, ApplicationLogs::ACTION_TRASH);
 
 			flash_success(lang('success deleted webpage', $webpage->getObjectName()));
 			ajx_current("back");
@@ -233,8 +233,8 @@ class WebpageController extends ApplicationController {
 					try{
 						DB::beginWork();
 						$web_page->trash();
-						ApplicationLogs::createLog($web_page, ApplicationLogs::ACTION_TRASH);
 						DB::commit();
+						ApplicationLogs::createLog($web_page, ApplicationLogs::ACTION_TRASH);
 						$succ++;
 					} catch(Exception $e){
 						DB::rollback();
@@ -291,8 +291,8 @@ class WebpageController extends ApplicationController {
 					try{
 						DB::beginWork();
 						$web_page->archive();
-						ApplicationLogs::createLog($web_page, ApplicationLogs::ACTION_ARCHIVE);
 						DB::commit();
+						ApplicationLogs::createLog($web_page, ApplicationLogs::ACTION_ARCHIVE);
 						$succ++;
 					} catch(Exception $e){
 						DB::rollback();

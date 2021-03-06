@@ -6,11 +6,38 @@ member_selector.init = function(genid) {
 	var selected_member_ids = Ext.util.JSON.decode(Ext.fly(Ext.get(genid + member_selector[genid].hiddenFieldName)).getValue());
 	for (i=0; i<selected_member_ids.length; i++) {
 		var mid = selected_member_ids[i];
-		var dim = member_selector[genid].members_dimension[mid];
-		if (!member_selector[genid].sel_context[dim]) {
-			member_selector[genid].sel_context[dim] = [];
+		if (member_selector[genid].members_dimension[mid] > 0) {
+			var dim = member_selector[genid].members_dimension[mid];
+			if (!member_selector[genid].sel_context[dim]) {
+				member_selector[genid].sel_context[dim] = [];
+			}
+			member_selector[genid].sel_context[dim].push(mid);
+			
+			if (selected_member_ids.length == i) {
+				var idshf = document.getElementById(genid+'subscribers_ids_hidden');
+				if (idshf) og.reload_subscribers(genid, member_selector[genid].otid, idshf.value);
+			}
+			
+		} else {
+			og.openLink(og.getUrl('member', 'get_dimension_id', {member_id: mid}), {callback: function(success, data){
+				if (!data.dim_id) return;
+				var dim = data.dim_id;
+				if (!member_selector[genid].sel_context[dim]) {
+					member_selector[genid].sel_context[dim] = [];
+				}
+				member_selector[genid].sel_context[dim].push(mid);
+				member_selector[genid].members_dimension[mid] = dim;
+				
+				if (selected_member_ids.length == i) {
+					var idshf = document.getElementById(genid+'subscribers_ids_hidden');
+					if (idshf) og.reload_subscribers(genid, member_selector[genid].otid, idshf.value);
+				}
+			}});
 		}
-		member_selector[genid].sel_context[dim].push(mid);
+	}
+	if (selected_member_ids.length == 0) {
+		var idshf = document.getElementById(genid+'subscribers_ids_hidden');
+		if (idshf) og.reload_subscribers(genid, member_selector[genid].otid, idshf.value);
 	}
 }
 

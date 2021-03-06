@@ -37,6 +37,18 @@ class Contacts extends BaseContacts {
 		return $contacts;
 	}
 	
+	function countAllowedContacts() {
+		$conditions = "";
+		if (!can_manage_contacts(logged_user())) {
+			$conditions .= "e.object_id IN (
+				SELECT st.object_id FROM ".TABLE_PREFIX."sharing_table st WHERE st.group_id IN (
+					SELECT pg.id FROM ".TABLE_PREFIX."permission_groups pg WHERE pg.type='permission_groups' AND pg.contact_id = ".logged_user()->getId()."
+				)
+			)";
+		}
+		return Contacts::instance()->count($conditions);
+	}
+	
 	static function getAllUsers($extra_conditions = "", $include_disabled = false) {
 		if (!$include_disabled) $extra_conditions .= " AND `disabled` = 0";
 		return self::findAll(array("conditions" => "`user_type` <> 0 $extra_conditions", "order" => "first_name ASC"));
@@ -399,10 +411,10 @@ class Contacts extends BaseContacts {
 		
 		if(is_array($errors) && count($errors)) {
 			throw new DAOValidationError(self::instance(), $errors);
-		}
+		} 
 	}
-
-	function getUserDisplayName($user_id) {
+        
+        function getUserDisplayName($user_id) {
 		$user = Contacts::findById($user_id);
 		if ($user) {
 			return $user->getDisplayName();

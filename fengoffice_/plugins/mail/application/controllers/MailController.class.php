@@ -539,6 +539,7 @@ class MailController extends ApplicationController {
 					$str = "#att_ver 2\n";
 					foreach ($attachments as $att) {
 						$rep_id = $utils->saveContent($att['data']);
+						if (str_starts_with($att['name'], "#")) $att['name'] = str_replace_first("#", "@@sharp@@", $att['name']);
 						$str .= $att['name'] . "|" . $att['type'] . "|" . $rep_id . "\n";
 					}
 
@@ -652,7 +653,7 @@ class MailController extends ApplicationController {
 					$mail->subscribeUser($user);
 				}
 				
-				ApplicationLogs::createLog($mail,  ApplicationLogs::ACTION_ADD,false,true);
+				
 				
 				/*if (user_config_option('create_contacts_from_email_recipients') && can_manage_contacts(logged_user())) {
 					// automatically create contacts
@@ -681,6 +682,7 @@ class MailController extends ApplicationController {
 				}*/
 				$mail->addToSharingTable();
 				DB::commit();
+				ApplicationLogs::createLog($mail,  ApplicationLogs::ACTION_ADD,false,true);
 				
 				$mail->setIsRead(logged_user()->getId(), true);
 				
@@ -753,6 +755,7 @@ class MailController extends ApplicationController {
 							$path = ROOT."/tmp/".gen_id();
 							file_put_contents($path, FileRepository::getFileContent($data[2]));
 						}
+						if (str_starts_with($data[0], "@@sharp@@")) $data[0] = str_replace_first("@@sharp@@", "#", $data[0]);
 						$attachments[] = array('name' => $data[0], 'type' => $data[1], 'path' => $path, 'repo_id' => $data[2]);
 					}
 				}
@@ -884,7 +887,7 @@ class MailController extends ApplicationController {
 									foreach ($attachments as $att) {
 										if (FileRepository::isInRepository($att['repo_id'])) FileRepository::deleteFile($att['repo_id']);
 									}
-									if (is_file($att['path'])) @unlink($att['path']); // if file was copied to tmp -> delete it
+									if (isset($att['path']) && is_file($att['path'])) @unlink($att['path']); // if file was copied to tmp -> delete it
 									if (defined('DEBUG') && DEBUG) file_put_contents(ROOT."/cache/log_mails.txt", gmdate("d-m-Y H:i:s") . " deleted attachments: ".$mail->getId() . "\n", FILE_APPEND);
 								}
 								FileRepository::deleteFile($mail->getContentFileId());
@@ -1262,8 +1265,8 @@ class MailController extends ApplicationController {
 		try {
 			DB::beginWork();
 			$email->trash();
-			ApplicationLogs::createLog($email, ApplicationLogs::ACTION_TRASH);
 			DB::commit();
+			ApplicationLogs::createLog($email, ApplicationLogs::ACTION_TRASH);
 			flash_success(lang('success delete email'));
 			ajx_current("back");
 			 
@@ -2548,7 +2551,7 @@ class MailController extends ApplicationController {
 		$emails = $result->objects;
 		
 		// Prepare response object
-		$object = $this->prepareObject($emails, $start, $limit, $total);
+		$object = $this->prepareObject($emails, $start, $limit, $total,$attributes);
 		ajx_extra_data($object);
 		//ajx_extra_data(array('unreadCount' => MailContents::countUserInboxUnreadEmails()));
 		tpl_assign("listing", $object);
@@ -2621,6 +2624,20 @@ class MailController extends ApplicationController {
 			}
 			$i++;
 		}
+		
+		//set columns to show for this folder
+		if(isset($attributes)){
+			$string = user_config_option("folder_".$attributes["stateType"]."_columns");
+			$columns = explode(",", $string);
+			foreach ($columns as $col){
+				$object["folder_columns"][] = $col;
+			}
+			$object["folder_name"] = $attributes["stateType"];
+			
+			//if you want to add a column add their name here too
+			$object["folder_columns_all"] = array("from","to","subject","account","date","folder","actions");
+		}
+		
 		return $object;
 	}
 
@@ -2687,9 +2704,9 @@ class MailController extends ApplicationController {
 		return $properties;
 	}
 
-	private function getAllowedAddresses(){
+	private function getAllowedAddresses($extra_conds = null){
 		$addresses = array();
-		$contacts = Contacts::instance()->getAllowedContacts();
+		$contacts = Contacts::instance()->getAllowedContacts($extra_conds);
 		foreach ($contacts as $contact ) {
 			/* @var $contact Contact */
 			if ($addr = $contact->getEmailAddress()) {
@@ -2700,7 +2717,25 @@ class MailController extends ApplicationController {
 	}
 	
 	function get_allowed_addresses() {
-		$addresses = $this->getAllowedAddresses();
+		$extra_conds = null;
+		if ($filter = array_var($_POST, 'name_filter')) {
+			$filter = mysql_real_escape_string($filter, DB::connection()->getLink());
+			$extra_conds = "(e.first_name like '%$filter%' || e.surname like '%$filter%' || 
+				(select count(id) from fo_contact_emails ce where ce.contact_id=e.object_id and ce.email_address like '%$filter%'))";
+			$addresses = $this->getAllowedAddresses($extra_conds);
+		} else {
+			$return_values = true;
+			$max = array_var($_POST, 'max');
+			if ($max > 0) {
+				$return_values = Contacts::instance()->countAllowedContacts() <= $max;
+			}
+			
+			if ($return_values) {
+				$addresses = $this->getAllowedAddresses();
+			} else {
+				$addresses = array();
+			}
+		}
 		ajx_current("empty");
 		ajx_extra_data(array('addresses' => $addresses));
 	}

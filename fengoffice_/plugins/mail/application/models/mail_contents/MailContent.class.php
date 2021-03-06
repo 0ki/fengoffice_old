@@ -145,7 +145,7 @@ class MailContent extends BaseMailContent {
 	 * @return MailData
 	 */
 	function getMailData() {
-		if (!$this->mail_data instanceof MailData) $this->mail_data = MailDatas::findById($this->getId());
+		if (!$this->mail_data instanceof MailData) $this->mail_data = MailDatas::findById($this->getObjectId());
 		if (!$this->mail_data instanceof MailData) $this->mail_data = new MailData();
 		return $this->mail_data;
 	}
@@ -172,8 +172,9 @@ class MailContent extends BaseMailContent {
 	}
 	
 	function clearMailData() {
-		if ($this->getMailData() instanceof MailData) {
-			$this->getMailData()->delete();
+		$data = $this->getMailData();
+		if ($data instanceof MailData) {
+			$data->delete();
 		}
 	}
 	

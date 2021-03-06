@@ -344,4 +344,10 @@ return array(
 	'Guest' => 'Guest',
 	'Non-Exec Director' => 'Non executive Director',
 	'permissions for unclassified objects' => 'Permissions for objects without classification',
+
+	'attach to notification' => 'Attach document to the notification',
+	'subject for email notification' => 'Subject for e-mail notification:',
+	'use default subject' => 'Use default Subject',
+	'enter a custom subject' => 'Enter a custom Subject...',
+
 );

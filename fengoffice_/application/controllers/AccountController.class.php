@@ -222,7 +222,6 @@ class AccountController extends ApplicationController {
 				ajx_current("back");
 
 			} catch(Exception $e) {
-				DB::rollback();
 				ajx_current("empty");
 				flash_error($e->getMessage());
 			} // try
@@ -376,9 +375,9 @@ class AccountController extends ApplicationController {
 					throw new InvalidUploadError($avatar, lang('error edit avatar'));
 				} // if
 
-				ApplicationLogs::createLog($user, ApplicationLogs::ACTION_EDIT);
+				
 				DB::commit();
-
+				ApplicationLogs::createLog($user, ApplicationLogs::ACTION_EDIT);
 				if(is_file($old_file)) {
 					@unlink($old_file);
 				} // if
@@ -430,10 +429,11 @@ class AccountController extends ApplicationController {
 			$user->setUpdatedOn(DateTimeValueLib::now());
 			$user->deleteAvatar();
 			$user->save();
-			ApplicationLogs::createLog($user, ApplicationLogs::ACTION_EDIT);
+			
 
 			DB::commit();
-
+			
+			ApplicationLogs::createLog($user, ApplicationLogs::ACTION_EDIT);
 			flash_success(lang('success delete avatar'));
 			ajx_current("back");
 		} catch(Exception $e) {
@@ -480,10 +480,10 @@ class AccountController extends ApplicationController {
 		try {
 			DB::beginWork();
 			$user->disable(false);
-			ApplicationLogs::createLog($user, ApplicationLogs::ACTION_TRASH);
 			$ret = null ; 
 			Hook::fire("user_disabled", $user, $ret );
 			DB::commit();
+			ApplicationLogs::createLog($user, ApplicationLogs::ACTION_TRASH);
 			
 			if(array_var($_GET,'current')=="administration") {
 				ajx_current("reload");
@@ -518,10 +518,10 @@ class AccountController extends ApplicationController {
 		try {
 			DB::beginWork();
 			$user->disable();
-			ApplicationLogs::createLog($user, ApplicationLogs::ACTION_TRASH);
 			$ret = null ; 
 			Hook::fire("user_disabled", $user, $ret );
 			DB::commit();
+			ApplicationLogs::createLog($user, ApplicationLogs::ACTION_TRASH);
 			flash_success(lang('success delete user', $user->getObjectName()));
 			
 			if(array_var($_GET,'current')=="administration") {
@@ -555,10 +555,11 @@ class AccountController extends ApplicationController {
 			DB::beginWork();
 			$user->setDisabled(false);
 			$user->unarchive();
-			ApplicationLogs::createLog($user, ApplicationLogs::ACTION_UNTRASH);
 			$ret = null ; 
 			Hook::fire("user_restored", $user, $ret );			
 			DB::commit();
+			ApplicationLogs::createLog($user, ApplicationLogs::ACTION_UNTRASH);
+			
 			flash_success(lang('success restore user', $user->getObjectName()));
 			ajx_current("reload");
 			

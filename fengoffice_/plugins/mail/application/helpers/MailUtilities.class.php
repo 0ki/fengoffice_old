@@ -60,17 +60,30 @@ class MailUtilities {
 					} else {
 						$mailsReceived += self::getNewImapMails($account, $maxPerAccount);
 					}
-					$account->setLastChecked(EMPTY_DATETIME);
-					$account->save();
+					
+					//$account->setLastChecked(EMPTY_DATETIME);
+					//$account->save();										
 //					self::cleanCheckingAccountError($account);
 					$succ++;
 				} catch(Exception $e) {
-					$account->setLastChecked(EMPTY_DATETIME);
-					$account->save();
+					//$account->setLastChecked(EMPTY_DATETIME);
+					//$account->save();
 					$errAccounts[$err]["accountName"] = $account->getEmail();
 					$errAccounts[$err]["message"] = $e->getMessage();
 					$err++;
 //					self::setErrorCheckingAccount($account, $e);
+				}
+				
+				try {
+					DB::beginWork();
+					$account->setLastChecked(EMPTY_DATETIME);
+					$account->save();
+					DB::commit();
+				} catch (Exception $ex) {
+					DB::rollback();
+					$errAccounts[$err]["accountName"] = $account->getEmail();
+					$errAccounts[$err]["message"] = $ex->getMessage();
+					$err++;
 				}
 			}
 		}
@@ -401,7 +414,7 @@ class MailUtilities {
 						// remove html comments
 						$body = preg_replace('/<!--.*-->/i', '', $body);
 					}
-			//		$body = utf8_safe($body);
+					$body = utf8_safe($body);
 					if ($alt['Type'] == 'html') {
 						$mail->setBodyHtml($body);
 					} else if ($alt['Type'] == 'text') {

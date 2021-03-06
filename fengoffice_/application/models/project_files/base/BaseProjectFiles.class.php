@@ -25,7 +25,9 @@ abstract class BaseProjectFiles extends ContentDataObjects {
 	    'was_auto_checked_out' => DATA_TYPE_BOOLEAN,
     	'type' => DATA_TYPE_INTEGER,
 		'url' => DATA_TYPE_STRING,
-		'mail_id' => DATA_TYPE_INTEGER
+		'mail_id' => DATA_TYPE_INTEGER,
+		'attach_to_notification' => DATA_TYPE_BOOLEAN,
+		'default_subject' => DATA_TYPE_STRING,
 	);
 
 	/**

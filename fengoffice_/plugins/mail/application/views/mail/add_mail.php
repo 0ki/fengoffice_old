@@ -183,7 +183,7 @@ sig.actualHtmlSignature = '';
 	<div id="add_mail_attachments" style="display:none;">
  	<fieldset>
  	    <legend><?php echo lang('mail attachments')?></legend>
- 	    <div id="<?php echo $genid ?>attachments"></div>
+ 	    <div id="<?php echo $genid ?>attachments" style="max-height: 60px; max-width: 550px; margin-bottom:5px;"></div>
  	<a href="#" onclick="og.attachFromWorkspace('<?php echo $genid ?>')">
  		<?php  echo lang('attach from fengoffice') ?>		
  	</a>
@@ -398,6 +398,9 @@ og.resetClassButton(genid);
 
 Ext.onReady(function() {
 	og.openLink(og.getUrl('mail', 'get_allowed_addresses'), {
+		post: {
+			max: 1000
+		},
 		callback: function(success, data) {
 			document.getElementById(genid + 'hf_mail_contacts').value = data.addresses;
 

@@ -204,8 +204,8 @@ class TimeController extends ApplicationController {
 			$object_controller = new ObjectController();
 			$object_controller->add_to_members($timeslot, $member_ids);
 			
-			ApplicationLogs::createLog($timeslot, ApplicationLogs::ACTION_ADD);
 			DB::commit();
+			ApplicationLogs::createLog($timeslot, ApplicationLogs::ACTION_ADD);
 			
 			$show_billing = can_manage_billing(logged_user());
 			ajx_extra_data(array("timeslot" => $timeslot->getArrayInfo($show_billing)));
@@ -305,8 +305,8 @@ class TimeController extends ApplicationController {
 			$object_controller = new ObjectController();
 			$object_controller->add_to_members($timeslot, $member_ids);
 			
-			ApplicationLogs::createLog($timeslot, ApplicationLogs::ACTION_EDIT);
 			DB::commit();
+			ApplicationLogs::createLog($timeslot, ApplicationLogs::ACTION_EDIT);
 			
 			ajx_extra_data(array("timeslot" => $timeslot->getArrayInfo()));
 		} catch(Exception $e) {
@@ -332,8 +332,8 @@ class TimeController extends ApplicationController {
 		try {
 			DB::beginWork();
 			$timeslot->delete();
-			ApplicationLogs::createLog($timeslot, ApplicationLogs::ACTION_DELETE);
 			DB::commit();
+			ApplicationLogs::createLog($timeslot, ApplicationLogs::ACTION_DELETE);
 			
 			ajx_extra_data(array("timeslotId" => get_id()));
 		} catch(Exception $e) {

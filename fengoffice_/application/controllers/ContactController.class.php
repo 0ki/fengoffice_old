@@ -495,12 +495,22 @@ class ContactController extends ApplicationController {
 			case 'customProp':
 				$order = 'IF(ISNULL(jt.value),1,0),jt.value';
 				$join_params['join_type'] = "LEFT ";
-				$join_params['table'] = "fo_custom_property_values";
+				$join_params['table'] = TABLE_PREFIX."custom_property_values";
 				$join_params['jt_field'] = "object_id";
 				$join_params['e_field'] = "object_id";
 				$join_params['on_extra'] = "AND custom_property_id = ".$cpId;
 				$extra_conditions.= " AND ( custom_property_id = ".$cpId. " OR custom_property_id IS NULL)";
 				$select_columns = array("DISTINCT o.*", "e.*");
+				break;
+			case 'email':
+				$join_params['join_type'] = "LEFT ";
+				$join_params['table'] = TABLE_PREFIX."contact_emails";
+				$join_params['jt_field'] = "contact_id";
+				$join_params['e_field'] = "object_id";
+				$join_params['on_extra'] = " AND is_main =1";
+				$select_columns = array("DISTINCT o.*", "e.*");
+				//$order = '`email_address`';
+				$order = 'IF(ISNULL(jt.email_address),1,0),jt.email_address';
 				break;
 			default:
 				$order = '`name`';
@@ -958,7 +968,7 @@ class ContactController extends ApplicationController {
 					if($company_data['email'] != "") $company->addEmail($company_data['email'], 'work', true);
 					
 					
-					ApplicationLogs::createLog($company, ApplicationLogs::ACTION_ADD);
+					
 					$newCompany = true;
 				}
 
@@ -1034,7 +1044,7 @@ class ContactController extends ApplicationController {
 					} // if
 				} // foreach
 				
-				ApplicationLogs::createLog($contact, ApplicationLogs::ACTION_ADD);
+				
 				
 				//NEW ! User data in the same form 
 				$user = array_var(array_var($_POST, 'contact'),'user');
@@ -1057,6 +1067,11 @@ class ContactController extends ApplicationController {
 				}
 								
 				DB::commit();
+				
+				if (array_var($contact_data, 'isNewCompany') == 'true' && is_array(array_var($_POST, 'company'))){
+					ApplicationLogs::createLog($company, ApplicationLogs::ACTION_ADD);
+				}
+				ApplicationLogs::createLog($contact, ApplicationLogs::ACTION_ADD);
 				
 				// Send notification
 				send_notification($user_data, $contact->getId());
@@ -1246,7 +1261,6 @@ class ContactController extends ApplicationController {
 					if($company_data['homepage'] != "") $company->addWebpage($company_data['homepage'], 'work');
 					if($company_data['email'] != "") $company->addEmail($company_data['email'], 'work' , true);
 					
-					ApplicationLogs::createLog($company,ApplicationLogs::ACTION_ADD);
 					$newCompany = true;
 
 				}
@@ -1467,7 +1481,7 @@ class ContactController extends ApplicationController {
 				$object_controller->add_subscribers($contact);
 				$object_controller->add_custom_properties($contact);
 				
-				ApplicationLogs::createLog($contact, ApplicationLogs::ACTION_EDIT );
+				
 
 				// User settings
 				$user = array_var(array_var($_POST, 'contact'),'user');
@@ -1480,6 +1494,11 @@ class ContactController extends ApplicationController {
 				}
 				
 				DB::commit();
+				
+				if (array_var($contact_data, 'isNewCompany') == 'true' && is_array(array_var($_POST, 'company'))){
+					ApplicationLogs::createLog($company,ApplicationLogs::ACTION_ADD);
+				}
+				ApplicationLogs::createLog($contact, ApplicationLogs::ACTION_EDIT );
 				
 	     		flash_success(lang('success edit contact', $contact->getObjectName()));
 				ajx_current("back");
@@ -1550,9 +1569,9 @@ class ContactController extends ApplicationController {
 					throw new InvalidUploadError($avatar, lang('error edit picture'));
 				} // if
 
-				ApplicationLogs::createLog($contact, ApplicationLogs::ACTION_EDIT);
 				DB::commit();
-
+				ApplicationLogs::createLog($contact, ApplicationLogs::ACTION_EDIT);
+				
 				if(is_file($old_file)) {
 					@unlink($old_file);
 				} // if
@@ -1610,9 +1629,9 @@ class ContactController extends ApplicationController {
 			DB::beginWork();
 			$contact->deletePicture();
 			$contact->save();
-			ApplicationLogs::createLog($contact, ApplicationLogs::ACTION_EDIT);
-
+			
 			DB::commit();
+			ApplicationLogs::createLog($contact, ApplicationLogs::ACTION_EDIT);
 
 			flash_success(lang('success delete picture'));
 			ajx_current("back");
@@ -1655,11 +1674,9 @@ class ContactController extends ApplicationController {
 
 			DB::beginWork();
 			$contact->trash();
-			ApplicationLogs::createLog($contact, ApplicationLogs::ACTION_TRASH );
 			
-			
-
 			DB::commit();
+			ApplicationLogs::createLog($contact, ApplicationLogs::ACTION_TRASH );
 
 			flash_success(lang('success delete contact', $contact->getObjectName()));
 			ajx_current("back");
@@ -2855,9 +2872,9 @@ class ContactController extends ApplicationController {
 				$object_controller->add_subscribers($company);
 				$object_controller->add_custom_properties($company);
 				
-				ApplicationLogs::createLog($company, ApplicationLogs::ACTION_EDIT);
 				DB::commit();
-
+				ApplicationLogs::createLog($company, ApplicationLogs::ACTION_EDIT);
+				
 				flash_success(lang('success edit client', $company->getObjectName()));
 				ajx_current("back");
 
@@ -2941,10 +2958,9 @@ class ContactController extends ApplicationController {
 				$object_controller->link_to_new_object($company);
 				$object_controller->add_custom_properties($company);
 				
-				ApplicationLogs::createLog($company, ApplicationLogs::ACTION_ADD);
-
 				DB::commit();
-
+				ApplicationLogs::createLog($company, ApplicationLogs::ACTION_ADD);
+				
 				flash_success(lang('success add client', $company->getObjectName()));
 				evt_add("company added", array("id" => $company->getObjectId(), "name" => $company->getObjectName()));
 				ajx_current("back");
@@ -3007,10 +3023,10 @@ class ContactController extends ApplicationController {
 				} // if
 
 				evt_add("logo changed");
-				ApplicationLogs::createLog($company, ApplicationLogs::ACTION_EDIT);
-
+				
 				DB::commit();
-
+				ApplicationLogs::createLog($company, ApplicationLogs::ACTION_EDIT);
+				
 				if(is_file($old_file)) {
 					@unlink($old_file);
 				} // uf
@@ -3050,9 +3066,9 @@ class ContactController extends ApplicationController {
 			DB::beginWork();
 			$company->deleteLogo();
 			$company->save();
-			ApplicationLogs::createLog($company, ApplicationLogs::ACTION_EDIT);
 			DB::commit();
-
+			ApplicationLogs::createLog($company, ApplicationLogs::ACTION_EDIT);
+			
 			flash_success(lang('success delete company logo'));
 			ajx_current("back");
 		} catch(Exception $e) {

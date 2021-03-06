@@ -26,6 +26,16 @@ class MemberController extends ApplicationController {
 		ajx_replace(true);
 	}
 	
+	function get_dimension_id() {
+		ajx_current("empty");
+		$data = array();
+		$member = Members::instance()->findById(array_var($_REQUEST, 'member_id'));
+		if ($member instanceof Member) {
+			$data['dim_id'] = $member->getDimensionId();
+		}
+		ajx_extra_data($data);
+	}
+	
 	
 	function list_all() {
 		
@@ -668,12 +678,14 @@ class MemberController extends ApplicationController {
 			}
 			$dim_id = $member->getDimensionId();
 			
-			// Remove from shring table
-			SharingTables::instance()->delete(" 
-				object_id IN (
- 				 SELECT distinct(object_id) FROM ".TABLE_PREFIX."object_members WHERE member_id = ".$member->getId()." AND is_optimization = 0
-				)
-			");
+			// Remove from sharing table
+			$sqlDeleteSharingTable = "DELETE sh FROM `".TABLE_PREFIX."sharing_table` sh
+										LEFT JOIN `".TABLE_PREFIX."object_members` om
+										ON        om.object_id = sh.object_id
+										WHERE     om.member_id = ".$member->getId()." AND om.is_optimization = 0;";
+			
+			DB::execute($sqlDeleteSharingTable);
+			
 			$affectedObjectsRows = DB::executeAll("SELECT distinct(object_id) AS object_id FROM ".TABLE_PREFIX."object_members where member_id = ".$member->getId()." AND is_optimization = 0") ;
 			if (is_array($affectedObjectsRows) && count($affectedObjectsRows) > 0) {
 				foreach ( $affectedObjectsRows as $row ) {
@@ -1215,12 +1227,13 @@ class MemberController extends ApplicationController {
 			ajx_current("empty");
 			return;
 		}
-                
-		$member = Members::findById($mem_id);
 		
 		try {
-
+		
+		  if ($mem_id) {
+		  	
 			DB::beginWork();
+			$member = Members::findById($mem_id);
 			
 			$objects = array();
 			$from = array();
@@ -1293,6 +1306,43 @@ class MemberController extends ApplicationController {
 			if (array_var($_POST, 'reload')) ajx_current('reload');
 			else ajx_current('empty');
 			
+		  } else {
+			if ($dim_id = array_var($_POST, 'dimension')) {
+				$dimension = Dimensions::getDimensionById($dim_id);
+				$from = array();
+				foreach ($ids as $oid) {
+					/* @var $obj ContentDataObject */
+					$obj = Objects::findObject($oid);
+					if ($obj instanceof ContentDataObject) {
+						
+						$db_res = DB::execute("SELECT group_concat(om.member_id) as old_members FROM ".TABLE_PREFIX."object_members om INNER JOIN ".TABLE_PREFIX."members m ON om.member_id=m.id WHERE m.dimension_id=".$dim_id." AND om.object_id=".$obj->getId());
+						$row = $db_res->fetchRow();
+						if (array_var($row, 'old_members') != "") $from[$obj->getId()] = $row['old_members'];
+						// remove from previous members
+						ObjectMembers::delete('`object_id` = ' . $obj->getId() . ' AND `member_id` IN (
+							SELECT `m`.`id` FROM `'.TABLE_PREFIX.'members` `m` WHERE `m`.`dimension_id` = '.$dim_id.')');
+					}
+					
+					$obj->addToMembers(array());
+					$obj->addToSharingTable();
+					$objects[] = $obj;
+				}
+				
+				DB::commit();
+				
+				// add to application logs
+				foreach ($objects as $object) {
+					$action = array_var($from, $obj->getId()) ? ApplicationLogs::ACTION_MOVE : ApplicationLogs::ACTION_COPY;
+					$log_data = (array_var($from, $obj->getId()) ? "from:" . array_var($from, $obj->getId()) . ";" : "");
+					ApplicationLogs::instance()->createLog($object, $action, false, true, true, $log_data);
+				}
+				$lang_key = count($ids)>1 ? 'objects removed from' : 'object removed from';
+				flash_success(lang($lang_key, $dimension->getName()));
+				if (array_var($_POST, 'reload')) ajx_current('reload');
+				else ajx_current('empty');
+			}
+		  }
+		
 		} catch (Exception $e) {
 			DB::rollback();
 			ajx_current("empty");
@@ -1331,8 +1381,8 @@ class MemberController extends ApplicationController {
 			evt_add("reload dimension tree", array('dim_id' => $member->getDimensionId()));
 			if (array_var($_REQUEST, 'dont_back')) ajx_current("empty");
 			else ajx_current("back");
-			ApplicationLogs::createLog($member,ApplicationLogs::ACTION_ARCHIVE);
 			DB::commit();
+			ApplicationLogs::createLog($member,ApplicationLogs::ACTION_ARCHIVE);
 		} catch (Exception $e) {
 			DB::rollback();
 			flash_error($e->getMessage());
@@ -1372,8 +1422,8 @@ class MemberController extends ApplicationController {
 			if (array_var($_REQUEST, 'dont_back')) ajx_current("empty");
 			else ajx_current("back");
 			flash_success(lang('success unarchive member', $member->getName(), $count));
-			ApplicationLogs::createLog($member, ApplicationLogs::ACTION_UNARCHIVE);
 			DB::commit();
+			ApplicationLogs::createLog($member, ApplicationLogs::ACTION_UNARCHIVE);
 		} catch (Exception $e) {
 			DB::rollback();
 			flash_error($e->getMessage());

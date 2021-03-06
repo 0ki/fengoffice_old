@@ -162,13 +162,25 @@ class SearchController extends ApplicationController {
 		
 		$members_sql = "";
 		if(count($members) > 0){
-			$members_sql = "AND (so.rel_object_id IN (SELECT object_id FROM " . TABLE_PREFIX . "object_members om
-					WHERE member_id IN (" . implode ( ',', $members ) . ") GROUP BY object_id HAVING count(member_id) = ".count($members).")
-								OR so.rel_object_id IN (SELECT fr.object_id FROM " . TABLE_PREFIX . "object_members om
-					INNER JOIN ".TABLE_PREFIX."project_file_revisions fr ON om.object_id=fr.file_id
-					INNER JOIN ".TABLE_PREFIX."objects ob ON fr.object_id=ob.id
-					WHERE ob.object_type_id = $revisionObjectTypeId AND member_id IN (" . implode ( ',', $members ) . ") GROUP BY object_id HAVING count(member_id) = ".count($members)."))";
-			
+			$context_condition = "(EXISTS
+										(SELECT om.object_id
+											FROM  ".TABLE_PREFIX."object_members om
+											WHERE	om.member_id IN (" . implode ( ',', $members ) . ") AND so.rel_object_id = om.object_id
+											GROUP BY object_id
+											HAVING count(member_id) = ".count($members)."
+										)
+									)";
+			$context_condition_rev = "(EXISTS
+										(SELECT fr.object_id FROM " . TABLE_PREFIX . "object_members om
+															INNER JOIN ".TABLE_PREFIX."project_file_revisions fr ON om.object_id=fr.file_id
+															INNER JOIN ".TABLE_PREFIX."objects ob ON fr.object_id=ob.id
+															WHERE fr.object_id = om.object_id AND ob.object_type_id = $revisionObjectTypeId AND member_id IN (" . implode ( ',', $members ) . ") 
+															GROUP BY object_id 
+															HAVING count(member_id) = ".count($members)."
+										)
+									)";
+			$members_sql = "AND ( ".$context_condition." OR  ".$context_condition_rev.")";
+									
 			$this->search_dimension = implode ( ',', $members );
 		}else{
 			$this->search_dimension = 0;
@@ -193,6 +205,8 @@ class SearchController extends ApplicationController {
 			$conditions_view = array();
 			$cont = 0;
 			$joincp ="";
+			$value="";
+			$custom_prop_id="";
 			foreach($conditions as $condition){
 				$condValue = array_key_exists('value', $condition) ? $condition['value'] : '';
 				if($condition['field_type'] == 'boolean'){
@@ -271,25 +285,31 @@ class SearchController extends ApplicationController {
 				$cont++;
 			}
 			tpl_assign('conditions', $conditions_view);
-
+			
+			if(empty($conditions)){
+				$search_string = array_var($search, 'text');
+				$where_condiition .= " AND so.content LIKE '%$search_string%'";
+			}
 			if($type_object){
 				$object_table = ObjectTypes::findById($type_object);
 				$table = $object_table->getTableName();				
 			}
 
 			$sql = "
-			SELECT so.rel_object_id AS id
+			SELECT DISTINCT so.rel_object_id AS id
 			FROM ".TABLE_PREFIX."searchable_objects so
 			".$joincp."
 			INNER JOIN  ".TABLE_PREFIX.$table." nto ON nto.object_id = so.rel_object_id 
 			INNER JOIN  ".TABLE_PREFIX."objects o ON o.id = so.rel_object_id 
 			WHERE (
 				(
-					so.rel_object_id IN (
-			    		SELECT object_id FROM ".TABLE_PREFIX."sharing_table WHERE group_id  IN (
-			      			SELECT permission_group_id FROM ".TABLE_PREFIX."contact_permission_groups WHERE contact_id = $uid
-			    		)
-			 		)
+					EXISTS ( 
+						SELECT object_id FROM ".TABLE_PREFIX."sharing_table sh
+						WHERE o.id = sh.object_id 
+						AND sh.group_id  IN (
+		   									SELECT permission_group_id FROM ".TABLE_PREFIX."contact_permission_groups WHERE contact_id = $uid
+											)
+							)				
 			 	)
 			) " . $where_condiition . $members_sql . $can_see_all_tasks_cond . " ORDER by o.updated_on DESC
 			LIMIT $start, $limitTest";
@@ -301,10 +321,10 @@ class SearchController extends ApplicationController {
 			SELECT DISTINCT so.rel_object_id AS id   
 			FROM ".TABLE_PREFIX."searchable_objects so
 			WHERE " . (($useLike) ? " so.content LIKE '%$search_string%' " : " MATCH (so.content) AGAINST ('\"$search_string\"' IN BOOLEAN MODE) ") . "  
-			AND (so.rel_object_id IN 
+			AND (EXISTS
 				(SELECT o.id
 				 FROM  ".TABLE_PREFIX."objects o
-				 WHERE	(	
+				 WHERE	o.id = so.rel_object_id AND (	
 							 (	o.object_type_id = $revisionObjectTypeId AND  
 								EXISTS ( 
 									SELECT id FROM ".TABLE_PREFIX."sharing_table WHERE object_id  = ( SELECT file_id FROM ".TABLE_PREFIX."project_file_revisions WHERE object_id = o.id ) 
@@ -312,11 +332,16 @@ class SearchController extends ApplicationController {
 								)
 							 ) 
 							OR (
-								o.id IN (
-			    					SELECT object_id FROM ".TABLE_PREFIX."sharing_table WHERE group_id  IN (
-			      					SELECT permission_group_id FROM ".TABLE_PREFIX."contact_permission_groups WHERE contact_id = $uid
-			    					)
-			 					)
+								(EXISTS
+									(SELECT object_id
+									FROM  ".TABLE_PREFIX."sharing_table sh
+									WHERE o.id = sh.object_id 
+									AND sh.group_id  IN (
+															SELECT permission_group_id FROM ".TABLE_PREFIX."contact_permission_groups WHERE contact_id = $uid
+														)
+		
+									)
+								)
 			 				)
 			 		) AND o.object_type_id IN ($listableObjectTypeIds) " . $members_sql . $can_see_all_tasks_cond . "
 				)
@@ -329,12 +354,14 @@ class SearchController extends ApplicationController {
 		tpl_assign('type_object', $type_object);
 		$db_search_results = array();
 		$search_results_ids = array();
-		$timeBegin = time();
-		$res = DB::execute($sql);
-		$timeEnd = time();
 		
-		while ($row = $res->fetchRow() ) {
-			$search_results_ids[$row['id']] = $row['id'];
+		if(!$advanced){
+			$timeBegin = time();
+			$res = DB::execute($sql);
+			$timeEnd = time();
+			while ($row = $res->fetchRow() ) {
+				$search_results_ids[$row['id']] = $row['id'];
+			}
 		}
 		// Prepare results for view to avoid processing at presentation layer 
 		$search_results = $this->prepareResults($search_results_ids, $null, $limit);

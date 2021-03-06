@@ -95,7 +95,7 @@ class Timeslots extends BaseTimeslots {
 	 * @param array $order_by
 	 * @return array
 	 */
-	static function getTaskTimeslots($context, $members = null, $user = null, $start_date = null, $end_date = null, $object_id = 0, $group_by = null, $order_by = null, $limit = 0, $offset = 0, $timeslot_type = 0){
+	static function getTaskTimeslots($context, $members = null, $user = null, $start_date = null, $end_date = null, $object_id = 0, $group_by = null, $order_by = null, $limit = 0, $offset = 0, $timeslot_type = 0, $extra_conditions=''){
 		
 		$commonConditions = "";
 		if ($start_date) {
@@ -128,7 +128,7 @@ class Timeslots extends BaseTimeslots {
 			$conditions .= " AND `e`.`contact_id` = " . logged_user()->getId();
 		}
 		
-		$conditions .= $commonConditions;
+		$conditions .= $commonConditions . $extra_conditions;
 		
 		$order_by[] = 'start_time';
 		$result = self::instance()->listing(array(

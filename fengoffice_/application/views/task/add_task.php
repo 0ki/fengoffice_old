@@ -203,9 +203,9 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
 			$minutes = $totalTime % 60;
 			$hours = ($totalTime - $minutes) / 60;
       	?><table><tr>
-			<td align="right"><?php echo lang("hours") ?>:&nbsp;</td>
+			<td align="right" style="vertical-align:middle;"><?php echo lang("hours") ?>:&nbsp;</td>
 			<td align='left'><?php echo text_field("task[time_estimate_hours]", $hours, array('id' => 'ogTasksPanelATHours', 'style' => 'width:30px', 'tabindex' => '80')) ?></td>
-			<td align="right" style="padding-left:10px"><?php echo lang("minutes") ?>:&nbsp;</td>
+			<td align="right" style="padding-left:10px;vertical-align:middle;"><?php echo lang("minutes") ?>:&nbsp;</td>
 			<td align='left'><select name="task[time_estimate_minutes]" size="1" tabindex="85" id="ogTasksPanelATMinutes">
 			<?php
 				$minutes = ($totalTime % 60);
@@ -348,13 +348,13 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
 						</script>
 						<table>
 							<tr><td colspan="2" style="vertical-align:middle; height: 22px;">
-								<?php echo radio_field('task[repeat_option]', $rsel1, array('id' => $genid.'repeat_opt_forever','value' => '1', 'style' => 'vertical-align:middle', 'tabindex' => '95', 'onclick' => 'og.viewDays(false)')) ."&nbsp;". lang('CAL_REPEAT_FOREVER')?>
+								<?php echo radio_field('task[repeat_option]', $rsel1, array('id' => $genid.'repeat_opt_forever','value' => '1', 'style' => 'vertical-align:middle', 'tabindex' => '95', 'onclick' => 'og.viewDays(true)')) ."&nbsp;". lang('CAL_REPEAT_FOREVER')?>
 							</td></tr>
 							<tr><td colspan="2" style="vertical-align:middle">
 								<?php echo radio_field('task[repeat_option]', $rsel2, array('id' => $genid.'repeat_opt_times','value' => '2', 'style' => 'vertical-align:middle', 'tabindex' => '96', 'onclick' => 'og.viewDays(true)')) ."&nbsp;". lang('CAL_REPEAT');
 								echo "&nbsp;" . text_field('task[repeat_num]', $rnum, array('size' => '3', 'id' => $genid.'repeat_num', 'maxlength' => '3', 'style'=>'width:25px', 'tabindex' => '97', 'onchange' => 'og.selectRepeatMode(2);')) ."&nbsp;". lang('CAL_TIMES') ?>
 							</td></tr>
-							<tr><td style="vertical-align:middle"><?php echo radio_field('task[repeat_option]', $rsel3,array('id' => $genid.'repeat_opt_until','value' => '3', 'style' => 'vertical-align:middle', 'tabindex' => '98', 'onclick' => 'og.viewDays(false)')) ."&nbsp;". lang('CAL_REPEAT_UNTIL');?></td>
+							<tr><td style="vertical-align:middle"><?php echo radio_field('task[repeat_option]', $rsel3,array('id' => $genid.'repeat_opt_until','value' => '3', 'style' => 'vertical-align:middle', 'tabindex' => '98', 'onclick' => 'og.viewDays(true)')) ."&nbsp;". lang('CAL_REPEAT_UNTIL');?></td>
 								<td style="padding-left:8px;"><?php echo pick_date_widget2('task[repeat_end]', $rend, $genid, 99);?>
 							</td></tr>
 						</table>
@@ -435,8 +435,16 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
     <div id="<?php echo $genid ?>add_subscribers_div" style="display:none">
 		<fieldset>
 		<legend><?php echo lang('object subscribers') ?></legend>
+		<?php $subscriber_ids = array();
+			if (!$task->isNew()) {
+				$subscriber_ids = $task->getSubscriberIds();
+			} else {
+				$subscriber_ids[] = logged_user()->getId();
+			}
+		?><input type="hidden" id="<?php echo $genid ?>subscribers_ids_hidden" value="<?php echo implode(',',$subscriber_ids)?>"/>
+		<input type="hidden" id="<?php echo $genid ?>original_subscribers" value="<?php echo implode(',',$subscriber_ids)?>"/>
 		<div id="<?php echo $genid ?>add_subscribers_content">
-			<?php echo render_add_subscribers($task, $genid); ?>
+			<?php //echo render_add_subscribers($task, $genid); ?>
 		</div>
 		</fieldset>
 	</div>
@@ -684,7 +692,13 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
 		} else opt_display = 'none';
 		
 		document.getElementById("<?php echo $genid ?>word").innerHTML = word;
-		if (ro) ro.style.display = opt_display;		
+		if (ro) ro.style.display = opt_display;	
+
+		if(document.getElementById("<?php echo $genid ?>today").selected){
+			og.viewDays(false);
+		}else{
+			og.viewDays(true);
+		}
 	}
 
 

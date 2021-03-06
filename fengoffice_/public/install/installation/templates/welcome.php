@@ -3,7 +3,6 @@
 <ul>
   <li><strong>Easy to use</strong> - basic set of tools that just work</li>
   <li><strong>Easy to install</strong> - here you are, just follow the instructions</li>
-  <li><strong>100% free</strong> - free for all, even for commercial use</li>
   <li><strong>Web based</strong> - after installation the only thing you'll need is a web browser</li>
 </ul>
 

@@ -11,7 +11,6 @@ abstract class DimensionObject extends ContentDataObject {
 	 * This function returns the memeber associatted with this CO. 
 	 * Note that this is different that the members that the object belongs to: 
 	 * - For this call getMembers() instead
-	 * @author Ignacio Vazquez <elpepe.uy at gmail.com>
 	 */
 	public function getSelfMember() {
 		return Members::findOneByObjectId($this->getId());

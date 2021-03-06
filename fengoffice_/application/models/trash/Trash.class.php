@@ -5,7 +5,7 @@ class Trash {
 		Env::useHelper("permissions");
 		$days = config_option("days_on_trash");
 		$count = 0;
-		if ($days >= 0) {
+		if ($days > 0) {
 			$date = DateTimeValueLib::now()->add("d", -$days);
 			
 			$mail_join = "";

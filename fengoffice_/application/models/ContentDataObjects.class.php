@@ -330,7 +330,6 @@ abstract class ContentDataObjects extends DataManager {
 	}
 	
 	/**
-	 * @author Ignacio Vazquez elpepe.uy at gmail.com
 	 * Fermormance FIX: getContentObjects replacement
 	 * @param array $args 
 	 *		order = null  -  may be performance killer depending on the order criteria  
@@ -427,25 +426,15 @@ abstract class ContentDataObjects extends DataManager {
 		
 		$SQL_CONTEXT_CONDITION = " true ";
 		if (!empty($members) && count($members)) {
-		
-			$object_ids = array ();
-			$members_sql = "
-				SELECT object_id FROM " . TABLE_PREFIX . "object_members om WHERE member_id IN (" . implode ( ',', $members ) . ")  
-				GROUP BY object_id
-				HAVING count(member_id) = ".count($members);
-			$db_result = DB::execute ( $members_sql );
-			$rows = $db_result->fetchAll();
-			if (is_array($rows)){
-				foreach ( $rows as $row ) {
-					$object_ids [$row ['object_id']] = $row ['object_id'];
-				}
-			}
-			if (count( $object_ids )) {
-				$object_ids = implode ( ",", $object_ids );
-				$SQL_CONTEXT_CONDITION = "o.id IN ($object_ids)";
-			}else{
-				$SQL_CONTEXT_CONDITION = ' false ' ;
-			}
+			$SQL_CONTEXT_CONDITION = "(EXISTS
+											(SELECT om.object_id
+												FROM  ".TABLE_PREFIX."object_members om
+												WHERE	om.member_id IN (" . implode ( ',', $members ) . ") AND o.id = om.object_id
+												GROUP BY object_id
+												HAVING count(member_id) = ".count($members)."
+											)
+									)";
+			
 		}
 		
 		// Trash && Archived CONDITIONS
@@ -465,13 +454,15 @@ abstract class ContentDataObjects extends DataManager {
 		if (logged_user() instanceof Contact) {
 			$uid = logged_user()->getId();
 			// Build Main SQL
+					
+			$permissions_condition = "EXISTS (
+											SELECT object_id FROM ".TABLE_PREFIX."sharing_table sh
+											WHERE o.id = sh.object_id
+											AND sh.group_id  IN (
+																SELECT permission_group_id FROM ".TABLE_PREFIX."contact_permission_groups WHERE contact_id = $uid
+																)
+									)";
 			
-			$permissions_condition = "o.id IN ( 
-		    			SELECT object_id FROM ".TABLE_PREFIX."sharing_table
-		    			WHERE group_id  IN (
-			     			SELECT permission_group_id FROM ".TABLE_PREFIX."contact_permission_groups WHERE contact_id = $uid
-						)
-					)";
 			if ($this instanceof Contacts && $this->object_type_name == 'contact' && can_manage_contacts(logged_user())) {
 				$permissions_condition = "true";
 			}
@@ -625,7 +616,7 @@ abstract class ContentDataObjects extends DataManager {
     		if (array_var($join_params, 'e_field')) {
 	      		$on_cond = "`e`.`".$join_params['e_field']."` = `jt`.`".$join_params['jt_field']."`";
 	      		if (array_var($join_params, 'on_extra')) {
-	      			$on_cond = "`jt`.`".$join_params['e_field']."` = `e`.`".$join_params['jt_field']."` ".$join_params['on_extra'];
+	      			$on_cond = "`e`.`".$join_params['e_field']."` = `jt`.`".$join_params['jt_field']."` ".$join_params['on_extra'];
 	      		}
 	      	} else if (array_var($join_params, 'j_sub_q')) {
 	      		$on_cond = "`jt`.`".$join_params['jt_field']."` = (" . array_var($join_params, 'j_sub_q') . ")";

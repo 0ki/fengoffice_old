@@ -127,9 +127,9 @@ class ReportingController extends ApplicationController {
 
 			DB::beginWork();
 			$chart->trash();
-			ApplicationLogs::createLog($chart, ApplicationLogs::ACTION_TRASH);
 			DB::commit();
-
+			ApplicationLogs::createLog($chart, ApplicationLogs::ACTION_TRASH);
+			
 			flash_success(lang('success deleted chart', $chart->getTitle()));
 			ajx_current("back");
 		} catch(Exception $e) {
@@ -316,7 +316,50 @@ class ReportingController extends ApplicationController {
 			if ($gb != '0') $group_by[] = $gb;
 		}
 		
-		$timeslots = Timeslots::getTaskTimeslots($context, null, $user, $st, $et, array_var($report_data, 'task_id', 0), $group_by, null, null, null, $timeslotType);
+		$dateFormat = user_config_option('date_format');
+		$date_format_tip = date_format_tip($dateFormat);
+		
+		$extra_conditions = "";
+		$conditions = array_var($_POST, 'conditions', array());
+		foreach ($conditions as $cond) {
+			if ($cond['deleted'] > 0) continue;
+			if (array_var($cond, 'custom_property_id') > 0) {
+				if (!in_array($cond['condition'], array('like', 'not like', '=', '<=', '>=', '<', '>', '<>', '%'))) continue;
+				
+				$cp = CustomProperties::getCustomProperty($cond['custom_property_id']);
+				if (!$cp instanceof CustomProperty) continue;
+				
+				$current_condition = ' AND e.rel_object_id IN ( SELECT object_id as id FROM '.TABLE_PREFIX.'custom_property_values cpv WHERE cpv.custom_property_id = '.$cond['custom_property_id'];
+				
+				if($cond['condition'] == 'like' || $cond['condition'] == 'not like'){
+					$value = '%'.$cond['value'].'%';
+				}
+				if ($cp->getType() == 'date') {
+					if ($value == $date_format_tip) continue;
+					$dtValue = DateTimeValueLib::dateFromFormatAndString($dateFormat, $value);
+					$value = $dtValue->format('Y-m-d H:i:s');
+				}
+				if($cond['condition'] != '%'){
+					if ($cp->getType() == 'numeric') {
+						$current_condition .= ' AND cpv.value '.$cond['condition'].' '.DB::escape($value);
+					}else if ($cp->getType() == 'boolean') {
+						$current_condition .= ' AND cpv.value '.$cond['condition'].' '.$value;
+						if (!$value) {
+							$current_condition .= ') OR o.id NOT IN (SELECT object_id as id FROM '.TABLE_PREFIX.'custom_property_values cpv2 WHERE cpv2.object_id=o.id AND cpv2.value=1 AND cpv2.custom_property_id = '.$cp->getId();
+						}
+					}else{
+						$current_condition .= ' AND cpv.value '.$cond['condition'].' '.DB::escape($value);
+					}
+				}else{
+					$current_condition .= ' AND cpv.value like '.DB::escape("%$value");
+				}
+				$current_condition .= ')';
+				$extra_conditions .= $current_condition;
+				
+			}
+		}
+		
+		$timeslots = Timeslots::getTaskTimeslots($context, null, $user, $st, $et, array_var($report_data, 'task_id', 0), $group_by, null, null, null, $timeslotType, $extra_conditions);
 		
 		$unworkedTasks = null;
 		if (array_var($report_data, 'include_unworked') == 'checked') {

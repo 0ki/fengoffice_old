@@ -85,8 +85,15 @@
 	<div id="<?php echo $genid ?>add_subscribers_div" style="display:none">
 		<fieldset>
 		<legend><?php echo lang('object subscribers') ?></legend>
+		<?php $subscriber_ids = array();
+			if (!$object->isNew()) {
+				$subscriber_ids = $object->getSubscriberIds();
+			} else {
+				$subscriber_ids[] = logged_user()->getId();
+			} 
+		?><input type="hidden" id="<?php echo $genid ?>subscribers_ids_hidden" value="<?php echo implode(',',$subscriber_ids)?>"/>
 		<div id="<?php echo $genid ?>add_subscribers_content">
-			<?php echo render_add_subscribers($object, $genid); ?>
+		<?php //echo render_add_subscribers($object, $genid); ?>
 		</div>
 		</fieldset>
 	</div>

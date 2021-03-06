@@ -173,7 +173,11 @@
 	'config option name add_default_permissions_for_users' => 'Set default permissions for Executive, Manager and Administrator users',
 	'config option desc add_default_permissions_for_users' => 'If enabled then these users will be granted with the default permissions when creating a Workspace, Client or Project',
 	
-    'group users' => 'Group users',
+    'config option name notify_myself_too' => 'Include myself in automatic notifications',
+  	'config option desc notify_myself_too' => 'When enabled, the automatic notifications will include yourself (only available for documents)',
+  	'notify myself too' => 'Include myself in automatic notifications',
+	
+  	'group users' => 'Group users',
     'timeslot' => 'Time',
     'module permissions' => 'Module Permissions',
     'module permission uncheck warning' => 'Module Permission Uncheck Warning',

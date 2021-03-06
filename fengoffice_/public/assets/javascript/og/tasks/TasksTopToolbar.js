@@ -96,7 +96,18 @@ og.TasksTopToolbar = function(config) {
 		projectTemplates[projectTemplates.length] = '-';
 		menuItems = menuItems.concat(projectTemplates);
 	}
-
+	
+	var newTemplate = [{
+		text: lang('new template'),
+		iconCls: 'ico-template',
+		handler: function() {
+			var url = og.getUrl('template', 'add');
+			og.openLink(url);
+		}
+	},'-'];
+	allTemplates = newTemplate.concat(allTemplates);
+	
+	
 	menuItems = menuItems.concat([{
 		text: lang('templates'),
 		iconCls: 'ico-template',

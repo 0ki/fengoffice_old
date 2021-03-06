@@ -225,6 +225,7 @@ function fengoffice_reminder_email($reminder, &$ret) {
 function fengoffice_render_upload_control($args, &$ret) {
 	if (upload_hook() == 'fengoffice') {
 		$attributes = $args['attributes'];
+		$attributes['multiple'] = "multiple";
 		echo file_field('file_file', null, $attributes);
 	}
 }

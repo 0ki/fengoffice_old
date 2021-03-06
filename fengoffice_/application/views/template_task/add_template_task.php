@@ -112,16 +112,16 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
     			og.ObjectPicker.show(function (objs) {
     				if (objs && objs.length > 0) {
     					var obj = objs[0].data;
-    					if (obj.type != 'task') {
+    					if (obj.type != 'template_task') {
         					og.msg(lang("error"), lang("object type not supported"), 4, "err");
     					} else {
     						og.addParentTask(this, obj);
     					}
     				}
     			}, before, {
-    				types: ['task'],
-    				selected_type: 'task'
-    			});
+    				types: ['template_task'],
+    				selected_type: 'template_task'
+    			},"",<?php echo $task->getId()? $task->getId():0;?>);
     		};
 
     		og.addParentTask = function(before, obj) {
@@ -434,8 +434,16 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
     <div id="<?php echo $genid ?>add_subscribers_div" style="display:none">
 		<fieldset>
 		<legend><?php echo lang('object subscribers') ?></legend>
+		<?php $subscriber_ids = array();
+			if (!$projectTask->isNew()) {
+				$subscriber_ids = $projectTask->getSubscriberIds();
+			} else {
+				$subscriber_ids[] = logged_user()->getId();
+			}
+		?><input type="hidden" id="<?php echo $genid ?>subscribers_ids_hidden" value="<?php echo implode(',',$subscriber_ids)?>"/>
+		<input type="hidden" id="<?php echo $genid ?>original_subscribers" value="<?php echo implode(',',$subscriber_ids)?>"/>
 		<div id="<?php echo $genid ?>add_subscribers_content">
-			<?php echo render_add_subscribers($projectTask, $genid); ?>
+			<?php //echo render_add_subscribers($projectTask, $genid); ?>
 		</div>
 		</fieldset>
 	</div>

@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Morcilla upgrade script will upgrade FengOffice 2.3.2.1 to FengOffice 2.4.0.6
+ * Morcilla upgrade script will upgrade FengOffice 2.3.2.1 to FengOffice 2.5-beta
  *
  * @package ScriptUpgrader.scripts
  * @version 1.0
@@ -40,7 +40,7 @@ class MorcillaUpgradeScript extends ScriptUpgraderScript {
 	function __construct(Output $output) {
 		parent::__construct($output);
 		$this->setVersionFrom('2.3.2.1');
-		$this->setVersionTo('2.4.0.6');
+		$this->setVersionTo('2.5-beta');
 	} // __construct
 
 	function getCheckIsWritable() {
@@ -241,6 +241,36 @@ class MorcillaUpgradeScript extends ScriptUpgraderScript {
 					
 					UPDATE `".$t_prefix."cron_events` set enabled=0, is_system=1 WHERE name='check_upgrade';
 					update ".$t_prefix."project_tasks set percent_completed=100 where completed_on <> '0000-00-00 00:00:00';
+				";
+			}
+			
+			
+			
+			
+			if (version_compare($installed_version, '2.4.1-beta') <= 0) {
+				$upgrade_script .= "
+					INSERT INTO `" . $t_prefix . "contact_config_options` (`category_name`, `name`, `default_value`, `config_handler_class`, `is_system`, `option_order`, `dev_comment`)
+					VALUES ('mails panel', 'attach_to_notification', '1', 'BoolConfigHandler', '0', '0', NULL)
+					ON DUPLICATE KEY UPDATE name=name;
+				";
+				if (!$this->checkColumnExists($t_prefix . "project_files", "attach_to_notification", $this->database_connection)) {
+					$upgrade_script .= "
+						ALTER TABLE `" . $t_prefix . "project_files` ADD `attach_to_notification` TINYINT( 1 ) NOT NULL DEFAULT 0;
+					";
+				}
+				if (!$this->checkColumnExists($t_prefix . "project_files", "default_subject", $this->database_connection)) {
+					$upgrade_script .= "
+						ALTER TABLE `" . $t_prefix . "project_files` ADD `default_subject` TEXT;
+					";
+				}
+				$upgrade_script .= "
+					INSERT INTO `" . $t_prefix . "config_options` (`category_name`, `name`, `value`, `config_handler_class`, `is_system`, `option_order`, `dev_comment`) 
+					VALUES ('general', 'notify_myself_too', 0, 'BoolConfigHandler', '0', '100', '')
+					ON DUPLICATE KEY UPDATE name=name;
+				";
+				
+				$upgrade_script .= "
+					ALTER TABLE `" . $t_prefix . "contact_member_permissions` ADD INDEX (`member_id`);
 				";
 			}
 			

@@ -163,6 +163,17 @@
 			</td>
 		</tr>
 		<?php } ?>
+		
+		<?php if (isset($has_custom_properties) && $has_custom_properties) {?>
+		<tr>
+			<td style="padding-top:10px;padding-right:10px;"><span class="bold"><?php echo lang('custom properties') ?>:&nbsp;</span></td>
+			<td><div style="border:1px dotted #aaa; border-radius:5px; padding:5px 5px 7px;">
+				<div id="<?php echo $genid ?>" style="margin-bottom:5px;"></div>
+				<a href="#" class="link-ico ico-add" onclick="og.addCondition('<?php echo $genid ?>', 0, 0, '', '', '', false, true)"><?php echo lang('add condition')?></a>
+			</div></td>
+		</tr>
+		<?php } ?>
+		
 	</table>
 	
 <br/>

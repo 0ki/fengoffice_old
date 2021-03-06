@@ -374,7 +374,7 @@ class TaskController extends ApplicationController {
 					$task->setAssignedBy(logged_user());
 					$task->save();
 				}
-				ApplicationLogs::createLog($task, ApplicationLogs::ACTION_EDIT, false, false, true, $log_info);
+				
 
 				//edit reminders accordingly
 				if ($task->getDueDate()!= null && !$task->isCompleted() && $task->getSubscriberIds() != null){ //to make sure the task has a due date and it is not completed yet, and that it has subscribed people						
@@ -417,6 +417,7 @@ class TaskController extends ApplicationController {
 				}
 
 				DB::commit();
+				ApplicationLogs::createLog($task, ApplicationLogs::ACTION_EDIT, false, false, true, $log_info);
 
 				// notify asignee
 				if(array_var($task_data, 'notify') == 'true' && $send_edit == false) {
@@ -1302,9 +1303,9 @@ class TaskController extends ApplicationController {
 				$object_controller = new ObjectController();
 				
 				if($task instanceof TemplateTask ){
-					if(!empty($member_ids)){
+					//if(!empty($member_ids)){
 						$object_controller->add_to_members($task, $member_ids, null, false);
-					}
+					//}
 				}else{
 					$object_controller->add_to_members($task, $member_ids);
 				}				
@@ -1315,8 +1316,7 @@ class TaskController extends ApplicationController {
 					$object_controller->add_reminders($task);
 				}
 				
-				ApplicationLogs::createLog($task, ApplicationLogs::ACTION_ADD);
-
+				
 				if(config_option('repeating_task') == 1){
 					$opt_rep_day['saturday'] = false;
 					$opt_rep_day['sunday'] = false;
@@ -1336,6 +1336,7 @@ class TaskController extends ApplicationController {
 				}
 				
 				DB::commit();
+				ApplicationLogs::createLog($task, ApplicationLogs::ACTION_ADD);
 				
 				//Send Template task to view
 				if($task instanceof TemplateTask){
@@ -1348,7 +1349,8 @@ class TaskController extends ApplicationController {
 					$subTasks = array();
 					$parentId = $task->getParentId();
 					$ico = "ico-task";
-					$object = TemplateController::prepareObject($objectId, $id, $objectName, $objectTypeName, $manager, $milestoneId, $subTasks, $parentId, $ico);
+					$action = "add";
+					$object = TemplateController::prepareObject($objectId, $id, $objectName, $objectTypeName, $manager, $action,$milestoneId, $subTasks, $parentId, $ico);
 															
 					evt_add("template object added", $object);
 				}
@@ -1837,7 +1839,7 @@ class TaskController extends ApplicationController {
 					$task->setAssignedBy(logged_user());
 					$task->save();
 				}
-				ApplicationLogs::createLog($task, ApplicationLogs::ACTION_EDIT, false, false, true, $log_info);
+				
 
 				if(config_option('repeating_task') == 1){
 					$opt_rep_day['saturday'] = false;
@@ -1871,6 +1873,24 @@ class TaskController extends ApplicationController {
 				}
 
 				DB::commit();
+				ApplicationLogs::createLog($task, ApplicationLogs::ACTION_EDIT, false, false, true, $log_info);
+				
+				//Send Template task to view
+				if($task instanceof TemplateTask){
+					$objectId = $task->getObjectId();
+					$id = $task->getId();
+					$objectTypeName = $task->getObjectTypeName();
+					$objectName = $task->getObjectName();
+					$manager = get_class($task->manager());
+					$milestoneId = $task instanceof TemplateTask ? $task->getMilestoneId() : '0';
+					$subTasks = $task->getSubTasks();
+					$parentId = $task->getParentId();
+					$ico = "ico-task";
+					$action = "edit";
+					$object = TemplateController::prepareObject($objectId, $id, $objectName, $objectTypeName, $manager, $action,$milestoneId, $subTasks, $parentId, $ico);
+						
+					evt_add("template object added", $object);
+				}
 
 				try {
 					if(array_var($task_data, 'send_notification') == 'checked' && $send_edit == false) {
@@ -1924,8 +1944,8 @@ class TaskController extends ApplicationController {
 			DB::beginWork();
 			$is_template = $task->getIsTemplate();
 			$task->trash();
-			ApplicationLogs::createLog($task, ApplicationLogs::ACTION_TRASH);
 			DB::commit();
+			ApplicationLogs::createLog($task, ApplicationLogs::ACTION_TRASH);
 
 			if ($is_template) {
 				flash_success(lang('success delete template', $task->getObjectName()));
@@ -2656,8 +2676,8 @@ class TaskController extends ApplicationController {
 
             $task->resetIsRead();
 
-            ApplicationLogs::createLog($task, ApplicationLogs::ACTION_EDIT);
             DB::commit();
+            ApplicationLogs::createLog($task, ApplicationLogs::ACTION_EDIT);
         }
         
         function check_related_task(){

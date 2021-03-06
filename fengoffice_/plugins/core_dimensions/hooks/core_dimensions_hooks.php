@@ -337,7 +337,6 @@ function core_dimensions_after_insert($object, &$ignored) {
 }
 
 /**
- * @author Ignacio Vazquez - elpepe.uy at gmail.com
  * @param unknown_type $object
  * @param unknown_type $ignored
  */

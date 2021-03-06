@@ -148,9 +148,8 @@ class MilestoneController extends ApplicationController {
 					}
 				}
 				
-				ApplicationLogs::createLog($milestone, ApplicationLogs::ACTION_ADD);
-				
 				DB::commit();
+				ApplicationLogs::createLog($milestone, ApplicationLogs::ACTION_ADD);
 				
 				//Send Template milestone to view
 				if($milestone instanceof TemplateMilestone){
@@ -265,9 +264,9 @@ class MilestoneController extends ApplicationController {
 				$object_controller->add_custom_properties($milestone);
 				$object_controller->add_reminders($milestone);
 			    
-				ApplicationLogs::createLog($milestone, ApplicationLogs::ACTION_EDIT);
 				DB::commit();
-
+				ApplicationLogs::createLog($milestone, ApplicationLogs::ACTION_EDIT);
+				
 				flash_success(lang('success edit milestone', $milestone->getObjectName()));
 				ajx_current("back");
 
@@ -307,9 +306,9 @@ class MilestoneController extends ApplicationController {
 		try {
 			DB::beginWork();
 			$milestone->trash();
-			ApplicationLogs::createLog($milestone, ApplicationLogs::ACTION_TRASH);
 			DB::commit();
-
+			ApplicationLogs::createLog($milestone, ApplicationLogs::ACTION_TRASH);
+			
 			if ($is_template) {
 				flash_success(lang('success delete template', $milestone->getObjectName()));
 			} else {
@@ -358,9 +357,9 @@ class MilestoneController extends ApplicationController {
 
 			DB::beginWork();
 			$milestone->save();
-			ApplicationLogs::createLog($milestone, ApplicationLogs::ACTION_CLOSE);
 			DB::commit();
-
+			ApplicationLogs::createLog($milestone, ApplicationLogs::ACTION_CLOSE);
+			
 			flash_success(lang('success complete milestone', $milestone->getObjectName()));
 			$redirect_to = array_var($_GET, 'redirect_to', false);
 			if (array_var($_GET, 'quick', false)) {
@@ -407,9 +406,9 @@ class MilestoneController extends ApplicationController {
 
 			DB::beginWork();
 			$milestone->save();
-			ApplicationLogs::createLog($milestone, ApplicationLogs::ACTION_OPEN);
 			DB::commit();
-
+			ApplicationLogs::createLog($milestone, ApplicationLogs::ACTION_OPEN);
+			
 			flash_success(lang('success open milestone', $milestone->getObjectName()));
 			$redirect_to = array_var($_GET, 'redirect_to', false);
 			if (array_var($_GET, 'quick', false)) {

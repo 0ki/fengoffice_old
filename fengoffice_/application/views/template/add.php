@@ -129,6 +129,9 @@
 	}
 
 	og.redrawTemplateTaskList = function(data){
+		if(data.action == "edit"){
+			$('#objectDiv'+data.id).remove();
+		}
 		if(data.milestone_id){
 			og.addObjectToTemplate(('subTasksDiv'+data.milestone_id), data, true);
 			$('#subtasksExpander'+data.milestone_id).show();

@@ -104,9 +104,9 @@ class MessageController extends ApplicationController {
 			"order_dir" => $order_dir,
 			"start" => $start,
 			"limit" => $limit,
-				"extra_conditions" => $extra_conditions,
-				"join_params"=> $join_params,
-				"select_columns"=> $select_columns
+			"extra_conditions" => $extra_conditions,
+			"join_params"=> $join_params,
+			"select_columns"=> $select_columns
 		));
 		$messages = $res->objects ; 
 		
@@ -114,7 +114,7 @@ class MessageController extends ApplicationController {
 		$object = $this->prepareObject($messages, $start, $limit, $res->total);
 		ajx_extra_data($object);
 		tpl_assign("listing", $object);
-
+		
 	}
 	
 	/**
@@ -138,8 +138,8 @@ class MessageController extends ApplicationController {
 						try{
 							DB::beginWork();
 							$message->trash();
-							ApplicationLogs::createLog($message, ApplicationLogs::ACTION_TRASH);
 							DB::commit();
+							ApplicationLogs::createLog($message, ApplicationLogs::ACTION_TRASH);
 							$succ++;
 						} catch(Exception $e){
 							DB::rollback();
@@ -199,8 +199,8 @@ class MessageController extends ApplicationController {
 						try{
 							DB::beginWork();
 							$message->archive();
-							ApplicationLogs::createLog($message, ApplicationLogs::ACTION_ARCHIVE);
 							DB::commit();
+							ApplicationLogs::createLog($message, ApplicationLogs::ACTION_ARCHIVE);
 							$succ++;
 						} catch(Exception $e){
 							DB::rollback();
@@ -388,12 +388,12 @@ class MessageController extends ApplicationController {
 					}
 				}
 				// Aliases
-                                if(config_option("wysiwyg_messages")){
-                                    $message_data['type_content'] = "html";
-                                    $message_data['text'] = preg_replace("/[\n|\r|\n\r]/", '', array_var($message_data, 'text'));  
-                                }else{
-                                    $message_data['type_content'] = "text";
-                                }
+				if(config_option("wysiwyg_messages")){
+					$message_data['type_content'] = "html";
+					$message_data['text'] = preg_replace("/[\n|\r|\n\r]/", '', array_var($message_data, 'text'));
+				}else{
+					$message_data['type_content'] = "text";
+				}
 				$message->setFromAttributes($message_data);
 				
 				DB::beginWork();
@@ -410,10 +410,9 @@ class MessageController extends ApplicationController {
 				$object_controller->link_to_new_object($message);				
 				$object_controller->add_custom_properties($message);
 				
-				ApplicationLogs::createLog($message, ApplicationLogs::ACTION_ADD);
-			    
 				DB::commit();
-
+				ApplicationLogs::createLog($message, ApplicationLogs::ACTION_ADD);
+				
 				flash_success(lang('success add message', $message->getObjectName()));
 				if (array_var($_POST, 'popup', false)) {
 					ajx_current("reload");
@@ -525,9 +524,8 @@ class MessageController extends ApplicationController {
 				
 				$message->resetIsRead();
 				
-				ApplicationLogs::createLog($message, ApplicationLogs::ACTION_EDIT);
-			    
 				DB::commit();
+				ApplicationLogs::createLog($message, ApplicationLogs::ACTION_EDIT);
 				
 				flash_success(lang('success edit message', $message->getObjectName()));
 				if (array_var($_POST, 'popup', false)) {
@@ -576,9 +574,9 @@ class MessageController extends ApplicationController {
 
 			DB::beginWork();
 			$message->trash();
-			ApplicationLogs::createLog($message, ApplicationLogs::ACTION_TRASH);
 			DB::commit();
-
+			ApplicationLogs::createLog($message, ApplicationLogs::ACTION_TRASH);
+			
 			flash_success(lang('success deleted message', $message->getObjectName()));
 			if (array_var($_POST, 'popup', false)) {
 				ajx_current("reload");

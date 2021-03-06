@@ -1,7 +1,6 @@
 <?php 
 	/**
 	 * Feng2 Plugin update engine 
-	 * @author Ignacio Vazquez <elpepe.uy at gmail.com>
 	 */
 	function workspaces_update_1_2() {
 		$workspaces = Workspaces::findAll();

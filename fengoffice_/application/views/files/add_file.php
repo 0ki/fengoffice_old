@@ -68,8 +68,8 @@ $visible_cps = CustomProperties::countVisibleCustomPropertiesByObjectType($objec
 						"class" => "title",
 						"size" => "88",
 						"style" => 'width:530px',
-						"tabindex" => "10",
-						"onchange" => "javascript:og.updateFileName('" . $genid .  "', this.value);"
+						"tabindex" => "10"
+							//"onchange" => "javascript:og.updateFileName('" . $genid .  "', this.value);"
 					)
 				), $ret);
 			?>
@@ -113,7 +113,10 @@ $visible_cps = CustomProperties::countVisibleCustomPropertiesByObjectType($objec
 <div class="coInputSeparator"></div>
 
 <div class="coInputMainBlock">
-
+		<fieldset id="<?php echo $genid ?>multipleFile" style="display: none;">
+			<legend><?php echo lang("files") ?></legend>
+			<div id="<?php echo $genid ?>multipleFileNames" ></div>
+		</fieldset>
 <?php if ($enableUpload) { ?>
 
 	<?php if($file->isNew()) { //----------------------------------------------------ADD   ?>
@@ -256,8 +259,49 @@ $visible_cps = CustomProperties::countVisibleCustomPropertiesByObjectType($objec
 	<div id="<?php echo $genid ?>add_subscribers_div" style="display: none">
 		<fieldset>
 			<legend><?php echo lang('object subscribers') ?></legend>
+			<?php $subscriber_ids = array();
+				if (!$object->isNew()) {
+					$subscriber_ids = $object->getSubscriberIds();
+				} else {
+					$subscriber_ids[] = logged_user()->getId();
+				}
+			?><input type="hidden" id="<?php echo $genid ?>subscribers_ids_hidden" value="<?php echo implode(',',$subscriber_ids)?>"/>
 			<div id="<?php echo $genid ?>add_subscribers_content">
-				<?php echo render_add_subscribers($object, $genid); ?>
+				<?php //echo render_add_subscribers($object, $genid); ?>
+			</div>
+			
+			<p>&nbsp;</p>    
+			<p><?php echo checkbox_field('file[attach_to_notification]', array_var($file_data, 'attach_to_notification', user_config_option('attach_to_notification')), array('id' => $genid . 'eventAttachNotification', 'tabindex' => '111')) ?>
+			<label for="<?php echo $genid ?>eventAttachNotification" class="checkbox"><?php echo lang('attach to notification') ?></label></p>
+			<?php if (ConfigOptions::getByName('notify_myself_too') instanceof ConfigOption) : ?>
+			<br />
+			<p><?php echo checkbox_field('file[notify_myself_too]', config_option('notify_myself_too'), array('id' => $genid . 'notifyMyselfToo', 'tabindex' => '120')) ?>
+			<label for="<?php echo $genid ?>notifyMyselfToo" class="checkbox"><?php echo lang('notify myself too') ?></label></p>
+			<?php endif; ?>
+			<br/>
+			<div style="width: 400px; align: center; text-align: left;">
+				<table>
+					<tr>
+						<td colspan="2" style="vertical-align:middle;" >
+							<strong><?php echo lang('subject for email notification')?></strong>
+						</td>
+					</tr>
+					<tr>
+						<td colspan="2" style="vertical-align:middle; height: 22px;">
+							<label><?php echo radio_field('file[default_subject_sel]',true,array('value' => 'default')) ."&nbsp;". lang('use default subject')?></label>
+						</td>
+					</tr>
+					<tr>
+						<td colspan="2" style="vertical-align:middle; height: 22px;"><?php 
+							$sel = false;
+							if(array_var($file_data, 'default_subject') != ""){
+							    $sel = true;
+							}										
+							echo radio_field('file[default_subject_sel]',$sel,array('value' => 'subject'));
+							echo "&nbsp;" . text_field('file[default_subject_text]',array_var($file_data, 'default_subject'), array('style'=>'width:300px', 'placeholder' => lang('enter a custom subject')));
+						?></td>
+					</tr>
+				</table>
 			</div>
 		</fieldset>
 	</div>
@@ -329,5 +373,51 @@ $visible_cps = CustomProperties::countVisibleCustomPropertiesByObjectType($objec
                     $('#warning_extension_file').html("");
                 }
             })
+			
+			//check if support input type=file/multiple
+         	function supportMultiple() {
+				var el = document.createElement("input");
+				return ("multiple" in el);
+			}
+
+			var is_new = <?php echo $file->isNew() ? '1' : '0'; ?>;
+
+			if (is_new) {
+				if(supportMultiple()) {
+	            	$('#<?php echo $genid ?>addfile').attr("action", "<?php echo get_url('files', 'add_multiple_files') ?>");
+	            	$('#<?php echo $genid ?>fileFormFile').attr("name", "file_file[]");
+	            }else{
+					og.msg(lang("upload multiple files"), lang("for upload multiple files upgrade your browser"), 6, "err");
+				}
+			} 
+
+			$('#<?php echo $genid ?>fileFormFile').change(function (){
+				if(is_new && supportMultiple()) {
+			        // if select more than one file upload all files as new files
+				    if(this.files.length > 1){
+				    	$('#<?php echo $genid ?>multipleFileNames').empty();
+				    	$('#<?php echo $genid ?>multipleFile').show();
+				    	$('#<?php echo $genid ?>addFileFilenameExists').hide();
+				    	$('#<?php echo $genid ?>addFileFilename').hide();
+				    	var $ul = $("<ul>");
+				    	for (var i = 0; i < this.files.length; ++i) {
+					          var name = this.files.item(i).name;
+					          var $li = $("<li>");
+					          $li.text(name);
+					          $ul.append($li);
+					          
+					        }
+				    	$('#<?php echo $genid ?>multipleFileNames').append($ul);
+					}else{
+						// if select one file check the file name
+						$('#<?php echo $genid ?>multipleFile').hide();
+						og.updateFileName("<?php echo $genid ?>", this.files.item(0).name);
+					}
+			    }else{
+				   og.updateFileName("<?php echo $genid ?>", this.value);
+				}
+	        });
         });
+        
+        
 </script>

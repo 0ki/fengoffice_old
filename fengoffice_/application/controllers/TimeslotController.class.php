@@ -53,8 +53,8 @@ class TimeslotController extends ApplicationController {
 			$object_controller = new ObjectController();
 			$object_controller->add_to_members($timeslot, $object->getMemberIds());
 			*/
-			ApplicationLogs::createLog($timeslot, ApplicationLogs::ACTION_OPEN);
 			DB::commit();
+			ApplicationLogs::createLog($timeslot, ApplicationLogs::ACTION_OPEN);
 			
 			flash_success(lang('success open timeslot'));
 			ajx_current("reload");
@@ -123,15 +123,18 @@ class TimeslotController extends ApplicationController {
 				 $object_controller = new ObjectController();
 				$object_controller->add_to_members($timeslot, $object->getMemberIds());
 				*/
-				ApplicationLogs::createLog($timeslot, ApplicationLogs::ACTION_ADD);
+				
 
 				$task = ProjectTasks::findById($object_id);
 				if($task instanceof ProjectTask) {
-					$task->calculatePercentComplete();
-					$this->notifier_work_estimate($task);
+					$task->calculatePercentComplete();	
 				}
 					
 				DB::commit();
+				if($task instanceof ProjectTask) {
+					$this->notifier_work_estimate($task);
+				}
+				ApplicationLogs::createLog($timeslot, ApplicationLogs::ACTION_ADD);
 					
 				flash_success(lang('success create timeslot'));
 				ajx_current("reload");
@@ -194,8 +197,9 @@ class TimeslotController extends ApplicationController {
 				$timeslot->delete();
 			else
 				$timeslot->save();
-			ApplicationLogs::createLog($timeslot, ApplicationLogs::ACTION_CLOSE);
+			
 			DB::commit();
+			ApplicationLogs::createLog($timeslot, ApplicationLogs::ACTION_CLOSE);
 				
 			if (array_var($_GET, 'cancel') && array_var($_GET, 'cancel') == 'true')
 				flash_success(lang('success cancel timeslot'));
@@ -412,12 +416,10 @@ class TimeslotController extends ApplicationController {
 				if($task instanceof ProjectTask) {
 					$task->calculatePercentComplete();
 				}
-
-				ApplicationLogs::createLog($timeslot, ApplicationLogs::ACTION_EDIT);
-				
-				$this->notifier_work_estimate($task);
 				
 				DB::commit();
+				$this->notifier_work_estimate($task);
+				ApplicationLogs::createLog($timeslot, ApplicationLogs::ACTION_EDIT);
 
 				flash_success(lang('success edit timeslot'));
 				ajx_current("back");
@@ -465,9 +467,9 @@ class TimeslotController extends ApplicationController {
                         
 			DB::beginWork();
 			$timeslot->delete();
-			ApplicationLogs::createLog($timeslot, ApplicationLogs::ACTION_DELETE);
 			$object->onDeleteTimeslot($timeslot);
 			DB::commit();
+			ApplicationLogs::createLog($timeslot, ApplicationLogs::ACTION_DELETE);
 			
 			if ($object instanceof ProjectTask) {
 				$object->calculatePercentComplete();

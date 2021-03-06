@@ -74,12 +74,15 @@ class FormController extends ApplicationController {
 				DB::beginWork();
 				if($in_object instanceof ProjectMessage) {
 					$comment = $in_object->addComment($content, false);
-					ApplicationLogs::createLog($comment, ApplicationLogs::ACTION_ADD, $comment->isPrivate());
 				} elseif($in_object instanceof ProjectTaskList) {
 					$task = $in_object->addTask($content);
-					ApplicationLogs::createLog($task, ApplicationLogs::ACTION_ADD, $in_object->isPrivate());
 				} // if
 				DB::commit();
+				if($in_object instanceof ProjectMessage) {
+					ApplicationLogs::createLog($comment, ApplicationLogs::ACTION_ADD, $comment->isPrivate());
+				} elseif($in_object instanceof ProjectTaskList) {
+					ApplicationLogs::createLog($task, ApplicationLogs::ACTION_ADD, $in_object->isPrivate());
+				} // if
 
 				flash_success($project_form->getSuccessMessage());
 				$this->redirectToUrl($project_form->getSubmitUrl());
@@ -140,9 +143,9 @@ class FormController extends ApplicationController {
 			try {
 				DB::beginWork();
 				$project_form->save();
-				ApplicationLogs::createLog($project_form, ApplicationLogs::ACTION_ADD, true);
 				DB::commit();
-
+				ApplicationLogs::createLog($project_form, ApplicationLogs::ACTION_ADD, true);
+				
 				flash_success(lang('success add project form', $project_form->getName()));
 				$this->redirectTo('form');
 			} catch(Exception $e) {
@@ -222,9 +225,9 @@ class FormController extends ApplicationController {
 			try {
 				DB::beginWork();
 				$project_form->save();
-				ApplicationLogs::createLog($project_form, ApplicationLogs::ACTION_EDIT, true);
 				DB::commit();
-
+				ApplicationLogs::createLog($project_form, ApplicationLogs::ACTION_EDIT, true);
+				
 				flash_success(lang('success edit project form', $project_form->getName()));
 				$this->redirectTo('form');
 			} catch(Exception $e) {

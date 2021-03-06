@@ -54,10 +54,11 @@ $disabled = $type_object ? false : true;
             </fieldset>            
             <?php 
             if($disabled){
-                echo submit_button(lang('search'), 's', array('id' => 'buttonSubmit', 'tabindex' => '20000', "disabled" => "true"));
+                echo button(lang('search'), 's', array('id' => 'buttonSubmit', 'tabindex' => '20000', "disabled" => "true"));
             }else{
-                echo submit_button(lang('search'), 's', array('id' => 'buttonSubmit', 'tabindex' => '20000'));
+                echo button(lang('search'), 's', array('id' => 'buttonSubmit', 'tabindex' => '20000'));
             }
+            echo submit_button(lang('search'), 's', array('id' => 'realButtonSubmit', 'tabindex' => '20000', "style" => "display:none"));
             ?>
             <div style="margin-bottom: 15px;"></div>
         </div>
@@ -107,7 +108,9 @@ $disabled = $type_object ? false : true;
             }
         });
         $('#buttonSubmit').click(function() {
-        	$('#buttonSubmit').prop("disabled",true);
+			$('#search[text]').val($('#search_for_in').val());
+			$('#buttonSubmit').prop("disabled",true);
+        	$('#realButtonSubmit').click();
         });
     });
     

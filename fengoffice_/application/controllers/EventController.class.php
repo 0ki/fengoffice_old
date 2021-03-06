@@ -537,30 +537,34 @@ class EventController extends ApplicationController {
 						$notifications[] = Contacts::findById(array('id' => $invs->getContactId()));
 				}
 				//Notifier::notifEvent($event, $notifications, 'deleted', logged_user());
-				
-				DB::beginWork();
-				// delete event
-				$event->trash();
-                                
-                                if($event->getSpecialID() != ""){
-                                    $this->delete_event_calendar_extern($event);
-                                    $event->setSpecialID("");
-                                    $event->save();
-                                }       
-                                
-                                if($options == "news" || $options == "all"){
-                                    $this->repetitive_event_related($event,"delete",$options);
-                                }
-                                
-				ApplicationLogs::createLog($event, ApplicationLogs::ACTION_TRASH);
-				DB::commit();
+				try {
+					DB::beginWork();
+					// delete event
+					$event->trash();
+	                                
+	                                if($event->getSpecialID() != ""){
+	                                    $this->delete_event_calendar_extern($event);
+	                                    $event->setSpecialID("");
+	                                    $event->save();
+	                                }       
+	                                
+	                                if($options == "news" || $options == "all"){
+	                                    $this->repetitive_event_related($event,"delete",$options);
+	                                }
+	                                
+					DB::commit();
+					ApplicationLogs::createLog($event, ApplicationLogs::ACTION_TRASH);
+				}catch(Exception $e) {
+					flash_error(lang('error delete event'));
+					ajx_current("empty");
+					DB::rollback();
+				} // try
 			}
 			flash_success(lang('success delete event', ''));
 			ajx_current("reload");			
           	ajx_add("overview-panel", "reload");
 			          	
 		} catch(Exception $e) {
-			DB::rollback();
 			flash_error(lang('error delete event'));
 			ajx_current("empty");
 		} // try
@@ -602,21 +606,24 @@ class EventController extends ApplicationController {
 		try {
 			$succ = 0;
 			foreach ($events as $event) {
-				DB::beginWork();
-				$event->archive();
-                                if($options == "news" || $options == "all"){
-                                    $this->repetitive_event_related($event,"archive",$options);
-                                }
-				ApplicationLogs::createLog($event, ApplicationLogs::ACTION_ARCHIVE);
-				DB::commit();
-				$succ++;
+				try {
+					DB::beginWork();
+					$event->archive();
+	                                if($options == "news" || $options == "all"){
+	                                    $this->repetitive_event_related($event,"archive",$options);
+	                                }
+					DB::commit();
+					ApplicationLogs::createLog($event, ApplicationLogs::ACTION_ARCHIVE);
+					$succ++;
+				}catch(Exception $e) {
+					DB::rollback();
+				} // try
 			}
 			flash_success(lang('success archive objects', $succ));
 			ajx_current("reload");			
           	ajx_add("overview-panel", "reload");
 			          	
 		} catch(Exception $e) {
-			DB::rollback();
 			flash_error(lang('error archive objects'));
 			ajx_current("empty");
 		} // try
@@ -2488,24 +2495,30 @@ class EventController extends ApplicationController {
             if (isset($data['confirmAttendance'])) {
                 $this->change_invitation_state($data['confirmAttendance'], $event->getId(), $user_filter);
             }
-            DB::beginWork();
-            $event->save();  
-
-            if($event->getSpecialID() != ""){
-                $this->sync_calendar_extern($event);
-            }
-
-            $object_controller = new ObjectController();
-            $object_controller->add_to_members($event, array_var($task_data, 'members'));
-            $object_controller->add_subscribers($event);
-
-            $object_controller->link_to_new_object($event);
-            $object_controller->add_custom_properties($event);
-            $object_controller->add_reminders($event);
-
-            $event->resetIsRead();
-
-            ApplicationLogs::createLog($event, ApplicationLogs::ACTION_EDIT);
+            try {
+            	DB::beginWork();
+            	$event->save();
+            	
+            	if($event->getSpecialID() != ""){
+            		$this->sync_calendar_extern($event);
+            	}
+            	
+            	$object_controller = new ObjectController();
+            	$object_controller->add_to_members($event, array_var($task_data, 'members'));
+            	$object_controller->add_subscribers($event);
+            	
+            	$object_controller->link_to_new_object($event);
+            	$object_controller->add_custom_properties($event);
+            	$object_controller->add_reminders($event);
+            	
+            	$event->resetIsRead();
+            	 
+            	DB::commit();
+            	ApplicationLogs::createLog($event, ApplicationLogs::ACTION_EDIT);
+            	
+            } catch(Exception $e) {
+            	DB::rollback();
+            } //try
         }
         
         function correct_days_event_repetitive($date, $repeat_saturday = false, $repeat_sunday = false){

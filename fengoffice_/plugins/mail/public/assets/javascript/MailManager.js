@@ -65,6 +65,9 @@ og.MailManager = function() {
 						var el = view.getRow(i);
 						if (el) el.innerHTML = el.innerHTML.replace('x-grid3-td-draghandle "', 'x-grid3-td-draghandle " onmousedown="var sm = Ext.getCmp(\'mails-manager\').getSelectionModel();if (!sm.isSelected('+i+')) {sm.clearSelections();} sm.selectRow('+i+', true);"');
 					}
+					
+					//reload columns for this folder
+					showFolderColumns();
 				}
 			}
 		});
@@ -762,8 +765,8 @@ og.MailManager = function() {
 					if (obox_btn = Ext.getCmp('send_outbox_btn')) obox_btn.hide();
 					markactions.markAsSpam.show();
 					markactions.markAsHam.hide();
-        			cm.setHidden(cm.getIndexById('from'), false);
-					cm.setHidden(cm.getIndexById('to'), true);
+					//cm.setHidden(cm.getIndexById('from'), false);
+					//cm.setHidden(cm.getIndexById('to'), true);
         			this.store.baseParams = {
 					      read_type: this.readType,
 					      view_type: this.viewType,
@@ -796,8 +799,8 @@ og.MailManager = function() {
 					if (obox_btn = Ext.getCmp('send_outbox_btn')) obox_btn.hide();
 					markactions.markAsSpam.show();
 					markactions.markAsHam.hide();
-					cm.setHidden(cm.getIndexById('from'), true);
-					cm.setHidden(cm.getIndexById('to'), false);
+					//cm.setHidden(cm.getIndexById('from'), true);
+					//cm.setHidden(cm.getIndexById('to'), false);
 					this.store.baseParams = {
 					      read_type: this.readType,
 					      view_type: this.viewType,
@@ -831,8 +834,8 @@ og.MailManager = function() {
 					if (obox_btn = Ext.getCmp('send_outbox_btn')) obox_btn.hide();
 					markactions.markAsSpam.show();
 					markactions.markAsHam.hide();
-        			cm.setHidden(cm.getIndexById('from'), true);
-					cm.setHidden(cm.getIndexById('to'), false);
+					//cm.setHidden(cm.getIndexById('from'), true);
+					//cm.setHidden(cm.getIndexById('to'), false);
         			this.store.baseParams = {
 					      read_type: this.readType,
 					      view_type: this.viewType,
@@ -867,8 +870,8 @@ og.MailManager = function() {
 					if (obox_btn = Ext.getCmp('send_outbox_btn')) obox_btn.hide();
 					markactions.markAsSpam.hide();
 					markactions.markAsHam.show();
-        			cm.setHidden(cm.getIndexById('from'), false);
-					cm.setHidden(cm.getIndexById('to'), true);
+					//cm.setHidden(cm.getIndexById('from'), false);
+					//cm.setHidden(cm.getIndexById('to'), true);
         			this.store.baseParams = {
 					      read_type: this.readType,
 					      view_type: this.viewType,
@@ -902,8 +905,8 @@ og.MailManager = function() {
 					if (obox_btn = Ext.getCmp('send_outbox_btn')) obox_btn.show();
 					markactions.markAsSpam.show();
 					markactions.markAsHam.hide();
-        			cm.setHidden(cm.getIndexById('from'), true);
-					cm.setHidden(cm.getIndexById('to'), false);
+					//cm.setHidden(cm.getIndexById('from'), true);
+					//cm.setHidden(cm.getIndexById('to'), false);
         			this.store.baseParams = {
 					      read_type: this.readType,
 					      view_type: this.viewType,
@@ -990,6 +993,76 @@ og.MailManager = function() {
 			]}
 		})
     };
+	
+	//show columns for folder
+	function showFolderColumns(){
+		var allCols = og.MailManager.store.reader.jsonData.folder_columns_all;
+		var columns = og.MailManager.store.reader.jsonData.folder_columns;
+				
+		//hide 
+		allCols.forEach(function(entry) {
+			if(columns.indexOf(entry) == -1){
+				//check if is hidden
+				if(!cm.isHidden(cm.getIndexById(entry))){
+					cm.setHidden(cm.getIndexById(entry), true);
+				}
+			}
+			
+		});
+				
+		//show only columns from config option for this folder
+		columns.forEach(function(entry) {
+			cm.setHidden(cm.getIndexById(entry), false);
+		});
+	}
+	
+	//save to config option selection of columns
+	cm.on('hiddenchange', function(cm,colindex,hidden){
+		var allCols = og.MailManager.store.reader.jsonData.folder_columns_all;
+		var folderName = og.MailManager.store.reader.jsonData.folder_name;
+		var update = false;
+		var val = "";
+		 var columns = og.MailManager.store.reader.jsonData.folder_columns;
+		 
+		 //if you add a column else you remove a column
+		 if(!hidden){
+			allCols.forEach(function(entry) {
+				if((cm.getIndexById(entry) == colindex)){
+					if(columns.indexOf(entry) == -1){  
+						if(val != ""){
+							val += ",";
+						}
+						val += entry;
+						update = true;
+						
+						columns.forEach(function(entry2) {
+							val += ","+entry2;
+						});						
+					}					
+				}									
+			}); 
+		 }else{
+			 columns.forEach(function(entry) {
+					if(!(cm.getIndexById(entry) == colindex)){
+						if(val != ""){
+							val += ",";
+						}
+						val += entry;
+					}else{
+						update = true;
+					}
+					
+				});
+		 }
+		 		 
+		 //update config option 
+		 if(update){
+			 var url = og.getUrl('account', 'update_user_preference', {name: 'folder_'+folderName+'_columns', value:val});
+			 og.openLink(url,{hideLoading:true});
+			 og.MailManager.store.load();
+		 }
+		 
+		});
 	
 	var mas = og.eventManager.addListener("mail account select", function(account) {
 		this.accountId = account[0];

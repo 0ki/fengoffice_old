@@ -212,6 +212,8 @@ og.addMailAttachment = function(container, obj) {
 	div.className = 'og-add-template-object ' + icocls;
 	div.innerHTML = html;
 	container.appendChild(div);
+	container.style.borderBottom = '1px solid #ccc';
+	if (container.offsetHeight >= 61) container.style.overflowY = 'scroll';
 };
 
 og.removeMailAttachment = function(attachment) {
@@ -233,6 +235,7 @@ og.removeMailAttachment = function(attachment) {
  	 	}
  	 	div = div.nextSibling;
  	}
+ 	if (container.offsetHeight < 61) container.style.overflowY = 'hidden';
 };
 
 og.attachFromFileSystem = function(genid) {
@@ -253,9 +256,17 @@ og.attachFromFileSystem = function(genid) {
     						og.ajaxSubmit(form, {
     							callback: function(success, data) {
     								if (success) {
-	    								var container = document.getElementById(genid + "attachments");
-	    								var obj = {object_id: data.file_id, manager: 'ProjectFiles', name: data.file_name, icocls: data.icocls};
-	    								og.addMailAttachment(container, obj);
+    									var container = document.getElementById(genid + "attachments");
+    									//if multiple suport
+    									if (typeof data.files_data != "undefined") {
+    										data.files_data.forEach(function(entry) {
+	    										var obj = {object_id: entry.file_id, manager: 'ProjectFiles', name: entry.file_name, icocls: entry.icocls};
+	    	    								og.addMailAttachment(container, obj);
+	    									});
+    									}else{ 
+    										var obj = {object_id: data.file_id, manager: 'ProjectFiles', name: data.file_name, icocls: data.icocls};
+    	    								og.addMailAttachment(container, obj);
+    									}
     								}
     							}
     						});
