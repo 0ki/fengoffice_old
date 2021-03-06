@@ -80,6 +80,13 @@
 			</div><?php
 			}
 			
+			$more_content_templates = array();
+			Hook::fire("more_content_templates", $object, $more_content_templates);
+			foreach ($more_content_templates as $ct) {
+				tpl_assign('object', $object);
+				$this->includeTemplate(get_template_path($ct[0], $ct[1]));
+			}
+			
 			if ($object instanceof ApplicationDataObject)
 				echo render_custom_properties($object);
 			

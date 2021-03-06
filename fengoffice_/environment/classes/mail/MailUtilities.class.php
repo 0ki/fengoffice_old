@@ -959,35 +959,40 @@ class MailUtilities {
 	// to check an IMAP mailbox for syncrhonization
 	function checkSyncMailbox($server, $with_ssl, $transport, $ssl_port, $box, $from, $password){
 		$check = true;
-		$password = self::ENCRYPT_DECRYPT($password);			
-		$ssl = ($with_ssl=='1' || $transport == 'ssl') ? '/ssl' : '';		
+		$password = self::ENCRYPT_DECRYPT($password);
+		$ssl = ($with_ssl=='1' || $transport == 'ssl') ? '/ssl' : '';
 		$tls = ($transport =='tls') ? '/tls' : '';
 		$no_valid_cert = ($ssl=='' && $tls=='') ? '/novalidate-cert' : '';
-		$port = ($with_ssl=='1') ? ':'.$ssl_port : '';		
-		$mail_box = (isset ($box)) ? $box : 'INBOX.Sent';					
-		$connection = '{'.$server.$port.'/imap'.$no_valid_cert.$ssl.$tls.'}'.$mail_box;				
-		$stream = imap_open($connection, $from, $password);		
-		$check_mailbox = imap_check($stream);
-		if (!isset ($check_mailbox)){			
-			return $check = false; 				
-		}			
-		imap_close($stream);			
-		
+		$port = ($with_ssl=='1') ? ':'.$ssl_port : '';
+		$mail_box = (isset ($box)) ? $box : 'INBOX.Sent';
+		$connection = '{'.$server.$port.'/imap'.$no_valid_cert.$ssl.$tls.'}'.$mail_box;
+		$stream = imap_open($connection, $from, $password);
+		if ($stream !== FALSE) {
+			$check_mailbox = imap_check($stream);
+			if (!isset ($check_mailbox)){
+				$check = false;
+			}
+			imap_close($stream);
+		} else {
+			return false;
+		}
 		return $check;
 	}
 	
 	// to send an email to the email server through IMAP 	
 	function sendToServerThroughIMAP($server, $with_ssl, $transport, $ssl_port, $box, $from, $password, $content){	
-		$password = self::ENCRYPT_DECRYPT($password);			
-		$ssl = ($with_ssl=='1' || $transport == 'ssl') ? '/ssl' : '';		
+		$password = self::ENCRYPT_DECRYPT($password);
+		$ssl = ($with_ssl=='1' || $transport == 'ssl') ? '/ssl' : '';
 		$tls = ($transport =='tls') ? '/tls' : '';
 		$no_valid_cert = ($ssl=='' && $tls=='') ? '/novalidate-cert' : '';
-		$port = ($with_ssl=='1') ? ':'.$ssl_port : '';		
-		$mail_box = (isset ($box)) ? $box : 'INBOX.Sent';					
-		$connection = '{'.$server.$port.'/imap'.$no_valid_cert.$ssl.$tls.'}'.$mail_box;				
-		$stream = imap_open($connection, $from, $password);		
-		imap_append($stream, $connection, $content);				
-		imap_close($stream);			
+		$port = ($with_ssl=='1') ? ':'.$ssl_port : '';
+		$mail_box = (isset ($box)) ? $box : 'INBOX.Sent';
+		$connection = '{'.$server.$port.'/imap'.$no_valid_cert.$ssl.$tls.'}'.$mail_box;
+		$stream = imap_open($connection, $from, $password);
+		if ($stream !== FALSE) {
+			imap_append($stream, $connection, $content);
+			imap_close($stream);
+		}
 	}
 	
 	public function saveContent($content)
