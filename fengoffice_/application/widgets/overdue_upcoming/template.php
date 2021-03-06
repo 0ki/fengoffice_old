@@ -7,12 +7,7 @@
 <div class="late-objects-widget widget">
 
 	<div class="widget-header" onclick="og.dashExpand('<?php echo $genid?>');">
-		<?php $cmember = current_member();
-				if($cmember != NULL){
-					echo lang('late tasks and upcoming tasks'). " " . lang("in") . " " . $cmember->getName();
-				}else{
-					echo lang('late tasks and upcoming tasks');
-				}; ?>
+		<?php echo (isset($widget_title)) ? $widget_title : lang('late tasks and upcoming tasks'); ?>
 		<div class="dash-expander ico-dash-expanded" id="<?php echo $genid; ?>expander"></div>
 	</div>
 	
@@ -59,14 +54,13 @@
 			    
 			    <td style="padding-left:5px;padding-bottom:2px;overflow:hidden;max-width:10px;vertical-align: middle;">
 			    	<div class="nobr">
-			    	
 			    		<?php
 			    			$crumbOptions = json_encode($object->getMembersToDisplayPath());
 							$crumbJs = " og.getCrumbHtml($crumbOptions) "; 
 			    		?>
 			    		<span id="object_crumb_<?php echo $object->getId()?>"></span>
 			    		<script>
-							var crumbHtml = <?php echo $crumbJs?> ;
+							var crumbHtml = <?php echo $crumbJs?>;
 							$("#object_crumb_<?php echo $object->getId()?>").html(crumbHtml);
 						</script>
 			    	
@@ -75,10 +69,9 @@
 							<?php echo clean($object->getObjectName()) ?>
 						</a>
 						<?php if ($object instanceof ProjectTask) :
-							$text = strlen_utf($object->getText()) > 100 ? substr_utf(html_to_text($object->getText()), 0, 100) . "..." : strip_tags($object->getText());
-								if (strlen_utf($text) > 0) :
-						?>
-								&nbsp;-&nbsp;<span class="desc nobr"><?php echo clean($text) ?></span>
+								$text = strlen_utf($object->getText()) > 100 ? substr_utf(html_to_text($object->getText()), 0, 100) . "..." : strip_tags($object->getText());
+								if (strlen_utf($text) > 0) : 
+								?>&nbsp;-&nbsp;<span class="desc nobr"><?php echo clean($text) ?></span>
 							<?php endif;?>
 						<?php endif;?>
 					</div>

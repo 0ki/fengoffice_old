@@ -276,7 +276,7 @@ if($showCompletedSubtasksDiv) { ?>
 $time_estimate = $task_list->getTimeEstimate();
 $total_minutes = $task_list->getTotalMinutes();
 
-if ($time_estimate > 0 || $total_minutes > 0){?>
+if ($time_estimate >= 0 || $total_minutes >=0){?>
 <br/>
 <table>
 <tr>

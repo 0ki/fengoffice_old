@@ -130,5 +130,6 @@
 	'name required' => 'Debe ingresar un nombre.',
 	'member name already exists' => 'Ya existe un miembro de nombre \'{0}\' con el mismo miembro padre.',
 	'member name already exists in dimension' => 'Ya existe un miembro de nombre \'{0}\' en la dimensión seleccionada.',
+	'there are no changes' => 'No hay cambios realizados',
 	'start date > closure date' => 'La fecha de cierre debe ser mayor que la fecha de inicio.',
 ); ?>

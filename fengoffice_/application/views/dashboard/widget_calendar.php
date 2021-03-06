@@ -334,7 +334,7 @@
 						}//endif birthdays
 					} // end foreach event writing loop
 					if ($count > 3) {
-						$output .= '<div style="witdh:100%;text-align:center;font-size:9px" ><a href="'.$p.'" class="internalLink"  onclick="og.disableEventPropagation(event);nd();">'.($count-3) . ' ' . lang('more') .'</a></div>';
+						$output .= '<div style="witdh:100%;text-align:center;font-size:9px" ><a href="'.$p.'" class="internalLink"  onclick="og.disableEventPropagation(event);">'.($count-3) . ' ' . lang('more') .'</a></div>';
 					}
 				}
 				

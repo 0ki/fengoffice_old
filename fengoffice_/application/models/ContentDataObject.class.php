@@ -1451,15 +1451,49 @@ abstract class ContentDataObject extends ApplicationDataObject {
 						$mandatory_dim_allowed_pgs[$mdim_id] = array();
 						if (!is_null($permission_groups_res)) {
 							foreach ($permission_groups_res as $row) {
-								$mandatory_dim_allowed_pgs[$mdim_id][] = $row['id'];
+								if (!in_array($row['id'], $mandatory_dim_allowed_pgs[$mdim_id])) $mandatory_dim_allowed_pgs[$mdim_id][] = $row['id'];
 							}
 						}
 					}
 
 					if (isset($mandatory_dim_allowed_pgs) && count($mandatory_dim_allowed_pgs) > 0) {
+						$original_mandatory_dim_allowed_pgs = $mandatory_dim_allowed_pgs;
 						$allowed_gids = array_pop($mandatory_dim_allowed_pgs);
 						foreach ($mandatory_dim_allowed_pgs as $pg_array) {
 							$allowed_gids = array_intersect($allowed_gids, $pg_array);
+						}
+						
+						// If an user has permissions in one dim using a group and in other dim using his personal permissions then add to sharing table its personal permission group
+						$pg_ids = array_unique(array_flat($original_mandatory_dim_allowed_pgs));
+						$pgs_data = DB::executeAll("SELECT * FROM ".TABLE_PREFIX."permission_groups WHERE id IN (".implode(',',$pg_ids).")");
+						$contact_pgs = array();
+						$contact_pg_rows = DB::executeAll("SELECT * FROM ".TABLE_PREFIX."contact_permission_groups WHERE permission_group_id IN (".implode(',',$pg_ids).") ORDER BY permission_group_id");
+						foreach ($contact_pg_rows as $cpgr) {
+							if (!isset($contact_pgs[$cpgr['contact_id']])) $contact_pgs[$cpgr['contact_id']] = array();
+							$contact_pgs[$cpgr['contact_id']][] = $cpgr['permission_group_id'];
+						}
+						
+						// each user must have at least one pg for every dimension
+						foreach ($contact_pgs as $contact_id => $permission_groups) {
+							$has_one = array_flip(array_keys($original_mandatory_dim_allowed_pgs));
+							foreach ($has_one as $k => &$v) $v = false;
+							
+							foreach ($permission_groups as $pg_id) {
+								foreach ($original_mandatory_dim_allowed_pgs as $dim_id => $allowedpgs) {
+									if (in_array($pg_id, $allowedpgs)) {
+										$has_one[$dim_id] = true;
+										break;
+									}
+								}
+							}
+							// all dims must be true in this array to allow permissions
+							$has_permission = !in_array(false, $has_one);
+							if ($has_permission) {
+								$contact_row = DB::executeOne("SELECT permission_group_id FROM ".TABLE_PREFIX."contacts where object_id = $contact_id");
+								if (is_array($contact_row) && $contact_row['permission_group_id'] > 0) {
+									$allowed_gids[] = $contact_row['permission_group_id'];
+								} 
+							}
 						}
 						
 						$gids = array_unique($allowed_gids, SORT_NUMERIC);

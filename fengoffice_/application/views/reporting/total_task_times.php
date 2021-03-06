@@ -71,7 +71,7 @@
 			echo "<td class='date'>" . format_date($ts->getStartTime()) . "</td>";
 			echo "<td class='name'>" . ($ts->getRelObjectId() == 0 ? clean($ts->getObjectName()) : clean($ts->getRelObject()->getObjectName())) ."</td>";
 			echo "<td class='name'>" . clean($ts->getDescription()) ."</td>";
-			echo "<td class='person'>" . clean($ts->getUser()->getObjectName()) ."</td>";
+			echo "<td class='person'>" . clean($ts->getUser() instanceof Contact ? $ts->getUser()->getObjectName() : '') ."</td>";
 			if (array_var($options, 'show_billing') == 'checked') {
 				if($ts->getIsFixedBilling()){
 					echo "<td class='nobr right'>" . config_option('currency_code', '$') . " " . number_format($ts->getFixedBilling(), 2) . "</td>";

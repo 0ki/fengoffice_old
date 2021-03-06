@@ -614,6 +614,10 @@ class FilesController extends ApplicationController {
 					ajx_current("empty");
 					return;
 				} // if
+				$file_content = array_var($_POST, 'fileContent');
+				if ($file_content == $file->getFileContent()){
+					flash_error(lang('there are no changes'));
+				}else{
 				DB::beginWork();
 				$post_revision = array_var($_POST, 'new_revision_document') == 'checked'; // change file?
 				$revision_comment = array_var($postFile, 'comment');
@@ -677,6 +681,7 @@ class FilesController extends ApplicationController {
 				evt_add("document saved", array("id" => $file->getId(), "instance" => array_var($_POST, 'instanceName')));
 				
 				ajx_add("overview-panel", "reload");
+			}
 			} catch(Exception $e) {
 				DB::rollback();
 				if (array_var($file_dt, 'tmp_name') && is_file(array_var($file_dt, 'tmp_name'))) {
@@ -766,6 +771,7 @@ class FilesController extends ApplicationController {
 				DB::commit();
 				flash_success(lang('success save file', $file->getObjectName()));
 				evt_add("document saved", array("id" => $file->getId(), "instance" => array_var($_POST, 'instanceName')));
+				evt_add("new document add save as button", array("id" => $file->getId(), "name" => clean($file->getFilename()), "genid" => array_var($_POST, 'instanceName')));
 				unlink($file_dt['tmp_name']);
 				
 			} catch(Exception $e) {

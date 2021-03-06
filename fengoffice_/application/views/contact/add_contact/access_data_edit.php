@@ -74,6 +74,20 @@
 				$("#<?php echo $genid ?>profileFormUsername").hide();
 			}
 		});
+
+		$("<?php echo $jqid ?>.access-data #notify-user").click(function(){
+			if ($(this).is(":checked")) {
+				$("<?php echo $jqid ?>.access-data #create-password").attr("disabled", false);
+				$("<?php echo $jqid ?>.access-data #create-password").attr("checked", true);
+			} else {
+				$("<?php echo $jqid ?>.access-data #create-password").attr("checked", true);
+				$("<?php echo $jqid ?>.access-data #create-password").attr("disabled", true);
+				
+				$("<?php echo $jqid ?>.access-data .user-data-password").slideDown();
+				$("<?php echo $jqid ?> .password input").focus();
+			}
+		});
+		
 	});
 
 </script>
@@ -83,9 +97,14 @@
 	<div class="clear"></div>
 
 	<div class="user-data" <?php if($contact_mail){echo "style='display:none'";}?>>
-		<label class="checkbox" ><?php echo lang("specify password?") ?></label><input class="checkbox" type="checkbox" name="contact[user][create-password]" id="create-password" ></input>
+		
+			<label class="checkbox"><?php echo lang('send task assigned to notification') ?></label>
+			<input class="checkbox" type="checkbox" name="notify-user" <?php if(user_config_option("sendEmailNotification",1,logged_user()->getId())){echo "checked";}?> id="notify-user"></input>
+	
 		<div class="clear"></div>
-		<div class="user-data-password" style="display: none;">
+		<label class="checkbox" ><?php echo lang("specify password?") ?></label><input class="checkbox" type="checkbox" name="contact[user][create-password]" id="create-password"  <?php if(!user_config_option("sendEmailNotification",1,logged_user()->getId())){echo "disabled";}?>></input>
+		<div class="clear"></div>
+		<div class="user-data-password" style="display:<?php if(user_config_option("sendEmailNotification",1,logged_user()->getId())){echo "none";}?>;">
 			<div class="field password">
 				<label><?php echo lang("password")?>:</label><input name="contact[user][password]" type="password"></input>
 			</div>
@@ -103,11 +122,7 @@
 			<input class="checkbox" type="checkbox" name="contact[specify_username]" id="<?php echo $genid ?>specify-username"/>
 			<input id="<?php echo $genid ?>profileFormUsername" type="text" value="<?php echo array_var($contact_data, 'username')?>" name="contact[user][username]" maxlength="50" style="display: none; margin-left:5px;"/>
 		</div>
-		<div  id="<?php echo $genid ?>userFormSendNotificationDiv" style="margin-top:8px;" class="user-data">
-			<label class="checkbox"><?php echo lang('send task assigned to notification') ?></label>
-			<input class="checkbox" type="checkbox" name="notify-user" <?php if(user_config_option("sendEmailNotification",1,logged_user()->getId())){echo "checked";}?> id="notify-user"></input>
-			
-		</div>
+		
 			
 	<?php }?>
 	</div>	

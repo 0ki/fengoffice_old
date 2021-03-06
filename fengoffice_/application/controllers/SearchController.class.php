@@ -194,11 +194,11 @@ class SearchController extends ApplicationController {
 			$conditions = array_var($_POST, 'conditions');
 			$search = array_var($_POST, 'search');
 			$type_object = array_var($search, 'search_object_type_id');
-
 			if(!is_array($conditions)) $conditions = array();
 			$where_condiition = '';
 			$conditions_view = array();
 			$cont = 0;
+			$joincp ="";
 			foreach($conditions as $condition){
 				$condValue = array_key_exists('value', $condition) ? $condition['value'] : '';
 				if($condition['field_type'] == 'boolean'){
@@ -210,14 +210,22 @@ class SearchController extends ApplicationController {
 					}
 				}else{
 					$value = mysql_real_escape_string($condValue, DB::connection()->getLink());
-				}
-				
+				}				
 				$condition_condition = mysql_real_escape_string(array_var($condition, 'condition'), DB::connection()->getLink());
 				$condition_field_name = mysql_real_escape_string(array_var($condition, 'field_name'), DB::connection()->getLink());
 				$conditionLocal = "like";
+				tpl_assign('type_object', $type_object);
+				if (isset($condition['custom_property_id']) and is_numeric($condition['custom_property_id'])){
+					$condition_field_name = 'value';
+					$joincp = 'JOIN  fo_custom_property_values cp ON cp.object_id = so.rel_object_id';
+				};
+				
 				if ($condition_condition == "=" or $condition_condition == ">" or $condition_condition == "<" or $condition_condition == "<>" or $condition_condition == ">=" or $condition_condition == "<="){
 					$conditionLocal = $condition_condition;
-				};
+				};	
+				if($condition_field_name == "id"){
+					$condition_field_name = "o`.`id" ;
+				};			
 				if($condition_condition == "like"){
 					$where_condiition .= " AND `" . $condition_field_name . "` " . "like" . " '%" . $value . "%' ";
 				}else if($condition_condition == "ends with"){
@@ -231,7 +239,7 @@ class SearchController extends ApplicationController {
 				}
 								
 				$conditions_view[$cont]['id'] = $condition['id'];
-				$conditions_view[$cont]['custom_property_id'] = $condition['custom_property_id'];
+				$conditions_view[$cont]['custom_property_id'] = $custom_prop_id;
 				$conditions_view[$cont]['field_name'] = $condition['field_name'];
 				$conditions_view[$cont]['condition'] = $condition['condition'];
 				$conditions_view[$cont]['value'] = $value;
@@ -241,12 +249,13 @@ class SearchController extends ApplicationController {
 
 			if($type_object){
 				$object_table = ObjectTypes::findById($type_object);
-				$table = $object_table->getTableName();
+				$table = $object_table->getTableName();				
 			}
 
 			$sql = "
 			SELECT  distinct(so.rel_object_id) AS id
 			FROM ".TABLE_PREFIX."searchable_objects so
+			".$joincp."
 			INNER JOIN  ".TABLE_PREFIX.$table." nto ON nto.object_id = so.rel_object_id 
 			INNER JOIN  ".TABLE_PREFIX."objects o ON o.id = so.rel_object_id 
 			WHERE (
@@ -258,8 +267,7 @@ class SearchController extends ApplicationController {
 			 		)
 			 	)
 			) " . $where_condiition . $members_sql . " ORDER by o.updated_on DESC
-			LIMIT $start, $limitTest ";
-		
+			LIMIT $start, $limitTest ";			
 		} else {
 			
 			$type_object = '';
@@ -289,9 +297,7 @@ class SearchController extends ApplicationController {
 			ORDER by o.updated_on DESC
 			LIMIT $start, $limitTest ";
 		}
-		
 		tpl_assign('type_object', $type_object);
-		
 		$db_search_results = array();
 		$search_results_ids = array();
 		$timeBegin = time();
@@ -409,13 +415,12 @@ class SearchController extends ApplicationController {
 			if (!is_numeric($search_result_id)) continue;
 			
 			$obj = Objects::findObject($search_result_id);
-			
 			if (!$obj instanceof ContentDataObject) continue;
 			/* @var $obj ContentDataObject */
-			
 			$search_result['id'] = $obj->getId();
 			$search_result['otid'] = $obj->getObjectTypeId();
 			$search_result['title'] = $this->prepareTitle($obj->getObjectName());
+			$search_result['memPath'] = json_encode($obj->getMembersToDisplayPath());
 			$search_result['url'] = $obj->getViewUrl();
 			$search_result['created_by'] = $this->prepareCreatedBy($obj->getCreatedByDisplayName(), $obj->getCreatedById());
 			$search_result['updated_by'] = $this->prepareCreatedBy($obj->getUpdatedByDisplayName(), $obj->getUpdatedById());
@@ -514,9 +519,8 @@ class SearchController extends ApplicationController {
 	
 	function get_object_fields(){
 		$fields = $this->get_allowed_columns(array_var($_GET, 'object_type'));
-
 		ajx_current("empty");
-		ajx_extra_data(array('fields' => $fields));
+		ajx_extra_data(array('fields' => $fields));		
 	}
 	
 	function get_external_field_values(){
@@ -657,9 +661,10 @@ class SearchController extends ApplicationController {
 		}
 		usort($fields, array(&$this, 'compare_FieldName'));
 		return $fields;
+		
 	}
 	
 	private function compare_FieldName($field1, $field2){
-		return strnatcmp($field1['name'], $field2['name']);
+		return strnatcasecmp($field1['name'], $field2['name']);
 	}
 }

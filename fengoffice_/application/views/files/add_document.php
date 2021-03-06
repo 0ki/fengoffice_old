@@ -27,8 +27,10 @@
 		add_page_action(lang("checkin file"), "javascript:(function(){ var form = document.getElementById('{$genid}form'); form.checkin.value = '1'; form.new_revision_document.value = 'checked'; form.rename = false; form.onsubmit(); })()", "ico-checkin");
 	}
 
-	add_page_action(lang("save as").' <b>'.$filename.'</b>', "javascript:(function(){ var form = document.getElementById('{$genid}form'); form.new_revision_document.value = 'checked'; form.rename = false; form.onsubmit(); })()", "save");
-	if(!$file->isNew()) add_page_action(lang("save with a new name"), "javascript:(function(){ var form = document.getElementById('{$genid}form'); form.new_revision_document.value = 'checked'; form.rename = true; form.onsubmit(); })()", "save_as");
+	add_page_action(lang("save as").' <b>'.$filename.'</b>', "javascript:(function(){ var form = document.getElementById('{$genid}form'); form.new_revision_document.value = 'checked'; form.rename = false; form.onsubmit(); })()", "save",
+		null, array('id' => $genid . 'save_as_name'));
+	add_page_action(lang("save with a new name"), "javascript:(function(){ var form = document.getElementById('{$genid}form'); form.new_revision_document.value = 'checked'; form.rename = true; form.onsubmit(); })()", "save_as",
+		null, array('id' => $genid . 'save_new_name', 'hidden' => $file->isNew()));
 ?>
 
  	<div>

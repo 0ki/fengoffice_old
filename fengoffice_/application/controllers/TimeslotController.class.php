@@ -88,53 +88,60 @@ class TimeslotController extends ApplicationController {
 			$min = str_replace('.','',($minutes/6));
 			$hours = $hours + ("0.".$min);
 		}
-		
-		$timeslot = new Timeslot();
-		$dt = DateTimeValueLib::now();
-		$dt2 = DateTimeValueLib::now();
-		$timeslot->setEndTime($dt);
-		$dt2 = $dt2->add('h', -$hours);                
-		$timeslot->setStartTime($dt2);
-		$timeslot->setDescription(array_var($timeslot_data, 'description'));
-		$timeslot->setContactId(array_var($timeslot_data, 'contact_id', logged_user()->getId()));
-		$timeslot->setRelObjectId($object_id);
-		
-		$billing_category_id = logged_user()->getDefaultBillingId();
-		$bc = BillingCategories::findById($billing_category_id);
-		if ($bc instanceof BillingCategory) {
-			$timeslot->setBillingId($billing_category_id);
-			$hourly_billing = $bc->getDefaultValue();
-			$timeslot->setHourlyBilling($hourly_billing);
-			$timeslot->setFixedBilling($hourly_billing * $hoursToAdd);
-			$timeslot->setIsFixedBilling(false);
-		}
-		
-		try{
-			DB::beginWork();
-			$timeslot->save();
-		/*	dont add timeslots to members, members are taken from the related object
-			$object_controller = new ObjectController();
-			$object_controller->add_to_members($timeslot, $object->getMemberIds());
-		*/	
-			ApplicationLogs::createLog($timeslot, ApplicationLogs::ACTION_ADD);
 
-			$task = ProjectTasks::findById($object_id);
-			if($task instanceof ProjectTask) {
-				$task->calculatePercentComplete();
-				$this->notifier_work_estimate($task);
-			}
-			
-			DB::commit();
-			
-			flash_success(lang('success create timeslot'));
-			ajx_current("reload");
-		} catch (Exception $e) {
-			DB::rollback();
+		if ($hours <= 0){
+			flash_error(lang('time has to be greater than 0'));
 			ajx_current("empty");
-			flash_error($e->getMessage());
+		}else{
+
+			$timeslot = new Timeslot();
+			$dt = DateTimeValueLib::now();
+			$dt2 = DateTimeValueLib::now();
+			$timeslot->setEndTime($dt);
+			$dt2 = $dt2->add('h', -$hours);
+			$timeslot->setStartTime($dt2);
+			$timeslot->setDescription(array_var($timeslot_data, 'description'));
+			$timeslot->setContactId(array_var($timeslot_data, 'contact_id', logged_user()->getId()));
+			$timeslot->setRelObjectId($object_id);
+
+			$billing_category_id = logged_user()->getDefaultBillingId();
+			$bc = BillingCategories::findById($billing_category_id);
+			if ($bc instanceof BillingCategory) {
+				$timeslot->setBillingId($billing_category_id);
+				$hourly_billing = $bc->getDefaultValue();
+				$timeslot->setHourlyBilling($hourly_billing);
+				$timeslot->setFixedBilling($hourly_billing * $hoursToAdd);
+				$timeslot->setIsFixedBilling(false);
+			}
+
+			try{
+				DB::beginWork();
+				$timeslot->save();
+				/*	dont add timeslots to members, members are taken from the related object
+				 $object_controller = new ObjectController();
+				$object_controller->add_to_members($timeslot, $object->getMemberIds());
+				*/
+				ApplicationLogs::createLog($timeslot, ApplicationLogs::ACTION_ADD);
+
+				$task = ProjectTasks::findById($object_id);
+				if($task instanceof ProjectTask) {
+					$task->calculatePercentComplete();
+					$this->notifier_work_estimate($task);
+				}
+					
+				DB::commit();
+					
+				flash_success(lang('success create timeslot'));
+				ajx_current("reload");
+			} catch (Exception $e) {
+				DB::rollback();
+				ajx_current("empty");
+				flash_error($e->getMessage());
+			}
+				
 		}
-	} 
-	
+	}
+
 	/*
 	 * Close timeslot
 	 *

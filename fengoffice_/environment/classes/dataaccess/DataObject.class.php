@@ -461,11 +461,6 @@
   	*/
   	function loadFromRow($row) {
   	  
-  	  //if(isset($row['assigned_to_user_id'])) {
-  	  //  pre_var_dump($this->columnExists('assigned_to_user_id'));
-  	  //  pre_var_dump($row);
-  	  //}
-  	  
   	  // Check input array...
   	  if(is_array($row)) {
   	  

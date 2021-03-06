@@ -1,2 +1,2 @@
 <?php
-return '2.3rc';
+return '2';

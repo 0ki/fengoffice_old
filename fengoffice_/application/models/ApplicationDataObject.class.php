@@ -177,9 +177,9 @@ abstract class ApplicationDataObject extends DataObject {
 					$searchable_object->setRelObjectId($this->getObjectId());
 					$searchable_object->setColumnName($column_name);
 					if (strlen($content) > 65535) {
-						$content = utf8_safe(substr($content, 0, 65535));
+						$content = DB::escape(utf8_safe(substr($content, 0, 65535)));
 					} else {
-						$content = utf8_safe(DB::escape($content));
+						$content = DB::escape(utf8_safe($content));
 					}
 					
 					$sql = "INSERT INTO ".TABLE_PREFIX."searchable_objects (rel_object_id, column_name, content)

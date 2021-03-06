@@ -9,9 +9,18 @@ if ($panel instanceof TabPanel && $panel->getEnabled()) {
 		"start" => 0,
 		"limit" => $limit
 	)) ;
-	$cmember = current_member();
-	if($cmember != NULL){
-		$widget_title = lang("documents") . " " . lang("in") . " " . $cmember->getName();
+	$active_members = array();
+	$context = active_context();
+	foreach ($context as $selection) {
+		if ($selection instanceof Member) $active_members[] = $selection;
+	}
+	if (count($active_members) > 0) {
+		$mnames = array();
+		$allowed_contact_ids = array();
+		foreach ($active_members as $member) {
+			$mnames[] = clean($member->getName());
+		}
+		$widget_title = lang('documents'). ' '. lang('in').' '. implode(", ", $mnames);
 	}
 	
 	$total = $result->total ;

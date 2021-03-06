@@ -66,7 +66,7 @@ og.selectCompany = function(genid, index) {
 	og.companySelectedIndexChanged(genid);
 };
 
-og.companySelectedIndexChanged = function(genid){
+og.companySelectedIndexChanged = function(genid,data_js){
 	select = document.getElementById(genid + 'profileFormCompany');
 	Ext.get(genid + 'submit1').dom.disabled = true;
 	Ext.get(genid + 'submit2').dom.disabled = true;
@@ -79,20 +79,30 @@ og.companySelectedIndexChanged = function(genid){
 				Ext.get(genid + 'submit2').dom.disabled = false;
 				
     			if (data.id > 0){
-	    			document.getElementById(genid + 'profileFormWAddress').value = data.address;
-	    			document.getElementById(genid + 'profileFormWCity').value = data.city;
-	    			document.getElementById(genid + 'profileFormWState').value = data.state;
+	    			document.getElementById(genid + 'profileFormWAddress').value = data_js['adress'] ? data_js['adress'] :  data.address;
+	    			document.getElementById(genid + 'profileFormWCity').value = data_js['city'] ? data_js['city'] : data.city;
+	    			document.getElementById(genid + 'profileFormWState').value = data_js['state'] ? data_js['state'] : data.state;
 					var list = document.getElementById(genid + 'profileFormWCountry');
 					for (var i = 0; i < list.options.length; i++)
 						if (list.options[i].value == data.country){
 							list.selectedIndex = i;
 							break;
 						}
-	    			document.getElementById(genid + 'profileFormWZipcode').value = data.zipcode;
-	    			document.getElementById(genid + 'profileFormWWebPage').value = data.webpage;
-	    			document.getElementById(genid + 'profileFormWPhoneNumber').value = data.phoneNumber;
-	    			document.getElementById(genid + 'profileFormWFaxNumber').value = data.faxNumber;
-    			}
+	    			document.getElementById(genid + 'profileFormWZipcode').value = data_js['zipCode'] ? data_js['zipCode'] : data.zipcode;
+	    			document.getElementById(genid + 'profileFormWWebPage').value = data_js['web'] ? data_js['web'] : data.webpage;
+	    			document.getElementById(genid + 'profileFormWPhoneNumber').value = data_js['phone'] ? data_js['phone'] : data.phoneNumber;
+	    			document.getElementById(genid + 'profileFormWFaxNumber').value = data_js['fax'] ? data_js['fax'] : data.faxNumber;
+	    			
+	    		}else{
+	    			var text = "";
+	    			document.getElementById(genid + 'profileFormWAddress').value = data_js['adress'] ? data_js['adress'] :  text;
+	    			document.getElementById(genid + 'profileFormWCity').value = data_js['city'] ? data_js['city'] : text;
+	    			document.getElementById(genid + 'profileFormWState').value = data_js['state'] ? data_js['state'] : text;
+	    			document.getElementById(genid + 'profileFormWZipcode').value = data_js['zipCode'] ? data_js['zipCode'] : text;
+	    			document.getElementById(genid + 'profileFormWWebPage').value = data_js['web'] ? data_js['web'] : text;
+	    			document.getElementById(genid + 'profileFormWPhoneNumber').value = data_js['phone'] ? data_js['phone'] : text;
+	    			document.getElementById(genid + 'profileFormWFaxNumber').value = data_js['fax'] ? data_js['fax'] : text;
+	    		}
     		}
     	}
     });

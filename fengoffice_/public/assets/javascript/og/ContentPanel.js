@@ -250,7 +250,7 @@ Ext.extend(og.ContentPanel, Ext.Panel, {
 					if (content.actions[i].title == '-') {
 						tbar.push('-');
 					} else {
-						tbar.push({
+						var tbar_item = {
 							text: content.actions[i].title,
 							handler: function() {
 								if (this.url.indexOf('javascript:') == 0) {
@@ -268,7 +268,13 @@ Ext.extend(og.ContentPanel, Ext.Panel, {
 							},
 							scope: content.actions[i],
 							iconCls: content.actions[i].name
-						});
+						}
+						if (content.actions[i].attributes) {
+							if (content.actions[i].attributes.id) tbar_item.id = content.actions[i].attributes.id;
+							if (content.actions[i].attributes.hidden) tbar_item.hidden = content.actions[i].attributes.hidden;
+							if (content.actions[i].attributes.disabled) tbar_item.disabled = content.actions[i].attributes.disabled;
+						}
+						tbar.push(tbar_item);
 					}
 				}
 			}

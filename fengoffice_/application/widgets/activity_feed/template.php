@@ -24,7 +24,7 @@ if($current_member){
             foreach ($acts['data'] as $k => $activity):
             $c++;
             $user = $acts['created_by'][$k];
-            if ($activity instanceof Contact && $activity->isUser()) {
+            if ($activity instanceof Contact && $activity->isUser() || $member_deleted) {
             	$crumbOptions = "";
             } else {
             	$crumbOptions = json_encode($activity->getMembersToDisplayPath());

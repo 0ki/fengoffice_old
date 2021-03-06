@@ -109,7 +109,7 @@ addLangs({
 	'compress selected files': 'Compress selected files',
 	'add files to zip': 'Add files to zip',
 	'new compressed file': 'New compressed file',
-
+	'there are no changes' : 'There Are No Changes',
 	'song': 'Song',
 	'artist': 'Artist',
 	'album': 'Album',
@@ -493,7 +493,19 @@ addLangs({
 	'one month' : 'In 2 weeks to 1 month',
 	'three months' : 'In 1 to 3 months',
 	'one year' : 'In 3 months to 1 year',
-	'later than one year' : 'Later than one year',
+	'later than one year' : 'Later than one year',	
+	'before this year' : 'Before this year',
+	'this year (before last month)' : 'This year (before last month)',
+	'last m' : 'Last month',
+	'this month(before last week)' : 'This month (before last week)',
+	'last w' : 'Last week',
+	'this week(before yesterday)' : 'This week (before yesterday)',
+	'this week(later tomorrow)' : 'This week (after tomorrow)',
+	'next week' : 'Next week',
+	'this month(after next week)' : 'This month (after next week)',
+	'next three months(after next month)' : 'Next three months (after next month)',
+	'this year' : 'This year',
+	'after this year' : 'After this year',	
 	'start' : 'start',
 	'due' : 'due',
 	'add subtask': 'Add a new subtask',
@@ -504,7 +516,7 @@ addLangs({
 	'close_work': 'Stop working on this task',
 	'pause_work': 'Pause work on this task',
 	'resume_work': 'Resume working on this task',
-	'close work': 'Stop work',
+	'close work': 'Stop clock',
 	'time worked' : 'Time worked',
 	'hours' : 'hours',
 	'complete this task' : 'Complete this task',
@@ -546,7 +558,7 @@ addLangs({
   	'comment': 'Comment',
   	
   	'change user': 'Change user',
-  	'start work': 'Start work',
+  	'start work': 'Start clock',
   	'click to change workspace': 'Click to change workspace',
   	'add a new task to this group': 'Add a new task to this group',
    	'login dialog desc': 'Your session expired due to inactivity. Fill in this form to log back in.',
@@ -888,7 +900,7 @@ addLangs({
 	'this user option can be changed' : 'This option can be changed from your user settings at any given time.',
 	'access member' : 'Access {0}',
 	'stay at' : 'Stay at {0}',
-	'general view': 'General view'
-	
+	'general view': 'General view',
+	'save as' : 'Save as {0}'
 	
 });

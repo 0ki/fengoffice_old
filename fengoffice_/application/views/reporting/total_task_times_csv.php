@@ -65,36 +65,16 @@
 			
 			$desc = $ts->getDescription();
 			$desc = str_replace("\r", " ", str_replace("\n", " ", str_replace("\r\n", " ", $desc)));
+			$desc = '"'.$desc.'"';
 			echo $desc .';';
 			
-			echo $ts->getUser()->getObjectName() .';';
+			echo ($ts->getUser() instanceof Contact ? $ts->getUser()->getObjectName() : '') .';';
 			$lastStop = $ts->getEndTime() != null ? $ts->getEndTime() : ($ts->isPaused() ? $ts->getPausedOn() : DateTimeValueLib::now());
-			$mystring = DateTimeValue::FormatTimeDiff($ts->getStartTime(), $lastStop, "hm", 60, $ts->getSubtract());
-			$posHours = strpos($mystring, 'hours');
-			$posMinutes = strpos($mystring, 'minutes');
-			$csvMin = 0;
-			$csvHour = 0;
-			if ($posHours === false){
-				if ($posMinutes === false){					
-				}else{
-					$csvMin = floatval(ltrim(DateTimeValue::FormatTimeDiff($ts->getStartTime(), $lastStop, "hm", 60, $ts->getSubtract()) .';', 'minutes')) / 60;
-					$sub_total += $csvMin;
-					echo $csvMin;
-				}
-			}else{
-				if ($posMinutes === false){
-					$csvHour = floatval(ltrim(DateTimeValue::FormatTimeDiff($ts->getStartTime(), $lastStop, "hm", 60, $ts->getSubtract()) .';', 'hours'));
-					$sub_total += $csvHour;
-					echo $csvHour;
-				}else{
-					$data = $mystring;
-					list($csvHour, $csvMin) = explode(",", $data);
-					$sub_total += (floatval(ltrim($csvHour, 'hours')) + (floatval(ltrim($csvMin, 'minutes'))/60));
-					echo (floatval(ltrim($csvHour, 'hours')) + (floatval(ltrim($csvMin, 'minutes'))/60));
-					
-				}
-				
-			}
+			$mystring = DateTimeValue::FormatTimeDiff($ts->getStartTime(), $lastStop, "m", 60, $ts->getSubtract());
+			$resultado = ereg_replace("[^0-9]", "", $mystring);
+			$resultado = round(($resultado/60),5);
+			echo $resultado;
+			$sub_total += $resultado;
 			echo "\n";
 		}
 	}

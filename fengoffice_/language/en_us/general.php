@@ -206,7 +206,7 @@ return array(
   	'none no bars' => 'None',
   	'apply to all subworkspaces' => 'Apply these permissions to all subworkspaces',
   	'weblinks' => 'Web links',
-	'add work' => 'Add work',
+	'add work' => 'Add worked hours',
 
   	'date format' => 'm/d/Y',
   	'date format description' => '(mm/dd/yyyy)',
@@ -279,7 +279,7 @@ return array(
 	'activity feeds' => 'Activity Feeds',
   	'estimated' => 'Estimated',
   	'percent completed' => 'Percent completed',
-        'percent completed detail' => 'The percentage is calculated in advance based on the number of hours worked over the amount of estimated hours',
+    'percent completed detail' => 'Note: If the task has an estimated time, the percentage is calculated based on the number of hours worked over the amount of estimated hours. If the task does not have an estimated time, you may set up the percentage manually by editing the task.',
   	'task percent completed must be greater than 0' => 'Percent completed must be greater than 0.',
 	'task percent completed must be lower than 100' => 'Percent completed must be equal or lower than 100.',
   	'field Objects percent_completed' => 'Percent completed',

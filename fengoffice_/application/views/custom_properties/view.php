@@ -28,7 +28,7 @@
 					$title = '';
 					$style = '';
 					if ($customProp->getType() == 'boolean'){
-						$htmlValue = '<div class="db-ico ico-'.($value?'complete':'delete').'">&nbsp;</div>';
+						$htmlValue = '<div class="db-ico ico-'.($value?'complete':'delete').' '.($value?'cpbooltrue':'cpboolfalse').'">&nbsp;</div>';
 					} else if ($customProp->getIsMultipleValues()) {
 						$multValues = CustomPropertyValues::getCustomPropertyValues($__properties_object->getId(), $customProp->getId());
 						$newAlt = $alt;

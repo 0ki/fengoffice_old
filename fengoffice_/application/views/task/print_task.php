@@ -30,6 +30,11 @@ table {
 .printHeader {
 	border-bottom: 1px solid #AAA;
 }
+.og-custom-properties tr
+{
+border-bottom:1px solid black;
+}
+
 </style>
 
 <div class="print" style="padding:7px;width:100%;max-width:1000px">
@@ -47,6 +52,34 @@ table {
 </table> <?php }// if ?>
 </td></tr></table>
 </div>
+
+<?php if (count($task->getMembers()) > 0) { ?>
+            <p><b>
+                <!-- CONTEXTS -->
+		        <?php    	
+				$contexts = array();
+				$members =  $task->getMembers();
+				if(count($members)>0){
+					foreach ($members as $member){
+						$dim = $member->getDimension();
+						if($dim->getIsManageable()){
+							if ($dim->getCode() == "customer_project"){
+								$obj_type = ObjectTypes::findById($member->getObjectTypeId());
+								if ($obj_type instanceof ObjectType) {
+								echo lang($dim->getCode()). ": ";
+								echo $contexts[$dim->getCode()][$obj_type->getName()][]= '<span style="'.get_workspace_css_properties($member->getMemberColor()).'">'. $member->getName() .'</span>';
+							}
+							}else{
+								echo lang($dim->getCode()). ": ";
+								echo $contexts[$dim->getCode()][]= '<span style="'.get_workspace_css_properties($member->getMemberColor()).'">'. $member->getName() .'</span>';
+							}
+						}
+					}
+				}
+				?>
+                <!-- CONTEXTS -->
+            </b></p>
+<?php } // if ?>
 
 <?php if ($task->getAssignedTo() instanceof Contact) { ?>
 <p><b><?php echo lang('assigned to') ?>:</b>&nbsp;<?php echo clean($task->getAssignedToName()) ?></p>
@@ -97,8 +130,29 @@ if ($hasIncompleteSubtasks || $hasCompletedSubtasks) { ?>
 <br/>
 <?php echo render_object_comments_for_print($task, $task->getViewUrl()); ?>
 <?php } // if ?>
+
+<br/>
+
+<p><b><?php echo lang('custom properties') ?>:</b></p>
+<div style="margin-left:14px;padding:6px;border:1px solid #AAA">
+<?php echo str_replace(lang('custom properties'), "", render_custom_properties($task));?>
+</div>
+
+
 </div>
 
 <script>
+var myListf = document.getElementsByClassName("cpboolfalse");
+for (var i=0;i<myListf.length;i++)
+{
+	myListf[i].innerHTML='<?php echo lang('no') ?>';
+};
+
+var myListt = document.getElementsByClassName("cpbooltrue");
+for (var i=0;i<myListt.length;i++)
+{
+	myListt[i].innerHTML='<?php echo lang('yes') ?>';
+};
+
 window.print();
 </script>

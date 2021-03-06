@@ -7,9 +7,14 @@
     $acts['data'] = array();
     foreach($activities as $activity){
         $user = Contacts::findById($activity->getCreatedById());
-        $object = Objects::findObject($activity->getRelObjectId());
+        if ($activity->getLogData() == 'member deleted') {
+        	$object = Members::findById($activity->getRelObjectId());
+        	$member_deleted = true;
+        } else {
+        	$object = Objects::findObject($activity->getRelObjectId());
+        }
         
-        if($object){
+        if($object || $member_deleted){
             $key = $activity->getRelObjectId() . "-" . $activity->getCreatedById();
 
             if(count($acts['data']) < ($limit*2)){
@@ -29,10 +34,18 @@
             }        
         }
     }
-
-    $cmember = current_member();
-    if($cmember != NULL){
-    	$widget_title = lang("activity") . " " . lang("in") . " " . $cmember->getName();
+    $active_members = array();
+    $context = active_context();
+    foreach ($context as $selection) {
+    	if ($selection instanceof Member) $active_members[] = $selection;
+    }
+    if (count($active_members) > 0) {
+    	$mnames = array();
+    	$allowed_contact_ids = array();
+    	foreach ($active_members as $member) {
+    		$mnames[] = clean($member->getName());
+    	}
+    	$widget_title = lang('activity'). ' '. lang('in').' '. implode(", ", $mnames);
     }
     
     $total = $limit ;

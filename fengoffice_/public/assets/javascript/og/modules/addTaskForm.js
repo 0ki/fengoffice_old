@@ -69,6 +69,6 @@ App.modules.addTaskForm = {
 		alert(lang('warning start date greater than due date'));
 		return false;
 	}
-	return og.handleMemberChooserSubmit(genid, objectType);
+	return true;
   }
 };

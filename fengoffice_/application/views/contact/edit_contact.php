@@ -8,6 +8,15 @@
 	}
 	
 	$visible_cps = CustomProperties::countVisibleCustomPropertiesByObjectType($object->getObjectTypeId());
+	
+	$address = $object->getAddress('work');
+	if($address){
+	$data = array('phone' => $object->getPhoneNumber('work',true), 'fax' => $object->getPhoneNumber('fax',true), 'adress' => $address->getStreet(),
+				  'state' =>$address->getState(),'zipCode' =>$address->getZipCode(),'web' => $object->getWebpageURL('work'),'city' => $address->getCity());
+	}else{
+		$data = array('phone' => $object->getPhoneNumber('work',true), 'fax' => $object->getPhoneNumber('fax',true),'web' => $object->getWebpageURL('work'));
+	}
+	$data_js = json_encode($data);
 ?>
 
 <form id="<?php echo $genid ?>submit-edit-form" style='height:100%;background-color:white' class="internalForm" action="<?php echo $contact->isNew() ? $contact->getAddUrl() : $contact->getEditUrl() ?>" method="post">
@@ -115,7 +124,7 @@
 				<?php echo label_tag(lang('company'), $genid.'profileFormCompany') ?> 
 				<div id="<?php echo $genid ?>existing_company">
 					<?php //echo select_company('contact[company_id]', array_var($contact_data, 'company_id'), array('id' => $genid.'profileFormCompany', "class" => "og-edit-contact-select-company", 'tabindex' => '5', 'onchange' => 'og.companySelectedIndexChanged(\''.$genid . '\')')); ?>
-					<?php echo select_box('contact[company_id]', array(), array('id' => $genid.'profileFormCompany', "class" => "og-edit-contact-select-company", 'tabindex' => '5', 'onchange' => 'og.companySelectedIndexChanged(\''.$genid . '\')'))?>
+					<?php echo select_box('contact[company_id]', array(), array('id' => $genid.'profileFormCompany', "class" => "og-edit-contact-select-company", 'tabindex' => '5', 'onchange' => 'og.companySelectedIndexChanged(\''.$genid . '\', '.$data_js.')'))?>
 					<span class="widget-body loading" id="<?php echo $genid?>profileFormCompany-loading" style="heigth:20px;background-color:transparent;border:0px none;display:none;"></span>
 				<a href="#" class="coViewAction ico-add" title="<?php echo lang('add a new company')?>" onclick="og.addNewCompany('<?php echo $genid ?>')"><?php echo lang('add company') . '...' ?></a></div>
 				<div id="<?php echo $genid?>new_company" style="display:none; padding:6px; margin-top:6px;margin-bottom:6px; background-color:#EEE">

@@ -221,7 +221,7 @@ og.MemberTree = function(config) {
 				// Member clicked (not root)
 				for (var i=0; i<node.actions.length; i++) {
 					var action = node.actions[i];
-					if (action.class == 'action-edit' && action.url) {
+					if (action['class'] == 'action-edit' && action.url) {
 						og.openLink(action.url);
 						return;
 					}

@@ -1190,7 +1190,7 @@ class ReportingController extends ApplicationController {
 	}
 
 	function compare_FieldName($field1, $field2){
-		return strnatcmp($field1['name'], $field2['name']);
+		return strnatcasecmp($field1['name'], $field2['name']);
 	}
 
 	private function get_report_column_types($report_id) {

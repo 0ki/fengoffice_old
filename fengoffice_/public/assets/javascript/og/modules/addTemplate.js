@@ -107,8 +107,8 @@ og.addObjectToTemplate = function(before, obj, dont_draw_milestone_combo) {
 	/*div.onmouseover = og.templateObjectMouseOver;
 	div.onmouseout = og.templateObjectMouseOut;*/
 	div.innerHTML =
-		'<input class="objectID" type="hidden" name="objects[' + count + ']" value="' + obj.object_id + '" />' +
-		'<span class="name">' + og.clean(obj.name) + '</span>' +
+		'<input class="objectID" type="hidden" name="objects[' + count + ']" value="' + obj.object_id + '" />' +'<div class="namecontainer">'+
+		'<span class="name">' + og.clean(obj.name) + '</span>' +'</div>'+
 		'<a href="#" onclick="og.removeObjectFromTemplate(this.parentNode, ' + obj.object_id + ')" class="removeDiv">'+lang('remove')+'</a>';
 	var editPropDiv = document.createElement('div');
 	editPropDiv.id = 'propDiv' + count;
@@ -190,8 +190,8 @@ og.removeObjectFromTemplate = function(div, obj_id) {
 				og.add_template_input_divs[inputs[i].value] = inputs[i].parentNode.parentNode.id;
 			}
 		}
-		for (var k=0; k<og.templateObjects.length; k++) {console.log('aca 0');
-			if (og.templateObjects[k].type == 'task') {console.log('aca 1');
+		for (var k=0; k<og.templateObjects.length; k++) {
+			if (og.templateObjects[k].type == 'task') {
 				og.drawTemplateObjectMilestonesCombo(Ext.get(og.add_template_input_divs[og.templateObjects[k].object_id]).dom, og.templateObjects[k]);
 			}
 		}

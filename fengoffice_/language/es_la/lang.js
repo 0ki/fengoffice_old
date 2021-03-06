@@ -410,7 +410,19 @@ addLangs({
 	'one month': 'Dentro de 2 semanas a 1 mes',
 	'three months': 'Dentro de 1 a 3 meses',
 	'one year': 'Dentro de 3 meses a 1 año',
-	'later than one year': 'Posterior a 1 año',
+	'later than one year': 'Posterior a 1 año',		
+	'before this year' : 'Previo a este año',
+	'this year (before last month)' : 'Este año (previo al mes pasado)',
+	'last m' : 'Mes pasado',
+	'this month(before last week)' : 'Este mes (previo a la semana pasada)',
+	'last w' : 'Semana pasada',
+	'this week(before yesterday)' : 'Esta semana (previo a ayer)',
+	'this week(later tomorrow)' : 'Esta semana (posterior a mañana)',
+	'next week' : 'Semana siguiente',
+	'this month(after next week)' : 'Este mes (posterior a la semana siguiente)',
+	'next three months(after next month)' : 'Siguientes tres meses (posterior al mes siguiente)',
+	'this year' : 'Este año',
+	'after this year' : 'Posterior a este año',		
 	'start': 'inicio',
 	'due': 'fin',
 	'add subtask': 'Agregar una nueva subtarea',
@@ -774,6 +786,7 @@ addLangs({
 	'and number more': 'y {0} más.',
 	'filters': 'Filtros',
 	'project': 'Espacio de Trabajo',
+	'there are no changes' : 'No hay cambios realizados',
 	
 	'new member added popup title' : '{0} {1} agregado exitosamente',
 	'new member added popup msg' : 'Has agregado exitosamente el {0} {1}.',
@@ -782,5 +795,6 @@ addLangs({
 	'this user option can be changed' : 'Esta opción puede ser cambiada en las preferencias de usuario en cualquier momento.',
 	'access member' : 'Acceder a {0}',
 	'stay at' : 'Quedarse en {0}',
-	'general view': 'Vista general'
+	'general view': 'Vista general',
+	'save as' : 'Guardar como {0}'
 });

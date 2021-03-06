@@ -173,8 +173,7 @@ class ApplicationLog extends BaseApplicationLog {
 			
 			$object_link = '<a style="font-weight:bold" href="' . $object->getObjectUrl() . '">&nbsp;'.
 			'<span style="padding: 1px 0 3px 18px;" class="db-ico ico-unknown ico-' . $type . $icon_class . '"/>'.clean($object->getObjectName()).'</a>';
-		}
-		else{
+		} else{
 			$object_link = clean($this->getObjectName()).'&nbsp;'.lang('object is deleted');
 		}	
 		switch ($this->getAction()) {
@@ -309,25 +308,25 @@ class ApplicationLog extends BaseApplicationLog {
 			}			
 		}
 		// Build data depending on type
-		if ($object){
+		if ($object instanceof ContentDataObject){
 			if ($object instanceof Contact && $object->isUser()) {
-				$type  = "user" ;
+				$type = "user" ;
 			}else{
 				$type = $object->getObjectTypeName() ;
 			}
 			if (($type != 'Time') || ($type == 'Time' && $object->getRelObjectId() != 0)){
 				$object_link = '<a style="font-weight:bold" href="' . $object->getObjectUrl() . '">&nbsp;'.
 				'<span style="padding: 1px 0 3px 18px;" class="db-ico ico-unknown ico-' . $type . $icon_class . '"/>'.clean($object->getObjectName()).'</a>';
-			}else{
+			} else {
 				//if it is a general timeslot
 				$object_link = '<span style="padding: 1px 0 3px 18px; font-weight:bold;" class="db-ico ico-unknown ico-' . $type . $icon_class . '"/>'.clean($object->getObjectName());
 			}
-		}
-		else{
+		} else {
 			$object_link = clean($this->getObjectName()).'&nbsp;'.lang('object is deleted');
+			return lang('activity ' . $this->getAction(), "", $user->getObjectName(), $object_link);
 		}
 		if($made_several_changes){
-			$this->setAction("made several changes");
+			$this->setAction(ApplicationLogs::ACTION_MADE_SEVERAL_CHANGES);
 		}
 		switch ($this->getAction()) {
             case ApplicationLogs::ACTION_MADE_SEVERAL_CHANGES :
@@ -347,7 +346,7 @@ class ApplicationLog extends BaseApplicationLog {
 			case ApplicationLogs::ACTION_DOWNLOAD :
 			case ApplicationLogs::ACTION_CHECKIN :
 			case ApplicationLogs::ACTION_CHECKOUT :
-				if ($object) {
+				if ($object instanceof ContentDataObject) {
 					return lang('activity ' . $this->getAction(), lang('the '.$type," "), $user->getObjectName(), $object_link);
 				}
 			case ApplicationLogs::ACTION_SUBSCRIBE :
@@ -357,8 +356,9 @@ class ApplicationLog extends BaseApplicationLog {
 					$users_str = "";
 					foreach ($user_ids as $usid) {
 						$su = Contacts::findById($usid);
-						if ($su instanceof Contact)
+						if ($su instanceof Contact) {
 							$users_str .= '<a style="font-weight:bold" href="'.$su->getObjectUrl().'">&nbsp;<span style="padding: 0 0 3px 18px;" class="db-ico ico-unknown ico-user"/>'.clean($su->getObjectName()).'</a>, ';
+						}
 					}
 					if (count($user_ids) == 1) {
 						$users_text = substr(trim($users_str), 0, -1);
@@ -368,10 +368,11 @@ class ApplicationLog extends BaseApplicationLog {
 				} else {
 					$users_text = lang('x users', count($user_ids), "");
 				}
-				if ($object)
+				if ($object instanceof ContentDataObject) {
 					return lang('activity ' . $this->getAction(), lang('the '.$object->getObjectTypeName()," "), $user->getObjectName(), $object_link, $users_text);
+				}
 			case ApplicationLogs::ACTION_COMMENT :
-				if ($object) {
+				if ($object instanceof ContentDataObject) {
 					$rel_object = Objects::findObject($this->getRelObjectId());
 					$commented_object = null;
 					if ($rel_object instanceof Comment) {
@@ -397,13 +398,13 @@ class ApplicationLog extends BaseApplicationLog {
 					}
 					$linked_object_link = '<a style="font-weight:bold" href="' . $linked_object->getObjectUrl() . '">&nbsp;<span style="padding: 1px 0 3px 18px;" class="db-ico ico-unknown ico-'.$linked_object->getObjectTypeName() . $icon_class . '"/>'.clean($linked_object->getObjectName()).'</a>';
 				}
-				if ($object) {
+				if ($object instanceof ContentDataObject) {
 					return lang('activity ' . $this->getAction(), lang('the '.$object->getObjectTypeName()," "), $user->getObjectName(), $object_link, $linked_object instanceof ApplicationDataObject ? lang('the '.$linked_object->getObjectTypeName()) : '', $linked_object_link);
 				}
 			case ApplicationLogs::ACTION_LOGIN :
 			case ApplicationLogs::ACTION_LOGOUT :
 				return lang('activity ' . $this->getAction(), $user->getObjectName());
-                        case ApplicationLogs::ACTION_COPY :				
+			case ApplicationLogs::ACTION_COPY :				
 				$to_str = "";
 				$to_str_member = "";
 				$members_ids_csv = str_replace("to:", "", $this->getLogData());
@@ -420,7 +421,7 @@ class ApplicationLog extends BaseApplicationLog {
 						$to_str .= $to_str_member;
 					}                                    
 				}
-				if($object){
+				if($object instanceof ContentDataObject){
 					if ($to_str != "") {
 						return lang('activity ' . $this->getAction() . ' to', lang('the '.$object->getObjectTypeName()), $user->getObjectName(), $object_link, $to_str);
 					} 

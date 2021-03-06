@@ -18,6 +18,15 @@ class Member extends BaseMember {
 		return DimensionObjectTypeHierarchies::getAllChildrenObjectTypeIds($this->getDimensionId(), $this->getObjectTypeId());
 	}
 	
+	function getArrayInfo() {
+		$columns = $this->getColumns();
+		$result = array();
+		foreach ($columns as $col) {
+			$result[$col] = $this->getColumnValue($col);
+		}
+		return $result;
+	}
+	
 	function getAllChildrenSorted() {
 		$all_children = array();
 		

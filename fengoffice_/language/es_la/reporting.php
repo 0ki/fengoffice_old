@@ -35,4 +35,5 @@
 	'mail' => 'Correo',
 	'show always' => 'Mostrar siempre este reporte',
 	'subtotal'=> 'Subtotal',
+	'print this page'=> 'Imprimir esta página',
 ); ?>

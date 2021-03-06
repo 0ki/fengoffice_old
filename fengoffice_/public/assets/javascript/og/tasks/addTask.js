@@ -223,7 +223,7 @@ ogTasks.drawTaskForm = function(container_id, data){
 	if (og.config.multi_assignment == 1) {
 		if (typeof window.loadMultiAssignmentHtml == 'function') {
 			if (data.multiAssignment) {
-				html += "<button onclick='og.TaskMultiAssignment();return false;' tabIndex=1600 type='submit' class='submit'>"
+				html += "<button onclick='if (og.TaskMultiAssignment) {og.TaskMultiAssignment();return false;}' tabIndex=1600 type='submit' class='submit'>"
 						+ (data.isEdit ? lang('save changes') : lang('add task'))
 						+ "</button>&nbsp;&nbsp;<button class='submit' tabIndex=1700 onclick='ogTasks.hideAddNewTaskForm();return false;'>"
 						+ lang('cancel') + "</button>";

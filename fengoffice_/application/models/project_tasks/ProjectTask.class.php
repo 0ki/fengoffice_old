@@ -1533,7 +1533,7 @@ class ProjectTask extends BaseProjectTask {
 
 
 	function calculatePercentComplete() {
-		if ($this->getTimeEstimate() > 0){
+		if (!$this->isCompleted() && $this->getTimeEstimate() > 0){
 			$all_timeslots = $this->getTimeslots();
 			$total_time = 0;
 			foreach ($all_timeslots as $ts) {

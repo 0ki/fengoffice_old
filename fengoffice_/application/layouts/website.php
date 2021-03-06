@@ -112,7 +112,7 @@ $use_owner_company_logo = owner_company()->hasLogo();
                         <img src="<?php echo ($use_owner_company_logo) ? owner_company()->getLogoUrl() : 's.gif' ?>" name="img_company_margin" id="img_company_margin" style="display: none;"/>
                         <script>
                             $('#img_company_margin').load(function() {
-                                var margin = Math.round(parseInt(document.img_company_margin.height) / 2);
+                                var margin = (Ext.isIE) ? 25 : Math.round(parseInt(document.img_company_margin.height) / 2);
                                 var magin_top = "-" + margin + "px";
                                 $("#logo_company_margin_top").css({'margin-top':magin_top, 'position': 'relative', 'top': '50%'});
                                 $("#img_company_margin").show();

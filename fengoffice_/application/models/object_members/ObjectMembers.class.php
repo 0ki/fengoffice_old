@@ -139,22 +139,23 @@
   		
   		static function getMembersByObjectAndDimension($object_id, $dimension_id, $extra_conditions = "") {
   			$sql = "
-  				SELECT distinct(id), m.* 
+  				SELECT m.* 
   				FROM ".TABLE_PREFIX."object_members om 
   				INNER JOIN ".TABLE_PREFIX."members m ON om.member_id = m.id 
   				WHERE 
-  					dimension_id = $dimension_id AND 
-  					om.object_id = $object_id 
+  					dimension_id = '$dimension_id' AND 
+  					om.object_id = '$object_id' 
   					$extra_conditions
   				ORDER BY m.name";
   			
-  			$result = array() ;
+  			$result = array();
   			$rows = DB::executeAll($sql);
   			if (!is_array($rows)) return $result;
   			
   			foreach ($rows as $row) {
   				$member = new Member();
   				$member->setFromAttributes($row);
+  				$member->setId($row['id']);
   				$result[] = $member;
   			}
   			return $result;

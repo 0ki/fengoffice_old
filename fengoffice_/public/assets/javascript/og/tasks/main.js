@@ -872,22 +872,22 @@ ogTasks.setSubtasksFromData = function(task, subtdata){
 */
 ogTasks.getTimeDistances = function(){
 	var result = [];
-	result[3] = lang('earlier than one year');
-	result[4] = lang('last year');
-	result[5] = lang('last three months');
-	result[6] = lang('last month');
-	result[7] = lang('last two weeks');
-	result[8] = lang('last week');
+	result[3] = lang('before this year');
+	result[4] = lang('this year (before last month)');
+	result[5] = lang('last m');
+	result[6] = lang('this month(before last week)');
+	result[7] = lang('last w');
+	result[8] = lang('this week(before yesterday)');
 	result[9] = lang('yesterday');
 	result[10] = lang('today');
 	result[11] = lang('tomorrow');
-	result[12] = lang('one week');
-	result[13] = lang('two weeks');
-	result[14] = lang('one month');
-	result[15] = lang('three months');
-	result[16] = lang('one year');
-	result[17] = lang('later than one year');
-	
+	result[12] = lang('this week(later tomorrow)');
+	result[13] = lang('next week');
+	result[14] = lang('this month(after next week)');
+	result[15] = lang('next month');
+	result[16] = lang('next three months(after next month)');
+	result[17] = lang('this year');
+	result[18] = lang('after this year');
 	return result;
 }
 
@@ -900,42 +900,72 @@ ogTasks.getTimeDistance = function(timestamp){
 	date.clearTime();
 	var today = new Date();
 	today.clearTime();
-	var elapsed;
-	if (today > date)
-		elapsed = -(date.getElapsed(today));
-	else
-		elapsed = today.getElapsed(date);
 	var day = 24*60*60*1000; //milliseconds in a day
+	var startday = 0;//(og.preferences['start_monday']) * day;
+	if(og.preferences['start_monday'] == 0){startday = day;};
+	var currentday = new Date ();
+	var sundayafter = new Date();
+	sundayafter.setTime((today.getTime() + ((7-today.getDay()) * day))-startday);
+	var sundaybefore = new Date();
+	sundaybefore.setTime((today.getTime() - (currentday.getDay() * day))-startday);
+	var lastweek = new Date();
+	lastweek.setTime(sundaybefore.getTime() - (7 * day));
+	var nextweek = new Date();
+	nextweek.setTime(sundayafter.getTime() + (7 * day));
+	var yesterday = new Date();
+	yesterday.setTime(today.getTime() - day);
+	var tomorrow = new Date();
+	tomorrow.setTime(today.getTime() + day);
+	var ano = Math.abs(date.getFullYear() - currentday.getFullYear());
 	
-	if (elapsed <  -(365 * day))
-		return 3;
-	if (elapsed < -(90 * day))
-		return 4;
-	if (elapsed < -(30 * day))
-		return 5;
-	if (elapsed < -(14 * day))
-		return 6;
-	if (elapsed < -(7 * day))
-		return 7;
-	if (elapsed < -(day))
-		return 8;
-	if (elapsed < 0)
-		return 9;
-	if (elapsed == 0)
-		return 10;
-	if (elapsed <= day)
-		return 11;
-	if (elapsed <= 7 * day)
-		return 12;
-	if (elapsed <= 14 * day)
-		return 13;
-	if (elapsed <= 30 * day)
-		return 14;
-	if (elapsed <= 90 * day)
-		return 15;
-	if (elapsed <= 365 * day)
-		return 16;
-	return 17;
+	if(date < yesterday){
+		if(date > sundaybefore){
+			return 8;//this week(before yesterday
+		}else if(date > lastweek){
+			return 7;//last week
+		}else if(date.getMonth() == today.getMonth() && date.getFullYear() == currentday.getFullYear()){
+			return 6;//this month(before last week)
+		}else if(date.getFullYear()+1 >= currentday.getFullYear() ){
+					if(date.getMonth()-ano*12 == today.getMonth()-1){
+						return 5;//last month
+					}else if(date.getFullYear() == currentday.getFullYear()){
+						return 4;//this year (before last month)
+					}else{
+						return 3;//before this year
+					}
+				
+		}else{
+			return 3;//before this year
+		}		
+	}else if((date - yesterday) == 0){
+		return 9;//yesterday
+		
+	}else if ((date - today) == 0){
+		return 10;//today
+	}else if((date - tomorrow) == 0){
+		return 11;//tomorrow
+	}else if(date > tomorrow){
+			if(date <= sundayafter){
+				return 12;//this week(later tomorrow)
+			}else if(date <= nextweek){
+				return 13;//next week	
+			}else if(date.getMonth() == today.getMonth() && date.getFullYear() == currentday.getFullYear()){
+				return 14;//this month(after next week)
+			}else if(date.getFullYear() <= currentday.getFullYear() + 1){
+						if(date.getMonth() + ano * 12 == today.getMonth()+1){
+							return 15;//next month
+						}else if(date.getMonth() + ano * 12 < today.getMonth()+4){
+							return 16;//next three months(after next month)
+						}else if(date.getFullYear() == currentday.getFullYear()){
+							return 17;//this year(after next 3 month)
+						}else{
+							return 18;//after this year
+						}
+					
+			}else{
+				return 18;//after this year
+			}		
+	};	
 }
 
 //--------------------------------

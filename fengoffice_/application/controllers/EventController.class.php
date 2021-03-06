@@ -380,18 +380,6 @@ class EventController extends ApplicationController {
 					$this->change_invitation_state($data['confirmAttendance'], $event->getId(), $user_filter);
 				}
 				
-				$is_silent = false;
-				if ((isset($data['send_notification']) && $data['send_notification']) || (array_var($_POST, 'popup') && user_config_option('event_send_invitations'))) {
-					$users_to_inv = array();
-					foreach ($data['users_to_invite'] as $us => $v) {
-						if ($us != logged_user()->getId()) {
-							$users_to_inv[] = Contacts::findById(array('id' => $us));
-						}
-					}
-					Notifier::notifEvent($event, $users_to_inv, 'new', logged_user());
-					$is_silent = true;
-				}
-
 				if (array_var($_POST, 'members')) {
 					$member_ids = json_decode(array_var($_POST, 'members'));
 				} else {
@@ -456,7 +444,18 @@ class EventController extends ApplicationController {
 					ajx_current("back");
 				}
 				DB::commit();
-
+				$is_silent = false;
+				if (isset($data['send_notification']) && $data['send_notification']) {
+					$users_to_inv = array();
+					foreach ($data['users_to_invite'] as $us => $v) {
+						if ($us != logged_user()->getId()) {
+							$users_to_inv[] = Contacts::findById(array('id' => $us));
+						}
+					}
+					Notifier::notifEvent($event, $users_to_inv, 'new', logged_user());
+					$is_silent = true;
+				}
+							
 				flash_success(lang('success add event', clean($event->getObjectName())));
 				ajx_add("overview-panel", "reload");
 			} catch(Exception $e) {

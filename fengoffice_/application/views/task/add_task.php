@@ -20,7 +20,7 @@
 og.genid = '<?php echo $genid?>';
 og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Plugins::instance()->isActivePlugin('crpm') ? '1' : '0' ?>';
 </script>
-<form id="<?php echo $genid ?>submit-edit-form" style='height:100%;background-color:white' class="add-task" action="<?php echo $task->isNew() ? get_url('task', 'add_task', array("copyId" => array_var($task_data, 'copyId'))) : $task->getEditListUrl() ?>" method="post" onsubmit="return App.modules.addTaskForm.checkSubmitAddTask('<?php echo $genid; ?>','<?php echo $task->manager()->getObjectTypeId()?>') && og.setDescription() <?php if (Plugins::instance()->isActivePlugin('gantt')) { echo "&& og.ControlDates('". array_var($task_data, 'type_control')."')";}?> <?php if (array_var($task_data, 'multi_assignment') && Plugins::instance()->isActivePlugin('crpm')) { echo "&& og.TaskMultiAssignment()";}?>;">
+<form id="<?php echo $genid ?>submit-edit-form" style='height:100%;background-color:white' class="add-task" action="<?php echo $task->isNew() ? get_url('task', 'add_task', array("copyId" => array_var($task_data, 'copyId'))) : $task->getEditListUrl() ?>" method="post" onsubmit="return App.modules.addTaskForm.checkSubmitAddTask('<?php echo $genid; ?>','<?php echo $task->manager()->getObjectTypeId()?>') && og.setDescription() <?php if (Plugins::instance()->isActivePlugin('gantt')) { echo "&& og.ControlDates('". array_var($task_data, 'type_control')."')";}?> <?php if (array_var($task_data, 'multi_assignment') && Plugins::instance()->isActivePlugin('crpm')) { echo "&& typeof('og.TaskMultiAssignment')=='function' ? og.TaskMultiAssignment() : true";}?>;">
 
 <div class="task">
 <div class="coInputHeader">

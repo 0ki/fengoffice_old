@@ -147,18 +147,16 @@
         <?php }else{?>        
         <!-- EVENT INVITATIONS -->
         <?php if (isset($guests) && $guests != "") {?>
-        <div>
-            <span style="line-height: 20px; display: block;">
-                <div style="width: 15%;line-height: 20px; float: left;">
-                    <b><?php echo lang('invitations')?></b>
-                </div>            
-                <div style="width: 85%; line-height: 20px; float: left;">
-                    <b><?php echo lang('participate')?></b>
-                </div>
-            </span>
-            <?php echo $guests ?>
+        <div style="line-height:20px;clear:both;">
+        	<div style="width:35%;line-height:20px;float:left;">
+        		<b><?php echo lang('invitations')?></b>
+        	</div>
+        	<div style="line-height:20px;float:left;">
+        		<b><?php echo lang('participate')?></b>
+        	</div>
         </div>
-        <div>&nbsp;</div>
+        <?php echo $guests ?>
+        <div style="clear:both">&nbsp;</div>
         <?php }?> 
         <!-- END EVENT INVITATIONS -->
         

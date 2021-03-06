@@ -356,7 +356,7 @@ if ($calendar_panel instanceof TabPanel && $calendar_panel->getEnabled()) {
 						}//endif birthdays
 					} // end foreach event writing loop
 					if ($count > 3) {
-						$output .= '<div style="witdh:100%;text-align:center;font-size:9px" ><a href="'.$p.'" class="internalLink"  onclick="og.disableEventPropagation(event);nd();">'.($count-3) . ' ' . lang('more') .'</a></div>';
+						$output .= '<div style="witdh:100%;text-align:center;font-size:9px" ><a href="'.$p.'" class="internalLink"  onclick="og.disableEventPropagation(event);">'.($count-3) . ' ' . lang('more') .'</a></div>';
 					}
 				}
 				
@@ -371,11 +371,19 @@ if ($calendar_panel instanceof TabPanel && $calendar_panel->getEnabled()) {
 	} // end main loop
 	$output .= '</table>';
 	
-	$cmember = current_member();
-	if($cmember != NULL){
-		$widget_title = lang("upcoming events milestones and tasks") . " " . lang("in") . " " . $cmember->getName();
+	$active_members = array();
+	$context = active_context();
+	foreach ($context as $selection) {
+		if ($selection instanceof Member) $active_members[] = $selection;
 	}
-	
+	if (count($active_members) > 0) {
+		$mnames = array();
+		$allowed_contact_ids = array();
+		foreach ($active_members as $member) {
+			$mnames[] = clean($member->getName());
+		}
+		$widget_title = lang('upcoming events milestones and tasks'). ' '. lang('in').' '. implode(", ", $mnames);
+	}
 	include_once 'template.php';
 
 }

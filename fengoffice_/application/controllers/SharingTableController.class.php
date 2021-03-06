@@ -54,14 +54,15 @@ class  SharingTableController extends ApplicationController {
 		foreach ($permissions as $permission) {
 			$memberId = $permission->m;
 			$objectTypeId = $permission->o;
-			$delete_conditions[] = " ( object_type_id = $objectTypeId AND om.member_id = $memberId )";
+			if (!$memberId || !$objectTypeId) continue;
+			$delete_conditions[] = " ( object_type_id = '$objectTypeId' AND om.member_id = '$memberId' ) ";
 			if ($permission->r) {
-				$read_conditions[] = " ( object_type_id = $objectTypeId AND om.member_id = $memberId ) "; 
+				$read_conditions[] = " ( object_type_id = '$objectTypeId' AND om.member_id = '$memberId' ) "; 
 			}
 		}
 		
 		// DELETE THE AFFECTED OBJECTS FROM SHARING TABLE
-		$stManager->delete("object_id IN (SELECT object_id $from WHERE ".implode(' OR ' , $delete_conditions ).") AND group_id = $group ");
+		$stManager->delete("object_id IN (SELECT object_id $from WHERE ".implode(' OR ' , $delete_conditions ).") AND group_id = '$group'");
 		
 		// 2. POPULATE THE SHARING TABLE AGAIN WITH THE READ-PERMISSIONS (If there are)
 		if (isset($read_conditions) && count($read_conditions)) {

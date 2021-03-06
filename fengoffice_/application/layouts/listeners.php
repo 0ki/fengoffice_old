@@ -256,4 +256,12 @@ og.eventManager.addListener('ask to select member',
 	}
 );
 
+og.eventManager.addListener('new document add save as button',
+	function (data){
+		var button = Ext.getCmp(data.genid + 'save_new_name');
+		if (button) button.show();
+		var button2 = Ext.getCmp(data.genid + 'save_as_name');
+		if (button2) button2.setText(lang('save as', '<b>'+data.name+'</b>'));
+	}
+);
 </script>

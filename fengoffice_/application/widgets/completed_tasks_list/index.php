@@ -18,9 +18,18 @@ $tasks_result = ProjectTasks::instance()->listing(array(
 
 $tasks = $tasks_result->objects;
 
-$cmember = current_member();
-if($cmember != NULL){
-	$widget_title = lang("completed tasks") . " " . lang("in") . " " . $cmember->getName();
+$active_members = array();
+$context = active_context();
+foreach ($context as $selection) {
+	if ($selection instanceof Member) $active_members[] = $selection;
+}
+if (count($active_members) > 0) {
+	$mnames = array();
+	$allowed_contact_ids = array();
+	foreach ($active_members as $member) {
+		$mnames[] = clean($member->getName());
+	}
+	$widget_title = lang('completed tasks'). ' '. lang('in').' '. implode(", ", $mnames);
 }
 
 if ($tasks_result->total > 0) {

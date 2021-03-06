@@ -2976,13 +2976,13 @@ class ContactController extends ApplicationController {
 		}
 	}
 
-	private function createUserFromContactForm ($user, $contactId, $email, $sendEmail = false) {
+	private function createUserFromContactForm ($user, $contactId, $email, $sendEmail = true) {
 		$createUser = false;
 		$createPass = false;
 
 		if ( array_var ($user, 'create-user')) {
 			$createUser = true;
-			if ( array_var ($user, 'create-password')) {
+			if ( array_var ($user, 'create-password') || !$sendEmail) { 
 				$createPass = true;
 				$password =  array_var($user, 'password');
 				$password_a =  array_var($user, 'password_a');

@@ -7,7 +7,7 @@ og.WebpageManager = function() {
 	this.needRefresh = false;
 	
 	this.fields = [
-        'name', 'description', 'url', 'updatedBy', 'updatedById',
+        'object_id','name', 'description',  'ot_id', 'url', 'updatedBy', 'updatedById',
         'updatedOn', 'updatedOn_today', 'ix', 'isRead', 'memPath'
     ];
 	var cps = og.custom_properties_by_type['weblink'] ? og.custom_properties_by_type['weblink'] : [];
@@ -365,7 +365,6 @@ og.WebpageManager = function() {
 		tbar.push('-');
 	}
 	tbar.push(actions.markAs);
-	
 	og.WebpageManager.superclass.constructor.call(this, {
         store: this.store,
 		layout: 'fit',
@@ -376,7 +375,7 @@ og.WebpageManager = function() {
         closable: true,
 		stripeRows: true,
 		id: 'webpage-manager',
-        bbar: new og.CurrentPagingToolbar({
+		bbar: new og.CurrentPagingToolbar({
             pageSize: og.config['files_per_page'],
             store: this.store,
             displayInfo: true,

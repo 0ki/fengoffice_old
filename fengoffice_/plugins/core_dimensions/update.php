@@ -58,3 +58,10 @@ function core_dimensions_update_4_5() {
 		ON DUPLICATE KEY UPDATE ".TABLE_PREFIX."contact_member_permissions.member_id=".TABLE_PREFIX."contact_member_permissions.member_id;
 	");
 }
+
+function core_dimensions_update_5_6() {
+	DB::execute('
+		UPDATE '.TABLE_PREFIX.'dimensions SET options = \'{"useLangs":true,"defaultAjax":{"controller":"dashboard", "action": "main_dashboard"},"quickAdd":{"formAction":"?c=contact&a=quick_add"}}\'
+		WHERE code = \'feng_persons\';
+	');
+}

@@ -39,7 +39,7 @@
 		
 	}
 	
-	.result-item .footer, .result-item .footer a {
+	.result-item .footer, .result-item .footer.footers_links a {
 		color: #388222;
 	}	
 	

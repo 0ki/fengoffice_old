@@ -161,20 +161,18 @@ class Notifier {
 
 		//context
 		$contexts = array();
-		if($object->getMembersToDisplayPath()){
-			$members = $object->getMembersToDisplayPath();
-			foreach ($members as $key => $member){
-				$dim = Dimensions::getDimensionById($key);
-				if ($dim->getCode() == "customer_project"){
-					foreach($members[$key] as $member){
-						$obj_type = ObjectTypes::findById($member['ot']);
+		$members =  $object instanceof Comment ? $object->getRelObject()->getMembers() : $object->getMembers();
+		if(count($members)>0){
+			foreach ($members as $member){
+				$dim = $member->getDimension();
+				if($dim->getIsManageable()){
+					if ($dim->getCode() == "customer_project"){
+						$obj_type = ObjectTypes::findById($member->getObjectTypeId());
 						if ($obj_type instanceof ObjectType) {
-							$contexts[$dim->getCode()][$obj_type->getName()][]= '<span style="'.get_workspace_css_properties($member['c']).'">'. $member['name'] .'</span>';
+							$contexts[$dim->getCode()][$obj_type->getName()][]= '<span style="'.get_workspace_css_properties($member->getMemberColor()).'">'. $member->getName() .'</span>';
 						}
-					}
-				}else{
-					foreach($members[$key] as $member){
-						$contexts[$dim->getCode()][]= '<span style="'.get_workspace_css_properties($member['c']).'">'. $member['name'] .'</span>';
+					}else{
+						$contexts[$dim->getCode()][]= '<span style="'.get_workspace_css_properties($member->getMemberColor()).'">'. $member->getName() .'</span>';
 					}
 				}
 			}
@@ -341,14 +339,9 @@ class Notifier {
                                             if ($inv->getInvitationState() == 1) $state_desc = lang('yes');
                                             else if ($inv->getInvitationState() == 2) $state_desc = lang('no');
                                             else if ($inv->getInvitationState() == 3) $state_desc = lang('maybe');
-                                            $guests .= '<span style="line-height: 20px; display: block;">
-                                                            <div style="width: 15%;line-height: 20px; float: left;">
-                                                                ' . clean($inv_user->getObjectName()) . '
-                                                            </div>            
-                                                            <div style="width: 85%; line-height: 20px; float: left;">
-                                                                ' . $state_desc . '
-                                                            </div>
-                                                        </span>';
+                                            $guests .= '<div style="line-height: 20px; clear:both;">';
+											$guests .= '<div style="width: 35%;line-height: 20px; float: left;">' . clean($inv_user->getObjectName()) . '</div>';
+											$guests .= '<div style="line-height: 20px; float: left;">' . $state_desc . '</div></div>';
                                         }
                                         if($inv->getInvitationState() == 0){
                                             $send_link[] = $inv_user->getId();
@@ -413,7 +406,6 @@ class Notifier {
 		} 
 		$locale = logged_user() instanceof Contact ? logged_user()->getLocale() : DEFAULT_LOCALIZATION;
 		Localization::instance()->loadSettings($locale, ROOT . '/language');
-                
 		self::queueEmails($emails);
 	}
 		
@@ -430,6 +422,7 @@ class Notifier {
 			$subscribers[] = $subscriber;
 		}
 		self::objectNotification($comment, $subscribers, logged_user(), 'new');
+		
 	} // newObjectComment
 	
 	/**
@@ -624,20 +617,19 @@ class Notifier {
 
 		//context
 		$contexts = array();
-		if($object->getMembersToDisplayPath()){
-			$members = $object->getMembersToDisplayPath();
-			foreach ($members as $key => $member){
-				$dim = Dimensions::getDimensionById($key);
-				if ($dim->getCode() == "customer_project"){
-					foreach($members[$key] as $member){
-						$obj_type = ObjectTypes::findById($member['ot']);
+		$members = $object->getMembers();
+				
+		if(count($members)>0){
+			foreach ($members as $member){
+				$dim = $member->getDimension();
+				if($dim->getIsManageable()){
+					if ($dim->getCode() == "customer_project"){
+						$obj_type = ObjectTypes::findById($member->getObjectTypeId());
 						if ($obj_type instanceof ObjectType) {
-							$contexts[$dim->getCode()][$obj_type->getName()][]= '<span style="'.get_workspace_css_properties($member['c']).'">'. $member['name'] .'</span>';
+							$contexts[$dim->getCode()][$obj_type->getName()][]= '<span style="'.get_workspace_css_properties($member->getMemberColor()).'">'. $member->getName() .'</span>';
 						}
-					}
-				}else{
-					foreach($members[$key] as $member){
-						$contexts[$dim->getCode()][]= '<span style="'.get_workspace_css_properties($member['c']).'">'. $member['name'] .'</span>';
+					}else{
+						$contexts[$dim->getCode()][]= '<span style="'.get_workspace_css_properties($member->getMemberColor()).'">'. $member->getName() .'</span>';
 					}
 				}
 			}
@@ -679,14 +671,9 @@ class Notifier {
                                 if ($inv->getInvitationState() == 1) $state_desc = lang('yes');
                                 else if ($inv->getInvitationState() == 2) $state_desc = lang('no');
                                 else if ($inv->getInvitationState() == 3) $state_desc = lang('maybe');
-                                $guests .= '<span style="line-height: 20px; display: block;">
-                                                <div style="width: 15%;line-height: 20px; float: left;">
-                                                    ' . clean($inv_user->getObjectName()) . '
-                                                </div>            
-                                                <div style="width: 85%; line-height: 20px; float: left;">
-                                                    ' . $state_desc . '
-                                                </div>
-                                            </span>';
+                                $guests .= '<div style="line-height: 20px; clear:both;">';
+								$guests .= '<div style="width: 35%;line-height: 20px; float: left;">' . clean($inv_user->getObjectName()) . '</div>';            
+								$guests .= '<div style="line-height: 20px; float: left;">' . $state_desc . '</div></div>';
                             }
                             if($inv->getInvitationState() == 0){
                                 $send_link[] = $inv_user->getId();
@@ -958,26 +945,25 @@ class Notifier {
                 
                 //context
                 $contexts = array();
-                if($task->getMembersToDisplayPath()){
-                    $members = $task->getMembersToDisplayPath();
-                    foreach ($members as $key => $member){                        
-                        $dim = Dimensions::getDimensionById($key);
-                        if ($dim->getCode() == "customer_project"){
-                            foreach($members[$key] as $member){
-                                $obj_type = ObjectTypes::findById($member['ot']);
-                                if ($obj_type instanceof ObjectType) {
-                                	$contexts[$dim->getCode()][$obj_type->getName()][]= '<span style="'.get_workspace_css_properties($member['c']).'">'. $member['name'] .'</span>';
-                                }
-                            }
-                        }else{
-                            foreach($members[$key] as $member){
-                                $contexts[$dim->getCode()][]= '<span style="'.get_workspace_css_properties($member['c']).'">'. $member['name'] .'</span>';
-                            }
-                        }
-                    }
-                }
-                tpl_assign('contexts', $contexts);//workspaces
+                $members = $task->getMembers();
+	                if(count($members)>0){
+	                	foreach ($members as $member){
+	                		$dim = $member->getDimension();
+	                		if($dim->getIsManageable()){
+	                			if ($dim->getCode() == "customer_project"){
+	                				$obj_type = ObjectTypes::findById($member->getObjectTypeId());
+	                				if ($obj_type instanceof ObjectType) {
+	                					$contexts[$dim->getCode()][$obj_type->getName()][]= '<span style="'.get_workspace_css_properties($member->getMemberColor()).'">'. $member->getName() .'</span>';
+	                				}
+	                			}else{
+	                				$contexts[$dim->getCode()][]= '<span style="'.get_workspace_css_properties($member->getMemberColor()).'">'. $member->getName() .'</span>';
+	                			}
+	                		}
+	                	}
+	                }
+               
                 
+                tpl_assign('contexts', $contexts);//workspaces 
                 //start date, due date or start
                 if ($task->getStartDate() instanceof DateTimeValue) {
 			$date = Localization::instance()->formatDescriptiveDate($task->getStartDate(), $task->getAssignedTo()->getTimezone());
@@ -1077,26 +1063,24 @@ class Notifier {
                     tpl_assign('priority', array($priority,$priorityColor));
 		}
 		
-		//context
-                $contexts = array();
-                if($task->getMembersToDisplayPath()){
-                    $members = $task->getMembersToDisplayPath();
-                    foreach ($members as $key => $member){                        
-                        $dim = Dimensions::getDimensionById($key);
-                        if ($dim->getCode() == "customer_project"){
-                            foreach($members[$key] as $member){
-                                $obj_type = ObjectTypes::findById($member['ot']);
-                                if ($obj_type instanceof ObjectType) {
-                                	$contexts[$dim->getCode()][$obj_type->getName()][]= '<span style="'.get_workspace_css_properties($member['c']).'">'. $member['name'] .'</span>';
-                                }
-                            }
-                        }else{
-                            foreach($members[$key] as $member){
-                                $contexts[$dim->getCode()][]= '<span style="'.get_workspace_css_properties($member['c']).'">'. $member['name'] .'</span>';
-                            }
-                        }
-                    }
-                }
+		//context		
+		$contexts = array();
+		$members = $task->getMembers();
+		if(count($members)>0){
+			foreach ($members as $member){
+				$dim = $member->getDimension();
+				if($dim->getIsManageable()){
+					if ($dim->getCode() == "customer_project"){
+						$obj_type = ObjectTypes::findById($member->getObjectTypeId());
+						if ($obj_type instanceof ObjectType) {
+							$contexts[$dim->getCode()][$obj_type->getName()][]= '<span style="'.get_workspace_css_properties($member->getMemberColor()).'">'. $member->getName() .'</span>';
+						}
+					}else{
+						$contexts[$dim->getCode()][]= '<span style="'.get_workspace_css_properties($member->getMemberColor()).'">'. $member->getName() .'</span>';
+					}
+				}
+			}
+		}
                 tpl_assign('contexts', $contexts);//workspaces
                 
                 //start date, due date or start
