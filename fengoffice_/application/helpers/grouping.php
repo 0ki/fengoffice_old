@@ -45,7 +45,7 @@
 					$member = null;
 					foreach ($members as $tmp_m) {
 						if ($tmp_m->getDepth() > $max_depth) {
-							$max_depht = $tmp_m->getDepth();
+							$max_depth = $tmp_m->getDepth();
 							$member = $tmp_m;
 						}
 					}

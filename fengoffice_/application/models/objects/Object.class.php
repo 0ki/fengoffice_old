@@ -26,7 +26,7 @@ class Object extends BaseObject {
 	function getObjectTypeName(){
 		if (!$this->object_type)
 			$this->object_type = ObjectTypes::findById($this->getObjectTypeId());
-		return $this->object_type->getName();
+		return $this->object_type instanceof ObjectType ? $this->object_type->getName() : "";
 	}
 
 	

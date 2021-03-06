@@ -5,8 +5,8 @@ $suffix = (defined('DEBUG_JS') && DEBUG_JS) ? "-debug" : "";
 
 return array(
 	"jquery/jquery.js",
-//      "jquery/jquery-1.6.2.min.js",
 	"jquery/jquery.tools.min.js",
+	"jquery/jquery.collapsible.js",
 	"extjs/adapter/jquery/ext-jquery-adapter.js",	
 	"jquery/color-picker/modcoder_excolor/jquery.modcoder.excolor.js",
 	"wztooltip/wz_tooltip.js",
@@ -35,8 +35,13 @@ return array(
 	"og/ContentPanelLayout.js",
 	"og/ContentPanel.js",
 	"og/ContextManager.js",
+	"og/DateField.js",
+	"og/UserGroupPicker.js",
+	"og/Permissions.js",
 	"og/layout.js",
 	"og/modules/dashboardComments.js",
+	"og/modules/addMemberForm.js",
+	"og/modules/memberSelector.js",
 	"og/ofc.js",
 	"og/Breadcrumbs.js",
 	"og/MemberCombo.js",

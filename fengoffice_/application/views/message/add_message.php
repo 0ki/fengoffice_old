@@ -137,7 +137,7 @@
                                 editor.resetDirty();
                         }
                     },
-                    entities_additional : '#39,#336,#337,#368,#369,#124'
+                entities_additional : '#39,#336,#337,#368,#369,#124'
             });
 
             og.setDescription = function() {

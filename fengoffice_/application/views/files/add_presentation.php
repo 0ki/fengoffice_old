@@ -71,8 +71,8 @@ if (config_option('checkout_for_editing_online')) {
 	add_page_action(lang("checkin file"), "javascript:(function(){ document.getElementById('$id').slimey.submitFile(true, false, 1); })()", "ico-checkin");
 }
 
-add_page_action(lang("save"), "javascript:(function(){ document.getElementById('$id').slimey.submitFile(true); })()", "save");
-add_page_action(lang("save as"), "javascript:(function(){ document.getElementById('$id').slimey.submitFile(true, true); })()", "save_as");
+add_page_action(lang("save as").' <b>'.$filename.'</b>', "javascript:(function(){ document.getElementById('$id').slimey.submitFile(true); })()", "save");
+if(!$file->isNew()) add_page_action(lang("save with a new name"), "javascript:(function(){ document.getElementById('$id').slimey.submitFile(true, true); })()", "save_as");
 ?>
 
 <?php tpl_display(get_template_path('form_errors')) ?>

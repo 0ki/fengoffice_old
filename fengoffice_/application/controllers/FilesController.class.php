@@ -462,15 +462,15 @@ class FilesController extends ApplicationController {
 			try {
 				DB::beginWork();
 				
-					$type = array_var($file_data, 'type');
-					$file->setType($type);
-					$file->setFilename(array_var($file_data, 'name'));
-					$file->setFromAttributes($file_data);
-					
-					$file->setIsVisible(true);
+				$type = array_var($file_data, 'type');
+				$file->setType($type);
+				$file->setFilename(array_var($file_data, 'name'));
+				$file->setFromAttributes($file_data);
 				
-					$file->save();
-					$file->subscribeUser(logged_user());
+				$file->setIsVisible(true);
+				
+				$file->save();
+				$file->subscribeUser(logged_user());
 					
 				if($file->getType() == ProjectFiles::TYPE_DOCUMENT){
 					// handle uploaded file
@@ -506,24 +506,15 @@ class FilesController extends ApplicationController {
 					if ($object instanceof ContentDataObject) {
 						$member_ids = $object->getMemberIds();
 						$object_controller->add_to_members($file, $member_ids);
+					} else {
+						// add only to logged_user's person member
+						$object_controller->add_to_members($file, array());
 					}
+				} else {
+					// add only to logged_user's person member
+					$object_controller->add_to_members($file, array());
 				}
-				//                                else{
-				//                                    $m = Members::findById(logged_user()->getPersonalMemberId());
-				//                                    if (!$m instanceof Member) {
-				//                                            $person_dim = Dimensions::findByCode('feng_persons');
-				//                                            if ($person_dim instanceof Dimension) {
-				//                                                    $member_ids = Members::findAll(array(
-				//                                                            'id' => true,
-				//                                                            'conditions' => array("object_id = ? AND dimension_id = ?", logged_user()->getId(), $person_dim->getId())
-				//                                                    ));
-				//                                            }
-				//                                    } else {
-				//                                            $member_ids[] = $m->getId();
-				//                                    }
-				//                                    $object_controller->add_to_members($file, $member_ids);
-//                                }
-
+				
 				DB::commit();
 				
 				ajx_extra_data(array("file_id" => $file->getId()));

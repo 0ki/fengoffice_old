@@ -22,7 +22,7 @@ og.pickObjectForTemplate = function(before) {
 					og.msg(lang("error"), lang("object type not supported"), 4, "err");
 				} else {
 					for(var k=0; k < og.templateObjects.length; k++){
-						if(og.templateObjects[k]['id'] == obj.object_id){
+						if(og.templateObjects[k].object_id == obj.object_id){
 							alert(lang('object exists in template'));
 							return;
 						}
@@ -39,7 +39,60 @@ og.pickObjectForTemplate = function(before) {
 	
 };
 
-og.addObjectToTemplate = function(before, obj) {
+og.drawTemplateObjectMilestonesCombo = function(object_div, object) {
+	var combo = Ext.get(object_div.id + "-milestones-combo");
+	if (combo) combo = combo.dom;
+	
+	var option_list = [];
+	for (i=0; i<og.templateObjects.length; i++) {
+		var m = og.templateObjects[i];
+		if (m.type == 'milestone') {
+			var option = document.createElement('option');
+			option.value = m.object_id;
+			option.text = og.clean(m.name);
+			option_list.push(option);
+		}
+	}
+	if (option_list.length > 0) {
+		if (!combo) {
+			combo = document.createElement('select');
+			combo.id = object_div.id + "-milestones-combo";
+			combo.name = 'milestones['+object.object_id+']';
+			
+			var combo_container_div = document.createElement('div');
+			combo_container_div.setAttribute('style', 'padding: 10px 0 10px 30px;');
+			object_div.appendChild(combo_container_div);
+			
+			combo_container_div.innerHTML = '<span class="bold">'+lang('milestone')+':&nbsp;</span>';
+			combo_container_div.appendChild(combo);
+		}
+
+		var sel_id = object.milestone_id ? object.milestone_id : 0;
+		var sel_index = 0;
+		if (combo && combo.options && combo.options[combo.options.selectedIndex]) sel_id = combo.options[combo.options.selectedIndex].value;
+		while (combo.options.length > 0) combo.remove(0);
+		
+		var none_option = document.createElement('option');
+		none_option.value = 0;
+		none_option.text = '--';
+		combo.appendChild(none_option);
+		for (j=0; j<option_list.length; j++) {
+			if (option_list[j].value == sel_id) {
+				sel_index = j + 1;
+			}
+			combo.appendChild(option_list[j]);
+		}
+		
+		combo.options[sel_index].setAttribute('selected', true);
+		combo.style.display = '';
+		
+	} else {
+		if (combo) combo.parentNode.style.display = 'none';
+	}
+}
+
+
+og.addObjectToTemplate = function(before, obj, dont_draw_milestone_combo) {
 	
 	var parent = before.parentNode;
 	var count = 0;
@@ -63,13 +116,34 @@ og.addObjectToTemplate = function(before, obj) {
 	editPropDiv.innerHTML = '<a href="#" onclick="og.addTemplateObjectProperty(' + obj.object_id + ',' + count + ',\'\', \'\')" class="link-ico ico-add">'+ lang('edit object property') + '</a>';
 	var objectDiv = document.createElement('div');
 	objectDiv.id = 'objectDiv' + count;
-	objectDiv.className = (count % 2 ? " odd" : "");
+	objectDiv.className = "template-object-div" + (count % 2 ? " odd" : "");
 	parent.insertBefore(objectDiv, before);
 	objectDiv.appendChild(div);
 	objectDiv.appendChild(editPropDiv);
-	var newObj = [];
-	newObj['id'] = obj.object_id;
-	og.templateObjects.push(newObj);
+	og.templateObjects.push(obj);
+	
+	if (!dont_draw_milestone_combo) {
+		// if new object is a task and template has milestones -> add milestones combo.
+		if (obj.type == 'task') {
+			og.drawTemplateObjectMilestonesCombo(objectDiv, obj);
+		}
+		
+		// if new object is a milestone -> refresh milestones combo for all tasks.
+		if (obj.type == 'milestone') {
+			og.add_template_input_divs = [];
+			var inputs = parent.getElementsByTagName('input');
+			for (var i=0; i < inputs.length; i++) {
+				if(inputs[i].className == 'objectID') {
+					og.add_template_input_divs[inputs[i].value] = inputs[i].parentNode.parentNode.id;
+				}
+			}
+			for (k=0; k<og.templateObjects.length; k++) {
+				if (og.templateObjects[k].type == 'task') {
+					og.drawTemplateObjectMilestonesCombo(Ext.get(og.add_template_input_divs[og.templateObjects[k].object_id]).dom, og.templateObjects[k]);
+				}
+			}
+		}
+	}
 };
 
 og.removeObjectFromTemplate = function(div, obj_id) {
@@ -87,6 +161,8 @@ og.removeObjectFromTemplate = function(div, obj_id) {
 					objDiv.id = 'objectDiv' + (h - 1);
 					var propDiv = document.getElementById('propDiv' + h);
 					propDiv.id = 'propDiv' + (h - 1);
+					var comboMilestones = document.getElementById('objectDiv'+ h +'-milestones-combo');
+					if (comboMilestones) comboMilestones.id = 'objectDiv'+ (h - 1) +'-milestones-combo';
 				}
 			}
 			count++;
@@ -99,10 +175,25 @@ og.removeObjectFromTemplate = function(div, obj_id) {
 			Ext.fly(d).addClass("odd");
 		}
 	}
+	var removed_objects = [];
 	for(var k=0; k < og.templateObjects.length; k++){
-		if(og.templateObjects[k]['id'] == obj_id ){
-			og.templateObjects.splice(k,1);
+		if(og.templateObjects[k].object_id == obj_id ){
+			removed_objects = og.templateObjects.splice(k,1);
 			break;
+		}
+	}
+	if (removed_objects.length > 0 && removed_objects[0].type == 'milestone') {
+		og.add_template_input_divs = [];
+		var inputs = parent.getElementsByTagName('input');
+		for (var i=0; i < inputs.length; i++) {
+			if(inputs[i].className == 'objectID') {
+				og.add_template_input_divs[inputs[i].value] = inputs[i].parentNode.parentNode.id;
+			}
+		}
+		for (var k=0; k<og.templateObjects.length; k++) {console.log('aca 0');
+			if (og.templateObjects[k].type == 'task') {console.log('aca 1');
+				og.drawTemplateObjectMilestonesCombo(Ext.get(og.add_template_input_divs[og.templateObjects[k].object_id]).dom, og.templateObjects[k]);
+			}
 		}
 	}
 };

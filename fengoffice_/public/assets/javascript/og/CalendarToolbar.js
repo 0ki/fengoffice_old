@@ -432,7 +432,6 @@ og.CalendarSecondTopToolbar = function(config) {
     
     var show_task_options = false;
     for (i=0; i<og.objPickerTypeFilters.length; i++) {
-    	console.log(og.objPickerTypeFilters[i]);
     	if (og.objPickerTypeFilters[i].id == 'task') {
     		show_task_options = true;
     		break;
@@ -463,7 +462,7 @@ og.CalendarSecondTopToolbar = function(config) {
 	    });
 	    
 	    actual_task_filter = ogCalendarUserPreferences.task_filter;
-	    t_filter = ogCalendarUserPreferences.task_filter; 
+	    t_filter = ogCalendarUserPreferences.task_filter;
 	    filterTaskCombo.setValue(t_filter);
     }
     

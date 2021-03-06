@@ -55,7 +55,7 @@ class MailContent extends BaseMailContent {
 	 */
 	function getAccount() {
 		if (is_null($this->account)){
-			$this->account = MailAccounts::findById($this->getAccountId());
+			$this->account = MailAccounts::instance()->getAccountById($this->getAccountId());
 		} //if
 		return $this->account;
 	}
@@ -756,15 +756,20 @@ class MailContent extends BaseMailContent {
 		
 		if(!$this->getAccount() instanceof MailAccount) return;
 		
-		$contactId = $this->getAccount()->getContactId();
-		$contact = Contacts::instance()->findById($contactId);
+		$macs = MailAccountContacts::instance()->getByAccount($this->getAccount());
+		foreach ($macs as $mac) {
 		
-		if (!$contact instanceof Contact) return;
-		
-		$group_id = $contact->getPermissionGroupId();
-		if ($group_id) {
-			$sql = "INSERT INTO ".TABLE_PREFIX."sharing_table ( object_id, group_id ) VALUES ($id,$group_id) ON DUPLICATE KEY UPDATE group_id = group_id ";
-			DB::execute($sql);
+			$contactId = $mac->getContactId();
+			$contact = Contacts::instance()->findById($contactId);
+			
+			if (!$contact instanceof Contact) continue;
+			
+			$group_id = $contact->getPermissionGroupId();
+			if ($group_id) {
+				$sql = "INSERT INTO ".TABLE_PREFIX."sharing_table ( object_id, group_id ) VALUES ('$id','$group_id') ON DUPLICATE KEY UPDATE group_id = group_id ";
+				DB::execute($sql);
+			}
+			
 		}
 	}
 }

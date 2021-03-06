@@ -6,6 +6,10 @@
 	'add new relation workspaces' => 'Classify to a workspace',
 	'add new relation tags' => 'Classify with a tag',
 
+	'add new workspace' => 'Add a new workspace',
+	'add your first workspace' => 'Add your first workspace',
+	'you have no workspaces yet' => 'You have no workspaces yet',
+
 	'filter by workspaces' => 'Filter by workspace',
 	'filter by tags' => 'Filter by tag',
 

@@ -3,7 +3,7 @@
   /**
   * Report class
   *
-  * @author Pablo Kamil <pablokam@gmail.com>
+  * 
   */
   class Report extends BaseReport {
       

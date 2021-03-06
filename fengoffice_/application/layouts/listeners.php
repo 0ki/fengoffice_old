@@ -132,14 +132,12 @@ og.eventManager.addListener('popup',
 og.eventManager.addListener('user preference changed',
 	function(option) {
 		switch (option.name) {
-			case 'drag_drop_prompt' :
-				og.preferences.drag_drop_prompt = option.value;
-				break;	
 			case 'localization':
 				window.location.reload();
 				break;
 			default: 
-				break;		
+				og.preferences[option.name] = option.value;
+				break;
 		}
 	}
 );
@@ -157,12 +155,6 @@ og.eventManager.addListener('download document',
 og.eventManager.addListener('config option changed',
 	function(option) {
 		og.config[option.name] = option.value;
-	}
-);
-
-og.eventManager.addListener('user preference changed',
-	function(option) {
-		og.preferences[option.name] = option.value;
 	}
 );
 
@@ -194,6 +186,73 @@ og.eventManager.addListener('after member save',
 			og.dimensions[member.dimension_id][member.member_id].name=member.name; 
 			og.dimensions[member.dimension_id][member.member_id].ot=member.object_type_id;
 		}
+	}
+);
+
+og.eventManager.addListener('ask to select member',
+	function (member){
+		
+			if (og.preferences.access_member_after_add_remember == '1') {
+	
+				if (og.preferences.access_member_after_add) {
+					var tree = Ext.getCmp("dimension-panel-" + member.dimension_id);
+					if (tree) {
+						setTimeout(function () {
+							var treenode = tree.getNodeById(member.id);
+							if (treenode) {
+								treenode.fireEvent('click', treenode);
+								og.Breadcrumbs.refresh(treenode);
+							}
+						}, 500);
+					}
+				}
+				
+			} else {
+	
+				var selected_member_name = member.sel_mem != '' ? member.sel_mem : lang('general view');
+				
+				var old_yes_text = Ext.MessageBox.buttonText.yes;
+				var old_no_text = Ext.MessageBox.buttonText.no;
+				Ext.MessageBox.buttonText.yes = lang('access member', '<span class="bold">'+ member.name +'</span>');
+				Ext.MessageBox.buttonText.no = lang('stay at', '<span class="bold">'+ selected_member_name +'</span>');
+	
+				var html = lang('new member added popup msg', '<span class="bold">' + member.type + '</span>', '<span class="bold">' + member.name + '</span>') + '<br />';
+				html += lang('what would you like to do next') + '<br /><br />';
+				html += '<input type="checkbox" name="remember_after_member_add" id="remember_after_member_add">&nbsp;';
+				html += '<label for="remember_after_member_add" style="cursor:pointer;display:inline;font-weight:normal;font-size:100%;margin:0;">' + 
+					lang('remember my choice and do not ask again in the future') + '</label><br />';
+				html += '<span class="bold">'+ lang('message') +': </span>' + lang('this user option can be changed');
+	
+				Ext.Msg.show({
+					title: lang('new member added popup title', member.type, member.name),
+					msg: html,
+					buttons: Ext.Msg.YESNO,
+					fn: function(button, text){
+	
+						if (button == 'yes') {
+							var tree = Ext.getCmp("dimension-panel-" + member.dimension_id);
+							if (tree) {
+								var treenode = tree.getNodeById(member.id);
+								if (treenode) {
+									treenode.fireEvent('click', treenode);
+									og.Breadcrumbs.refresh(treenode);
+								}
+							}
+						}
+					
+						var remember = document.getElementById("remember_after_member_add").checked;
+						if (remember) {
+							og.openLink(og.getUrl('account', 'update_user_preference', {name:'access_member_after_add_remember', value:'1'}));
+							og.openLink(og.getUrl('account', 'update_user_preference', {name:'access_member_after_add', value: button == 'yes' ? '1' : '0'}));
+						}
+					
+					},
+					icon: Ext.MessageBox.QUESTION
+				});
+	
+				Ext.MessageBox.buttonText.yes = old_yes_text;
+				Ext.MessageBox.buttonText.no = old_no_text;			
+			}
 	}
 );
 

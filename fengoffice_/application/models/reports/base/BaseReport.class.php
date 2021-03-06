@@ -3,7 +3,7 @@
   /**
   * BaseReport class
   *
-  * @author Pablo Kamil <pablokam@gmail.com>
+  * 
   */
   abstract class BaseReport extends ContentDataObject {
   

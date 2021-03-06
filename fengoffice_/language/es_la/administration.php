@@ -89,13 +89,18 @@
 	'config option desc use_milestones' => 'Habilitando esta opción se podrán crear hitos y asociar tareas a los mismos.',
 	'config option name show_tab_icons' => 'Mostrar íconos de pestañas',
 	'config option desc show_tab_icons' => 'Habilitando esta opción se podrá ver el ícono de cada pestaña.',
-	
+	'config option name can_assign_tasks_to_companies' => 'Asignar tareas a empresas',
+	'config option desc can_assign_tasks_to_companies' => 'Si está habilitado se podrá asignar tareas a empresas al crear/editar tareas',
+	'config option name use_object_properties' => 'Utilizar propiedades de objetos',
+	'config option desc use_object_properties' => 'Habilitando esta opción se podrán definir propiedades del estilo (clave - valor) para cada objeto del sistema.',
+	'config option name automatic_crpm_status_calculation' => 'Estado automático para Clientes & Proyectos',
+  	'config option desc automatic_crpm_status_calculation' => 'Habilite esta opción para poder definir las fórmulas para calcular automáticamente los diferentes estados de los Clientes y Proyectos',
 	'user ws config category name dashboard' => 'Opciones del panel de resumen',
 	'user ws config category name task panel' => 'Opciones del panel de tareas',
 	'user ws config category name calendar panel' => 'Opciones del Calendario',
-	'user ws config category name mails panel' => 'Opciones del módulo de Email',
+	'user ws config category name mails panel' => 'Opciones del módulo de Correo',
 	'user ws config category name listing preferences' => 'Opciones de listados',
-	'user config category name mails panel' => 'Opciones del módulo de Email',
+	'user config category name mails panel' => 'Opciones del módulo de Correo',
 	'user config option name show pending tasks widget' => 'Mostrar widget de tareas pendientes',
 	'user config option name pending tasks widget assigned to filter' => 'Mostrar tareas asignadas a',
 	'user config option name show late tasks and milestones widget' => 'Mostrar widget de hitos y tareas atrasadas',
@@ -143,13 +148,43 @@
 	'user config option desc start_monday' => 'Las vistas del calendario mostrarán el lunes como primer día de la semana (debe actualizar la página para aplicar los cambios)',
 	'user config option name show_week_numbers' => 'Mostrar los números de semana',
 	'user config option desc show_week_numbers' => 'Muestra los números de semana en la vista mensual y semanal.',
-	'user config option name reminders_events' =>'Recordatorios de eventos',
-    'user config option desc reminders_events' =>'',
+	
+    'user config option name reminders_events' =>'Recordatorio de eventos',
+    'user config option desc reminders_events' =>'Valor por defecto para los recordatorios de eventos',
+
+	'user config option name add_task_default_reminder' => 'Agregar recordatorios para tareas cuando las crea',
+  	'user config option desc add_task_default_reminder' => 'Por defecto se crearán recordatorios cuando agregue una nueva tarea',
+
+	'user config option name add_task_autoreminder' =>'Crear recordatorios automáticamente para otras personas',
+    'user config option desc add_task_autoreminder' =>'Habilitar esta opción para crear recordatorios automáticamente al editar una tarea que está asignada a otra persona y no tiene más recordatorios',
+
+	'user config option name add_self_task_autoreminder' =>'Crear recordatorios automáticamente sólo para mi usuario',
+    'user config option desc add_self_task_autoreminder' =>'Habilitar esta opción si deseo crear recordatorios automáticamente al edtar una tarea asignada a mi que no tiene más recordatorios',
+    
+	'user config option name reminders_tasks' =>'Recordatorio de tareas',
+    'user config option desc reminders_tasks' =>'Valor por defecto para los recordatorios de tareas',
+	
+	'user config option name add_event_autoreminder' =>'Crear recordatorios automáticamente',
+    'user config option desc add_event_autoreminder' =>'Habilite esta opción si desea crear recordatorios automáticamente si edita un evento que no tiene más recordatorios',
+    
+	'user config option name autoassign_events' =>'Autoasignarse eventos',
+    'user config option desc autoassign_events' =>'Habilite esta opción si desea estar invitado a los eventos que crea, por más que esté filtrando por el calendario de otro usuario',
+  
+  	'user config option name event_send_invitations' =>'Enviar invitaciones de evento',
+    'user config option desc event_send_invitations' =>'Habilite esta opción si desea tener la opción "Enviar invitaciones" marcada por defecto a la hora de crear un evento',
+  
+  	'user config option name event_subscribe_invited' =>'Suscribir usuarios invitados',
+    'user config option desc event_subscribe_invited' =>'Habilite esta opción si desea tener la opción "Suscribir invitados" marcada por defecto a la hora de crear un evento',
+	
+	'user config option name access_member_after_add' => 'Acceder al nuevo miembro luego de su creación.',
+	'user config option desc access_member_after_add' => 'Si habilita esta opción, luego de haber creado un espacio de trabajo, cliente, etc; el mismo será seleccionado en el panel de la izquierda (Esta opción solo se aplica si está habilitada la opción "Recordar si acceder a un miembro al crearlo").',
+	'user config option name access_member_after_add_remember' => 'Recordar si acceder a un miembro al crearlo',
+	'user config option desc access_member_after_add_remember' => 'Habilitar esta opción le permite saltear la pregunta de que hacer luego de crear un espacio de trabajo, cliente, etc.',
+
     'config option name days_on_trash' => 'Días en la papelera',
-	'config option desc days_on_trash' => 'Cuántos días se mantiene un objeto en la papelera antes de ser borrado automaticamente. Si es cero, los objetos no ser borrar automaticamente.',
+	'config option desc days_on_trash' => 'Cuántos días se mantiene un objeto en la papelera antes de ser borrado automáticamente. Si es cero, los objetos no ser borrar automaticamente.',
 	'templates' => 'Plantillas',
 	'add template' => 'Agregar plantilla',
-	'parent member' => 'Hijo de',
 	'confirm delete template' => 'Está seguro de que desea borrar esta plantilla?',
 	'no templates' => 'No hay plantillas',
 	'template name required' => 'El nombre de la plantilla es requerido',
@@ -297,6 +332,8 @@
 	'user config option desc classify_mail_with_conversation' => 'Al recibir un email, si el mismo pertenece a una conversación se clasificará en los espacios que está clasificada la conversación.',
 	'user config option name mail_account_err_check_interval' => 'Intervalo de tiempo entre cada chequeo de errores en las cuentas de correo',
 	'user config option desc mail_account_err_check_interval' => 'Cantidad de segundos entre cada chequeo de errores en las cuentas de correo (0 para deshabilitar)',
+	'user config option name contacts_per_page' => 'Contactos por página',
+  	'user config option desc contacts_per_page' => 'Cantidad de contactos listados (evite 0 y números negativos). Tenga en cuenta que cuanto mayor sea el número, más tiempo demorará en cargar el listado de contactos.',
 	'config option name automatic_crpm_status_calculation' => 'Estado automático para Clientes & Proyectos',
   	'config option desc automatic_crpm_status_calculation' => 'Habilite esta opción para poder definir las fórmulas para calcular automáticamente los diferentes estados de los Clientes y Proyectos',
 	'user config option name show_object_direct_url'=> 'Mostrar URL directa al objecto',
@@ -400,5 +437,4 @@
         'success file extension' => 'Prevención de subida de archivos modificada exitosamente.',
         'file extension no allow' => 'Su Administrador no permite esta extensión de archivos. Por favor utilice otro formato.',
         'file extension no allow classify' => 'No se pudo clasificar el adjunto \'{0}\'. Su Administrador no permite esta extensión de archivos.',
-
-); ?>
+);

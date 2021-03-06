@@ -294,14 +294,19 @@ div.new-task div.field.assigned select {
 	margin-left: 25px;
 	margin-top: 25px;
 	color: gray;
+	margin: 10px;
 	font-size: 14px;
 	float: left;
 }
-button.no-tasks-add-task-btn {
+button.add-first-btn {
     height: 36px;
     min-width: 100px;
     vertical-align: middle;
-    margin: 25px;
-    font-size: 18px;
+    font-size: 16px;
 	float: left;
+	cursor: pointer;
+}
+button.add-first-btn.no-tasks-add-task-btn {
+	font-size: 18px;
+    margin: 25px;
 }

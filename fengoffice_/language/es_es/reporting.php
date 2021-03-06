@@ -32,4 +32,5 @@
 	'report pdf landscape' => 'Horizontal',
 	'report font size' => 'Tamaño de fuente',
 	'show always' => 'Mostrar siempre este reporte',
+	'subtotal'=> 'Subtotal',
 ); ?>

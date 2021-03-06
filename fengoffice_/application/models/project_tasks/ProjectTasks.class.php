@@ -102,15 +102,15 @@ class ProjectTasks extends BaseProjectTasks {
 	 * @return array
 	 */
 	function getRangeTasksByUser(DateTimeValue $date_start, DateTimeValue $date_end, $assignedUser, $task_filter = null, $archived = false) {
-                
-                $from_date = new DateTimeValue ( $date_start->getTimestamp () - logged_user()->getTimezone() * 3600 );
+		
+		$from_date = new DateTimeValue ( $date_start->getTimestamp () - logged_user()->getTimezone() * 3600 );
 		$from_date = $from_date->beginningOfDay ();
 		$to_date = new DateTimeValue ( $date_end->getTimestamp () - logged_user()->getTimezone() * 3600);
 		$to_date = $to_date->endOfDay ();
 		
 		$assignedFilter = '';
 		if ($assignedUser instanceof Contact) {
-			$assignedFilter = ' AND (`assigned_to_contact_id` = ' . $assignedUser->getId () . ' OR `assigned_to_contact_id` = ' . $assignedUser->getCompanyId () . ') ';
+			$assignedFilter = ' AND (`assigned_to_contact_id` = ' . $assignedUser->getId () . ' OR `assigned_to_contact_id` = \'' . $assignedUser->getCompanyId () . '\') ';
 		}
 		$rep_condition = " (`repeat_forever` = 1 OR `repeat_num` > 0 OR (`repeat_end` > 0 AND `repeat_end` >= '" . $from_date->toMySQL () . "')) ";
 		
@@ -427,7 +427,7 @@ class ProjectTasks extends BaseProjectTasks {
 			$result['description'] = $raw_data['text'];
 		}
 
-		$result['mas'] = (int)$raw_data['multi_assignment'];
+		$result['mas'] = (int)array_var($raw_data, 'multi_assignment');
 			
 		if ($raw_data['completed_by_id'] > 0) {
 			$result['s'] = 1;

@@ -166,13 +166,11 @@ ogTimeManager.SubmitNewTimeslot = function(genid,obj_type){
 	if (isEdit) {
 		action = 'edit_timeslot';		
 	}
-        og.handleMemberChooserSubmit(genid, obj_type); //TODO Hardcoded object type. Create a general object type map on somewhere
-        var members = $("#"+genid+"members").val();
-        parameters.members=members;
-        
+	og.handleMemberChooserSubmit(genid, obj_type); //TODO Hardcoded object type. Create a general object type map on somewhere
+	var members = $("#"+genid + member_selector[genid].hiddenFieldName).val();
+	parameters.members=members;
 	
 	
-
 	og.openLink(og.getUrl('time', action), {
 		method: 'POST',
 		post: parameters,

@@ -112,7 +112,7 @@
       return array_merge(parent::getSystemColumns(), array(
       	'company_id', 'picture_file', 'timezone', 'user_id', 'avatar_file',
       	'contact_passwords_id', 'permission_group_id', 
-      	'personal_member_id', 'salt', 'token', 'twister', 'comments',
+      	'personal_member_id', 'salt', 'token', 'twister',
       	'is_active_user', 'user_type', 'default_billing_id')
       );
     } // getSystemColumns
@@ -125,7 +125,7 @@
     * @return array
     */
     function getExternalColumns() {
-      return parent::getExternalColumns();
+      return array_merge(parent::getExternalColumns(), array('company_id'));
     } // getExternalColumns
     
     /**

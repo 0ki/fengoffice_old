@@ -50,7 +50,7 @@ class MailUtilities {
 						} catch (Exception $ex) {
 							DB::rollback();
 							$errAccounts[$err]["accountName"] = $account->getEmail();
-							$errAccounts[$err]["message"] = $e->getMessage();
+							$errAccounts[$err]["message"] = $ex->getMessage();
 							$err++;
 						}
 					}
@@ -171,242 +171,250 @@ class MailUtilities {
 	}
 	
 	function SaveMail(&$content, MailAccount $account, $uidl, $state = 0, $imap_folder_name = '') {
-		if (strpos($content, '+OK ') > 0) $content = substr($content, strpos($content, '+OK '));
-		self::parseMail($content, $decoded, $parsedMail, $warnings);
-		$encoding = array_var($parsedMail,'Encoding', 'UTF-8');
-		$enc_conv = EncodingConverter::instance();
-		$to_addresses = self::getAddresses(array_var($parsedMail, "To"));
-		$from = self::getAddresses(array_var($parsedMail, "From"));
 		
-		$message_id = self::getHeaderValueFromContent($content, "Message-ID");
-		$in_reply_to_id = self::getHeaderValueFromContent($content, "In-Reply-To");
-		
-		$uid = trim($uidl);
-		if (str_starts_with($uid, '<') && str_ends_with($uid, '>')) {
-			$uid = utf8_substr($uid, 1, utf8_strlen($uid, $encoding) - 2, $encoding);
-		}
-		if ($uid == '') {
-			$uid = trim($message_id);
-			if ($uid == '') {
-				$uid = array_var($parsedMail, 'Subject', 'MISSING UID');
-			}
+		try {
+			DB::beginWork();
+			
+			if (strpos($content, '+OK ') > 0) $content = substr($content, strpos($content, '+OK '));
+			self::parseMail($content, $decoded, $parsedMail, $warnings);
+			$encoding = array_var($parsedMail,'Encoding', 'UTF-8');
+			$enc_conv = EncodingConverter::instance();
+			$to_addresses = self::getAddresses(array_var($parsedMail, "To"));
+			$from = self::getAddresses(array_var($parsedMail, "From"));
+			
+			$message_id = self::getHeaderValueFromContent($content, "Message-ID");
+			$in_reply_to_id = self::getHeaderValueFromContent($content, "In-Reply-To");
+			
+			$uid = trim($uidl);
 			if (str_starts_with($uid, '<') && str_ends_with($uid, '>')) {
 				$uid = utf8_substr($uid, 1, utf8_strlen($uid, $encoding) - 2, $encoding);
 			}
-		}
-		// do not save duplicate emails
-		if (MailContents::mailRecordExists($account->getId(), $uid, $imap_folder_name == '' ? null : $imap_folder_name)) {
-			return;
-		}
-		
-		if (!$from) {
-			$parsedMail["From"] = self::getFromAddressFromContent($content);
-			$from = array_var($parsedMail["From"][0], 'address', '');
-		}
-		
-		if (defined('EMAIL_MESSAGEID_CONTROL') && EMAIL_MESSAGEID_CONTROL) {
-			if (trim($message_id) != "") {
-				$id_condition = " AND `message_id`='".trim($message_id)."'";
-			} else {
-				$id_condition = " AND `name`='". trim(array_var($parsedMail, 'Subject')) ."' AND `from`='$from'";
-				if (array_var($parsedMail, 'Date')) {
-					$sent_date_dt = new DateTimeValue(strtotime(array_var($parsedMail, 'Date')));
-					$sent_date_str = $sent_date_dt->toMySQL();
-					$id_condition .= " AND `sent_date`='".$sent_date_str."'";
+			if ($uid == '') {
+				$uid = trim($message_id);
+				if ($uid == '') {
+					$uid = array_var($parsedMail, 'Subject', 'MISSING UID');
+				}
+				if (str_starts_with($uid, '<') && str_ends_with($uid, '>')) {
+					$uid = utf8_substr($uid, 1, utf8_strlen($uid, $encoding) - 2, $encoding);
 				}
 			}
-			$same = MailContents::findOne(array('conditions' => "`account_id`=".$account->getId() . $id_condition, 'include_trashed' => true));
-			if ($same instanceof MailContent) return;
-		}
-                
-                $from_spam_junk_folder = strpos(strtolower($imap_folder_name), 'spam') !== FALSE 
-			|| strpos(strtolower($imap_folder_name), 'junk')  !== FALSE || strpos(strtolower($imap_folder_name), 'trash') !== FALSE;
-		$user_id = logged_user() instanceof Contact ? logged_user()->getId() : $account->getContactId();
-		$max_spam_level = user_config_option('max_spam_level', null, $user_id);
-		if ($max_spam_level < 0) $max_spam_level = 0;
-		$mail_spam_level = strlen(trim( array_var($decoded[0]['Headers'], 'x-spam-level:', '') ));
-		// if max_spam_level >= 10 then nothing goes to junk folder
-		$spam_in_subject = false;
-		if (config_option('check_spam_in_subject')) {
-			$spam_in_subject = strpos_utf(strtoupper(array_var($parsedMail, 'Subject')), "**SPAM**") !== false;
-		}
-		if (($max_spam_level < 10 && ($mail_spam_level > $max_spam_level || $from_spam_junk_folder)) || $spam_in_subject) {
-			$state = 4; // send to Junk folder
-		}
-                
-		//if you are in the table spam MailSpamFilters
-		$spam_email = MailSpamFilters::getFrom($account->getId(),$from);
-		if($spam_email) {
-			$state = 0;
-			if($spam_email[0]->getSpamState() == "spam") {
-				$state = 4;
+			// do not save duplicate emails
+			if (MailContents::mailRecordExists($account->getId(), $uid, $imap_folder_name == '' ? null : $imap_folder_name)) {
+				return;
 			}
-		} else {
-			if ($state == 0) {
-				if ($from == $account->getEmailAddress()) {
-					if (strpos($to_addresses, $from) !== FALSE) $state = 5; //Show in inbox and sent folders
-					else $state = 1; //Show only in sent folder
-				}
-			}
-		}
-
-		if (!isset($parsedMail['Subject'])) $parsedMail['Subject'] = '';
-		$mail = new MailContent();
-		$mail->setAccountId($account->getId());
-		$mail->setState($state);
-		$mail->setImapFolderName($imap_folder_name);
-		$mail->setFrom($from);
-		$cc = trim(self::getAddresses(array_var($parsedMail, "Cc")));
-		if ($cc == '' && array_var($decoded, 0) && array_var($decoded[0], 'Headers')) {
-			$cc = array_var($decoded[0]['Headers'], 'cc:', '');
-		}
-		$mail->setCc($cc);
-		
-		$from_name = trim(array_var(array_var(array_var($parsedMail, 'From'), 0), 'name'));		
-		$from_encoding = detect_encoding($from_name);	
 			
-		if ($from_name == ''){
-			$from_name = $from;
-		} else if (strtoupper($encoding) =='KOI8-R' || strtoupper($encoding) =='CP866' || $from_encoding != 'UTF-8' || !$enc_conv->isUtf8RegExp($from_name)){ //KOI8-R and CP866 are Russian encodings which PHP does not detect
-			$utf8_from = $enc_conv->convert($encoding, 'UTF-8', $from_name);
-
-			if ($enc_conv->hasError()) {
-				$utf8_from = utf8_encode($from_name);
+			if (!$from) {
+				$parsedMail["From"] = self::getFromAddressFromContent($content);
+				$from = array_var($parsedMail["From"][0], 'address', '');
 			}
-			$utf8_from = utf8_safe($utf8_from);
-			$mail->setFromName($utf8_from);
-		} else {
-			$mail->setFromName($from_name);
-		}
-		
-		$subject_aux = $parsedMail['Subject'];
-		$subject_encoding = detect_encoding($subject_aux);
-		
-		if (strtoupper($encoding) =='KOI8-R' || strtoupper($encoding) =='CP866' || $subject_encoding != 'UTF-8' || !$enc_conv->isUtf8RegExp($subject_aux)){ //KOI8-R and CP866 are Russian encodings which PHP does not detect
-			$utf8_subject = $enc_conv->convert($encoding, 'UTF-8', $subject_aux);
 			
-			if ($enc_conv->hasError()) {
-				$utf8_subject = utf8_encode($subject_aux);
-			}
-			$utf8_subject = utf8_safe($utf8_subject);
-			$mail->setSubject($utf8_subject);
-		} else {
-			$utf8_subject = utf8_safe($subject_aux);
-			$mail->setSubject($utf8_subject);
-		}
-		$mail->setTo($to_addresses);
-		$sent_timestamp = false;
-		if (array_key_exists("Date", $parsedMail)) {
-			$sent_timestamp = strtotime($parsedMail["Date"]);
-		}
-		if ($sent_timestamp === false || $sent_timestamp === -1 || $sent_timestamp === 0) {
-			$mail->setSentDate(DateTimeValueLib::now());
-		} else {
-			$mail->setSentDate(new DateTimeValue($sent_timestamp));
-		}
-		
-		// if this constant is defined, mails older than this date will not be fetched 
-		if (defined('FIRST_MAIL_DATE')) {
-			$first_mail_date = DateTimeValueLib::makeFromString(FIRST_MAIL_DATE);
-			if ($mail->getSentDate()->getTimestamp() < $first_mail_date->getTimestamp()) {
-				// return true to stop getting older mails from the server
-				return true;
-			}
-		}
-		
-		$received_timestamp = false;
-		if (array_key_exists("Received", $parsedMail) && $parsedMail["Received"]) {
-			$received_timestamp = strtotime($parsedMail["Received"]);
-		}
-		if ($received_timestamp === false || $received_timestamp === -1 || $received_timestamp === 0) {
-			$mail->setReceivedDate($mail->getSentDate());
-		} else {
-			$mail->setReceivedDate(new DateTimeValue($received_timestamp));
-			if ($state == 5 && $mail->getSentDate()->getTimestamp() > $received_timestamp)
-				$mail->setReceivedDate($mail->getSentDate());
-		}
-		$mail->setSize(strlen($content));
-		$mail->setHasAttachments(!empty($parsedMail["Attachments"]));
-		$mail->setCreatedOn(new DateTimeValue(time()));
-		$mail->setCreatedById($account->getContactId());
-		$mail->setAccountEmail($account->getEmail());
-		
-		$mail->setMessageId($message_id);
-		$mail->setInReplyToId($in_reply_to_id);
-
-		$mail->setUid($uid);
-		$type = array_var($parsedMail, 'Type', 'text');
-		
-		switch($type) {
-			case 'html':
-				$utf8_body = $enc_conv->convert($encoding, 'UTF-8', array_var($parsedMail, 'Data', ''));
-				//Solve bad syntax styles outlook if it exists
-				if(substr_count($utf8_body, "<style>") != substr_count($utf8_body, "</style>") && substr_count($utf8_body, "/* Font Definitions */") >= 1) {
-					$p1 = strpos($utf8_body, "/* Font Definitions */", 0);
-					$utf8_body1 = substr($utf8_body, 0, $p1);
-					$p0 = strrpos($utf8_body1, "</style>");
-					$html_content = ($p0 >= 0 ? substr($utf8_body1, 0, $p0) : $utf8_body1) . substr($utf8_body, $p1);
-					
-					$utf8_body = str_replace_first("/* Font Definitions */","<style>", $utf8_body);
-				}
-				if ($enc_conv->hasError()) $utf8_body = utf8_encode(array_var($parsedMail, 'Data', ''));
-				$utf8_body = utf8_safe($utf8_body);
-				$mail->setBodyHtml($utf8_body);
-				break;
-			case 'text': 
-				$utf8_body = $enc_conv->convert($encoding, 'UTF-8', array_var($parsedMail, 'Data', ''));
-				if ($enc_conv->hasError()) $utf8_body = utf8_encode(array_var($parsedMail, 'Data', ''));
-				$utf8_body = utf8_safe($utf8_body);
-				$mail->setBodyPlain($utf8_body);
-				break;
-			case 'delivery-status': 
-				$utf8_body = $enc_conv->convert($encoding, 'UTF-8', array_var($parsedMail, 'Response', ''));
-				if ($enc_conv->hasError()) $utf8_body = utf8_encode(array_var($parsedMail, 'Response', ''));
-				$utf8_body = utf8_safe($utf8_body);
-				$mail->setBodyPlain($utf8_body);
-				break;
-			default: 
-				if (array_var($parsedMail, 'FileDisposition') == 'inline') {
-					$attachs = array_var($parsedMail, 'Attachments', array());
-					$attached_body = "";
-					foreach ($attachs as $k => $attach) {
-						if (array_var($attach, 'Type') == 'html' || array_var($attach, 'Type') == 'text') {
-							$attached_body .= $enc_conv->convert(array_var($attach, 'Encoding'), 'UTF-8', array_var($attach, 'Data'));
-						}
+			if (defined('EMAIL_MESSAGEID_CONTROL') && EMAIL_MESSAGEID_CONTROL) {
+				if (trim($message_id) != "") {
+					$id_condition = " AND `message_id`='".trim($message_id)."'";
+				} else {
+					$id_condition = " AND `name`='". trim(array_var($parsedMail, 'Subject')) ."' AND `from`='$from'";
+					if (array_var($parsedMail, 'Date')) {
+						$sent_date_dt = new DateTimeValue(strtotime(array_var($parsedMail, 'Date')));
+						$sent_date_str = $sent_date_dt->toMySQL();
+						$id_condition .= " AND `sent_date`='".$sent_date_str."'";
 					}
-					$mail->setBodyHtml($attached_body);
 				}
-				break;
-		}
-			
-		if (isset($parsedMail['Alternative'])) {
-			foreach ($parsedMail['Alternative'] as $alt) {
-				if ($alt['Type'] == 'html' || $alt['Type'] == 'text') {
-					$body = $enc_conv->convert(array_var($alt,'Encoding','UTF-8'),'UTF-8', array_var($alt, 'Data', ''));
-					if ($enc_conv->hasError()) $body = utf8_encode(array_var($alt, 'Data', ''));
-					
-					// remove large white spaces
-					$exploded = preg_split("/[\s]+/", $body, -1, PREG_SPLIT_NO_EMPTY);
-					$body = implode(" ", $exploded);
-					// remove html comments
-					$body = preg_replace('/<!--.*-->/i', '', $body);
-				}
-				$body = utf8_safe($body);
-				if ($alt['Type'] == 'html') {
-					$mail->setBodyHtml($body);
-				} else if ($alt['Type'] == 'text') {
-					$plain = html_to_text(html_entity_decode($body, null, "UTF-8"));
-					$mail->setBodyPlain($plain);
-				}
-				// other alternative parts (like images) are not saved in database.
+				$same = MailContents::findOne(array('conditions' => "`account_id`=".$account->getId() . $id_condition, 'include_trashed' => true));
+				if ($same instanceof MailContent) return;
 			}
-		}
-
-		$repository_id = self::SaveContentToFilesystem($mail->getUid(), $content);
-		$mail->setContentFileId($repository_id);
-		
-		
-		try {
+			
+			$from_spam_junk_folder = strpos(strtolower($imap_folder_name), 'spam') !== FALSE 
+				|| strpos(strtolower($imap_folder_name), 'junk')  !== FALSE
+				|| strpos(strtolower($imap_folder_name), 'trash') !== FALSE;
+			
+			$user_id = logged_user() instanceof Contact ? logged_user()->getId() : $account->getContactId();
+			$max_spam_level = user_config_option('max_spam_level', null, $user_id);
+			if ($max_spam_level < 0) $max_spam_level = 0;
+			$mail_spam_level = strlen(trim( array_var($decoded[0]['Headers'], 'x-spam-level:', '') ));
+			// if max_spam_level >= 10 then nothing goes to junk folder
+			$spam_in_subject = false;
+			if (config_option('check_spam_in_subject')) {
+				$spam_in_subject = strpos_utf(strtoupper(array_var($parsedMail, 'Subject')), "**SPAM**") !== false;
+			}
+			if (($max_spam_level < 10 && ($mail_spam_level > $max_spam_level || $from_spam_junk_folder)) || $spam_in_subject) {
+				$state = 4; // send to Junk folder
+			}
+	                
+			//if you are in the table spam MailSpamFilters
+			$spam_email = MailSpamFilters::getFrom($account->getId(),$from);
+			if($spam_email) {
+				$state = 0;
+				if($spam_email[0]->getSpamState() == "spam") {
+					$state = 4;
+				}
+			} else {
+				if ($state == 0) {
+					if ($from == $account->getEmailAddress()) {
+						if (strpos($to_addresses, $from) !== FALSE) $state = 5; //Show in inbox and sent folders
+						else $state = 1; //Show only in sent folder
+					}
+				}
+			}
+	
+			if (!isset($parsedMail['Subject'])) $parsedMail['Subject'] = '';
+			$mail = new MailContent();
+			$mail->setAccountId($account->getId());
+			$mail->setState($state);
+			$mail->setImapFolderName($imap_folder_name);
+			$mail->setFrom($from);
+			$cc = trim(self::getAddresses(array_var($parsedMail, "Cc")));
+			if ($cc == '' && array_var($decoded, 0) && array_var($decoded[0], 'Headers')) {
+				$cc = array_var($decoded[0]['Headers'], 'cc:', '');
+			}
+			$mail->setCc($cc);
+			
+			$from_name = trim(array_var(array_var(array_var($parsedMail, 'From'), 0), 'name'));		
+			$from_encoding = detect_encoding($from_name);	
+				
+			if ($from_name == ''){
+				$from_name = $from;
+			} else if (strtoupper($encoding) =='KOI8-R' || strtoupper($encoding) =='CP866' || $from_encoding != 'UTF-8' || !$enc_conv->isUtf8RegExp($from_name)){ //KOI8-R and CP866 are Russian encodings which PHP does not detect
+				$utf8_from = $enc_conv->convert($encoding, 'UTF-8', $from_name);
+	
+				if ($enc_conv->hasError()) {
+					$utf8_from = utf8_encode($from_name);
+				}
+				$utf8_from = utf8_safe($utf8_from);
+				$mail->setFromName($utf8_from);
+			} else {
+				$mail->setFromName($from_name);
+			}
+			
+			$subject_aux = $parsedMail['Subject'];
+			$subject_encoding = detect_encoding($subject_aux);
+			
+			if (strtoupper($encoding) =='KOI8-R' || strtoupper($encoding) =='CP866' || $subject_encoding != 'UTF-8' || !$enc_conv->isUtf8RegExp($subject_aux)){ //KOI8-R and CP866 are Russian encodings which PHP does not detect
+				$utf8_subject = $enc_conv->convert($encoding, 'UTF-8', $subject_aux);
+				
+				if ($enc_conv->hasError()) {
+					$utf8_subject = utf8_encode($subject_aux);
+				}
+				$utf8_subject = utf8_safe($utf8_subject);
+				$mail->setSubject($utf8_subject);
+			} else {
+				$utf8_subject = utf8_safe($subject_aux);
+				$mail->setSubject($utf8_subject);
+			}
+			$mail->setTo($to_addresses);
+			$sent_timestamp = false;
+			if (array_key_exists("Date", $parsedMail)) {
+				$sent_timestamp = strtotime($parsedMail["Date"]);
+			}
+			if ($sent_timestamp === false || $sent_timestamp === -1 || $sent_timestamp === 0) {
+				$mail->setSentDate(DateTimeValueLib::now());
+			} else {
+				$mail->setSentDate(new DateTimeValue($sent_timestamp));
+			}
+			
+			// if this constant is defined, mails older than this date will not be fetched 
+			if (defined('FIRST_MAIL_DATE')) {
+				$first_mail_date = DateTimeValueLib::makeFromString(FIRST_MAIL_DATE);
+				if ($mail->getSentDate()->getTimestamp() < $first_mail_date->getTimestamp()) {
+					// return true to stop getting older mails from the server
+					return true;
+				}
+			}
+			
+			$received_timestamp = false;
+			if (array_key_exists("Received", $parsedMail) && $parsedMail["Received"]) {
+				$received_timestamp = strtotime($parsedMail["Received"]);
+			}
+			if ($received_timestamp === false || $received_timestamp === -1 || $received_timestamp === 0) {
+				$mail->setReceivedDate($mail->getSentDate());
+			} else {
+				$mail->setReceivedDate(new DateTimeValue($received_timestamp));
+				if ($state == 5 && $mail->getSentDate()->getTimestamp() > $received_timestamp)
+					$mail->setReceivedDate($mail->getSentDate());
+			}
+			$mail->setSize(strlen($content));
+			$mail->setHasAttachments(!empty($parsedMail["Attachments"]));
+			$mail->setCreatedOn(new DateTimeValue(time()));
+			$mail->setCreatedById($account->getContactId());
+			$mail->setAccountEmail($account->getEmail());
+			
+			$mail->setMessageId($message_id);
+			$mail->setInReplyToId($in_reply_to_id);
+	
+			$mail->setUid($uid);
+			$type = array_var($parsedMail, 'Type', 'text');
+			
+			switch($type) {
+				case 'html':
+					$utf8_body = $enc_conv->convert($encoding, 'UTF-8', array_var($parsedMail, 'Data', ''));
+					//Solve bad syntax styles outlook if it exists
+					if(substr_count($utf8_body, "<style>") != substr_count($utf8_body, "</style>") && substr_count($utf8_body, "/* Font Definitions */") >= 1) {
+						$p1 = strpos($utf8_body, "/* Font Definitions */", 0);
+						$utf8_body1 = substr($utf8_body, 0, $p1);
+						$p0 = strrpos($utf8_body1, "</style>");
+						$html_content = ($p0 >= 0 ? substr($utf8_body1, 0, $p0) : $utf8_body1) . substr($utf8_body, $p1);
+						
+						$utf8_body = str_replace_first("/* Font Definitions */","<style>", $utf8_body);
+					}
+					if ($enc_conv->hasError()) $utf8_body = utf8_encode(array_var($parsedMail, 'Data', ''));
+					$utf8_body = utf8_safe($utf8_body);
+					$mail->setBodyHtml($utf8_body);
+					break;
+				case 'text': 
+					$utf8_body = $enc_conv->convert($encoding, 'UTF-8', array_var($parsedMail, 'Data', ''));
+					if ($enc_conv->hasError()) $utf8_body = utf8_encode(array_var($parsedMail, 'Data', ''));
+					$utf8_body = utf8_safe($utf8_body);
+					$mail->setBodyPlain($utf8_body);
+					break;
+				case 'delivery-status': 
+					$utf8_body = $enc_conv->convert($encoding, 'UTF-8', array_var($parsedMail, 'Response', ''));
+					if ($enc_conv->hasError()) $utf8_body = utf8_encode(array_var($parsedMail, 'Response', ''));
+					$utf8_body = utf8_safe($utf8_body);
+					$mail->setBodyPlain($utf8_body);
+					break;
+				default: 
+					if (array_var($parsedMail, 'FileDisposition') == 'inline') {
+						$attachs = array_var($parsedMail, 'Attachments', array());
+						$attached_body = "";
+						foreach ($attachs as $k => $attach) {
+							if (array_var($attach, 'Type') == 'html' || array_var($attach, 'Type') == 'text') {
+								$attached_body .= $enc_conv->convert(array_var($attach, 'Encoding'), 'UTF-8', array_var($attach, 'Data'));
+							}
+						}
+						$mail->setBodyHtml($attached_body);
+					} else if (isset($parsedMail['FileName'])) {
+						// content-type is a file type => set as it has attachments, they will be parsed when viewing email
+						$mail->setHasAttachments(true);
+					}
+					break;
+			}
+				
+			if (isset($parsedMail['Alternative'])) {
+				foreach ($parsedMail['Alternative'] as $alt) {
+					if ($alt['Type'] == 'html' || $alt['Type'] == 'text') {
+						$body = $enc_conv->convert(array_var($alt,'Encoding','UTF-8'),'UTF-8', array_var($alt, 'Data', ''));
+						if ($enc_conv->hasError()) $body = utf8_encode(array_var($alt, 'Data', ''));
+						
+						// remove large white spaces
+						$exploded = preg_split("/[\s]+/", $body, -1, PREG_SPLIT_NO_EMPTY);
+						$body = implode(" ", $exploded);
+						// remove html comments
+						$body = preg_replace('/<!--.*-->/i', '', $body);
+					}
+					$body = utf8_safe($body);
+					if ($alt['Type'] == 'html') {
+						$mail->setBodyHtml($body);
+					} else if ($alt['Type'] == 'text') {
+						$plain = html_to_text(html_entity_decode($body, null, "UTF-8"));
+						$mail->setBodyPlain($plain);
+					}
+					// other alternative parts (like images) are not saved in database.
+				}
+			}
+	
+			$repository_id = self::SaveContentToFilesystem($mail->getUid(), $content);
+			$mail->setContentFileId($repository_id);
+			
+			
 			if ($in_reply_to_id != "") {
 				if ($message_id != "") {
 					$conv_mail = MailContents::findOne(array("conditions" => "`account_id`=".$account->getId()." AND `in_reply_to_id` = '$message_id'"));
@@ -478,8 +486,16 @@ class MailUtilities {
 			$null = null;
 			Hook::fire('after_mail_download', $mail, $null);
 			
+			DB::commit();
 		} catch(Exception $e) {
-			FileRepository::deleteFile($repository_id);
+			$ret = null;
+			Hook::fire('on_save_mail_error', array('content' => $content, 'account' => $account, 'exception' => $e), $ret);
+			
+			Logger::log($e->__toString());
+			DB::rollback();
+			if (FileRepository::isInRepository($repository_id)) {
+				FileRepository::deleteFile($repository_id);
+			}
 			if (strpos($e->getMessage(), "Query failed with message 'Got a packet bigger than 'max_allowed_packet' bytes'") === false) {
 				throw $e;
 			}
@@ -544,15 +560,16 @@ class MailUtilities {
 
 		// fetch newer mails first
 		$mailsToGet = array_reverse($mailsToGet, true);
-		
+		$checked = 0;
 		foreach ($mailsToGet as $idx) {
-			if ($toGet <= $received) break;
+			if ($toGet <= $checked) break;
 			$content = $pop3->getMsg($idx+1); // message index is 1..N
 			
 			if ($content != '') {
 				$uid = $summary[$idx]['uidl'];
 				try {
 					$stop_checking = self::SaveMail($content, $account, $uid);
+					$received++;
 					if ($stop_checking) break;
 				} catch (Exception $e) {
 					$mail_file = ROOT."/tmp/unsaved_mail_".$uid.".eml";
@@ -566,7 +583,7 @@ class MailUtilities {
 					else Logger::log("Could not save mail, original mail saved as $mail_file, exception:\n".$e->getMessage());
 				}
 				unset($content);
-				$received++;
+				$checked++;
 			}
 		}
 		$pop3->disconnect();

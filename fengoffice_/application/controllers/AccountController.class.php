@@ -448,7 +448,8 @@ class AccountController extends ApplicationController {
 		if($option_name != ''){
 			try{
 				DB::beginWork();
-				set_user_config_option($option_name,$option_value,logged_user()->getId());
+				set_user_config_option($option_name, $option_value, logged_user()->getId());
+				evt_add('user preference changed', array('name' => $option_name, 'value' => $option_value));
 				DB::commit();
 			} catch(Exception $e){
 				DB::rollback();

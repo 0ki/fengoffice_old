@@ -153,105 +153,6 @@ class ReportingController extends ApplicationController {
 	function list_all()
 	{
 		ajx_current("empty");
-
-		/* FIXME
-		$project = active_project();
-		$isProjectView = ($project instanceof Project);
-			
-		$start = array_var($_GET,'start');
-		$limit = array_var($_GET,'limit');
-		if (! $start) {
-			$start = 0;
-		}
-		if (! $limit) {
-			$limit = config_option('files_per_page');
-		}
-		$order = array_var($_GET,'sort');
-		$orderdir = array_var($_GET,'dir');
-		$tag = array_var($_GET,'tag');
-		$page = (integer) ($start / $limit) + 1;
-		$hide_private = !logged_user()->isMemberOfOwnerCompany();
-
-		if (array_var($_GET,'action') == 'delete') {
-			$ids = explode(',', array_var($_GET, 'charts'));
-			list($succ, $err) = ObjectController::do_delete_objects($ids, 'ProjectCharts');
-			if ($err > 0) {
-				flash_error(lang('error delete objects', $err));
-			} else {
-				flash_success(lang('success delete objects', $succ));
-			}
-		} else if (array_var($_GET, 'action') == 'tag') {
-			$ids = explode(',', array_var($_GET, 'charts'));
-			$tagTag = array_var($_GET, 'tagTag');
-			list($succ, $err) = ObjectController::do_tag_object($tagTag, $ids, 'ProjectCharts');
-			if ($err > 0) {
-				flash_error(lang('error tag objects', $err));
-			} else {
-				flash_success(lang('success tag objects', $succ));
-			}
-		}
-
-		if($page < 0) $page = 1;
-
-		//$conditions = logged_user()->isMemberOfOwnerCompany() ? '' : ' `is_private` = 0';
-		if ($tag == '' || $tag == null) {
-			$tagstr = " 1=1" ; // dummy condition
-		} else {
-			$tagstr = "(select count(*) from " . TABLE_PREFIX . "tags where " .
-			TABLE_PREFIX . "project_charts.id = " . TABLE_PREFIX . "tags.rel_object_id and " .
-			TABLE_PREFIX . "tags.tag = '".$tag."' and " . TABLE_PREFIX . "tags.rel_object_manager ='ProjectCharts' ) > 0 ";
-		}
-		/* TODO: handle with permissions_sql_for_listings */
-		//$permission_str = ' AND (' . permissions_sql_for_listings(ProjectCharts::instance(), ACCESS_LEVEL_READ, logged_user()) . ')';
-		/*$permission_str = " AND " . ProjectCharts::getWorkspaceString(logged_user()->getWorkspacesQuery(true));
-
-		if ($isProjectView) {
-			$pids = $project->getAllSubWorkspacesQuery(true);
-			$project_str = " AND " . ProjectCharts::getWorkspaceString($pids);
-		} else {
-			$project_str = "";
-		}
-		
-
-		list($charts, $pagination) = ProjectCharts::paginate(
-		array("conditions" => '`trashed_on` = 0 AND `archived_on` = 0 AND ' . $tagstr . $permission_str . $project_str ,
-	        		'order' => '`title` ASC'),
-		config_option('files_per_page', 10),
-		$page
-		); // paginate
-
-		tpl_assign('totalCount', $pagination->getTotalItems());
-		tpl_assign('charts', $charts);
-		tpl_assign('pagination', $pagination);
-
-		$object = array(
-			"totalCount" => $pagination->getTotalItems(),
-			"charts" => array()
-		);
-
-		$factory = new ProjectChartFactory();
-		$types = $factory->getChartDisplays();
-
-		if (isset($charts))
-		{
-			foreach ($charts as $c) {
-				if ($c->getProject() instanceof Project)
-				$tags = project_object_tags($c);
-				else
-				$tags = "";
-					
-				$object["charts"][] = array(
-				"id" => $c->getId(),
-				"name" => $c->getTitle(),
-				"type" => $types[$c->getDisplayId()],
-				"tags" => $tags,
-				"project" => $c->getProject()?$c->getProject()->getName():'',
-				"projectId" => $c->getProjectId()
-				);
-			}
-		}
-		ajx_extra_data($object);
-		tpl_assign("listing", $object);*/
 	}
 
 
@@ -1219,6 +1120,11 @@ class ReportingController extends ApplicationController {
 			foreach($object_types as $object_type){
 				$values[] = array('id' => $object_type->getId(), 'name' => $object_type->getName());
 			}*/
+		} else if ($field == 'company_id') {
+			$companies = Contacts::findAll(array('conditions' => 'is_company > 0'));
+			foreach ($companies as $comp) {
+				$values[] = array('id' => $comp->getId(), 'name' => $comp->getObjectName());
+			}
 		}
 		return $values;
 	}

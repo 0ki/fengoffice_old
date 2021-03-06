@@ -60,7 +60,7 @@ $processed_objects = array();
 
 $user = Contacts::findOne(array("conditions"=>"user_type = (SELECT id FROM ".TABLE_PREFIX."permission_groups WHERE name='Super Administrator')"));
 $object_controller = new ObjectController();
-$objects = Objects::findAll(array('id'=>true, "conditions" => "id NOT IN(SELECT object_id FROM ".TABLE_PREFIX."processed_objects)", "limit" => OBJECT_COUNT));
+$objects = Objects::findAll(array('id'=>true, "conditions" => "id NOT IN(SELECT object_id FROM ".TABLE_PREFIX."processed_objects)", "order" => "id DESC", "limit" => OBJECT_COUNT));
 
 foreach ($objects as $obj) {
 	$cobj = Objects::findObject($obj);

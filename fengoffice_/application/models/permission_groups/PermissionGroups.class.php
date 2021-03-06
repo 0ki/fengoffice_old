@@ -26,7 +26,6 @@
         return self::findAll(array("conditions" => "`type` = 'user_groups'",  "order" => $order));
     }
     
-    
   } // PermissionGroups 
 
 ?>

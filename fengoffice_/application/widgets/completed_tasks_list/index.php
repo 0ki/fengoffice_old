@@ -18,6 +18,11 @@ $tasks_result = ProjectTasks::instance()->listing(array(
 
 $tasks = $tasks_result->objects;
 
+$cmember = current_member();
+if($cmember != NULL){
+	$widget_title = lang("completed tasks") . " " . lang("in") . " " . $cmember->getName();
+}
+
 if ($tasks_result->total > 0) {
 	include 'template.php';
 }

@@ -242,9 +242,9 @@
 	'success unarchive objects' => "{0} Object(s) unarchived successfully",
 	'error unarchive objects' => "Failed to unarchive {0} object(s)",
   
-    'success checkout file' => 'File checked out successfully',
+    'success checkout file' => 'File has been blocked successfully',
     'success checkin file' => 'File checked in successfully',
-  	'success undo checkout file' => 'File checkout canceled successfully',
+  	'success undo checkout file' => 'File has been unblocked successfully',
 	'success extracting files' => '{0} Files were extracted',
 	'success compressing files' => '{0} Files compressed succesfully',
   
@@ -323,8 +323,8 @@
   	'error contact added but not assigned' => 'The contact \'{0}\' was added but not assigned successfully to workspace \'{1}\' due to access permissions',
   	'error cannot set workspace as parent' => 'Cannot set workspace \'{0}\' as parent, too many workspace levels or circular reference',
   	'error cannot link object to self' => 'You cannot link an object to itself',
-  
-    
+
+  	
     // Access or data errors
     'no access permissions' => 'You don\'t have permissions to access requested page',
     'invalid request' => 'Invalid request!',

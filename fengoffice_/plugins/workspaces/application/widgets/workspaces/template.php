@@ -2,6 +2,8 @@
 $members = implode (',', active_context_members(false));
 $ws_dim = Dimensions::findByCode('workspaces');
 $row_cls = "";
+$add_button_text = count($data_ws) > 0 ? lang('add new workspace') : lang('add your first workspace');
+$no_objects_text = count($data_ws) > 0 ? '' : lang('you have no workspaces yet');
 ?>
 
 <div class="ws-widget widget">
@@ -41,12 +43,12 @@ $row_cls = "";
 	<?php if (can_manage_dimension_members(logged_user())) : ?>
 		<?php if (count($data_ws) > 0) : ?>
 			<div class="separator"></div>
-		<?php endif; ?>
-		<label><?php echo lang('add workspace')?></label>
-		<input type="text" class="ws-name" />
-		<button class="submit-ws" ><?php echo lang('add')?></button>
-		<a class="ws-more-details coViewAction ico-edit" href="#" onclick="return false;" ><?php echo lang("details")?></a>
-	
+		<?php endif; ?>		
+		<?php if ($no_objects_text != '') : ?><div class="no-obj-widget-msg"><?php echo $no_objects_text ?></div><?php endif; ?>
+		<button title="<?php echo $add_button_text ?>" class="ws-more-details add-first-btn" style="float:right;">
+			<img src="public/assets/themes/default/images/16x16/add.png"/>&nbsp;<?php echo $add_button_text ?>
+		</button>
+		<div class="clear"></div>
 	<?php endif; ?>
 
 	</div>
@@ -55,39 +57,18 @@ $row_cls = "";
 
 <script>
 	$(function(){
-		$("button.submit-ws").click(function(){
-			var container = $(this).closest(".widget-body") ;
-			container.closest(".widget-body").addClass("loading");
-			
-			var name = $(container).find("input.ws-name").val();
 
-			if (name) {
-				og.quickAddWs({
-					name: name,
-					parent: '<?php echo $members?>',
-					dim_id: '<?php echo $ws_dim->getId()?>',
-					ot_id: '<?php echo Workspaces::instance()->getObjectTypeId()?>'
-				},function(){
-					og.customDashboard('dashboard', 'main_dashboard',{},true);
-				});
-				
-			}else{
-				og.err('<?php echo lang('error add name required', lang('workspace'))?>');
-				$(container).find("input.ws-name").focus();
-				container.removeClass("loading");
-			}	
-			
+		$(".ws-more-details").click(function(){
+			og.openLink(og.getUrl('member','add'),{
+				get: {
+					'name': '',
+					'dim_id': '<?php echo $ws_dim->getId()?>'
+				}
+			});
 		});
 
 
-		$(".ws-widget .ws-name").keypress(function(e){
-			if(e.keyCode == 13){
-				$("button.submit-ws").click();
-     		}
-		});
-
-
-		$(".ws-widget a.ws-more-details").click(function(){
+		$(".aaaaaws-widget a.aaaaaws-more-details").click(function(){
 			var container = $(this).closest(".widget-body");
 			var name = $(container).find("input.ws-name").val();
 			

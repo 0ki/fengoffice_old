@@ -90,7 +90,7 @@ class ProjectMilestones extends BaseProjectMilestones {
 	 */
 	function copyTasks(ProjectMilestone $milestoneFrom, ProjectMilestone $milestoneTo, $as_template = false) {
 		//FIXME 
-		foreach ($milestoneFrom->getTasks() as $sub) {
+		foreach ($milestoneFrom->getTasks($as_template) as $sub) {
 			if ($sub->getParentId() != 0) continue;
 			$new = ProjectTasks::createTaskCopy($sub);
 			$new->setIsTemplate($as_template);

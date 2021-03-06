@@ -72,6 +72,7 @@
 	'field Contacts last_visit' => 'Última visita',
 	'field Contacts surname' => 'Apellido',
 	'field Contacts username' => 'Nombre de usuario',
+	'field Contacts comments' => 'Notas',
 
 	'field MailContents id' => 'Id',
 	'field MailContents name' => 'Asunto',

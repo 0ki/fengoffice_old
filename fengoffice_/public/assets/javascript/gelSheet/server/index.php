@@ -111,10 +111,15 @@
 	if (class_exists($controller)) {
 		if (method_exists($controller, $method)) {
 			$cont = new $controller();
+			/*
+			 * COMMENTED DUE TO VULNERABILTY: PHP command injection
+			 * TODO: Sanitize eval parameters
+			 * 
 			$php_params = "'". implode("','",$params) . "'";
 			$php = '$cont->$method('.$php_params.');' ;
 			
 			eval($php);
+			*/
 		}
 	}
 

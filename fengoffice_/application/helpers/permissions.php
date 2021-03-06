@@ -844,6 +844,7 @@
 	}
 	
 	function save_member_permissions($member) {
+		if (!$member instanceof Member) return;
 		$permissionsString = array_var($_POST, 'permissions');
 		if ($permissionsString && $permissionsString != ''){
 			$permissions = json_decode($permissionsString);
@@ -971,7 +972,9 @@
 		$members = array();
 		if (isset($context) && is_array($context)) {
 			foreach ($context as $selection) {
-				if ($selection instanceof Member) $members[] = $selection;
+				if ($selection instanceof Member && $selection->getDimension()->getDefinesPermissions()) {
+					$members[] = $selection;
+				}
 			}
 		}
 		

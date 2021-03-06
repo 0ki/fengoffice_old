@@ -460,9 +460,11 @@ $visible_cps = CustomProperties::countVisibleCustomPropertiesByObjectType($objec
 			} // if ?>
 
 			<p><?php echo lang('event invitations desc') ?></p>
-			<p><?php echo checkbox_field('event[send_notification]', array_var($event_data, 'send_notification', $event->isNew()), array('id' => $genid . 'eventFormSendNotification', 'tabindex' => '110')) ?>
+			<p><?php $event_send_invitations = (user_config_option("event_send_invitations") && $event->isNew()) ? true : false;
+					 $event_subscribe_invited = (user_config_option("event_subscribe_invited") && $event->isNew()) ? true : false;
+					 echo checkbox_field('event[send_notification]', array_var($event_data, 'send_notification', $event_send_invitations), array('id' => $genid . 'eventFormSendNotification', 'tabindex' => '110')) ?>
 			<label for="<?php echo $genid ?>eventFormSendNotification" class="checkbox"><?php echo lang('send new event notification') ?></label></p>
-			<p><?php echo checkbox_field('event[subscribe_invited]', ($event->isNew())?true:array_var($event_data, 'subscribe_invited', false), array('id' => $genid . 'eventFormSubscribeInvited', 'tabindex' => '111')) ?>
+			<p><?php echo checkbox_field('event[subscribe_invited]', array_var($event_data, 'subscribe_invited', $event_subscribe_invited), array('id' => $genid . 'eventFormSubscribeInvited', 'tabindex' => '111')) ?>
 			<label for="<?php echo $genid ?>eventFormSubscribeInvited" class="checkbox"><?php echo lang('subscribe invited users') ?></label></p>
 			
 	</fieldset>
@@ -574,6 +576,7 @@ og.drawInnerHtml = function(companies) {
 	script += 'var cos = div.invite_companies;';
 	htmlStr += '<div class="company-users">';
 	if (companies != null) {
+		var calendar_user_filter = <?php echo user_config_option('calendar user filter'); ?>;
 		for (i = 0; i < companies.length; i++) {
 			comp_id = companies[i].object_id;
 			comp_name = companies[i].name;
@@ -585,21 +588,18 @@ og.drawInnerHtml = function(companies) {
 			htmlStr += '</div>';
 			
 			htmlStr += '<div class="company-users" style="padding-left:10px;">';
-						
-					for (j = 0; j < companies[i].users.length; j++) {
-
-						usr = companies[i].users[j];
-						htmlStr += '<div id="div' + genid + 'inviteUser'+usr.id+'" class="container-div user-name" style="margin-left:5px;" onmouseover="og.rollOver(this)" onmouseout="og.rollOut(this,false ,true)" onclick="og.checkUser(this)">'
-						htmlStr += '<input style="display:none;" type="checkbox" class="checkbox" name="event[invite_user_'+usr.id+']" id="' + genid + 'inviteUser'+usr.id+'" value="checked"></input>';
-						htmlStr += '<label style="overflow:hidden; background: transparent url('+usr.avatar_url+') no-repeat;" ><span class="link-ico ico-user" >'+og.clean(usr.name)+'</span> <br> <span style="color:#888888;font-size:90%;font-weight:normal;">'+ usr.mail+ ' </span></label>';
-						script += 'cos.company_' + comp_id + '.users.push({ id:'+usr.id+', checkbox_id : \'inviteUser' + usr.id + '\'});';
-						if (usr.invited)
-							script += 'og.checkUser(document.getElementById(\'div' + genid + 'inviteUser'+usr.id+'\'));'
-						htmlStr += '</div>';
-	
-					}
+			for (j = 0; j < companies[i].users.length; j++) {
+				usr = companies[i].users[j];
+				htmlStr += '<div id="div' + genid + 'inviteUser'+usr.id+'" class="container-div user-name" style="margin-left:5px;" onmouseover="og.rollOver(this)" onmouseout="og.rollOut(this,false ,true)" onclick="og.checkUser(this)">'
+				htmlStr += '<input style="display:none;" type="checkbox" class="checkbox" name="event[invite_user_'+usr.id+']" id="' + genid + 'inviteUser'+usr.id+'" value="checked"></input>';
+				htmlStr += '<label style="overflow:hidden; background: transparent url('+usr.avatar_url+') no-repeat;" ><span class="link-ico ico-user" >'+og.clean(usr.name)+'</span> <br> <span style="color:#888888;font-size:90%;font-weight:normal;">'+ usr.mail+ ' </span></label>';
+				script += 'cos.company_' + comp_id + '.users.push({ id:'+usr.id+', checkbox_id : \'inviteUser' + usr.id + '\'});';
+				if (usr.invited || usr.id == calendar_user_filter) {
+					script += 'og.checkUser(document.getElementById(\'div' + genid + 'inviteUser'+usr.id+'\'));'
+				}
 				htmlStr += '</div>';
-			
+			}
+			htmlStr += '</div>';
 		}
 		htmlStr += '</div>';
 	}

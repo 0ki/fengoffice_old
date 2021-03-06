@@ -2,6 +2,7 @@
  *  MailManager
  *
  */
+mails_per_page = parseInt(og.config['mails_per_page']) || og.config['files_per_page'];
 og.MailManager = function() {
 
 	var actions, moreActions, selectActions, accountActions, markactions;
@@ -1057,7 +1058,7 @@ og.MailManager = function() {
 		loadMask: false,
 		id: 'mails-manager',
 		bbar: new og.CurrentPagingToolbar({
-			pageSize: og.config['files_per_page'],
+			pageSize: mails_per_page,
 			store: this.store,
 			displayInfo: true,
 			displayMsg: lang('displaying objects of'),
@@ -1143,7 +1144,7 @@ Ext.extend(og.MailManager, Ext.grid.GridPanel, {
 		if (!params) params = {};
 		var start;
 		if (typeof params.start == 'undefined') {
-			start = (this.getBottomToolbar().getPageData().activePage - 1) * og.config['files_per_page'];
+			start = (this.getBottomToolbar().getPageData().activePage - 1) * mails_per_page;
 		} else {
 			start = 0;
 		}
@@ -1158,7 +1159,7 @@ Ext.extend(og.MailManager, Ext.grid.GridPanel, {
 		this.store.load({
 			params: Ext.apply(params, {
 				start: start,
-				limit: og.config['files_per_page']
+				limit: mails_per_page
 			})
 		});
 		this.store.baseParams.action = "";

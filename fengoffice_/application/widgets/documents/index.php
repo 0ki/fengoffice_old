@@ -9,6 +9,11 @@ if ($panel instanceof TabPanel && $panel->getEnabled()) {
 		"start" => 0,
 		"limit" => $limit
 	)) ;
+	$cmember = current_member();
+	if($cmember != NULL){
+		$widget_title = lang("documents") . " " . lang("in") . " " . $cmember->getName();
+	}
+	
 	$total = $result->total ;
 	$documents = $result->objects;
 	$genid = gen_id();

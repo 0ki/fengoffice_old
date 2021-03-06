@@ -172,4 +172,6 @@
 	'views and downloads' => 'Tampilan-tampilan dan download',
 	'confirm delete permanently sync' => 'Apakah anda yakin ingin menghapus data sinkronisasi?',
 	'recent activities to show' => 'Kegiatan terbaru yang ditampilkan',
+	'subscribe to object' => 'Berlangganan',
+	'unsubscribe from object' => 'Berhenti Langganan',
 ); ?>

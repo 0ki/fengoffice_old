@@ -1,5 +1,5 @@
 
-	About Feng Office 2.2.4.1
+	About Feng Office 2.3-beta
 	================================
 	
 	Feng Office is a Collaboration Platform and Project Management System.
@@ -103,6 +103,22 @@
 	=========
 	
 	Since 2.2.4.1
+	----------------
+	
+	bugfix: Add permissions over timeslots, reports and templates for user in user's person member when creating the user.
+	bugfix: Assigned to combo does not show users when filering by tag.
+	bugfix: First person added not shown in tree.
+	bugfix: Add object_id to searchable objects.
+	bugfix: Empty trash will try to delete deleted emails.
+	bugfix: Trash can shows deleted emails.
+	bugfix: Create email account gives permissions to it to other users.
+	bugfix: Cannot add user if any dimension is required.
+	bugfix: Comments are not added to sharing table.
+	
+	feature: Config option to enable assign tasks to companies.
+	
+		
+	Since 2.2.4
 	----------------
 	
 	bugfix: Add/edit member form permissions goes down if screen is not wide enough.

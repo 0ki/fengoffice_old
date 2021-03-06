@@ -3,7 +3,7 @@
   /**
   * BaseReportColumn class
   *
-  * @author Pablo Kamil <pablokam@gmail.com>
+  * 
   */
   abstract class BaseReportColumn extends DataObject {
   

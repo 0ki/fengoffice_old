@@ -192,10 +192,9 @@
     'no mailAccount error' => 'Action unavailable. You do not have an email account added.',
 	'content too long not loaded' => 'Previous email content is too long and was not loaded, but will be sent with this email.',
   	'member name already exists in dimension' => 'Member \'{0}\' already exists in selected dimension.',  
-	'must choose at least one member of' => 'You must choose at least one member of {0}.',  
-  	'timeslot dnx' => 'Timeslot does not exist',
-  	'you dont have permissions to classify object in member' => 'You don\'t have permissions to classify \'{0}\' in \'{1}\'',
-  
+	'must choose at least one member of' => 'You must choose at least one member of {0}.',
+	'timeslot dnx' => 'Timeslot does not exist',
+	'you dont have permissions to classify object in member' => 'You don\'t have permissions to classify \'{0}\' in \'{1}\'',
   ); // array
 
 ?>

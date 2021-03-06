@@ -29,6 +29,11 @@
             }        
         }
     }
+
+    $cmember = current_member();
+    if($cmember != NULL){
+    	$widget_title = lang("activity") . " " . lang("in") . " " . $cmember->getName();
+    }
     
     $total = $limit ;
     $genid = gen_id();

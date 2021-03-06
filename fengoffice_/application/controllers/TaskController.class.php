@@ -154,24 +154,26 @@ class TaskController extends ApplicationController {
 				if ($assignee instanceof Contact) {
 					$task->subscribeUser($assignee);
 				}
-
-				// create default reminder
-				$reminder = new ObjectReminder();
-				$reminder->setMinutesBefore(1440);
-				$reminder->setType("reminder_email");
-				$reminder->setContext("due_date");
-				$reminder->setObject($task);
-				$reminder->setUserId(0);
-				$date = $task->getDueDate();
 				
-				if(!isset($minutes))$minutes=0;
-				
-				if ($date instanceof DateTimeValue) {
-					$rdate = new DateTimeValue($date->getTimestamp() - $minutes * 60);
-					$reminder->setDate($rdate);
+				// create default reminder by user config option
+				if ($task->getDueDate()!= null && user_config_option("add_task_default_reminder")){			
+					$reminder = new ObjectReminder();
+					$def = explode(",",user_config_option("reminders_tasks"));          			
+					$minutes = $def[2] * $def[1];
+          			$reminder->setMinutesBefore($minutes);
+                    $reminder->setType($def[0]);
+                    $reminder->setContext("due_date");
+                    $reminder->setObject($task);
+                    $reminder->setUserId(0);
+                    $date = $task->getDueDate();
+                                        
+					if ($date instanceof DateTimeValue) {
+						$rdate = new DateTimeValue($date->getTimestamp() - $minutes * 60);
+						$reminder->setDate($rdate);
+					}
+					$reminder->save();
 				}
-				$reminder->save();
-
+				
 				$subs = array();
 				if(config_option('multi_assignment') && Plugins::instance()->isActivePlugin('crpm')){
 					$json_subtasks = json_decode(array_var($_POST, 'multi_assignment'));
@@ -373,6 +375,33 @@ class TaskController extends ApplicationController {
 				}
 				ApplicationLogs::createLog($task, ApplicationLogs::ACTION_EDIT, false, false, true, $log_info);
 
+				//edit reminders accordingly
+				if ($task->getDueDate()!= null && !$task->isCompleted() && $task->getSubscriberIds() != null){ //to make sure the task has a due date and it is not completed yet, and that it has subscribed people						
+					$old_reminders = ObjectReminders::getByObject($task);	    
+					if($old_reminders != null){		
+						$object_controller = new ObjectController();												
+						$object_controller->update_reminders($task, $old_reminders); //updating the old ones						
+					}else if ( $task->getAssignedTo() == null //if there is no asignee, but it still has subscribers
+					 		  || (user_config_option("add_self_task_autoreminder") && logged_user()->getId() == $task->getAssignedTo()->getId()) //if the user is going to set up reminders for his own tasks
+					 		  || (user_config_option("add_task_autoreminder") && logged_user()->getId() != $task->getAssignedTo()->getId())){ //if the user is going to set up reminders for tasks assigned to its colleagues			
+						$reminder = new ObjectReminder();
+						$def = explode(",",user_config_option("reminders_tasks"));          			
+						$minutes = $def[2] * $def[1];
+	          			$reminder->setMinutesBefore($minutes);
+	                    $reminder->setType($def[0]);
+	                    $reminder->setContext("due_date");
+	                    $reminder->setObject($task);
+	                    $reminder->setUserId(0);
+	                    $date = $task->getDueDate();	                                        
+						if ($date instanceof DateTimeValue) {
+							$rdate = new DateTimeValue($date->getTimestamp() - $minutes * 60);
+							$reminder->setDate($rdate);
+						}
+						$reminder->save();			
+						
+					}
+				}
+				
 				// subscribe
 				$task->subscribeUser(logged_user());
 				if(isset($_POST['type_related'])){
@@ -689,7 +718,10 @@ class TaskController extends ApplicationController {
 		}
 
 		$task_status_condition = "";
-		$now = DateTimeValueLib::now()->format('Y-m-j 00:00:00');
+		$now_date = DateTimeValueLib::now();
+		$now_date->advance(logged_user()->getTimezone() * 3600);
+		$now = $now_date->format('Y-m-d 00:00:00');
+		$now_end = $now_date->format('Y-m-d 23:59:59');
 		switch($status){
 			case 0: // Incomplete tasks
 				$task_status_condition = " AND `completed_on` = " . DB::escape(EMPTY_DATETIME);
@@ -698,19 +730,16 @@ class TaskController extends ApplicationController {
 				$task_status_condition = " AND `completed_on` > " . DB::escape(EMPTY_DATETIME);
 				break;
 			case 10: // Active tasks
-				$task_status_condition = " AND `completed_on` = " . DB::escape(EMPTY_DATETIME) . " AND `start_date` <= '$now'";
+				$task_status_condition = " AND (SELECT COUNT(ts.object_id) FROM ".TABLE_PREFIX."timeslots ts WHERE ts.rel_object_id=o.id AND ts.end_time = '".EMPTY_DATETIME."') > 0";
 				break;
 			case 11: // Overdue tasks
 				$task_status_condition = " AND `completed_on` = " . DB::escape(EMPTY_DATETIME) . " AND `due_date` < '$now'";
 				break;
 			case 12: // Today tasks
-				$task_status_condition = " AND `completed_on` = " . DB::escape(EMPTY_DATETIME) . " AND `due_date` = '$now'";
+				$task_status_condition = " AND `completed_on` = " . DB::escape(EMPTY_DATETIME) . " AND `due_date` >= '$now' AND `due_date` <= '$now_end'";
 				break;
 			case 13: // Today + Overdue tasks
-				$task_status_condition = " AND `completed_on` = " . DB::escape(EMPTY_DATETIME) . " AND `due_date` <= '$now'";
-				break;
-			case 14: // Today + Overdue tasks
-				$task_status_condition = " AND `completed_on` = " . DB::escape(EMPTY_DATETIME) . " AND `due_date` <= '$now'";
+				$task_status_condition = " AND `completed_on` = " . DB::escape(EMPTY_DATETIME) . " AND `due_date` <= '$now_end'";
 				break;
 			case 20: // Actives task by current user
 				$task_status_condition = " AND `completed_on` = " . DB::escape(EMPTY_DATETIME) . " AND `start_date` <= '$now' AND `assigned_to_contact_id` = " . logged_user()->getId();
@@ -1121,7 +1150,7 @@ class TaskController extends ApplicationController {
 				$object_controller->add_subscribers($task);
 				$object_controller->link_to_new_object($task);
 				$object_controller->add_custom_properties($task);
-				if ($task->getDueDate()!= null){
+				if ($task->getDueDate()!= null && user_config_option("add_task_default_reminder")){
 					$object_controller->add_reminders($task);
 				}
 				
@@ -1477,11 +1506,17 @@ class TaskController extends ApplicationController {
 					ajx_current("empty");
 					return;
 				}
+				
+				if (isset($task_data['percent_completed']) && $task_data['percent_completed'] >= 0 && $task_data['percent_completed'] <= 100) {
+					$task->setPercentCompleted($task_data['percent_completed']);
+				}
 
 				DB::beginWork();
 				$task->save();
 
-				$task->calculatePercentComplete();
+				if (!isset($task_data['percent_completed'])) {
+					$task->calculatePercentComplete();
+				}
 
 				// dependencies
 				if (config_option('use tasks dependencies')) {
@@ -1518,7 +1553,34 @@ class TaskController extends ApplicationController {
 				$object_controller->add_subscribers($task);
 				$object_controller->link_to_new_object($task);
 				$object_controller->add_custom_properties($task);
-				$object_controller->add_reminders($task);
+				
+				if ($task->getDueDate()!= null && !$task->isCompleted() && $task->getSubscriberIds() != null){ //to make sure the task has a due date and it is not completed yet, and that it has subscribed people											
+					$old_reminders = ObjectReminders::getByObject($task);	    
+					if($old_reminders != null){		
+						$object_controller = new ObjectController();
+						$object_controller->add_reminders($task); //adding the new reminders, if any						
+						$object_controller->update_reminders($task, $old_reminders); //updating the old ones	
+					}else if ( (user_config_option("add_task_autoreminder") && logged_user()->getId() != $task->getAssignedTo()->getId()) //if the user is going to set up reminders for tasks assigned to its colleagues
+					 		  || (user_config_option("add_self_task_autoreminder") && logged_user()->getId() == $task->getAssignedTo()->getId()) //if the user is going to set up reminders for his own tasks
+					 		  || $task->getAssignedTo() == null ){ //if there is no asignee, but it still has subscribers
+						$reminder = new ObjectReminder();
+						$def = explode(",",user_config_option("reminders_tasks"));          			
+						$minutes = $def[2] * $def[1];
+	          			$reminder->setMinutesBefore($minutes);
+	                    $reminder->setType($def[0]);
+	                    $reminder->setContext("due_date");
+	                    $reminder->setObject($task);
+	                    $reminder->setUserId(0);
+	                    $date = $task->getDueDate();	                                        
+						if ($date instanceof DateTimeValue) {
+							$rdate = new DateTimeValue($date->getTimestamp() - $minutes * 60);
+							$reminder->setDate($rdate);
+						}
+						$reminder->save();			
+						
+					}
+				}
+				
 
 				$task->apply_members_to_subtasks($member_ids, true);
 

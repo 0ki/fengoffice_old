@@ -3,7 +3,7 @@
   /**
   * BaseReportCondition class
   *
-  * @author Pablo Kamil <pablokam@gmail.com>
+  * 
   */
   abstract class BaseReportCondition extends DataObject {
   

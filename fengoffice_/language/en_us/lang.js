@@ -156,7 +156,7 @@ addLangs({
 	/* tabs */
 	'overview': 'Overview',
 	'messages': 'Notes',
-	'contacts': 'Persons',
+	'contacts': 'Contacts',
 	'persons': 'Persons',
 	'calendar': 'Calendar',
 	'tasks': 'Tasks',
@@ -587,6 +587,8 @@ addLangs({
 	'restore selected objects': 'Restore selected objects',
 	'delete selected objects permanently': 'Delete the selected objects permanently',
 	'confirm delete objects permanently': 'Once deleted you won\'t be able to bring these objects back.\nAre you sure you want to delete the selected objects permanently?',
+	'error delete people': 'You cannot move to trash Users. You may do this from the Administration Panel',
+	'error delete company': 'You cannot move to trash Companies which contain Users or Contacts',
 	
 	'n/a': '<acronym title="Not Available">n/a</acronym>',
 	'move to trash': 'Move to trash',
@@ -613,7 +615,7 @@ addLangs({
     'untagged': 'Untagged',
     'download selected file': 'Download selected file',
     'edit selected file properties': 'Edit selected file\'s properties',
-    'update file':'Update File',
+    'update file' : 'Edit file properties',
     'you must enter a name': 'You must enter a name',
     'sort tags': 'Sort tags',
     'sort tags alphabetically': 'Alphabetically',
@@ -695,6 +697,7 @@ addLangs({
   	'true': 'True',
   	'false': 'False',
   	'ends with': 'Ends with',
+  	'start with': 'Start with',
   	'report cols not selected': 'There are no columns selected for the report',
   	'no report conditions': 'There are no conditions for the report',
   	'condition value empty': 'You must enter a value for the condition of field {0}',
@@ -876,5 +879,16 @@ addLangs({
 	'option repetitive title popup' : 'This task is already completed. <br/>Do you wish to:',
 	'option repetitive only task' : 'Modify this task data?',
 	'option repetitive pending task' : 'Modify all task series? (Edit upcoming pending task)',
-	'and number more': 'and {0} more.'
+	'and number more': 'and {0} more.',
+	
+	'new member added popup title' : '{0} {1} successfully added',
+	'new member added popup msg' : 'You have succesfully added the new {0} named {1}.',
+	'what would you like to do next' : 'What would you like to do next?',
+	'remember my choice and do not ask again in the future' : 'Remember my choice and do not ask again in the future.',
+	'this user option can be changed' : 'This option can be changed from your user settings at any given time.',
+	'access member' : 'Access {0}',
+	'stay at' : 'Stay at {0}',
+	'general view': 'General view'
+	
+	
 });

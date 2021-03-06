@@ -153,10 +153,10 @@ class Notifier {
 		}
                 $text_comment = "";
 		if ($object instanceof ProjectFile && $object->getType() == ProjectFiles::TYPE_DOCUMENT) {
-                    $revision = $object->getLastRevision();
-                    if (trim($revision->getComment())) {
-                    	$text_comment = escape_html_whitespace("\n" . $revision->getComment());
-                    }
+			$revision = $object->getLastRevision();
+			if (trim($revision->getComment())) {
+				$text_comment = escape_html_whitespace("\n" . $revision->getComment());
+			}
 		}
 
 		//context

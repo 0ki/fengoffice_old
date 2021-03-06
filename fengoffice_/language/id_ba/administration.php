@@ -57,4 +57,8 @@
 	'config option name use_owner_company_logo_at_header' => 'Gunakan logo lerusahaan utama sebagai logo aplikasi',
 	'config option desc use_owner_company_logo_at_header' => 'Pasang logo perusahaan utama pada sudut kanan atas layar. Refresh atau tekan F5 untuk melihat perubahan. Ukuran yang disarankan: 50x50 px. ',
 	'config option desc use_time_in_task_dates' => 'Ijinkan pengguna untuk memasukkan batas waktu dan waktu permulaan serta ',
+	'config option name checkout_notification_dialog' => 'Coba cek jendela peringatan untuk dokumen-dokumen',
+	'config option name file_revision_comments_required' => 'Komentar pada berkas revisi dibutuhkan',
+	'config option desc file_revision_comments_required' => 'Jika diset, salah satu syarat revisi berkas adalah komentar pada setiap revisi',
+	'config option name ask_administration_autentification' => 'autentikasi administrasi',
 ); ?>

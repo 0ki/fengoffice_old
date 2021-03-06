@@ -215,14 +215,14 @@ return array(
 	'import' => 'Import',
  	'file not exists' => 'The file does not exists',
 	'field delimiter' => 'Field delimiter (optional)',
-	'first record contains field names' => 'First record contains field names',
+	'first record contains field names' => 'First row contains field names',
 	'import contact success' => 'Contact import success.',
 	'contact fields' => 'Contact Fields',
 	'fields from file' => 'Fields from file',
 	'you must match the database fields with file fields before executing the import process' => 'You must match the database fields with file fields before executing the import process.',
 	'import result' => 'Import results',
-	'contacts succesfully imported' => 'Contacts succesfully imported',
-	'contacts import fail' => 'Contacts importation failure',
+	'contacts succesfully imported' => 'People succesfully imported',
+	'contacts import fail' => 'Import failed for People',
 	'contacts import fail help' => 'Import process may have failed due to existing data in the database, like name or email address, etc.',
 	'import fail reason' => 'Fail reason',
 	'select a file in order to load its data' => 'Select a csv file in order to load its data for import.',
@@ -312,7 +312,7 @@ return array(
   'wrong password confirmation' => 'Warning: The passwords do not match. Please verify them.',		
 
 //Checkout
-  'checkout file' => 'Checkout file',
+  'checkout file' => 'Block file edition for other users',
   'checkin file' => 'Upload a new version of the file',
 
   'new filename' => 'New filename',
@@ -453,7 +453,7 @@ return array(
   'tasks in progress' => 'Tasks in progress',
   'upcoming events milestones and tasks' => 'Upcoming events, milestones and tasks',
 
-  'undo checkout' => 'Undo file checkout',
+  'undo checkout' => 'Unblock file edition for other users',
     
   //'search for in project' => 'Search results for \'<i>{0}</i>\' in \'{1}\'',
   'search for in project' => 'Search results in \'{1}\'',

@@ -791,7 +791,7 @@ function get_workspace_css_properties($num) {
     "24"  => array("color" => "#006633", "background-color" => "#F1F5EC", "border-color" => "#006633"),   
 );
 	
-
+	if (!$num) $num = 0;
 	return "border-color: ".$workspaces_css[$num]['border-color']."; background-color: ".$workspaces_css[$num]['background-color']."; color: ".$workspaces_css[$num]['color']."; 
 	padding: ".$workspaces_css['main']['padding']."; font-size: ".$workspaces_css['main']['font-size'].";";
     

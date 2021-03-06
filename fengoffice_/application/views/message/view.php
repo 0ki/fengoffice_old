@@ -22,19 +22,19 @@ if (isset($message) && $message instanceof ProjectMessage) {
 
 <div style="padding:7px">
 <div class="message">
-	<?php 
-                if($message->getTypeContent() == "text"){
-                    $content = escape_html_whitespace(convert_to_links(clean($message->getText())));
-                }else{
-                    $content = '<div class="wysiwyg-description">' . purify_html(nl2br($message->getText())) . '</div>';
-                }
+<?php
+	if($message->getTypeContent() == "text"){
+		$content = escape_html_whitespace(convert_to_links(clean($message->getText())));
+	}else{
+		$content = '<div class="wysiwyg-description">' . purify_html(nl2br($message->getText())) . '</div>';
+	}
 				
-		tpl_assign("content", $content);
-		tpl_assign("object", $message);
-		tpl_assign('iconclass', $message->isTrashed()? 'ico-large-message-trashed' : ($message->isArchived() ? 'ico-large-message-archived' : 'ico-large-message'));
-		
-		$this->includeTemplate(get_template_path('view', 'co'));
-	?>
+	tpl_assign("content", $content);
+	tpl_assign("object", $message);
+	tpl_assign('iconclass', $message->isTrashed()? 'ico-large-message-trashed' : ($message->isArchived() ? 'ico-large-message-archived' : 'ico-large-message'));
+	
+	$this->includeTemplate(get_template_path('view', 'co'));
+?>
 </div>
 </div>
 <?php } //if isset ?>

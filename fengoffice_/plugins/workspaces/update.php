@@ -31,7 +31,7 @@
 	function workspaces_update_4_5() {
 		DB::execute("
 			INSERT INTO ".TABLE_PREFIX."dimension_object_type_contents (dimension_id,dimension_object_type_id,content_object_type_id,is_required,is_multiple) VALUES 
-			((SELECT id FROM ".TABLE_PREFIX."dimensions WHERE code='feng_persons'), (SELECT id FROM ".TABLE_PREFIX."object_types WHERE name='person'), (SELECT id FROM ".TABLE_PREFIX."object_types WHERE name='mail'),0,1),
+			((SELECT id FROM ".TABLE_PREFIX."dimensions WHERE code='feng_persons'), (SELECT id FROM ".TABLE_PREFIX."object_types WHERE name='person' LIMIT 1), (SELECT id FROM ".TABLE_PREFIX."object_types WHERE name='mail'),0,1),
 			((SELECT id FROM ".TABLE_PREFIX."dimensions WHERE code='feng_persons'), (SELECT id FROM ".TABLE_PREFIX."object_types WHERE name='company'), (SELECT id FROM ".TABLE_PREFIX."object_types WHERE name='mail'),0,1),
 			((SELECT id FROM ".TABLE_PREFIX."dimensions WHERE code='workspaces'), (SELECT id FROM ".TABLE_PREFIX."object_types WHERE name='workspace'), (SELECT id FROM ".TABLE_PREFIX."object_types WHERE name='mail'),0,1),
 			((SELECT id FROM ".TABLE_PREFIX."dimensions WHERE code='tags'), (SELECT id FROM ".TABLE_PREFIX."object_types WHERE name='tag'), (SELECT id FROM ".TABLE_PREFIX."object_types WHERE name='mail'),0,1)
@@ -43,7 +43,7 @@
 		// create associations
 		DB::execute("
 			INSERT INTO `".TABLE_PREFIX."dimension_member_associations` (`dimension_id`,`object_type_id`,`associated_dimension_id`, `associated_object_type_id`, `is_required`,`is_multiple`, `keeps_record`) VALUES
-			((SELECT id from ".TABLE_PREFIX."dimensions WHERE code = 'workspaces'),(SELECT id FROM ".TABLE_PREFIX."object_types WHERE name = 'workspace'),(SELECT id from ".TABLE_PREFIX."dimensions WHERE code = 'feng_persons'),(SELECT id FROM ".TABLE_PREFIX."object_types WHERE name = 'person'),0,1,0),
+			((SELECT id from ".TABLE_PREFIX."dimensions WHERE code = 'workspaces'),(SELECT id FROM ".TABLE_PREFIX."object_types WHERE name = 'workspace'),(SELECT id from ".TABLE_PREFIX."dimensions WHERE code = 'feng_persons'),(SELECT id FROM ".TABLE_PREFIX."object_types WHERE name = 'person' LIMIT 1),0,1,0),
 			((SELECT id from ".TABLE_PREFIX."dimensions WHERE code = 'workspaces'),(SELECT id FROM ".TABLE_PREFIX."object_types WHERE name = 'workspace'),(SELECT id from ".TABLE_PREFIX."dimensions WHERE code = 'feng_persons'),(SELECT id FROM ".TABLE_PREFIX."object_types WHERE name = 'company'),0,1,0);
 		");
 		// instantiate actual associations

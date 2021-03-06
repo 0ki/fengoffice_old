@@ -252,7 +252,24 @@ INSERT INTO `<?php echo $table_prefix ?>contact_config_options` (`category_name`
  ('calendar panel', 'calendar task filter', 'pending', 'StringConfigHandler', 1, 0, ''),
  ('task panel', 'close timeslot open', '1', 'BoolConfigHandler', 0, 0, ''),
  ('calendar panel', 'reminders_events', 'reminder_email,1,60', 'StringConfigHandler', '0', '0', NULL),
- ('dashboard', 'filters_dashboard', '0,0,10,0', 'StringConfigHandler', '0', '0', 'first position: entry to see the dimension, second position: view timeslot, third position: recent activities to show, fourth position: view views and downloads');
+ ('dashboard', 'filters_dashboard', '0,0,10,0', 'StringConfigHandler', '0', '0', 'first position: entry to see the dimension, second position: view timeslot, third position: recent activities to show, fourth position: view views and downloads'),
+ ('task panel', 'reminders_tasks', 'reminder_email,1,1440', 'StringConfigHandler', '0', '23', NULL),
+ ('task panel', 'add_task_autoreminder', '0', 'BoolConfigHandler', '0', '21', NULL),
+ ('task panel', 'add_self_task_autoreminder', '1', 'BoolConfigHandler', '0', '22', NULL),
+ ('task panel', 'add_task_default_reminder', '1', 'BoolConfigHandler', '0', '20', NULL),
+ ('calendar panel', 'add_event_autoreminder', '1', 'BoolConfigHandler', '0', '0', NULL),
+ ('calendar panel', 'autoassign_events', '0', 'BoolConfigHandler', '0', '0', NULL),
+ ('calendar panel', 'event_send_invitations', '1', 'BoolConfigHandler', '0', '0', NULL),
+ ('calendar panel', 'event_subscribe_invited', '1', 'BoolConfigHandler', '0', '0', NULL),
+ ('mails panel', 'mails_per_page', '50', 'IntegerConfigHandler', '0', '0', NULL),
+ ('general', 'contacts_per_page', '50', 'IntegerConfigHandler', '0', '1200', NULL),
+ ('general', 'access_member_after_add', '1', 'BoolConfigHandler', '0', '1300', NULL),
+ ('general', 'access_member_after_add_remember', '0', 'BoolConfigHandler', '0', '1301', NULL),
+ ('general', 'sendEmailNotification', '1', 'BoolConfigHandler', '1', '0', 'Send email notification to new user'),
+ ('general', 'viewContactsChecked', '1', 'BoolConfigHandler', '1', '0', 'in people panel is view contacts checked'),
+ ('general', 'viewUsersChecked', '0', 'BoolConfigHandler', '0', '0', 'in people panel is view users checked'),
+ ('general', 'viewCompaniesChecked', '1', 'BoolConfigHandler', '1', '0', 'in people panel is view companies checked'),
+ ('general', 'contacts_per_page', '50', 'IntegerConfigHandler', '0', '1200', NULL);
  
 
 INSERT INTO `<?php echo $table_prefix ?>object_types` (`id`,`name`,`handler_class`,`table_name`,`type`,`icon`,`plugin_id`) VALUES

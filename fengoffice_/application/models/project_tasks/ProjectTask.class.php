@@ -165,12 +165,12 @@ class ProjectTask extends BaseProjectTask {
 	 * @param void
 	 * @return Contact
 	 */
-	private $assigned_to_cache = null;
 	function getAssignedToContact() {
-		if (is_null($this->assigned_to_cache) && $this->getAssignedToContactId() > 0) {
-			$this->assigned_to_cache = Contacts::findById($this->getAssignedToContactId());
+		$ret = null;
+		if ($this->getAssignedToContactId() > 0) {
+			$ret = Contacts::findById($this->getAssignedToContactId());
 		}
-		return $this->assigned_to_cache;
+		return $ret;
 	} // 
 
 	/**
@@ -1542,11 +1542,10 @@ class ProjectTask extends BaseProjectTask {
 			}
 			$total_percentComplete = round(($total_time * 100) / ($this->getTimeEstimate() / 60));
 			if ($total_percentComplete < 0) $total_percentComplete = 0;
-		} else {
-			$total_percentComplete = 0;
+			
+			$this->setPercentCompleted($total_percentComplete);
+			$this->save();
 		}
-		$this->setPercentCompleted($total_percentComplete);
-		$this->save();
 	}
 	
 } // ProjectTask

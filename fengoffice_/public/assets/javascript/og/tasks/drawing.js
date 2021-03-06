@@ -409,7 +409,7 @@ ogTasks.draw = function(){
 		if (context_names.length == 0) context_names.push(lang('all'));
 		
 		sb.append('<div id="rx__no_tasks_info">' +
-		'<button title="' + lang('add task') + '" class="no-tasks-add-task-btn"' + 
+		'<button title="' + lang('add task') + '" class="no-tasks-add-task-btn add-first-btn"' + 
 			'onClick="document.getElementById(\'rx__no_tasks_info\').style.display=\'none\'; document.getElementById(\'rx__hidden_group\').style.display=\'block\'; ogTasks.drawAddNewTaskForm(\'' + this.Groups[0].group_id + '\')">' + '<img src="public/assets/themes/default/images/16x16/add.png"/>&nbsp;' +
 			(lang('add first task')) + '</button>'+
 			'<div class="inner-message">'+lang('no tasks to display', '"'+context_names.join('", "')+'"')+ '</div>'+

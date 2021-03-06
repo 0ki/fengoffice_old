@@ -201,7 +201,21 @@ class MemberController extends ApplicationController {
 				));
 				$ret = null;
 				Hook::fire('after_add_member', $member, $ret);
-				evt_add("reload dimension tree", array('dim_id' => $member->getDimensionId(), 'node' => $member->getId()));
+				evt_add("reload dimension tree", array('dim_id' => $member->getDimensionId(), 'node' => null));
+				$member_type = ObjectTypes::findById($member->getObjectTypeId());
+				$context = active_context();
+				$sel_mem = null;
+				foreach ($context as $selection) {
+					if ($selection instanceof Member && $selection->getDimensionId() == $member->getDimensionId()) $sel_mem = $selection;
+				}
+				evt_add("ask to select member", array(
+					'id' => $member->getId(),
+					'name' => clean($member->getName()),
+					'type' => clean(lang($member_type->getName())),
+					'dimension_id' => $member->getDimensionId(),
+					'sel_mem' => $sel_mem == null ? '' : clean($sel_mem->getName()),
+				));
+				
 				//evt_add('select dimension member', array('dim_id' => $member->getDimensionId(), 'node' => $member->getId()));
 				if (array_var($_POST, 'rest_genid')) evt_add('reload member restrictions', array_var($_POST, 'rest_genid'));
 				if (array_var($_POST, 'prop_genid')) evt_add('reload member properties', array_var($_POST, 'prop_genid'));
@@ -1075,7 +1089,7 @@ class MemberController extends ApplicationController {
 	function quick_add_form() {
 		$this->setLayout('empty');
 		$dimension_id = array_var($_GET, 'dimension_id');
-		$dimension = Dimensions::instance()->findById($dimension_id);
+		$dimension = is_numeric($dimension_id) ? Dimensions::instance()->findById($dimension_id) : null;
 		if ($dimension instanceof Dimension){
 			$dimensionOptions = $dimension->getOptions(true);
 
@@ -1130,7 +1144,8 @@ class MemberController extends ApplicationController {
 				tpl_assign('form_action', get_url('member', 'add', array('quick'=>'1')));
 			}
 		}else{
-			die("Invalid dimension");
+			Logger::log("Invalid dimension: $dimension_id");
+			//die("Invalid dimension");
 		}
 		
 	}

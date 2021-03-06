@@ -1,7 +1,7 @@
 <?php
 
-  // Return array of langs
-  return array(
+// Return array of langs
+return array(
   	'All' => 'All',
   	'person' => 'Person',
 	'contact info' => 'Contact Information', 
@@ -131,10 +131,10 @@
         'events' => 'Events',
         'Event' => 'Event',
         'Events' => 'Events',
-    
+
         'project calendar' => '{0} calendar',
         'user calendar' => '{0}\'s calendar',
-    
+
         'month 1' => 'January',
         'month 2' => 'February',
         'month 3' => 'March',
@@ -147,7 +147,7 @@
         'month 10' => 'October',
         'month 11' => 'November',
         'month 12' => 'December',
-  
+
   	'monday' => 'Monday',
   	'tuesday' => 'Tuesday',
   	'wednesday' => 'Wednesday',
@@ -155,7 +155,7 @@
         'friday' => 'Friday',
   	'saturday' => 'Saturday',
   	'sunday' => 'Sunday',
-  
+
   	'monday short' => 'Mon',
   	'tuesday short' => 'Tue',
   	'wednesday short' => 'Wed',
@@ -163,13 +163,13 @@
         'friday short' => 'Fri',
   	'saturday short' => 'Sat',
   	'sunday short' => 'Sun',
-  
+
   	'1st' => '1st',
   	'2nd' => '2nd',
   	'3rd' => '3rd',
   	'4th' => '4th',
   	'5th' => '5th',
-  
+
   	'copy of' => 'Copy of {0}',
   	'task templates' => 'Task Templates',
   	'add task template' => 'Add Task Template',
@@ -197,9 +197,9 @@
   	'task report' => 'Task Report',
   	'priority' => 'Priority',
   	'anybody' => 'Anybody',
-  
+
   	'blank_google_doc' => 'In case you see a blank page, it means you must <u><a href="http://www.gmail.com" target="_blank"> log in to your Google account</a></u> or that you no longer have access to the document',
-  
+
   	'read write and delete' => 'Read, Write &amp; Delete',
   	'read and write' => 'Read &amp; Write',
   	'read only' => 'Read only',
@@ -207,19 +207,19 @@
   	'apply to all subworkspaces' => 'Apply these permissions to all subworkspaces',
   	'weblinks' => 'Web links',
 	'add work' => 'Add work',
-  
+
   	'date format' => 'm/d/Y',
   	'date format description' => '(mm/dd/yyyy)',
   	'confirm move to trash' => 'Are you sure you want to move the selected object to the trash?',
-  
+
   	'remove' => 'Remove',
   	'mime type' => 'MIME type',
-  	
-  	'default' => 'Default',
+
+	'default' => 'Default',
   	'language' => 'Language',
   	'before' => 'before',
   	'pages' => 'pages',
-  
+
 	'repeat by' => 'Repeat by',
 	'repeating task' => 'Repeating task',
   	'this task repeats' => 'This task repeats',
@@ -238,14 +238,14 @@
     'repeat on sundays' => 'Repeat on Sundays',
     'repeat working days' => 'Repeat working days',
 	'reminders will not apply to repeating events' => 'Warning: reminders will not apply to repeating events',
-  
+
 	'move all to right' => 'Move all to the right',
 	'move to right' => 'Move to the right',
 	'move to left' => 'Move to the left',
 	'move all to left' => 'Move all to the left',
 	'move up' => 'Move up',
 	'move down' => 'Move down',
-  
+
 	'this file is included in document' => "This file is included in document: {0}",
 	'minutes ago' => "{0} minutes ago",
   	'about hours ago' => "About {0} hours ago",
@@ -256,7 +256,7 @@
   	'in capitalized' => 'In', 
   	'unique id capitalized' => 'Unique Id', 
   	'system notification email' => 'This is a system notification, do not reply to this email.', 
-  
+
   	'modifications tab' => 'Modifications', 
   	'views tab' => 'Views', 
 
@@ -314,10 +314,10 @@
         'advanced search' => 'Advanced search',
   	'empty title' => 'Empty title',
 	'people in' => 'People in {0}',
-      
+
         'field Objects type_content' => 'Type content',
         'option repetitive task completed' => 'This task is already completed. To modify repetition data, please edit a pending task from this series.',
-      
+
         'subscribers' => 'Involved people',
         'and' => ' and ',
         'apply everywhere' => 'Apply everywhere',

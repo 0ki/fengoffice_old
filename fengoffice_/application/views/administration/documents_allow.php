@@ -18,7 +18,7 @@ set_page_title(lang('file extension prevention uploading'));
                         <tr class="<?php echo $isAlt? 'altRow' : ''?>">
                             <td>
                                 <?php echo $file_type->getExtension() ?>
-                                <input type="hidden" value="<?php echo $file_type->getId()?>" name="file_types[<?php echo $file_type->getId()?>][id]"
+                                <input type="hidden" value="<?php echo $file_type->getId()?>" name="file_types[<?php echo $file_type->getId()?>][id]"/>
                             </td>
                             <td>
                                 <input 

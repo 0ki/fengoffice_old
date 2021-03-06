@@ -417,11 +417,8 @@ if (strlen($loc) > 2) $loc = substr($loc, 0, 2);
 		<?php
 		$account_users = array();
 		if(logged_user() && logged_user()->getCompany()) {
-                    //$account_users = logged_user()->getCompany()->getContactsByCompany();
-                    $account_users = Contacts::findAll(array(
-                        'conditions' => '`user_type` <> 0 AND `disabled` = 0'
-                    ));
-		}	
+			$account_users = Contacts::findAll(array('conditions' => '`user_type` <> 0 AND `disabled` = 0'));
+		}
 		$account_user_ids = is_array($mailAccountUsers) ? array_keys($mailAccountUsers) : array();
 		$num = 0;
 		$alt = true;

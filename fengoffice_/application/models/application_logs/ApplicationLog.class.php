@@ -216,7 +216,8 @@ class ApplicationLog extends BaseApplicationLog {
 					return lang('activity ' . $this->getAction(), lang('the '.$object->getObjectTypeName()), $user->getDisplayName(), $object_link, $users_text);
 			case ApplicationLogs::ACTION_COMMENT :
 				if ($object instanceof Comment) {
-					return lang('activity ' . $this->getAction(), lang('the '.$object->getRelObject()->getObjectTypeName()), $user->getDisplayName(), $object_link, $this->getLogData());
+					$rel_object = $object->getRelObject();
+					return lang('activity ' . $this->getAction(), lang('the '.$rel_object instanceof ContentDataObject ? $rel_object->getObjectTypeName() : 'object'), $user->getDisplayName(), $object_link, $this->getLogData());
 				} else {
 					return lang('activity ' . $this->getAction(), lang('the '.$object->getObjectTypeName()), $user->getDisplayName(), $object_link, $this->getLogData());
 				}
@@ -314,20 +315,24 @@ class ApplicationLog extends BaseApplicationLog {
 			}else{
 				$type = $object->getObjectTypeName() ;
 			}
-			
-			$object_link = '<a style="font-weight:bold" href="' . $object->getObjectUrl() . '">&nbsp;'.
-			'<span style="padding: 1px 0 3px 18px;" class="db-ico ico-unknown ico-' . $type . $icon_class . '"/>'.clean($object->getObjectName()).'</a>';
+			if (($type != 'Time') || ($type == 'Time' && $object->getRelObjectId() != 0)){
+				$object_link = '<a style="font-weight:bold" href="' . $object->getObjectUrl() . '">&nbsp;'.
+				'<span style="padding: 1px 0 3px 18px;" class="db-ico ico-unknown ico-' . $type . $icon_class . '"/>'.clean($object->getObjectName()).'</a>';
+			}else{
+				//if it is a general timeslot
+				$object_link = '<span style="padding: 1px 0 3px 18px; font-weight:bold;" class="db-ico ico-unknown ico-' . $type . $icon_class . '"/>'.clean($object->getObjectName());
+			}
 		}
 		else{
 			$object_link = clean($this->getObjectName()).'&nbsp;'.lang('object is deleted');
 		}
 		if($made_several_changes){
-			$this->setAction("made ​​several changes");
+			$this->setAction("made several changes");
 		}
 		switch ($this->getAction()) {
             case ApplicationLogs::ACTION_MADE_SEVERAL_CHANGES :
             	$object_history = '<a style="font-weight:bold" href="' . $object->getViewHistoryUrl() . '">&nbsp;'.
-                '<span style="padding: 1px 0 3px 18px;" class="db-ico ico-unknown ico-history"/>'.lang('view history').'</a>';
+				'<span style="padding: 1px 0 3px 18px;" class="db-ico ico-unknown ico-history"/>'.lang('view history').'</a>';
             	return lang('activity ' . $this->getAction(), lang('the ' .$type. ' activity', $object_link), $user->getObjectName()," -" .$object_history);
 			case ApplicationLogs::ACTION_EDIT :
 			case ApplicationLogs::ACTION_ADD :
@@ -368,7 +373,12 @@ class ApplicationLog extends BaseApplicationLog {
 			case ApplicationLogs::ACTION_COMMENT :
 				if ($object) {
 					$rel_object = Objects::findObject($this->getRelObjectId());
-					return lang('activity ' . $this->getAction(), lang('the '.$rel_object->getObjectTypeName()," "), $user->getObjectName(), $object_link, $this->getLogData());
+					$commented_object = null;
+					if ($rel_object instanceof Comment) {
+						$commented_object = $rel_object->getRelObject();
+					}
+					$obj_type_name = $commented_object instanceof ContentDataObject ? $commented_object->getObjectTypeName() : $rel_object->getObjectTypeName();
+					return lang('activity ' . $this->getAction(), lang('the '.$obj_type_name," "), $user->getObjectName(), $object_link, $this->getLogData());
 				}
 			case ApplicationLogs::ACTION_LINK :
 			case ApplicationLogs::ACTION_UNLINK :

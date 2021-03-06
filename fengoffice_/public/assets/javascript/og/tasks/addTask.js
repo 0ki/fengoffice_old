@@ -721,7 +721,7 @@ ogTasks.buildAssignedToComboStore = function(companies, only_me, groups) {
 		}
 		// sort user list
 		var me = usersStore.shift();
-		var dont_assign = usersStore.shift();
+		if (!only_me) var dont_assign = usersStore.shift();
 		usersStore.sort(function(a, b){
 			var namea = a[1].toLowerCase();
 			var nameb = b[1].toLowerCase();
@@ -729,14 +729,14 @@ ogTasks.buildAssignedToComboStore = function(companies, only_me, groups) {
 			if (namea > nameb) return 1;
 			return 0;
 		});
-		usersStore.unshift(dont_assign);
+		if (!only_me) usersStore.unshift(dont_assign);
 		usersStore.unshift(me);
 		
-		if (comp_array.length > 0) {
+		if (og.config['can_assign_tasks_to_companies'] && comp_array.length > 0) {
 			usersStore[cantU++] = ['0', '--'];
 		}
 	}
-	if (comp_array.length > 0) {
+	if (og.config['can_assign_tasks_to_companies'] && comp_array.length > 0) {
 		usersStore = usersStore.concat(comp_array);
 	}
 	

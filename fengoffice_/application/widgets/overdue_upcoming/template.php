@@ -7,7 +7,12 @@
 <div class="late-objects-widget widget">
 
 	<div class="widget-header" onclick="og.dashExpand('<?php echo $genid?>');">
-		<?php echo lang('late tasks and upcoming tasks'); ?>
+		<?php $cmember = current_member();
+				if($cmember != NULL){
+					echo lang('late tasks and upcoming tasks'). " " . lang("in") . " " . $cmember->getName();
+				}else{
+					echo lang('late tasks and upcoming tasks');
+				}; ?>
 		<div class="dash-expander ico-dash-expanded" id="<?php echo $genid; ?>expander"></div>
 	</div>
 	

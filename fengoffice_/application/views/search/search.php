@@ -112,14 +112,14 @@ var modifiedSearch = false;
 var selectedObjTypeIndexSearch = -1;
 var fieldValuesSearch = {};
 
-og.addConditionSearch = function(genid, id, cpId, fieldName, condition, value){ 
+og.addConditionSearch = function(genid, id, cpId, fieldName, condition, value){
 
-        var get_object_fields = 'get_object_fields';
-        var type = document.getElementById('search[search_object_type_id]').value;
-        if(type == ""){
-                alert(lang('object type not selected'));
-                return;
-        }
+	var get_object_fields = 'get_object_fields';
+	var type = document.getElementById('search[search_object_type_id]').value;
+	if(type == ""){
+		alert(lang('object type not selected'));
+		return;
+	}
 
 	var condDiv = Ext.getDom(genid);
 	var count = condDiv.childNodes.length;
@@ -199,11 +199,12 @@ og.fieldChangedSearch = function(id, condition, value){
 		
 		if(fieldType == "text" || fieldType == "memo"){
 			document.getElementById('tdValue' + id).innerHTML = textValueField;
+			conditions += '<option value="start with">' + lang('start with') + '</option>';
 			conditions += '<option value="like">' + lang('like') + '</option>';
 			conditions += '<option value="not like">' + lang('not like') + '</option>';
 			conditions += '<option value="=">' + lang('equals') + '</option>';
 			conditions += '<option value="<>">' + lang('not equals') + '</option>';
-			conditions += '<option value="%">' + lang('ends with') + '</option>';
+			conditions += '<option value="ends with">' + lang('ends with') + '</option>';
 			conditions += '</select>';
 			document.getElementById('tdConditions' + id).innerHTML = conditions;
 		}else if(fieldType == "numeric"){
@@ -214,7 +215,6 @@ og.fieldChangedSearch = function(id, condition, value){
 			conditions += '<option value="<=">&le;</option>';
 			conditions += '<option value="=">=</option>';
 			conditions += '<option value="<>"><></option>';
-			conditions += '<option value="%">' + lang('ends with') + '</option>';
 			conditions += '</select>';
 			document.getElementById('tdConditions' + id).innerHTML = conditions;
 		}else if(fieldType == "boolean"){
@@ -272,12 +272,12 @@ og.fieldChangedSearch = function(id, condition, value){
 		        		data: arr
 					}),
 					valueField: "value",
-                                        displayField: "value",
-                                        mode: "local",
-                                        forceSelection: true,
-                                        tpl: "<tpl for=\".\"><div class=\"x-combo-list-item\">{clean}</div></tpl>",
-                                        emptyText: "",
-                                        applyTo: "conditions[" + id + "][value]"
+					displayField: "value",
+					mode: "local",
+					forceSelection: true,
+					tpl: "<tpl for=\".\"><div class=\"x-combo-list-item\">{clean}</div></tpl>",
+					emptyText: "",
+					applyTo: "conditions[" + id + "][value]"
 		    	});			
 			}else{
 				var objectTypeSelSearch = document.getElementById('objectTypeSelSearch');
@@ -345,14 +345,14 @@ og.searchObjectTypeChanged = function(genid, order_by, order_by_asc, cols){
 		var type = objectTypeSelSearch[selectedObjTypeIndexSearch].value;
 		
 		document.getElementById('search[search_object_type_id]').value = type;
-		
-                var column_list_container = Ext.get(genid+'columnListContainer');
-                if (column_list_container) {
-                        column_list_container.load({
-                                url: og.getUrl('search', 'get_object_column_list_task', {object_type: type, columns:cols, orderby:order_by, orderbyasc:order_by_asc, genid:genid}),
-                                scripts: true
-                        });
-                }
+
+		var column_list_container = Ext.get(genid+'columnListContainer');
+		if (column_list_container) {
+			column_list_container.load({
+				url: og.getUrl('search', 'get_object_column_list_task', {object_type: type, columns:cols, orderby:order_by, orderbyasc:order_by_asc, genid:genid}),
+				scripts: true
+			});
+		}
 	}
 };
 

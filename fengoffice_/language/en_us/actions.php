@@ -194,7 +194,8 @@
     'edit permissions explanation'  => 'Check the boxes to grant users access to the recently created workspace.',
   
   	'save as new revision' => 'Save as new revision',
-	'save as' => 'Rename',
+	'save as' => 'Save as',
+  	'save with a new name' => 'Save with a new name',
 	'details' => 'Details',
 	'view history for' => 'View history for',
 	'view history' => 'View History',    

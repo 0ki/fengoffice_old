@@ -3,7 +3,7 @@
   /**
   *  BaseReportConditions class
   *
-  * @author Pablo Kamil <pablokam@gmail.com>
+  * 
   */
   abstract class BaseReportConditions extends DataManager {
   

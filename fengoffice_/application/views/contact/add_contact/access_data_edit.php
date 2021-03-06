@@ -103,6 +103,12 @@
 			<input class="checkbox" type="checkbox" name="contact[specify_username]" id="<?php echo $genid ?>specify-username"/>
 			<input id="<?php echo $genid ?>profileFormUsername" type="text" value="<?php echo array_var($contact_data, 'username')?>" name="contact[user][username]" maxlength="50" style="display: none; margin-left:5px;"/>
 		</div>
+		<div  id="<?php echo $genid ?>userFormSendNotificationDiv" style="margin-top:8px;" class="user-data">
+			<label class="checkbox"><?php echo lang('send task assigned to notification') ?></label>
+			<input class="checkbox" type="checkbox" name="notify-user" <?php if(user_config_option("sendEmailNotification",1,logged_user()->getId())){echo "checked";}?> id="notify-user"></input>
+			
+		</div>
+			
 	<?php }?>
 	</div>	
 </div>

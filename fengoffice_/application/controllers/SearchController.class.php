@@ -25,6 +25,8 @@ class SearchController extends ApplicationController {
 	 * @var unknown_type
 	 */
 	var $search_for ;
+	
+	var $advanced_conditions;
         
         /**
 	 * Search dimension
@@ -145,15 +147,15 @@ class SearchController extends ApplicationController {
 			$search_string = substr($search_string, 0 , -1);
 		}else{
 			// USE Like Query
-			$search_string = mysql_real_escape_string($search_for);
+			$search_string = mysql_real_escape_string($search_for, DB::connection()->getLink());
 		}
 		
-		$this->search_for = $search_for ;
+		$this->search_for = $search_for;
 		$limit = $this->limit;
-		$start = array_var($_REQUEST, 'start' , $this->start) ;
-		$this->start = $start ;
+		$start = array_var($_REQUEST, 'start' , $this->start);
+		$this->start = $start;
 		$limitTest = max( $this->limitTest , $this->limit);
-		$filteredResults = 0 ;
+		$filteredResults = 0;
 		$uid = logged_user()->getId();
 		
 		if(!isset($search_dimension)){
@@ -207,13 +209,27 @@ class SearchController extends ApplicationController {
 						$value = date("m/d/Y", $dtFromWidget->getTimestamp());
 					}
 				}else{
-					$value = $condValue;
+					$value = mysql_real_escape_string($condValue, DB::connection()->getLink());
 				}
-				if($condition['condition'] == "like"){
-					$where_condiition .= " AND `" . $condition['field_name'] . "` " . $condition['condition'] . " '" . $value . "%' ";
-				}else{
-					$where_condiition .= " AND `" . $condition['field_name'] . "` " . $condition['condition'] . " '" . $value . "' ";
+				
+				$condition_condition = mysql_real_escape_string(array_var($condition, 'condition'), DB::connection()->getLink());
+				$condition_field_name = mysql_real_escape_string(array_var($condition, 'field_name'), DB::connection()->getLink());
+				$conditionLocal = "like";
+				if ($condition_condition == "=" or $condition_condition == ">" or $condition_condition == "<" or $condition_condition == "<>" or $condition_condition == ">=" or $condition_condition == "<="){
+					$conditionLocal = $condition_condition;
+				};
+				if($condition_condition == "like"){
+					$where_condiition .= " AND `" . $condition_field_name . "` " . "like" . " '%" . $value . "%' ";
+				}else if($condition_condition == "ends with"){
+					$where_condiition .= " AND `" . $condition_field_name . "` " . "like" . " '%" . $value . "' ";
+				}else if($condition_condition == "start with"){
+					$where_condiition .= " AND `" . $condition_field_name . "` " . "like" . " '" . $value . "%' ";
+				}else if($condition_condition == "not like"){
+					$where_condiition .= " AND `" . $condition_field_name . "` " . "not like" . " '%" . $value . "%' ";
+				}else{					
+					$where_condiition .= " AND `" . $condition_field_name . "` " . $conditionLocal . " '" . $value . "' ";
 				}
+								
 				$conditions_view[$cont]['id'] = $condition['id'];
 				$conditions_view[$cont]['custom_property_id'] = $condition['custom_property_id'];
 				$conditions_view[$cont]['field_name'] = $condition['field_name'];
@@ -300,7 +316,7 @@ class SearchController extends ApplicationController {
 		$this->total = $total ;
 		
 		// Pagination
-		$this->buildPagination($search_results);
+		$this->buildPagination($search_results, $search_for);
 		
 		// Extra data
 		$extra = new stdClass() ;
@@ -360,19 +376,20 @@ class SearchController extends ApplicationController {
 		$start = $this->start;
 		$limit = $this->limit;
 		$total = $this->total;
-		$search_for = $this->search_for ;
-                $search_dimension = $this->search_dimension;
-		$this->pagination = new StdClass() ;
-		$this->pagination->currentPage = ceil (( $start+1 ) / $limit)  ;
-		$this->pagination->currentStart = $start+1 ;
-		$this->pagination->currentEnd = $start + count($search_results) ;
-		$this->pagination->hasNext = ( count($search_results) == $limit ) ;
+		$search_for = $this->search_for;
+		$search_dimension = $this->search_dimension;
+		$this->pagination = new StdClass();
+		$this->pagination->search_for = $search_for;
+		$this->pagination->currentPage = ceil (( $start+1 ) / $limit);
+		$this->pagination->currentStart = $start+1;
+		$this->pagination->currentEnd = $start + count($search_results);
+		$this->pagination->hasNext = ( count($search_results) == $limit );
 		$this->pagination->hasPrevious = ($start-$limit >= 0); 
 		$this->pagination->nextUrl = get_url("search", "search" , array("start" => $start+$limit , "search_for" => $search_for , "search_dimension" => $search_dimension));
 		$this->pagination->previousUrl = get_url("search", "search" , array("start" => $start-$limit , "search_for" => $search_for , "search_dimension" => $search_dimension));
-		$this->pagination->total = $total ;
+		$this->pagination->total = $total;
 		$this->pagination->nextPages = array();
-		$this->pagination->links = $this->buildPaginationLinks();			
+		$this->pagination->links = $this->buildPaginationLinks();
 	}
 	
 	
@@ -404,7 +421,7 @@ class SearchController extends ApplicationController {
 			$search_result['updated_by'] = $this->prepareCreatedBy($obj->getUpdatedByDisplayName(), $obj->getUpdatedById());
 			$search_result['type'] = $obj->getObjectTypeName();
 			$search_result['created_on'] = friendly_date($obj->getCreatedOn());
-			$search_result['updated_on'] = friendly_date($obj->getUpdatedOn());
+			$search_result['updated_on'] = friendly_date($obj->getObjectTypeName() == 'mail' ? $obj->getSentDate() : $obj->getUpdatedOn());
 			$search_result['content'] = $this->highlightResult($obj->getSummary(array(
 				"size" => $this->contentSize,
 				"near" => $this->search_for
@@ -494,23 +511,23 @@ class SearchController extends ApplicationController {
 			return $content ;
 		}
 	}
-        
-        function get_object_fields(){
+	
+	function get_object_fields(){
 		$fields = $this->get_allowed_columns(array_var($_GET, 'object_type'));
 
 		ajx_current("empty");
 		ajx_extra_data(array('fields' => $fields));
 	}
-        
-        function get_external_field_values(){
+	
+	function get_external_field_values(){
 		$field = array_var($_GET, 'external_field');
 		$report_type = array_var($_GET, 'report_type');
 		$values = $this->get_ext_values($field, $report_type);
 		ajx_current("empty");
 		ajx_extra_data(array('values' => $values));
 	}
-        
-        function get_object_column_list_task(){
+	
+	function get_object_column_list_task(){
 		$allowed_columns = $this->get_allowed_columns_custom_properties(array_var($_GET, 'object_type'));
 		$for_task = true;
 		
@@ -522,8 +539,9 @@ class SearchController extends ApplicationController {
 		$this->setLayout("html");
 		$this->setTemplate("column_list");
 	}
-        
-        private function get_allowed_columns_custom_properties($object_type) {
+	
+	
+	private function get_allowed_columns_custom_properties($object_type) {
 		return array(); //FIXME: no usar todo lo de custom properties por el momento
 		$fields = array();
 		if(isset($object_type)){
@@ -561,8 +579,9 @@ class SearchController extends ApplicationController {
 		usort($fields, array(&$this, 'compare_FieldName'));
 		return $fields;
 	}
-        
-        private function get_ext_values($field, $manager = null){
+	
+	
+	private function get_ext_values($field, $manager = null){
 		$values = array(array('id' => '', 'name' => '-- ' . lang('select') . ' --'));
 		if($field == 'contact_id' || $field == 'created_by_id' || $field == 'updated_by_id' || $field == 'assigned_to_contact_id' || $field == 'completed_by_id'
 			|| $field == 'approved_by_id'){
@@ -638,5 +657,9 @@ class SearchController extends ApplicationController {
 		}
 		usort($fields, array(&$this, 'compare_FieldName'));
 		return $fields;
+	}
+	
+	private function compare_FieldName($field1, $field2){
+		return strnatcmp($field1['name'], $field2['name']);
 	}
 }

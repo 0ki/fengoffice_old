@@ -1,6 +1,7 @@
 /**
  *  ContactManager
  */
+contacts_per_page = parseInt(og.config['contacts_per_page']) || og.config['files_per_page']; 
 og.ContactManager = function() {
 	var actions;
 	this.viewType = "all";
@@ -10,7 +11,7 @@ og.ContactManager = function() {
 	this.fields = [
         'object_id', 'type', 'ot_id', 'name', 'companyId', 'companyName', 'email', 'website', 'jobTitle', 'createdBy', 'createdById', 'createdOn', 'createdOn_today', 'role', 'tags',
         'department', 'email2', 'email3', 'workWebsite', 'workAddress', 'workPhone1', 'workPhone2', 
-        'homeWebsite', 'homeAddress', 'homePhone1', 'homePhone2', 'mobilePhone','wsIds','workspaceColors','updatedBy','updatedById', 'updatedOn', 'updatedOn_today', 'ix', 'memPath'
+        'homeWebsite', 'homeAddress', 'homePhone1', 'homePhone2', 'mobilePhone','wsIds','workspaceColors','updatedBy','updatedById', 'updatedOn', 'updatedOn_today', 'ix', 'memPath', 'userType', 'contacts', 'users'
     ];
 	var cps = og.custom_properties_by_type['contact'] ? og.custom_properties_by_type['contact'] : [];
    	var cp_names = [];
@@ -158,6 +159,40 @@ og.ContactManager = function() {
 		}
 	}
 	this.getSelectedIds = getSelectedIds;
+	
+	//Only retunrs the ids of deletable contacts
+	//In case of being userts returns 2 and in case of being companies with contacts 3
+	function getSelectedIdsDeleteContacts() {
+		var selections = sm.getSelections();
+		if (selections.length <= 0) {
+			return '';
+		} else {
+			var ret = '';
+			var retString = 0;
+			for (var i=0; i < selections.length; i++) {
+				if(selections[i].data.type == "contact"){
+					if(!selections[i].data.userType > 0){
+						ret += "," + selections[i].data.object_id;
+					}else{
+						retString = "user";
+					}
+				}else{
+					if(selections[i].data.contacts.length < 1 && selections[i].data.users.length < 1){
+						ret += "," + selections[i].data.object_id;
+					}else{
+						retString = "company";
+					}
+				}
+			}
+			og.lastSelectedRow.contacts = selections[selections.length-1].data.ix;
+			if(ret.substring(1) != ""){
+				return ret.substring(1);
+			}
+			return retString;
+		}
+	}
+	this.getSelectedIdsDeleteContacts = getSelectedIdsDeleteContacts;
+	
 	
 	function getFirstSelectedType() {
 		if (sm.hasSelection()) {
@@ -352,6 +387,41 @@ og.ContactManager = function() {
 	// create column model
 	var cm = new Ext.grid.ColumnModel(cm_info);
     cm.defaultSortable = false;
+    
+	displayOptions = {
+		contacts : {
+			text : lang('contacts'),
+			checked : (og.preferences['viewContactsChecked'] == 1),
+			checkHandler : function(){
+				var url = og.getUrl('account', 'update_user_preference', {name: 'viewContactsChecked', value:(this.checked?1:0)});
+				og.openLink(url,{hideLoading:true, callback: function(success, data) {
+					og.ContactManager.store.reload();
+				}});
+			},
+	 },
+		users : {
+			text : lang('users'),
+			checked : (og.preferences['viewUsersChecked'] == 1),
+			checkHandler : function() {
+				this.viewType = "all";
+				var url = og.getUrl('account', 'update_user_preference', {name: 'viewUsersChecked', value:(this.checked?1:0)});
+				og.openLink(url,{hideLoading:true , callback: function(success, data) {
+					og.ContactManager.store.reload();
+				}});
+			},
+		},
+		companies : {
+			text : lang('companies'),
+			checked : (og.preferences['viewCompaniesChecked'] == 1),
+			checkHandler : function() {
+				this.viewType = "all";
+				var url = og.getUrl('account', 'update_user_preference', {name: 'viewCompaniesChecked', value:(this.checked?1:0)});
+				og.openLink(url,{hideLoading:true, callback: function(success, data) {
+					og.ContactManager.store.reload();
+				}});
+			},
+		}
+	};
 
 	viewActions = {
 			all: new Ext.Action({
@@ -403,13 +473,21 @@ og.ContactManager = function() {
             iconCls: 'ico-trash',
 			disabled: true,
 			handler: function() {
-				if (confirm(lang('confirm move to trash'))) {
-					this.load({
-						action: 'delete',
-						ids: getSelectedIds()
-					});
-					this.getSelectionModel().clearSelections();
+				if( getSelectedIdsDeleteContacts()  == "user"){
+					alert((lang('error delete people')));
+				}else{
+					if( getSelectedIdsDeleteContacts()  == "company"){
+					alert(lang('error delete company'));
+					}else{
+						if (confirm(lang('confirm move to trash'))) {
+							this.load({
+							action: 'delete',
+							ids: getSelectedIdsDeleteContacts()						
+							});
+						}				
+					}
 				}
+				this.getSelectionModel().clearSelections();
 			},
 			scope: this
 		}),
@@ -458,10 +536,9 @@ og.ContactManager = function() {
             iconCls: 'ico-view_options',
 			disabled: false,
 			menu: {items: [
-				viewActions.all,
-				'-',
-				viewActions.contacts,
-				viewActions.companies
+				displayOptions.contacts,				
+				displayOptions.users,
+				displayOptions.companies
 			]}
 		}),
 		imp_exp: new Ext.Action({		
@@ -540,8 +617,8 @@ og.ContactManager = function() {
 		tbar.push(actions.newContact);
 		tbar.push('-');
 		tbar.push(actions.editContact);
-		/*tbar.push(actions.archive);
-		tbar.push(actions.delContact);*/
+		/*tbar.push(actions.archive);*/
+		tbar.push(actions.delContact);
 		tbar.push('-');
 	}
 	tbar.push(actions.view);
@@ -561,7 +638,7 @@ og.ContactManager = function() {
 		stripeRows: true,
 		id: 'contact-manager',
         bbar: new og.CurrentPagingToolbar({
-            pageSize: og.config['files_per_page'],
+            pageSize: contacts_per_page,
             store: this.store,
             displayInfo: true,
             displayMsg: lang('displaying objects of'),
@@ -595,7 +672,7 @@ Ext.extend(og.ContactManager, Ext.grid.GridPanel, {
 	load: function(params) {
 		if (!params) params = {};
 		if (typeof params.start == 'undefined') {
-			var start = (this.getBottomToolbar().getPageData().activePage - 1) * og.config['files_per_page'];
+			var start = (this.getBottomToolbar().getPageData().activePage - 1) * contacts_per_page;
 		} else {
 			var start = 0;
 		}
@@ -607,7 +684,7 @@ Ext.extend(og.ContactManager, Ext.grid.GridPanel, {
 		this.store.load({
 			params: Ext.applyIf(params, {
 				start: start,
-				limit: og.config['files_per_page']
+				limit: contacts_per_page
 			})
 		});
 		this.needRefresh = false;

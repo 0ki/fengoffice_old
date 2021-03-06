@@ -227,7 +227,7 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
 		<?php echo select_task_priority('task[priority]', array_var($task_data, 'priority', ProjectTasks::PRIORITY_NORMAL), array('tabindex' => '90')) ?>
 		</div>
 		
-                <?php if(array_var($task_data, 'time_estimate') == 0){?>
+		<?php if(array_var($task_data, 'time_estimate') == 0){?>
 		<div style="padding-top:4px">
 		<?php echo label_tag(lang('percent completed')) ?>
 		<?php echo input_field('task[percent_completed]', array_var($task_data, 'percent_completed', 0), array('tabindex' => '100', 'class' => 'short')) ?>
@@ -294,17 +294,17 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
 	<div id="<?php echo $genid ?>task_repeat_options_div" style="display:none">
 		<fieldset>
 			<legend><?php echo lang('repeating task')?></legend>
-		<?php
-                        if(!$task->isCompleted()){
-                                $occ = array_var($task_data, 'occ'); 
-                                $rsel1 = array_var($task_data, 'rsel1', true); 
-                                $rsel2 = array_var($task_data, 'rsel2', ''); 
-                                $rsel3 = array_var($task_data, 'rsel3', ''); 
-                                $rnum = array_var($task_data, 'rnum', ''); 
-                                $rend = array_var($task_data, 'rend', '');
-                                // calculate what is visible given the repeating options
-                                $hide = '';
-                                if((!isset($occ)) OR $occ == 1 OR $occ=="") $hide = "display: none;";
+			<?php
+			if(!$task->isCompleted()){
+				$occ = array_var($task_data, 'occ');
+				$rsel1 = array_var($task_data, 'rsel1', true);
+				$rsel2 = array_var($task_data, 'rsel2', '');
+				$rsel3 = array_var($task_data, 'rsel3', '');
+				$rnum = array_var($task_data, 'rnum', '');
+				$rend = array_var($task_data, 'rend', '');
+				// calculate what is visible given the repeating options
+				$hide = '';
+				if((!isset($occ)) OR $occ == 1 OR $occ=="") $hide = "display: none;";
 		?>
 		<table border="0" cellpadding="0" cellspacing="0">
 			<tr>
@@ -320,7 +320,7 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
 					</td></tr></table>
 				</td>
 			</tr>
-                        <tr>
+			<tr>
 				<td>
 					<div id="<?php echo $genid ?>repeat_options" style="width: 400px; align: center; text-align: left; <?php echo $hide ?>">
 						<div>
@@ -338,15 +338,15 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
 									if (el) el.checked = true;
 								} 
 							}
-                                                        
-                                                        og.viewDays = function(view) {
-                                                            var btn = Ext.get('<?php echo $genid ?>repeat_days');
-                                                            if(view){
-                                                                btn.dom.style.display = 'block';
-                                                            }else{
-                                                                btn.dom.style.display = 'none';
-                                                            }
-                                                        }
+
+							og.viewDays = function(view) {
+								var btn = Ext.get('<?php echo $genid ?>repeat_days');
+								if(view){
+									btn.dom.style.display = 'block';
+								}else{
+									btn.dom.style.display = 'none';
+								}
+							}
 						</script>
 						<table>
 							<tr><td colspan="2" style="vertical-align:middle; height: 22px;">
@@ -378,33 +378,32 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
 					</div>
 				</td>
 			</tr>
-                        
-                        <tr id="<?php echo $genid ?>repeat_days" style="display: none;">
-                            <td>
-                                <table>
-                                    <tr>
-                                        <td>
-                                            <input class="checkbox" type="checkbox" value="1" name="task[repeat_saturdays]"/>
-                                            <?php echo lang('repeat on saturdays')?>                                                
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>
-                                            <input class="checkbox" type="checkbox" value="1" name="task[repeat_sundays]"/>
-                                            <?php echo lang('repeat on sundays')?>                                                
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>
-                                            <input class="checkbox" type="checkbox" value="1" name="task[working_days]"/>
-                                            <?php echo lang('repeat working days')?>                                                
-                                        </td>
-                                    </tr>
-                                </table>
-                            </td>
+
+			<tr id="<?php echo $genid ?>repeat_days" style="display: none;">
+				<td>
+				<table>
+					<tr>
+						<td><input class="checkbox" type="checkbox" value="1"
+							name="task[repeat_saturdays]" /> <?php echo lang('repeat on saturdays')?>
+						</td>
+					</tr>
+					<tr>
+						<td><input class="checkbox" type="checkbox" value="1"
+							name="task[repeat_sundays]" /> <?php echo lang('repeat on sundays')?>
+						</td>
+					</tr>
+					<tr>
+						<td><input class="checkbox" type="checkbox" value="1"
+							name="task[working_days]" /> <?php echo lang('repeat working days')?>
+						</td>
+					</tr>
+				</table>
+				</td>
 			</tr>
 		</table>
-                <?php }else{ echo lang('option repetitive task completed');}?>
+		<?php }else{ 
+			echo lang('option repetitive task completed');
+		}?>
 		</fieldset>
 	</div>
   
@@ -630,9 +629,10 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
 			var user = ddUser.value;
 			var nV = <?php echo $defaultNotifyValue?>;
 			chk.checked = (user > 0 && nV != 0 && user != logged_user_id);
-			var user_obj = ogTasks.getUser(user); // check if selected user is a user or a company
-			document.getElementById(genid + 'taskFormSendNotificationDiv').style.display = (user > 0 && user_obj) ? 'block':'none';
+			var comp_obj = ogTasks.getCompany(user); // check if selected user is a user or a company
+			document.getElementById(genid + 'taskFormSendNotificationDiv').style.display = (user > 0 && !comp_obj) ? 'block':'none';
 		}
+		console.log(ogTasks);
 	}
 	
 
@@ -669,7 +669,7 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
 	
 	//og.redrawUserLists(og.contextManager.plainContext());
         
-<?php if(!$task->isCompleted()){?>
+
 	og.changeTaskRepeat = function() {
 		document.getElementById("<?php echo $genid ?>repeat_options").style.display = 'none';
 		var word = '';
@@ -687,7 +687,6 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
 		document.getElementById("<?php echo $genid ?>word").innerHTML = word;
 		document.getElementById("<?php echo $genid ?>repeat_options").style.display = opt_display;		
 	}
-<?php }?>
 
 
 
@@ -723,62 +722,57 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
 	
 	
 	Ext.get('ogTasksPanelATTitle').focus();
-        
-        Ext.extend(og.TaskPopUp, Ext.Window, {
-                accept: function() {
-                        var opt = $("#<?php echo $genid?>type_related").val();
-                        if(opt == "pending"){
-                            var url = og.getUrl('task', 'edit_task', {id : <?php echo $pending_task_id ?>, replace : true});
-                            og.openLink(url, {
-                                    method: 'POST',
-                                    scope: this
-                            });
-                        }                        
-                        this.close();
-                }
-        });
-                
-        $(document).ready(function() {
-            if($("#<?php echo $genid?>view_related").val()){
-                <?php if($task->isCompleted()){ ?>
-                        this.dialog = new og.TaskPopUp('task_complete','');
-                <?php }else{?>
-                        this.dialog = new og.TaskPopUp('','');
-                <?php }?>
-                this.dialog.setTitle(lang('tasks related'));
-                this.dialog.show();      
-            }
 
-            og.changeTaskRepeat();
-            
-            og.reload_task_form_selectors();
-        });
-        
-        function selectRelated(val){
-                $("#<?php echo $genid?>type_related").val(val);
-        }
-        
-        
-        <?php if ($task->isNew()){ ?> 
-            COUNT_LINE = 1;
-            <?php 
-                    if (count($multi_assignment) > 0) {
-                        foreach($multi_assignment as $assignment){ ?>
-                            addMultiAssignment('<?php echo $genid ?>','<?php echo $assignment['assigned_to_contact_id'] ?>' , '<?php echo $assignment['name'] ?>', '<?php echo $assignment['time_estimate_hours'] ?>', '<?php echo $assignment['time_estimate_minutes'] ?>');		
-            <?php       }
-                    }//foreach ?>
-        <?php }//if ?>
-            
-        og.ControlDates = function(type){
-            <?php if (!array_var($task_data, 'multi_assignment')){?>
-                if(type == "child"){
-                    return og.PermissionControlDateSubtask('<?php echo array_var($task_data, 'parent_id')?>');
-                } else if (type == "father"){
-                    return og.ControlDateParent('<?php echo array_var($task_data, 'control_start_date')?>','<?php echo array_var($task_data, 'control_due_date')?>');
-                }
-                return true;
-            <?php }else{?>
-                return true;
-            <?php }?>
-        }
+	Ext.extend(og.TaskPopUp, Ext.Window, {
+		accept: function() {
+			var opt = $("#<?php echo $genid?>type_related").val();
+			if(opt == "pending"){
+				var url = og.getUrl('task', 'edit_task', {id : <?php echo $pending_task_id ?>, replace : true});
+				og.openLink(url, {method: 'POST', scope: this});
+			}
+			this.close();
+		}
+	});
+
+	$(document).ready(function() {
+		if($("#<?php echo $genid?>view_related").val()){
+			<?php if($task->isCompleted()){ ?>
+			this.dialog = new og.TaskPopUp('task_complete','');
+			<?php }else{?>
+			this.dialog = new og.TaskPopUp('','');
+		<?php }?>
+			this.dialog.setTitle(lang('tasks related'));
+			this.dialog.show();      
+		}
+
+		og.changeTaskRepeat();
+		og.reload_task_form_selectors();
+	});
+
+	function selectRelated(val){
+		$("#<?php echo $genid?>type_related").val(val);
+	}
+
+	<?php if ($task->isNew()){ ?>
+		COUNT_LINE = 1;
+	<?php	if (count($multi_assignment) > 0) {
+				foreach($multi_assignment as $assignment){ ?>
+					addMultiAssignment('<?php echo $genid ?>','<?php echo $assignment['assigned_to_contact_id'] ?>' , '<?php echo $assignment['name'] ?>', '<?php echo $assignment['time_estimate_hours'] ?>', '<?php echo $assignment['time_estimate_minutes'] ?>');		
+	<?php		}
+			}
+		}
+	?>
+
+	og.ControlDates = function(type){
+		<?php if (!array_var($task_data, 'multi_assignment')){?>
+			if(type == "child"){
+				return og.PermissionControlDateSubtask('<?php echo array_var($task_data, 'parent_id')?>');
+			} else if (type == "father"){
+				return og.ControlDateParent('<?php echo array_var($task_data, 'control_start_date')?>','<?php echo array_var($task_data, 'control_due_date')?>');
+			}
+			return true;
+		<?php }else{?>
+			return true;
+		<?php }?>
+	}
 </script>

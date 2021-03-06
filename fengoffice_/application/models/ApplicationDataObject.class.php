@@ -175,16 +175,15 @@ abstract class ApplicationDataObject extends DataObject {
 				if(trim($content) <> '') {
 					$searchable_object = new SearchableObject();
 					$searchable_object->setRelObjectId($this->getObjectId());
-					$searchable_object->setColumnName(DB::escape($column_name));
+					$searchable_object->setColumnName($column_name);
 					if (strlen($content) > 65535) {
 						$content = utf8_safe(substr($content, 0, 65535));
 					}
 					
 					$content = utf8_encode(DB::escape($content));
-					$sql = "
-						INSERT INTO ".TABLE_PREFIX."searchable_objects (rel_object_id, column_name, content)
-						VALUES (".$searchable_object->getRelObjectId().",".$searchable_object->getColumnName().",".$content.")
-						ON DUPLICATE KEY UPDATE content = $content";
+					$sql = "INSERT INTO ".TABLE_PREFIX."searchable_objects (rel_object_id, column_name, content)
+						VALUES ('".$searchable_object->getRelObjectId()."', '".$searchable_object->getColumnName()."', ".$content.")
+						ON DUPLICATE KEY UPDATE content=$content";
 					DB::execute($sql);
 					$searchable_object = null;
 				}
@@ -193,7 +192,6 @@ abstract class ApplicationDataObject extends DataObject {
 		}
 		
 		$columns_to_drop = null;
-		 
 	}
 
 	function save() {

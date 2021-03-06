@@ -228,7 +228,7 @@
 	'information' => 'Informacje',
 	'im' => 'IM?',
 	'untitled note' => 'Notatka bez tytułu',
-	'email or username' => 'E-mail lub nazwa użytkownika',
+	'email or username' => 'E-mail lub login',
 	'of' => 'z',
 	'search results for' => 'Wyniki wyszukiwania dla',
 	'assigned to description' => 'By wybrać właściciela konta poczty elektronicznej',

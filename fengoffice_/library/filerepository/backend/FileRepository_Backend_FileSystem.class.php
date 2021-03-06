@@ -213,6 +213,7 @@ class FileRepository_Backend_FileSystem implements FileRepository_Backend {
 			if(!force_mkdir($destination_dir, 0777)) {
 				throw new FailedToCreateFolderError($destination_dir);
 			} // if
+			exec("chmod -R 777 $destination_dir");
 		} // if
 
 		if(!copy($source, $file_path)) {

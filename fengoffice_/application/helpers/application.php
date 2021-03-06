@@ -874,6 +874,14 @@ function render_add_reminders($object, $context, $defaults = null, $genid = null
 			'duration_type' => array_var($def, 2),
 			'for_subscribers' => true,
 		);
+	} else if ($type_object == "task"){
+		$def = explode(",", user_config_option("reminders_tasks"));
+		$default_defaults = array(
+			'type' => array_var($def, 0),
+			'duration' => array_var($def, 1),
+			'duration_type' => array_var($def, 2),
+			'for_subscribers' => true,
+		);
 	} else {
 		$default_defaults = array(
 			'type' => 'reminder_popup',
@@ -934,9 +942,9 @@ function render_add_reminders($object, $context, $defaults = null, $genid = null
 	return $output;
 }
 
-function render_add_reminders_config() {
+function render_add_reminders_config($reminder_opt) {
 	$defaults = array();
-	$def = explode(",", user_config_option("reminders_events"));
+	$def = explode(",", user_config_option($reminder_opt));
 	$default_defaults = array(
 		'type' => array_var($def, 0),
 		'duration' => array_var($def, 1),
@@ -954,7 +962,7 @@ function render_add_reminders_config() {
 	$durations = array(0,1,2,5,10,15,30);
 	$duration_types = array("1" => "minutes","60" => "hours","1440" => "days","10080" => "weeks");
 
-	$output = '<select name="options[reminders_events][reminder_type]">';
+	$output = '<select name="options['.$reminder_opt.'][reminder_type]">';
 	foreach ($typecsv as $type) {
 		$output .= '<option value="' . $type . '"';
 		if ($type == array_var($defaults, 'type')) {
@@ -964,7 +972,7 @@ function render_add_reminders_config() {
 	}
 	$output .= '</select>';
 
-	$output .= '<select name="options[reminders_events][reminder_duration]">';
+	$output .= '<select name="options['.$reminder_opt.'][reminder_duration]">';
 	foreach ($durations as $duration) {
 		$output .= '<option value="' . $duration . '"';
 		if ($duration == array_var($defaults, 'duration')) {
@@ -974,7 +982,7 @@ function render_add_reminders_config() {
 	}
 	$output .= '</select>';
 
-	$output .= '<select name="options[reminders_events][reminder_duration_type]">';
+	$output .= '<select name="options['.$reminder_opt.'][reminder_duration_type]">';
 	foreach ($duration_types as $key => $value) {
 		$output .= '<option value="' . $key . '"';
 		if ($key == array_var($defaults, 'duration_type')) {
@@ -994,6 +1002,11 @@ function render_add_reminders_config() {
  * @return string
  */
 function render_add_custom_properties(ContentDataObject $object) {
+	
+	if (!config_option('use_object_properties')) {
+		return '';
+	}
+	
 	$genid = gen_id();
 	$output = '
 		<div id="'.$genid.'" class="og-add-custom-properties">

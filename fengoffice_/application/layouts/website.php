@@ -349,10 +349,13 @@ og.hasNewVersions = <?php
 	}
 ?>;
 og.config = {
-	'files_per_page': <?php echo json_encode(config_option('files_per_page', 10)) ?>,
+	'mails_per_page': <?php echo json_encode(user_config_option('mails_per_page',50)) ?>,
+	'contacts_per_page': <?php echo json_encode(user_config_option('contacts_per_page',50)) ?>,
+	'files_per_page': <?php echo json_encode(config_option('files_per_page', 50)) ?>,
 	'days_on_trash': <?php echo json_encode(config_option("days_on_trash", 0)) ?>,
 	'checkout_notification_dialog': <?php echo json_encode(config_option('checkout_notification_dialog', 0)) ?>,
 	'use_time_in_task_dates': <?php echo json_encode(config_option('use_time_in_task_dates')) ?>,
+	'can_assign_tasks_to_companies': <?php echo json_encode(config_option('can_assign_tasks_to_companies')) ?>,
 	'enable_notes_module': <?php echo json_encode(module_enabled("messages")) ?>,
 	'enable_email_module': <?php echo json_encode(module_enabled("mails")) ?>,
 	'enable_contacts_module': <?php echo json_encode(module_enabled("contacts")) ?>,
@@ -364,6 +367,9 @@ og.config = {
 	'enable_reporting_module': <?php echo json_encode(module_enabled("reporting")) ?>
 };
 og.preferences = {
+	'viewContactsChecked': <?php echo json_encode(user_config_option('viewContactsChecked')) ?>,
+	'viewUsersChecked': <?php echo json_encode(user_config_option('viewUsersChecked')) ?>,
+	'viewCompaniesChecked': <?php echo json_encode(user_config_option('viewCompaniesChecked')) ?>,
 	'rememberGUIState': <?php echo user_config_option('rememberGUIState') ? '1' : '0' ?>,
 	'time_format_use_24': <?php echo json_encode(user_config_option('time_format_use_24')) ?>,
 	'show_unread_on_title': <?php echo user_config_option('show_unread_on_title') ? '1' : '0' ?>,
@@ -375,6 +381,8 @@ og.preferences = {
 	'draft_autosave_timeout': <?php echo json_encode(user_config_option('draft_autosave_timeout')) ?>,
 	'drag_drop_prompt': <?php echo json_encode(user_config_option('drag_drop_prompt')) ?>,
 	'mail_drag_drop_prompt': <?php echo json_encode(user_config_option('mail_drag_drop_prompt')) ?>,
+	'access_member_after_add': <?php echo user_config_option('access_member_after_add') ? '1' : '0' ?>,
+	'access_member_after_add_remember': <?php echo user_config_option('access_member_after_add_remember') ? '1' : '0' ?>,
 	'listing_preferences': []
 };
 <?php

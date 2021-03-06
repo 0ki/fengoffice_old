@@ -371,6 +371,11 @@ if ($calendar_panel instanceof TabPanel && $calendar_panel->getEnabled()) {
 	} // end main loop
 	$output .= '</table>';
 	
+	$cmember = current_member();
+	if($cmember != NULL){
+		$widget_title = lang("upcoming events milestones and tasks") . " " . lang("in") . " " . $cmember->getName();
+	}
+	
 	include_once 'template.php';
 
 }

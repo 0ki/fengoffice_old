@@ -468,4 +468,5 @@
 	'file extension no allow' => 'O Administrador não permite esta extensão de arquivo. Por favor, use um formato diferente.',
 	'file extension no allow classify' => 'Você não pode classificar anexo \'{0}\'. O Administrador não permite esta extensão de arquivo.',
 	'config option desc working_days' => 'Aqui você pode selecionar quais são os dias de trabalho de sua empresa. Isso é útil para o calendário e tarefas repetitivas.',
+	'user ws config category name listing preferences' => 'opções de anúncios',
 ); ?>

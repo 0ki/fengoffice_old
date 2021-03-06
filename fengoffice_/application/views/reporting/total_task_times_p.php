@@ -133,6 +133,7 @@
 					<select id="<?php echo $genid ?>alt_group_by_<?php echo $i ?>" name="report[alt_group_by_<?php echo $i ?>]" )">
 						<option value="0"<?php if ($gbVal == null) echo ' selected="selected"' ?>><?php echo lang('none') ?></option>
 						<option value="contact_id"<?php if ($gbVal == "contact_id") echo ' selected="selected"' ?>><?php echo lang('user')?></option>
+						<option value="rel_object_id"<?php if ($gbVal == "rel_object_id") echo ' selected="selected"' ?>><?php echo lang('task')?></option>
 						<?php
 							$gbs = array();
 							Hook::fire('total_task_timeslots_group_by_criterias', null, $gbs);

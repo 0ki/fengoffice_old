@@ -3,7 +3,7 @@
 	'new comment' => 'Komentar baru',
 	'your account created' => 'Akun Feng Office anda yang baru telah dibuat',
 	'your password' => 'Kata sandi anda',
-	'task assigned to you' => 'Tugas telah di berikan kepada anda',
+	'task assigned to you' => 'Tugas telah diberikan kepada anda',
 	'work estimate title' => 'Waktu yang digunakan untuk mengerjakan tugas telah melebihi batas',
 	'new task work estimate to you desc' => 'Tugas berikut telah melebihi batas waktu',
 	'hi john doe' => 'Hai {0}',
@@ -158,4 +158,7 @@
 	'attach from workspace' => 'Lampirkan dari area kerja',
 	'attach from fengoffice' => 'Lmapirkan dari Feng Office',
 	'attach from file system' => 'Lampirkan dari komputer',
+	'milestone assigned to you' => 'Milestone telah diberikan pada anda',
+	'milestone assigned' => 'Milestone "{0}" telah diberikan pada anda',
+	'view assigned milestones' => 'Lihat milestone',
 ); ?>

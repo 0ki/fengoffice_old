@@ -67,6 +67,8 @@
     'config option desc time_format_use_24' => 'If set, the 24 hour format will be used instead of the 12 hour format',
     'config option name file_revision_comments_required' => 'File revision comments required',
     'config option desc file_revision_comments_required' => 'If set, adding new file revisions requires users to provide a new comment for each revision.',
+    'user config option name sendEmailNotification' => 'Send Email Notification',
+    'user config option desc sendEmailNotification' => 'If set, sends a notification email to the created User.',
     'config option name show_feed_links' => 'Show feed links',
     'config option desc show_feed_links' => 'This allows you to show links to RSS or iCal feeds to the logged user throughout the system, so that he can subscribe to them. WARNING: These links contain information that can login a user to the system. If an unaware user shares one of this links he could be compromising all of his information.',
 	
@@ -159,17 +161,19 @@
 	'config option desc use_milestones' => 'Enabling this option will allow to create milestones and associate tasks to them.',
 	'config option name show_tab_icons' => 'Show tab icons',
 	'config option desc show_tab_icons' => 'Enabling this option will show each tab\'s icon.',
-  
-  	'config option name automatic_crpm_status_calculation' => 'Clients & Project automatic status',
+	'config option name can_assign_tasks_to_companies' => 'Can assign tasks to companies',
+	'config option desc can_assign_tasks_to_companies' => 'If enabled then companies will appear in "assigned to" selectors when adding/editing tasks.',
+	'config option name use_object_properties' => 'Use object properties',
+	'config option desc use_object_properties' => 'Enabling this option will allow you to define custom (key - value) properties for every object.',
+	'config option name automatic_crpm_status_calculation' => 'Clients & Project automatic status',
   	'config option desc automatic_crpm_status_calculation' => 'When enabled, you will be able to set up the formulas for the Clients & Project different status so that they are calculated automatically',
-
     'group users' => 'Group users',
     'timeslot' => 'Time',
     'module permissions' => 'Module Permissions',
     'module permission uncheck warning' => 'Module Permission Uncheck Warning',
 
     'apply to all submembers' => 'Apply the permissions above to all submembers',
-    'apply to all members' => 'Apply the permissions to all members within the dimension',
+    'apply to all members' => 'Apply the permissions above to all the members within the dimension',
   	
     'user ws config category name dashboard' => 'Dashboard options',
     'user ws config category name task panel' => 'Task options',
@@ -205,8 +209,8 @@
     'user ws config option desc my tasks is default view' => 'If no is selected, the default view of the task panel will show all tasks',
     'user ws config option name show tasks in progress widget' => 'Show \'Tasks in progress\' widget',
 
-    'user ws config option name can notify from quick add' => 'Notify the assigned person to the task',
-    'user ws config option desc can notify from quick add' => 'This option enables notifying assigned users after a task is added or updated',
+    'user ws config option name can notify from quick add' => 'Automatically notify the assignee',
+    'user ws config option desc can notify from quick add' => 'This option enables notifying assigned users after a task is added or updated - unless it is you -',
     'user ws config option name show_tasks_context_help' => 'Show context help for tasks',
     'user ws config option desc show_tasks_context_help' => 'If enabled, a context help box will be displayed on the tasks panel',
     'user ws config option name start_monday' => 'Start week on monday',
@@ -235,14 +239,44 @@
 
     'user ws config option name displayed events amount' => 'Number of events displayed',
     'user ws config option desc displayed events amount' => 'The number of events per day that are shown in the month view',
+  
+	'user config option name access_member_after_add' => 'Access new member after its creation.',
+	'user config option desc access_member_after_add' => 'If you enable this option, after creating a workspace, client, etc; it will be selected in the left panel (this option only works if "Remeber to access member or not when member is created" is enabled).',
+	'user config option name access_member_after_add_remember' => 'Remeber to access member or not when member is created',
+	'user config option desc access_member_after_add_remember' => 'Enabling this option allows you to skip the question about what to do after creating a workspace, client, etc.',
 
     'user config option name show_object_direct_url'=> 'Show direct object urls',
     'user config option desc show_object_direct_url'=> 'If enabled, a direct URL to the object will be displayed on it\'s overview',  
 
-    'user config option name reminders_events' =>'Reminders events',
-    'user config option desc reminders_events' =>'',
+    'user config option name reminders_events' =>'Event Reminders',
+    'user config option desc reminders_events' =>'Default value for event reminders',
+  
+  	'user config option name reminders_tasks' =>'Task Reminders',
+    'user config option desc reminders_tasks' =>'Default value for task reminders',  
+  
+  	'user config option name add_task_default_reminder' => 'Add a reminder by default when creating a task',
+  	'user config option desc add_task_default_reminder' => 'Create reminders by default when you create tasks',
+    
+  	'user config option name add_task_autoreminder' =>'Create automatic reminders for other assignees when editing a task',
+    'user config option desc add_task_autoreminder' =>'Enable this option to automatically create autoreminders when I edit a task assigned to someone else that no longer has a reminder left',
+  
+  	'user config option name add_self_task_autoreminder' =>'Create automatic reminders when editing my tasks',
+    'user config option desc add_self_task_autoreminder' =>'Enable this option if you want to automatically create autoreminders when editing my tasks that no longer have a reminder left',
+  
+  	'user config option name add_event_autoreminder' =>'Create automatic reminders when editing an event',
+    'user config option desc add_event_autoreminder' =>'Enable this option if you want to autotmatically create autoreminders if you edit an event that no longer has a reminder left',
 
-    'show context help always' => 'Always',
+  	'user config option name autoassign_events' =>'Autoassign events',
+    'user config option desc autoassign_events' =>'Enable this option if you also want to be invited to events that you create, even if you are filtering the calendar by someone else',
+  
+  	'user config option name event_send_invitations' =>'Send event invitations',
+    'user config option desc event_send_invitations' =>'Enable this option if you want to have the  "Send Invitations" option enabled by default when you create an event',
+  
+  	'user config option name event_subscribe_invited' =>'Subscribe invited users',
+    'user config option desc event_subscribe_invited' =>'Enable this option if you want to have the  "Subscribe Invited users" option enabled by default when you create an event',
+  
+  
+  	'show context help always' => 'Always',
     'show context help never' => 'Never',
     'show context help until close' => 'Until close',
 
@@ -567,7 +601,8 @@
 
     //account
     //General
-
+	'user config option name contacts_per_page' => 'Contacts per page',
+  	'user config option desc contacts_per_page' => 'Amount of contacts listed (avoid 0 and negative numbers). Take into account that the larger the number, the more time it will take to load the contacts.',
     'user config option name amount_objects_to_show' => 'Number of Linked Objects to show',
     'user config option desc amount_objects_to_show' => 'Sets the number of Linked Object\'s to be displayed on objects views.' ,
     'user config option name autodetect_time_zone' => 'Autodetect time zone',
@@ -690,7 +725,6 @@
     'dimensions' => 'Dimensions',
     'organization data' => 'Organization Data',
 
-  
 
     //User-box actions
     'brand colors' => 'Brand Colors',

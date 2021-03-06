@@ -210,7 +210,7 @@ class MailContents extends BaseMailContents {
 	 */
 	function getEmails($account_id = null, $state = null, $read_filter = "", $classif_filter = "", $context = null, $start = null, $limit = null, $order_by = 'received_date', $dir = 'ASC', $join_params = null, $archived = false) {
 		$mailTablePrefix = "e";
-		
+		if (!$limit) $limit = user_config_option('mails_per_page') ? user_config_option('mails_per_page') : config_option('files_per_page');
 		$accountConditions = "";
 		// Check for accounts
 		$accountConditions = '';

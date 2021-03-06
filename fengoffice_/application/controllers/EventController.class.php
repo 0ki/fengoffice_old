@@ -72,7 +72,7 @@ class EventController extends ApplicationController {
 				$invitation->setContactId($id);
 				$invitation->setInvitationState(logged_user() instanceof Contact && logged_user()->getId() == $id ? 1 : 0);
 				$invitation->save();
-				if (array_var($data, 'subscribe_invited', false) && is_array(array_var($_POST, 'subscribers'))) {
+				if ((array_var($data, 'subscribe_invited', false) && is_array(array_var($_POST, 'subscribers')) || (array_var($_POST, 'popup') && user_config_option('event_subscribe_invited')))) {
 					$_POST['subscribers']['user_' . $id] = 'checked';
 				}
 			}
@@ -274,8 +274,17 @@ class EventController extends ApplicationController {
 			$data['duration'] = $durationstamp;
 			
 			$data['users_to_invite'] = array();
-			// owner user always is invited and confirms assistance (only for popup quick add)
-			if (array_var($_POST, 'popup')) $data['users_to_invite'][logged_user()->getId()] = 1; 
+			// options when creating an event through a POP UP
+			if (array_var($_POST, 'popup')){
+				$user_filter = user_config_option('calendar user filter');
+				if ($user_filter == '0' || $user_filter == '-1') {
+					$user_filter = logged_user()->getId();
+				}
+				$data['users_to_invite'][$user_filter] = 0;
+				if ($user_filter != logged_user()->getId() && user_config_option('autoassign_events')){
+					$data['users_to_invite'][logged_user()->getId()] = 1;
+				}
+			}
 
 			$compstr = 'invite_user_';
 			foreach ($event_data as $k => $v) {
@@ -312,7 +321,7 @@ class EventController extends ApplicationController {
 			return ;
                 }
 	    
-                $this->setTemplate('event');
+		$this->setTemplate('event');
 		$event = new ProjectEvent();		
 		$event_data = array_var($_POST, 'event');
 				
@@ -322,7 +331,7 @@ class EventController extends ApplicationController {
 		$month = isset($_GET['month'])?$_GET['month']:date('n', DateTimeValueLib::now()->getTimestamp() + logged_user()->getTimezone() * 3600);
 		$day = isset($_GET['day'])?$_GET['day']:date('j', DateTimeValueLib::now()->getTimestamp() + logged_user()->getTimezone() * 3600);
 		$year = isset($_GET['year'])?$_GET['year']:date('Y', DateTimeValueLib::now()->getTimestamp() + logged_user()->getTimezone() * 3600);
-		
+
 		$user_filter = isset($_GET['user_filter']) ? $_GET['user_filter'] : logged_user()->getId();
 		
 		if(!is_array($event_data)) {
@@ -354,7 +363,7 @@ class EventController extends ApplicationController {
 		
 		tpl_assign('event', $event);
 		tpl_assign('event_data', $event_data);
-                tpl_assign('event_related', false);
+		tpl_assign('event_related', false);
 		
 		if (is_array(array_var($_POST, 'event'))) {
 			try {
@@ -372,7 +381,7 @@ class EventController extends ApplicationController {
 				}
 				
 				$is_silent = false;
-				if (isset($data['send_notification']) && $data['send_notification']) {
+				if ((isset($data['send_notification']) && $data['send_notification']) || (array_var($_POST, 'popup') && user_config_option('event_send_invitations'))) {
 					$users_to_inv = array();
 					foreach ($data['users_to_invite'] as $us => $v) {
 						if ($us != logged_user()->getId()) {
@@ -418,8 +427,16 @@ class EventController extends ApplicationController {
 						$reminder->setDate($rdate);
 					}
 					$reminder->save();
+					// subscribe or not the invited users
+					if (user_config_option('event_subscribe_invited')){
+						$data['subscribe_invited'] = "checked";
+					}
+					// send or not the inivitations
+					if (user_config_option('event_send_invitations')){
+						$data['send_notification'] = "checked";
+					}
 				}
-
+				
 				$opt_rep_day = array();
 				if(array_var($event_data, 'repeat_saturdays')){
 					$opt_rep_day['saturday'] = true;
@@ -431,8 +448,6 @@ class EventController extends ApplicationController {
 				}else{
 					$opt_rep_day['sunday'] = false;
 				}
-
-				//$this->repetitive_event($event, $opt_rep_day);
 				
 				if (array_var($_POST, 'popup', false)) {
 					$event->subscribeUser(logged_user());
@@ -894,7 +909,27 @@ class EventController extends ApplicationController {
 
                                 $object_controller->link_to_new_object($event);
                                 $object_controller->add_custom_properties($event);
-                                $object_controller->add_reminders($event);
+                                									
+								$old_reminders = ObjectReminders::getByObject($event);
+								if($old_reminders != null){								
+									$object_controller->add_reminders($event); //adding the new reminders, if any								
+									$object_controller->update_reminders($event, $old_reminders); //updating the old ones
+								}else if(user_config_option("add_event_autoreminder")){
+									$reminder = new ObjectReminder();
+									$def = explode(",",user_config_option("reminders_events"));
+									$minutes = $def[2] * $def[1];
+				          			$reminder->setMinutesBefore($minutes);
+				                    $reminder->setType($def[0]);
+				                    $reminder->setContext("start");
+				                    $reminder->setObject($event);
+				                    $reminder->setUserId(0);
+				                    $date = $event->getStart();
+									if ($date instanceof DateTimeValue) {
+										$rdate = new DateTimeValue($date->getTimestamp() - $minutes * 60);
+										$reminder->setDate($rdate);
+									}
+									$reminder->save();
+								}
 
                                 $event->resetIsRead();
                                 DB::commit();
@@ -1265,14 +1300,33 @@ class EventController extends ApplicationController {
 	    $event->setStart($new_start->format("Y-m-d H:i:s"));
 	    $event->setDuration($new_duration->format("Y-m-d H:i:s"));
 	    $event->save();
-            
-            if (!$is_read) {
-				$event->setIsRead(logged_user()->getId(), false);
-            }
-            
-            if($event->getSpecialID() != ""){
-                $this->sync_calendar_extern($event);
-            }
+		
+	    $old_reminders = ObjectReminders::getByObject($event);	    
+		if($old_reminders != null){		
+			$object_controller = new ObjectController();								
+			$object_controller->update_reminders($event, $old_reminders); //updating the old ones			
+		}else if(user_config_option("add_event_autoreminder")){
+			$reminder = new ObjectReminder();
+			$def = explode(",",user_config_option("reminders_events"));
+			$minutes = array_var($def, 2) * array_var($def, 1);
+          	$reminder->setMinutesBefore($minutes);
+            $reminder->setType(array_var($def, 0));
+            $reminder->setContext("start");
+            $reminder->setObject($event);
+            $reminder->setUserId(0);
+            $date = $event->getStart();
+			if ($date instanceof DateTimeValue) {
+				$rdate = new DateTimeValue($date->getTimestamp() - $minutes * 60);
+				$reminder->setDate($rdate);
+			}
+			$reminder->save();
+		}
+        if (!$is_read) {
+            $event->setIsRead(logged_user()->getId(), false);
+        }
+        if($event->getSpecialID() != ""){
+            $this->sync_calendar_extern($event);
+        }
             
 	    DB::commit();
     

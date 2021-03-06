@@ -54,7 +54,11 @@ class TemplateController extends ApplicationController {
 				$objects = array_var($_POST, 'objects');
 				foreach ($objects as $objid) {
 					$object = Objects::findObject($objid);
-					$oid = $cotemplate->addObject($object);
+					if ($object instanceof ProjectTask) {
+						$add_attr_milestones = array_var($_POST, "milestones");
+						if (is_array($add_attr_milestones)) $additional_attributes['milestone'] = array_var($add_attr_milestones, $objid);
+					}
+					$oid = $cotemplate->addObject($object, $additional_attributes);
 					$object_ids[$objid] = $oid;
 // 					COTemplates::validateObjectContext($object, $member_ids);
 				}
@@ -184,7 +188,12 @@ class TemplateController extends ApplicationController {
 					
 					$object = Objects::findObject($objid);
 					COTemplates::validateObjectContext($object, $member_ids);
-					$oid = $cotemplate->addObject($object);
+					$additional_attributes = array();
+					if ($object instanceof ProjectTask) {
+						$add_attr_milestones = array_var($_POST, "milestones");
+						if (is_array($add_attr_milestones)) $additional_attributes['milestone'] = array_var($add_attr_milestones, $objid);
+					}
+					$oid = $cotemplate->addObject($object, $additional_attributes);
 					$object_ids[$objid] = $oid;
 				}
 
@@ -406,6 +415,7 @@ class TemplateController extends ApplicationController {
 		DB::beginWork();
 		
 		$active_context = active_context();
+		$copies = array();
 		
 		foreach ($objects as $object) {
 			if (!$object instanceof ContentDataObject) continue;
@@ -414,18 +424,22 @@ class TemplateController extends ApplicationController {
 			if ($copy->columnExists('is_template')) {
 				$copy->setColumnValue('is_template', false);
 			}
+			if ($copy->columnExists('from_template_id')) {
+				$copy->setColumnValue('from_template_id', $object->getId());
+			}
 			if ($copy instanceof ProjectTask) {
 				// don't copy parent task and milestone
-				$copy->setMilestoneId(0);
+				//$copy->setMilestoneId(0);
 				$copy->setParentId(0);
 			}
 			$copy->save();
+			$copies[] = $copy;
 			
 			/* Set instantiated object members:
 			 * 		if no member is active then the instantiated object is put in the same members as the original
 			 * 		if any members are selected then the instantiated object will be put in those members  
 			 */
-			$template_object_members = $object->getMembers();
+			$template_object_members = $object->getMemberIds();
 			$object_members = array();
 			foreach( $active_context as $selection ) {
 				if ($selection instanceof Member) { // member selected
@@ -541,6 +555,21 @@ class TemplateController extends ApplicationController {
 				$copy_reminder->setType($reminder->getType());
 				$copy_reminder->setUserId($reminder->getUserId());
 				$copy_reminder->save();
+			}
+		}
+
+		foreach ($copies as $c) {
+			if ($c instanceof ProjectTask) {
+				if ($c->getMilestoneId() > 0) {
+					// find milestone in copies
+					foreach ($copies as $m) {
+						if ($m instanceof ProjectMilestone && $m->getFromTemplateId() == $c->getMilestoneId()) {
+							$c->setMilestoneId($m->getId());
+							$c->save();
+							break;
+						}
+					}
+				}
 			}
 		}
 		

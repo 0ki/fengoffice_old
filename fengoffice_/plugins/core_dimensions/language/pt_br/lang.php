@@ -4,5 +4,4 @@
 	'all feng_persons' => 'Todas as Pessoas',
 	'all feng_users' => 'Todos os Usuários',
 	'feng_persons' => 'Pessoas',
-
-);
+); ?>

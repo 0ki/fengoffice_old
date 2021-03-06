@@ -1935,7 +1935,7 @@ og.handleMemberChooserSubmit = function(genid, objectType, preHfId) {
 				}
 			});
 			if (og.can_submit_members){
-				document.getElementById(genid + preHfId + "members").value = Ext.util.JSON.encode(members);
+				document.getElementById(genid + preHfId + member_selector[genid].hiddenFieldName).value = Ext.util.JSON.encode(members);
 			}
 			var el = document.getElementById(genid + preHfId + "trees_not_loaded");
 			if (el) el.value = og.can_submit_members ? 0 : 1;
@@ -2009,7 +2009,7 @@ og.showPopupMemberChooser = function(genid, obj_type, hf_members_id, selected) {
 				width: 480,
 				ok_fn: function() {
 					og.handleMemberChooserSubmit(genid, obj_type);	
-					var sel_members = Ext.get(genid + "members").getValue();
+					var sel_members = Ext.get(genid + member_selector[genid].hiddenFieldName).getValue();
 					var hf = Ext.get(genid + hf_members_id);
 					hf.dom.value = sel_members;
 					
@@ -2604,7 +2604,7 @@ og.clearDimensionSelection = function() {
 /**
  * Dimension column renderer for ext grid listings
  */
-og.renderDimCol= function(value, p, r) {
+og.renderDimCol = function(value, p, r) {
 	var dim_id = p.id.replace(/dim_/, '');
 	var text = '';
 	

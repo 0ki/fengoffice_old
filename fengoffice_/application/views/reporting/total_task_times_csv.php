@@ -42,7 +42,7 @@
 		
 		$total += $group_total;
 		
-		echo "$group_name;;;;".lang('total'). ': ' . DateTimeValue::FormatTimeDiff(new DateTimeValue(0), new DateTimeValue($group_total * 60), "hm", 60).";\n\n";
+		echo "$group_name;;;".lang('subtotal'). ': '.";" . $group_total.";\n\n";
 	}
 	
 	function cvs_total_task_times_table($objects, $pad_str, $options, $group_name, &$sub_total = 0) {
@@ -51,20 +51,50 @@
 		echo lang('title') . ';';
 		echo lang('description') . ';';
 		echo lang('person') . ';';
-		echo lang('time') . ';';
+		echo lang('time') .'('.lang('hours').')'. ';';
 		echo "\n";
 		
 		$sub_total = 0;
 		
 		foreach ($objects as $ts) {
 			echo $pad_str . format_date($ts->getStartTime()) . ';';
-			echo ($ts->getRelObjectId() == 0 ? clean($ts->getObjectName()) : clean($ts->getRelObject()->getObjectName())) . ';';
-			echo clean($ts->getDescription()) .';';
-			echo clean($ts->getUser()->getObjectName()) .';';
-			$lastStop = $ts->getEndTime() != null ? $ts->getEndTime() : ($ts->isPaused() ? $ts->getPausedOn() : DateTimeValueLib::now());
-			echo DateTimeValue::FormatTimeDiff($ts->getStartTime(), $lastStop, "hm", 60, $ts->getSubtract()) .';';
 			
-			$sub_total += $ts->getMinutes();
+			$name = ($ts->getRelObjectId() == 0 ? $ts->getObjectName() : $ts->getRelObject()->getObjectName());
+			$name = str_replace("\r", " ", str_replace("\n", " ", str_replace("\r\n", " ", $name)));
+			echo $name . ';';
+			
+			$desc = $ts->getDescription();
+			$desc = str_replace("\r", " ", str_replace("\n", " ", str_replace("\r\n", " ", $desc)));
+			echo $desc .';';
+			
+			echo $ts->getUser()->getObjectName() .';';
+			$lastStop = $ts->getEndTime() != null ? $ts->getEndTime() : ($ts->isPaused() ? $ts->getPausedOn() : DateTimeValueLib::now());
+			$mystring = DateTimeValue::FormatTimeDiff($ts->getStartTime(), $lastStop, "hm", 60, $ts->getSubtract());
+			$posHours = strpos($mystring, 'hours');
+			$posMinutes = strpos($mystring, 'minutes');
+			$csvMin = 0;
+			$csvHour = 0;
+			if ($posHours === false){
+				if ($posMinutes === false){					
+				}else{
+					$csvMin = floatval(ltrim(DateTimeValue::FormatTimeDiff($ts->getStartTime(), $lastStop, "hm", 60, $ts->getSubtract()) .';', 'minutes')) / 60;
+					$sub_total += $csvMin;
+					echo $csvMin;
+				}
+			}else{
+				if ($posMinutes === false){
+					$csvHour = floatval(ltrim(DateTimeValue::FormatTimeDiff($ts->getStartTime(), $lastStop, "hm", 60, $ts->getSubtract()) .';', 'hours'));
+					$sub_total += $csvHour;
+					echo $csvHour;
+				}else{
+					$data = $mystring;
+					list($csvHour, $csvMin) = explode(",", $data);
+					$sub_total += (floatval(ltrim($csvHour, 'hours')) + (floatval(ltrim($csvMin, 'minutes'))/60));
+					echo (floatval(ltrim($csvHour, 'hours')) + (floatval(ltrim($csvMin, 'minutes'))/60));
+					
+				}
+				
+			}
 			echo "\n";
 		}
 	}
@@ -85,6 +115,6 @@
 		cvs_total_task_times_group($group_obj, $grouped_timeslots['grouped_objects'], array_var($_SESSION, 'total_task_times_parameters'), $skip_groups, 0, "", $total);
 	}
 
-	echo ";;;;".lang('total'). ': ' . DateTimeValue::FormatTimeDiff(new DateTimeValue(0), new DateTimeValue($total * 60), "hm", 60).";\n";
+	echo ";;;".lang('total'). ': '.";" .$total.";\n";
 
 	die();

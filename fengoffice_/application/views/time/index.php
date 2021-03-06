@@ -42,6 +42,15 @@
 			$companies_array[] = $company->getArrayInfo();
 		}
 	}
+	
+	$display_members = true;
+	$context = active_context();
+	foreach ($context as $selection) {
+		if ($selection instanceof Member) {
+			$display_members = false;
+			break;
+		}
+	}
 
 ?>
 
@@ -193,7 +202,7 @@
 				<div class="context-header">
 					<label><?php echo lang("related to")?></label>
 				</div>
-				<div class="context-body" style="display:none">
+				<div class="context-body" style="display:<?php echo $display_members ? 'block' : 'none'?>;">
 					<?php render_member_selectors(Timeslots::instance()->getObjectTypeId(), $genid, null, array('select_current_context' => true));	?>
 				</div>
 			</div>

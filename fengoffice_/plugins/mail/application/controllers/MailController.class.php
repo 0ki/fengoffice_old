@@ -1099,7 +1099,17 @@ class MailController extends ApplicationController {
 			ini_set('memory_limit', $old_memory_limit);
 		} else {
 			MailUtilities::parseMail($email->getContent(), $decoded, $parsedEmail, $warnings);
-			if (isset($parsedEmail['Attachments'])) $attachments = $parsedEmail['Attachments'];
+			if (isset($parsedEmail['Attachments'])) {
+				$attachments = $parsedEmail['Attachments'];
+			} else if ($email->getHasAttachments() && !in_array($parsedEmail['Type'], array('html', 'text', 'delivery-status')) && isset($parsedEmail['FileName'])) {
+				// the email is the attachment
+				$attach = array(
+					'Data' => $parsedEmail['Data'],
+					'Type' => $parsedEmail['Type'],
+					'FileName' => $parsedEmail['FileName']
+				);
+				$attachments = array($attach);
+			}
 			$to_remove = array();
 			foreach($attachments as $k => &$attach) {
 				if (array_var($parsedEmail, 'FileDisposition') == 'inline' && array_var($attach, 'Type') == 'html') $attach['hide'] = true;
@@ -1258,7 +1268,18 @@ class MailController extends ApplicationController {
 			$name_field = "name";
 		} else {
 			MailUtilities::parseMail($email->getContent(), $decoded, $parsedEmail, $warnings);
-			$attachment = $parsedEmail["Attachments"][$attId];
+			
+			if (isset($parsedEmail["Attachments"]) && isset($parsedEmail["Attachments"][$attId])) {
+				$attachment = $parsedEmail["Attachments"][$attId];
+			} else {
+				if ($email->getHasAttachments() && !in_array($parsedEmail['Type'], array('html', 'text', 'delivery-status')) && isset($parsedEmail['FileName'])) {
+					$attachment = array(
+						'Data' => $parsedEmail['Data'],
+						'Type' => $parsedEmail['Type'],
+						'FileName' => $parsedEmail['FileName']
+					);
+				}
+			}
 			$data_field = "Data";
 			$name_field = "FileName";
 		}
@@ -2421,7 +2442,7 @@ class MailController extends ApplicationController {
 
 		// Get all variables from request
 		$start = array_var($_GET, 'start');
-		$limit = config_option('files_per_page');
+		$limit = user_config_option('mails_per_page')? user_config_option('mails_per_page') : config_option('files_per_page');
 		if (!is_numeric($start)) {
 			$start = 0;
 		}
@@ -2555,7 +2576,7 @@ class MailController extends ApplicationController {
 		$custom_properties = CustomProperties::getAllCustomPropertiesByObjectType(MailContents::instance()->getObjectTypeId());
 		$i=0;
 		foreach ($emails as $email) {
-			if ($email instanceof MailContent) {/* @var $email MailContent */
+			if ($email instanceof MailContent) {
 				$properties = $this->getMailProperties($email, $i);
 				$object["messages"][$i] = $properties;
 			}

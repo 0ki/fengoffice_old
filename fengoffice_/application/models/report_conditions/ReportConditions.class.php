@@ -3,7 +3,7 @@
 /**
  *   ReportConditions class
  *
- * @author Pablo Kamil <pablokam@gmail.com>
+ * 
  */
 
 class ReportConditions extends BaseReportConditions {

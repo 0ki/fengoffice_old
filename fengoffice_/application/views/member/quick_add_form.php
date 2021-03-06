@@ -1,7 +1,10 @@
-<?php if (isset($error_msg)) {
+<?php
+$genid = gen_id();
+if (isset($error_msg)) {
 	echo "<div class='quick-form-error'>$error_msg</div>";
-	return ;
-}?>
+	return;
+}
+?>
 
 <form action="<?php echo $form_action ?>" method="post" >
 	<h2 class="quick-form-title"><?php echo (!empty($object_type_name)) ? lang("new ".$object_type_name) : "" ?></h2>

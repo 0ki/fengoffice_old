@@ -3,8 +3,6 @@
 	require_javascript("og/modules/addTemplate.js");
 	require_javascript("og/DateField.js");
 	
-	
-	$workspaces = active_projects();
 	$genid = gen_id();
 	$object = $cotemplate;
 ?>
@@ -91,8 +89,9 @@
 		'manager': '<?php echo get_class($o->manager()) ?>',
 		'object_id': <?php echo $o->getId() ?>,
 		'type': '<?php echo $o->getObjectTypeName() ?>',
+		'milestone_id': <?php echo $o instanceof ProjectTask ? $o->getMilestoneId() : '0' ?>,
 		'name': <?php echo json_encode($o->getObjectName()) ?>
-	});
+	}, true);
 	<?php
 			if(isset($object_properties) && is_array($object_properties)){
 				$oid = $o->getObjectId();
@@ -114,7 +113,18 @@
 		og.addParameterToTemplate(document.getElementById('<?php echo $genid ?>params'), '<?php echo $param->getName() ?>','<?php echo $param->getType() ?>'); 
 	<?php }
 	}?>
-	
-	
-	
+
+	og.add_template_input_divs = [];
+	var inputs = document.getElementById('<?php echo $genid ?>add_template_objects_div').getElementsByTagName('input');
+	for (var i=0; i < inputs.length; i++) {
+		if(inputs[i].className == 'objectID') {
+			og.add_template_input_divs[inputs[i].value] = inputs[i].parentNode.parentNode.id;
+		}
+	}
+
+	for (x=0; x<og.templateObjects.length; x++) {
+		var tobj = og.templateObjects[x];
+		if (tobj.type == 'task') og.drawTemplateObjectMilestonesCombo(Ext.get(og.add_template_input_divs[tobj.object_id]).dom, tobj);
+	}
+
 </script>

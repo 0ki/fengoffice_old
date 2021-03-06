@@ -1037,6 +1037,7 @@ og.addTaskUserChanged = function(genid, user_id){
 	if (ddUser && chk){
 		var user = ddUser.value;
 		chk.checked = (user > 0 && user != user_id);
-		document.getElementById(genid + 'taskFormSendNotificationDiv').style.display = user > 0 ? 'block':'none';
+		var comp_obj = ogTasks.getCompany(user); // check if selected user is a user or a company
+		document.getElementById(genid + 'taskFormSendNotificationDiv').style.display = (user > 0 && !comp_obj) ? 'block':'none';
 	}
 }

@@ -3,7 +3,7 @@
   /**
   *  BaseReportColumns class
   *
-  * @author Pablo Kamil <pablokam@gmail.com>
+  * 
   */
   abstract class BaseReportColumns extends DataManager {
   

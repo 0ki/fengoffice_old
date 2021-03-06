@@ -37,7 +37,7 @@ class COTemplate extends BaseCOTemplate {
 	 * 
 	 * @param ProjectTask $object
 	 */
-	function addObject($object) {
+	function addObject($object, $additional_attributes = array()) {
 		if ($this->hasObject($object)) return;
 		if (!$object->isTemplate() && $object->canBeTemplate()) {
 			// the object isn't a template but can be, create a template copy
@@ -48,6 +48,9 @@ class COTemplate extends BaseCOTemplate {
 				// don't copy milestone and parent task
 				$copy->setMilestoneId(0);
 				$copy->setParentId(0);
+				if (isset($additional_attributes['milestone'])) {
+					$copy->setMilestoneId($additional_attributes['milestone']);
+				}
 			}
 			$copy->save();
 			
@@ -87,6 +90,10 @@ class COTemplate extends BaseCOTemplate {
 			}
 			$template = $copy;
 		} else {
+			if ($object instanceof ProjectTask && isset($additional_attributes['milestone'])) {
+				$object->setMilestoneId($additional_attributes['milestone']);
+				$object->save();
+			}
 			// the object is already a template or can't be one, use it as it is
 			$template = $object;
 		}

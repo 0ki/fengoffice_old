@@ -19,15 +19,18 @@ class Contacts extends BaseContacts {
 	 * @return array
 	 */
 	function getAllowedContacts($extra_conds = null) {
-		$result = array() ;
-		foreach ( $contacts  = Contacts::instance()->findAll(array('conditions' => array($extra_conds))) as $c ){
-			/* @var $c Contact */
-			if ($c->canView(logged_user())) {
-				$result[] = $c ;
-			}
-		}
-		return $result ;
+		$result = array();
 		
+		$conditions = $extra_conds ? "$extra_conds AND " : "";
+		$conditions .= "e.object_id IN (
+			SELECT st.object_id FROM ".TABLE_PREFIX."sharing_table st WHERE st.group_id IN (
+				SELECT pg.id FROM ".TABLE_PREFIX."permission_groups pg WHERE pg.type='permission_groups' AND pg.contact_id = ".logged_user()->getId()."
+			)
+		)";
+		
+		$contacts = Contacts::instance()->findAll(array('conditions' => $conditions));
+		
+		return $contacts;
 	}
 	
 	static function getAllUsers($extra_conditions = "", $include_disabled = false) {

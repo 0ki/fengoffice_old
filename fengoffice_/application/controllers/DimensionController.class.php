@@ -82,7 +82,7 @@ class DimensionController extends ApplicationController {
 	 * $minimum_display = minimum amount of dimension members to return, otherwise return all
 	 * $maximum_display = maximum amount of dimension members to return  
 	*/
-	function latest_active_dimension_members($dimension_id, $object_type_id, $allowed_member_type_ids = null, $logs_amount_range, $minimum_display, $maximum_display) {
+	function latest_active_dimension_members($dimension_id, $object_type_id, $allowed_member_type_ids = null, $logs_amount_range="1000", $minimum_display, $maximum_display) {
 		//sql query created to filter the members with latest activity through the $extra_conditions variable below
         $sql = "SELECT DISTINCT `".TABLE_PREFIX."object_members`.`member_id`,`".TABLE_PREFIX."application_logs`.`id`
 				FROM `".TABLE_PREFIX."application_logs`, `".TABLE_PREFIX."object_members`, `".TABLE_PREFIX."members`
@@ -427,7 +427,8 @@ class DimensionController extends ApplicationController {
 					$member['actions'] = array(array(
 						'url' => $editUrl,
 			  			'text' => '',
-			  			'iconCls' => 'ico-edit'
+			  			'iconCls' => 'ico-edit',
+			  			'class' => 'action-edit'
 					));	
 				}
 			}

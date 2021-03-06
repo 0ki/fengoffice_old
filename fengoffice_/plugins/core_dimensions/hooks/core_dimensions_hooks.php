@@ -127,7 +127,7 @@ function core_dim_create_member_associations(Contact $contact, $contact_member, 
 				$mpm = MemberPropertyMembers::findOne(array('conditions' => array('association_id = ? AND member_id = ? AND property_member_id = ?', $a->getId(), $contact_member->getId(), $m->getId())));
 				if (!$mpm instanceof MemberPropertyMember) {
 					$sql = "INSERT INTO " . TABLE_PREFIX . "member_property_members (association_id, member_id, property_member_id, is_active, created_on, created_by_id)
-						VALUES (" . $a->getId() . "," . $contact_member->getId() . "," . $m->getId() . ", 1, NOW()," . logged_user()->getId() . ") ";
+						VALUES (" . $a->getId() . "," . $contact_member->getId() . "," . $m->getId() . ", 1, NOW()," . $creator->getId() . ") ";
 					DB::execute( $sql );
 					$affected_dimensions[$m->getDimensionId()] = $m->getDimensionId();
 				}
@@ -145,7 +145,7 @@ function core_dim_create_member_associations(Contact $contact, $contact_member, 
 				$mpm = MemberPropertyMembers::findOne(array('conditions' => array('association_id = ? AND property_member_id = ? AND member_id = ?', $a->getId(), $contact_member->getId(), $m->getId())));
 				if (!$mpm instanceof MemberPropertyMember) {
 					$sql = "INSERT INTO " . TABLE_PREFIX . "member_property_members (association_id, property_member_id, member_id, is_active, created_on, created_by_id)
-						VALUES (" . $a->getId() . "," . $contact_member->getId() . "," . $m->getId() . ", 1, NOW()," . logged_user()->getId() . ") ";
+						VALUES (" . $a->getId() . "," . $contact_member->getId() . "," . $m->getId() . ", 1, NOW()," . $creator->getId() . ") ";
 					DB::execute( $sql );
 					$affected_dimensions[$m->getDimensionId()] = $m->getDimensionId();
 				}
@@ -480,7 +480,7 @@ function core_dim_add_new_contact_to_person_dimension($object) {
 				 FROM `".TABLE_PREFIX."contacts` `c` JOIN `".TABLE_PREFIX."object_types` `ot` 
 				 WHERE `c`.`is_company`=0 AND `c`.`object_id`=".$object->getId()."
 				 	AND `c`.`user_type`!=0 AND `c`.`disabled`=0
-					AND `ot`.`type` IN ('content_object', 'comment')
+					AND `ot`.`type` IN ('content_object', 'comment', 'located')
 				 ON DUPLICATE KEY UPDATE `member_id`=`member_id`;";
 		DB::execute($sql);
 		DB::execute("DELETE FROM `".TABLE_PREFIX."contact_member_permissions` WHERE `permission_group_id` = 0;");
@@ -505,7 +505,7 @@ function core_dim_add_new_contact_to_person_dimension($object) {
 			DB::execute("INSERT INTO `".TABLE_PREFIX."contact_member_permissions` (`permission_group_id`, `member_id`, `object_type_id`, `can_write`, `can_delete`)
 				 SELECT ".$object->getCreatedBy()->getPermissionGroupId().", ".$member->getId().", `ot`.`id`, 1, 1
 				 FROM `".TABLE_PREFIX."object_types` `ot` 
-				 WHERE `ot`.`type` IN ('content_object', 'comment')
+				 WHERE `ot`.`type` IN ('content_object', 'comment', 'located')
 				 ON DUPLICATE KEY UPDATE `member_id`=`member_id`;");
 		}
 		

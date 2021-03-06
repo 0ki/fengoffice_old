@@ -212,7 +212,22 @@ og.MemberTree = function(config) {
 				}
 			
 			}
-                        
+		},
+		dblclick: function(node, e){
+			og.contextManager.currentDimension = self.dimensionId;
+			og.eventManager.fireEvent("member tree node dblclick", node);
+			var treeConf = node.attributes.loader.ownerTree.initialConfig;
+			if  (node.getDepth() > 0 && node.actions && node.actions.length > 0){
+				// Member clicked (not root)
+				for (var i=0; i<node.actions.length; i++) {
+					var action = node.actions[i];
+					if (action.class == 'action-edit' && action.url) {
+						og.openLink(action.url);
+						return;
+					}
+				}
+			
+			}
 		}
 	});
 	
@@ -299,7 +314,13 @@ og.MemberTree = function(config) {
 	});
 	
 	this.init(function(){
-		  self.selectRoot([0]) ; 
+		self.selectRoot([0]);
+		setTimeout(function() {
+			if (self.totalNodes > 1000) {
+				self.collapseAll();
+				self.root.expand();
+			}
+		}, 100);
 	}) ;
 	
 	// **************** TREE INIT **************** //
@@ -355,7 +376,7 @@ Ext.extend(og.MemberTree, Ext.tree.TreePanel, {
 			c = c.nextSibling;
 		}
 		n.getUI().show();
-                this.collapseAll();
+		this.collapseAll();
 		if (n.previousState == "e") {
 			n.expand(false, false);
 		} else if (n.previousState == "c") {

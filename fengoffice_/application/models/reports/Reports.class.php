@@ -3,7 +3,7 @@
 /**
  *   Reports class
  *
- * @author Pablo Kamil <pablokam@gmail.com>
+ * 
  */
 
 class Reports extends BaseReports {
@@ -143,7 +143,11 @@ class Reports extends BaseReports {
 								$allConditions .= '`'.$condField->getFieldName().'` '.$condField->getCondition().' '.DB::escape($value);
 							} else {
 								if ($condField->getCondition()=='=' || $condField->getCondition()=='<=' || $condField->getCondition()=='>='){
-									$equal = 'datediff('.DB::escape($value).', `'.$condField->getFieldName().'`)=0';										
+									if ($col_type == DATA_TYPE_DATETIME || $col_type == DATA_TYPE_DATE) {
+										$equal = 'datediff('.DB::escape($value).', `'.$condField->getFieldName().'`)=0';
+									} else {
+										$equal = '`'.$condField->getFieldName().'` '.$condField->getCondition().' '.DB::escape($value);
+									}
 									switch($condField->getCondition()){
 										case '=':
 											$allConditions .= $equal;
@@ -213,7 +217,27 @@ class Reports extends BaseReports {
 				}
 			}
 			
-			if ($order_by_col == '') $order_by_col = $report->getOrderBy();
+			$select_columns = array('*');
+			$join_params = null;
+			if ($order_by_col == '') {
+				$order_by_col = $report->getOrderBy();
+			}
+			if (in_array($order_by_col, self::$external_columns)) {
+				$original_order_by_col = $order_by_col;
+				$order_by_col = 'name_order';
+				$join_params = array(
+					'table' => Objects::instance()->getTableName(),
+					'jt_field' => 'id',
+					'e_field' => $original_order_by_col,
+					'join_type' => 'left'
+				);
+				$select_columns = array();
+				$tmp_cols = $managerInstance->getColumns();
+				foreach ($tmp_cols as $col) $select_columns[] = "e.$col";
+				$tmp_cols = Objects::instance()->getColumns();
+				foreach ($tmp_cols as $col) $select_columns[] = "o.$col";
+				$select_columns[] = 'jt.name as name_order';
+			}
 			if ($order_by_asc == null) $order_by_asc = $report->getIsOrderByAsc();
 
 			if ($ot->getName() == 'task' && !SystemPermissions::userHasSystemPermission(logged_user(), 'can_see_assigned_to_other_tasks')) {
@@ -222,9 +246,11 @@ class Reports extends BaseReports {
 			
 			if ($managerInstance) {
 				$result = $managerInstance->listing(array(
-					"order" => "`$order_by_col`",
+					"select_columns" => $select_columns,
+					"order" => "$order_by_col",
 					"order_dir" => ($order_by_asc ? "ASC" : "DESC"),
-					"extra_conditions" => $allConditions			
+					"extra_conditions" => $allConditions,
+					"join_params" => $join_params
 				));
 			}else{
 				// TODO Performance Killer
@@ -427,6 +453,8 @@ class Reports extends BaseReports {
 		return $nav . "<br/><span class='desc'>&nbsp;".lang('total').": $totalPages ".lang('pages').'</span>';
 	}
 
+
+	private static $external_columns = array('user_id', 'contact_id', 'assigned_to_contact_id', 'completed_by_id', 'approved_by_id', 'milestone_id', 'company_id');
 	function getExternalColumnValue($field, $id, $manager = null){
 		$value = '';
 		if($field == 'user_id' || $field == 'contact_id' || $field == 'created_by_id' || $field == 'updated_by_id' || $field == 'assigned_to_contact_id' || $field == 'completed_by_id'|| $field == 'approved_by_id'){
@@ -435,6 +463,9 @@ class Reports extends BaseReports {
 		} else if($field == 'milestone_id'){
 			$milestone = ProjectMilestones::findById($id);
 			if($milestone instanceof ProjectMilestone) $value = $milestone->getObjectName();
+		} else if($field == 'company_id'){
+			$company = Contacts::findById($id);
+			if($company instanceof Contact && $company->getIsCompany()) $value = $company->getObjectName();
 		} else if ($manager instanceof ContentDataObjects) {
 			$value = $manager->getExternalColumnValue($field, $id);
 		}

@@ -30,7 +30,7 @@ class ApplicationLogs extends BaseApplicationLogs {
 	const ACTION_DOWNLOAD    = 'download';
 	const ACTION_CHECKOUT    = 'checkout';
 	const ACTION_CHECKIN     = 'checkin';
-    const ACTION_MADE_SEVERAL_CHANGES     = 'made ​​several changes';
+    const ACTION_MADE_SEVERAL_CHANGES     = 'made several changes';
 	
 	/**
 	 * Create new log entry and return it

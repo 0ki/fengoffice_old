@@ -150,10 +150,10 @@ class ProjectMilestone extends BaseProjectMilestone {
 	 * @param void
 	 * @return array
 	 */
-	function getTasks() {
+	function getTasks($is_template = false) {
 		//FIXME check permissions here
 		return ProjectTasks::findAll(array(
-	        'conditions' => '`milestone_id` = ' . DB::escape($this->getId()). " AND `trashed_on` = 0 ",
+	        'conditions' => '`is_template` = '.( $is_template ? '1' : '0') .' AND `milestone_id` = ' . DB::escape($this->getId()). " AND `trashed_on` = 0 ",
 	        'order' => 'created_on'
         )); // findAll
 	} // getTasks
@@ -376,7 +376,7 @@ class ProjectMilestone extends BaseProjectMilestone {
 	function delete() {
 		$is_template = $this->getIsTemplate();
 		if ($is_template) {
-			$tasks = $this->getTasks();
+			$tasks = $this->getTasks(true);
 			foreach ($tasks as $t) {
 				$t->delete();
 			}

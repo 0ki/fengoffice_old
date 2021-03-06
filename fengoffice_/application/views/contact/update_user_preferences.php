@@ -26,8 +26,8 @@
 					</div>
 					<div class="configOptionControl">
 					<?php
-					if($option->getName() == "reminders_events"){
-						echo render_add_reminders_config();
+					if($option->getName() == "reminders_events" || $option->getName() == "reminders_tasks"){
+						echo render_add_reminders_config($option->getName());
 					}else{
 						echo $option->render('options[' . $option->getName() . ']');
 					}

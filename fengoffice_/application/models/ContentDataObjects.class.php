@@ -350,7 +350,7 @@ abstract class ContentDataObjects extends DataManager {
 	public function listing($args = array()) {
 		if ( defined('DEBUG_TIME') && DEBUG_TIME ) {
 			$start_time = microtime(1);
-		} 
+		}
 		$result = new stdClass ;
 		$result->objects =array();
 		$result->total =array();
@@ -371,6 +371,7 @@ abstract class ContentDataObjects extends DataManager {
 		$extra_member_ids =  array_var($args,'extra_member_ids');
 		$ignore_context = array_var($args,'ignore_context');
 		$include_deleted = (bool) array_var($args,'include_deleted');
+		$select_columns = array_var($args, 'select_columns', array('*'));
 		
 		if ($count_results) {
 			$SQL_FOUND_ROWS = "SQL_CALC_FOUND_ROWS";
@@ -393,7 +394,7 @@ abstract class ContentDataObjects extends DataManager {
 	    		$SQL_TYPE_CONDITION = "object_type_id = IF(e.rel_object_id > 0, (SELECT z.object_type_id FROM ".TABLE_PREFIX."objects z WHERE z.id = e.rel_object_id), $type_id)";
 	    	} else {
 	    		$SQL_BASE_JOIN = " INNER JOIN  $table_name e ON e.object_id = o.id ";
-	    		$SQL_TYPE_CONDITION = "object_type_id = $type_id";
+	    		$SQL_TYPE_CONDITION = "o.object_type_id = $type_id";
 	    	}
 			$SQL_EXTRA_JOINS = self::prepareJoinConditions(array_var($args,'join_params'));
 			
@@ -419,7 +420,7 @@ abstract class ContentDataObjects extends DataManager {
     	$SQL_ORDER = self::prepareOrderConditions(array_var($args,'order'), array_var($args,'order_dir'));
 		
 		// Prepare Limit SQL 
-		if (array_var($args,'limit')>0){
+		if (is_numeric(array_var($args,'limit')) && is_numeric(array_var($args,'start')) && array_var($args,'limit')>0){
 			$SQL_LIMIT = "LIMIT ".array_var($args,'start',0)." , ".array_var($args,'limit');
 		}else{
 			$SQL_LIMIT = '' ;
@@ -460,9 +461,11 @@ abstract class ContentDataObjects extends DataManager {
 			$SQL_EXTRA_CONDITIONS = '';
 		}
 		
+		$SQL_COLUMNS = implode(',', $select_columns);
+		
 		// Build Main SQL
 	    $sql = "
-	    	SELECT $SQL_FOUND_ROWS * FROM ".TABLE_PREFIX."objects o
+	    	SELECT $SQL_FOUND_ROWS $SQL_COLUMNS FROM ".TABLE_PREFIX."objects o
 			$SQL_BASE_JOIN
 	    	$SQL_EXTRA_JOINS 
 	    	

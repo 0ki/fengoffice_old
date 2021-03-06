@@ -48,8 +48,8 @@
 <?php } ?> 
     
 
-<fieldset><legend class="toggle_collapsed" onclick="og.toggle('companyUsers',this)"><?php echo lang('users') ?></legend>
-<div id='companyUsers' style="display:none">
+<fieldset><legend class="toggle_expanded" onclick="og.toggle('companyUsers',this)"><?php echo lang('users') ?></legend>
+<div id='companyUsers'>
 <?php
   $this->assign('users', $company->getUsersByCompany());
   $this->includeTemplate(get_template_path('list_users', 'administration'));
@@ -58,8 +58,8 @@
 </fieldset>
 
 <?php if (!$company->isOwnerCompany()) { ?>
-<fieldset><legend class="toggle_collapsed" onclick="og.toggle('companyContacts',this)"><?php echo lang('persons') ?></legend>
-<div id='companyContacts' style="display:none">
+<fieldset><legend class="toggle_expanded" onclick="og.toggle('companyContacts',this)"><?php echo lang('people') ?></legend>
+<div id='companyContacts'>
 <?php
 
   $this->assign('contacts', $company->getContactsByCompany());

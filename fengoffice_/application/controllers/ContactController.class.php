@@ -152,7 +152,7 @@ class ContactController extends ApplicationController {
 					'company_id' => $company->getId(),
 					'timezone' => $company->getTimezone(),
 					'create_contact' => true,
-					'send_email_notification' => true,
+					'send_email_notification' => false,
 					'type' => 'Executive',
 					'can_manage_time' => true,
 				);
@@ -279,12 +279,12 @@ class ContactController extends ApplicationController {
 					if (GlobalCache::isAvailable()) {
 						GlobalCache::delete('user_config_option_'.logged_user()->getId().'_'.$option->getName());
 					}
-                                        if($option->getName() == "reminders_events"){
-                                            $array_value = array_var($submited_values, $option->getName());
-                                            $new_value = array_var($array_value,"reminder_type") . "," . array_var($array_value,"reminder_duration") . "," . array_var($array_value,"reminder_duration_type");
-                                        }else{
-                                            $new_value = array_var($submited_values, $option->getName());
-                                        }
+					if($option->getName() == "reminders_events" || $option->getName() == "reminders_tasks"){
+						$array_value = array_var($submited_values, $option->getName());
+						$new_value = array_var($array_value,"reminder_type") . "," . array_var($array_value,"reminder_duration") . "," . array_var($array_value,"reminder_duration_type");
+					}else{
+						$new_value = array_var($submited_values, $option->getName());
+					}
 					
 					if(is_null($new_value) || ($new_value == $option->getContactValue(logged_user()->getId()))) continue;
 	
@@ -382,10 +382,22 @@ class ContactController extends ApplicationController {
 		
 				
 		$extra_conditions = "";
-		if ($attributes['viewType'] == 'contacts') {
-			$extra_conditions = 'AND `is_company` = 0';
-		} else if ($attributes['viewType'] == 'companies') {
-			$extra_conditions = 'AND `is_company` = 1';
+		
+		if(!user_config_option("viewCompaniesChecked", 1,logged_user()->getId())){
+			$extra_conditions = ' AND `is_company` = 0 ';
+		}
+		if(!user_config_option("viewContactsChecked", 1,logged_user()->getId())){
+			if(user_config_option("viewCompaniesChecked", 1,logged_user()->getId())){
+				$extra_conditions = ' AND `is_company` = 1 ';
+				if(user_config_option("viewUsersChecked", 1,logged_user()->getId())){
+					$extra_conditions = ' AND `is_company` = 1  OR `user_type` != 0 ';
+				}
+			}else{
+				$extra_conditions.= ' AND `user_type` != 0  ';
+			}
+		}
+		if(!user_config_option("viewUsersChecked", 1,logged_user()->getId())){
+			$extra_conditions.= ' AND `user_type` < 1 ';
 		}
 		$extra_conditions.= " AND disabled = 0 " ;
 		
@@ -573,6 +585,7 @@ class ContactController extends ApplicationController {
 						"updatedBy" => $c->getUpdatedByDisplayName(),
 						"updatedById" => $c->getUpdatedById(),
 						"memPath" => json_encode($c->getMembersToDisplayPath()),
+						"userType" => $c->getUserType(),
 					);
 				} else if ($c instanceof Contact){
 					
@@ -610,6 +623,8 @@ class ContactController extends ApplicationController {
 						"updatedBy" => $c->getUpdatedByDisplayName(),
 						"updatedById" => $c->getUpdatedById(),
 						"memPath" => json_encode($c->getMembersToDisplayPath()),
+						"contacts" => $c->getContactsByCompany(),
+						"users" => $c->getUsersByCompany(),
 					);
 				}
 				
@@ -923,9 +938,14 @@ class ContactController extends ApplicationController {
 				//NEW ! User data in the same form 
 				$user = array_var(array_var($_POST, 'contact'),'user');
 				$user['username'] = str_replace(" ","",strtolower($contact_data['name'])) ;
-				$this->createUserFromContactForm($user, $contact->getId(), $contact_data['email']);
-				
-				
+				$this->createUserFromContactForm($user, $contact->getId(), $contact_data['email'],isset($_POST['notify-user']));
+
+				if(isset($_POST['notify-user'])){
+					set_user_config_option("sendEmailNotification", 1,logged_user()->getId());
+				}else{
+					set_user_config_option("sendEmailNotification", 0,logged_user()->getId());
+				}
+								
 				DB::commit();
 				
 				if (isset($contact_data['new_contact_from_mail_div_id'])) {
@@ -2956,7 +2976,7 @@ class ContactController extends ApplicationController {
 		}
 	}
 
-	private function createUserFromContactForm ($user, $contactId, $email) {
+	private function createUserFromContactForm ($user, $contactId, $email, $sendEmail = false) {
 		$createUser = false;
 		$createPass = false;
 
@@ -2980,7 +3000,7 @@ class ContactController extends ApplicationController {
 					'password_a' => $password_a,
 					'type' => $type,
 					'password_generator' => 'specify',
-					'send_email_notification' => true
+					'send_email_notification' => $sendEmail
 				);
 			}else{
 				$userData = array(
@@ -2989,7 +3009,7 @@ class ContactController extends ApplicationController {
 					'email' => $email,
 					'type' => $type,
 					'password_generator' => 'link',
-					'send_email_notification' => true
+					'send_email_notification' => $sendEmail
 				);
 			}
 			$valid =  Contacts::validateUser($contactId);

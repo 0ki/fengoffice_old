@@ -145,7 +145,7 @@ if(count($cps) > 0){
 					$ti += 1000;
 					$html .= '</tr><tr>';
 					$values = CustomPropertyValues::getCustomPropertyValues($_custom_properties_object->getId(), $customProp->getId());
-					if (!is_array($values) || count($values) == 0) {
+					if (trim($default_value) != '' && (!is_array($values) || count($values) == 0)) {
 						$def_cp_value = new CustomPropertyValue();
 						$def_cp_value->setValue($default_value);
 						$values = array($def_cp_value);
@@ -167,7 +167,11 @@ if(count($cps) > 0){
 						}
 					}
 					$html .= '</tr></table>';
-					$html .= '<a href="#" tabindex="'.($startTi + $ti + 50*count($columnNames)).'" onclick="og.addTableCustomPropertyRow(this.parentNode, true, null, '.count($columnNames).', '.($startTi + $ti).', '.$customProp->getId().');return false;">' . lang("add") . '</a></div>';
+					$html .= '<a href="#" id="'.$genid.'-add-row-'.$customProp->getId().'" tabindex="'.($startTi + $ti + 50*count($columnNames)).'" onclick="og.addTableCustomPropertyRow(this.parentNode, true, null, '.count($columnNames).', '.($startTi + $ti).', '.$customProp->getId().');return false;">' . lang("add") . '</a></div>';
+					if ($rows == 0) {
+						// create first empty row
+						$html .= '<script>if (!Ext.isIE) document.getElementById("'.$genid.'-add-row-'.$customProp->getId().'").onclick();</script>';
+					}
 					$ti += 50*count($columnNames);
 					$print_table_functions = true;
 					echo $html;

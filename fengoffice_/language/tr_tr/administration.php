@@ -266,4 +266,6 @@ UYARI: Dökümanların kaydedileceği yeri değiştirmek, önceden kaydedilen do
 	'search engine mysql match' => 'Hızlı',
 	'user ws config option name task_display_limit' => 'Maximum sayıda görüntülenecek görev sayısı',
 	'user ws config option desc task_display_limit' => 'Performans nedeniyle bu sayı çok büyük olmamalıdır. Limiti kaldırmak için 0 kullanın.',
+	'config category name documents' => 'Dosyalar',
+	'config category desc documents' => 'Dosya ayarlarını yönet.',
 ); ?>

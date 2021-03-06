@@ -86,6 +86,7 @@ return array(
 	'field Contacts last_visit' => 'Last visit',
 	'field Contacts surname' => 'Surname',
 	'field Contacts username' => 'Username',
+	'field Contacts comments' => 'Notes',
 
 	// Email fields
     'field MailContents id' => 'Id',

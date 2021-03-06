@@ -186,7 +186,7 @@ static function executeInstaller($name) {
 					$cols = "id, " . $cols;
 					$values = array_var ( $pluginInfo, 'id' ) . ", " . $values;
 				}
-				$sql = "INSERT INTO " . TABLE_PREFIX . "plugins ($cols) VALUES ($values) ";
+				$sql = "INSERT INTO " . TABLE_PREFIX . "plugins ($cols) VALUES ($values) ON DUPLICATE KEY UPDATE name=name";
 				DB::executeOne($sql);
 				$id = DB::lastInsertId();
 				$pluginInfo ['id'] = $id;
@@ -209,7 +209,7 @@ static function executeInstaller($name) {
 							 	'" . array_var ( $type, "type" ) . "', 
 							 	'" . array_var ( $type, "icon" ) . "', 
 								$id
-							)";
+							) ON DUPLICATE KEY UPDATE name=name";
 						
 						DB::executeOne($sql);
 						$last_id = DB::lastInsertId();
@@ -251,7 +251,7 @@ static function executeInstaller($name) {
 								'" . array_var ( $tab, 'type' ) . "',
 								$id,
 								" . array_var ( $tab, 'object_type_id' ) . "
-							)";
+							) ON DUPLICATE KEY UPDATE name=name";
 						
 						DB::executeOne($sql);
 						

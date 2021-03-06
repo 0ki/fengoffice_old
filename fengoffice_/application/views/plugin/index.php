@@ -30,19 +30,19 @@
 					<strong><?php echo $plugin->getName() ?></strong>
 					<div class="row-actions-visible">
 						<span class="deactivate" style="<?php if (!$plugin->isActive() || !$plugin->isInstalled()) echo "display:none";  ?>">
-							<a class="deactivate-button" title="Deactivate this plugin" href="#">Deactivate</a>
+							<a class="deactivate-button" title="Deactivate this plugin" href="#">Deactivate</a> | 
 						</span><span class="edit"></span>
 						
 						<span class="activate"  style="<?php if ($plugin->isActive() || !$plugin->isInstalled()) echo "display:none";  ?>" >
-							<a class="activate-button" title="Activate this plugin" href="#">Activate</a>
+							<a class="activate-button" title="Activate this plugin" href="#">Activate</a> | 
 						</span><span class="edit"></span>
 						
 						<span class="uninstall" style="<?php if (!$plugin->isInstalled() || $plugin->isActive() ) echo "display:none";  ?>">
-							<a class="uninstall-button"  title="Uninstall this plugin" href="#">Uninstall</a>
+							<a class="uninstall-button"  title="Uninstall this plugin" href="#">Uninstall</a> | 
 						</span><span class="edit"></span>
 						
 						<span class="install" style="<?php if ($plugin->isInstalled()) echo "display:none";  ?>">
-							<a class="install-button" title="Install this plugin" href="#">Install</a>
+							<a class="install-button" title="Install this plugin" href="#">Install</a> | 
 						</span><span class="edit"></span>
 						
 

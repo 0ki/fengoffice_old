@@ -3,7 +3,7 @@
   /**
   * ReportColumn class
   *
-  * @author Pablo Kamil <pablokam@gmail.com>
+  * 
   */
   class ReportColumn extends BaseReportColumn {
       

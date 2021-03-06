@@ -6,6 +6,10 @@
 	'add new relation workspaces' => 'Asignar a un espacio de trabajo',
 	'add new relation tags' => 'Asignar etiqueta',
 
+	'add new workspace' => 'Agregar un nuevo espacio de trabajo',
+	'add your first workspace' => 'Agregar el primer espacio de trabajo',
+	'you have no workspaces yet' => 'Todavía no hay espacios de trabajo',
+
 	'filter by workspaces' => 'Filtrar por espacio de trabajo',
 	'filter by tags' => 'Filtrar por etiqueta',
 

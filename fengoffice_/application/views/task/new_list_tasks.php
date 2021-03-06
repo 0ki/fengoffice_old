@@ -46,7 +46,7 @@
 			$project_templates_array[] = $template->getArrayInfo();
 		}
 	}
-
+	
 	if (isset($tasks)) {
 		$ids = array();
 		foreach($tasks as $task) {

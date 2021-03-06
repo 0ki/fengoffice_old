@@ -158,7 +158,7 @@ $visible_cps = CustomProperties::countVisibleCustomPropertiesByObjectType($objec
 		<div class="content">
 			<?php 
 			if($file->getType() == ProjectFiles::TYPE_DOCUMENT){
-			if (!isset($checkin)) {?>
+				if (!isset($checkin)) {?>
 				<div class="header">
 					<?php echo checkbox_field('file[update_file]', array_var($file_data, 'update_file'), array('class' => 'checkbox', 'id' => $genid . 'fileFormUpdateFile', 'tabindex' => '60', 'onclick' => 'App.modules.addFileForm.updateFileClick(\'' . $genid .'\')')) ?>
 					<?php echo label_tag(lang('update file'), $genid .'fileFormUpdateFile', false, array('class' => 'checkbox'), '') ?>
@@ -170,12 +170,10 @@ $visible_cps = CustomProperties::countVisibleCustomPropertiesByObjectType($objec
 			<div id="<?php echo $genid ?>updateFileForm"  style="<?php echo isset($checkin) ? '': 'display:none' ?>">
 				<p>
 					<strong><?php echo lang('existing file') ?>:</strong>
-                                        <a target="_blank" href="<?php echo $file->getDownloadUrl() ?>" id="extension_old"><?php echo clean($file->getFilename()) ?></a>
+					<a target="_blank" href="<?php echo $file->getDownloadUrl() ?>" id="extension_old"><?php echo clean($file->getFilename()) ?></a>
 					| <?php echo format_filesize($file->getFilesize()) ?>
 				</p>
-                                <p id="warning_extension_file">
-                                    
-				</p>
+				<p id="warning_extension_file"></p>
 				<div id="<?php echo $genid ?>selectFileControlDiv">
 					<?php echo label_tag(lang('new file'), $genid.'fileFormFile', true) ?>
 					<?php

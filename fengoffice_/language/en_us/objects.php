@@ -135,6 +135,7 @@
     'the file_revision' => 'the file revision',
     'the weblink' => 'the weblink',
     'the timeslot' => 'the timeslot',
+	'the object' => 'the object',
 	
     'activity add' => "{1} added {0} {2}",
     'activity edit' => "{1} edited {0} {2}",
@@ -165,7 +166,7 @@
     'activity download' => "{1} downloaded {0} {2}",
     'activity checkout' => "{1} checked out {0} {2}",
     'activity checkin' => "{1} checked in {0} {2}",
-    'activity made ​​several changes' => "{1} made ​​several changes on {0} {2}",
+    'activity made several changes' => "{1} made ​​several changes on {0} {2}",
    	'log read task' => 'The user has accessed the task',
     'log read message' => 'The user has accessed the note',
     'log read file' => 'The user has accessed the document',
