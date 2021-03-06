@@ -13,7 +13,6 @@
 	'search' => 'Buscar',
 	'search results' => 'Resultados de la búsqueda',
 	'account' => 'Cuenta',
-	'settings' => 'Configuraciones',
 	'index' => 'Índice',
 	'view' => 'Ver',
 	'edit' => 'Editar',

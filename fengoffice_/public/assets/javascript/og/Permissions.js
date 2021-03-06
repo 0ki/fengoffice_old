@@ -581,6 +581,7 @@ og.showPermissionsPopup = function(genid, dim_id, mem_id, name, set_default_perm
 }
 
 og.showHidePermissionsRadioButtonsByRole = function(genid, dim_id, role_id) {
+	// cambiar a max_perms = og.maxRoleObjectTypePermissions[role_id];
 	var max_perms = og.defaultRoleObjectTypePermissions[role_id];
 	
 	var object_types = [];
@@ -783,7 +784,7 @@ og.setDefaultPermissionsForAllMembers = function(genid) {
 		trees.push(Ext.getCmp(genid + '_without_permissions_' + dim_id + '-tree'));
 	}
 	
-	if (og.with_perm_user_types.indexOf(og.tmp_role_id[genid]) < 0) {
+	if (og.config.with_perm_user_types.indexOf(og.tmp_role_id[genid]) < 0) {
 		// remove permissions if this user role is not configured to have permissions
 		for (var t=0; t<trees.length; t++) {
 			var tree = trees[t];
@@ -1111,6 +1112,10 @@ og.afterUserTypeChange = function(genid, type) {
 	  
 	  if (!og.tmp_must_check_member_permissions) og.tmp_must_check_member_permissions = {};
 	  og.tmp_must_check_member_permissions[genid] = true;
+	  
+	  // update user role explanation
+	  var hint_text = og.userRoles[type].hint;
+	  $("#"+genid+'user_role_explanation').html(hint_text);
 };
 
 

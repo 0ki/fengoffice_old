@@ -13,7 +13,7 @@
 .template-add-template-object {
 	position: relative;
 	background-repeat: no-repeat;
-	vertical-align:'middle';
+	vertical-align: middle;
 	line-height: 20px;
 	float: left;
 	width: 50%;
@@ -27,11 +27,6 @@
 	padding-right: 10px;
 }
 
-
-
-.template-add-template-object .namecontainer{
-	
-}
 
 .template-add-template-object .name {	
 	overflow: hidden;

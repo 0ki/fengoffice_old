@@ -473,7 +473,7 @@ og.insertBreadcrumb = function(member_id,target,from_callback) {
 	
 	//add all members
 	last = true;
-	var more_members = '<span class="more-members-separator">...<span class="bullet-separator"></span></span>';
+	var more_members = '<span class="more-members-separator">...<span class="bullet-separator"></span> </span>';
 	$(target).prepend(more_members);
 	for (var i=0; i<ordained_members.length; i++) {		
 		var m = ordained_members[i];	
@@ -489,7 +489,7 @@ og.insertBreadcrumb = function(member_id,target,from_callback) {
 		}
 		
 		
-		var member_text = '<span>'+member_name+' <span class="bullet-separator"></span></span>';
+		var member_text = '<span>'+member_name+' <span class="bullet-separator"></span> </span>';
 		if(m.id == member_id){
 			member_text = '<span>'+member_name+'</span>';
 		}

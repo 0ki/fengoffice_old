@@ -57,6 +57,10 @@
 	background-repeat: no-repeat;
 }
 
+.ico-2arrowup {
+	/*background-image: url(../../images/16x16/2arrowleft.png) !important;*/
+	background-image: url(../../images/icons-feng-3/16x16/2arrowup.png) !important;
+}
 .ico-arrowleft {
 	/*background-image: url(../../images/16x16/arrowleft.png) !important;*/
 	background-image: url(../../images/icons-feng-3/16x16/arrowleft.png) !important;
@@ -81,8 +85,7 @@
 }
 .ico-archive-obj {
 	/*background: transparent url(../../images/16x16/archive_obj.png) no-repeat !important;*/
-	background-image: url(../../images/icons-feng-3/24x22/archive.png) !important;
-	background-size: 16px 18px!important;	
+	background-image: url(../../images/icons-feng-3/16x16/archive.png) !important;	
 }
 
 .ico-unarchive-obj {
@@ -122,7 +125,7 @@
 }
 .ico-add {
 	/*background-image: url(../../images/16x16/add.png) !important;*/
-	background-image: url(../../images/icons-feng-3/24x22/new_color.png) !important;
+	background-image: url(../../images/icons-feng-3/16x16/new_color.png) !important;
 	background-size: 16px 16px!important;	
 }
 
@@ -134,6 +137,11 @@
 	/*background-image: url(../../images/16x16/administration.png) !important;*/
 	background-image: url(../../images/icons-feng-3/24x22/administration.png) !important;
 	background-position: 0 center !important;	
+}
+
+.ico-administration-small {
+	/*background-image: url(../../images/16x16/administration.png) !important;*/
+	background-image: url(../../images/icons-feng-3/16x16/administration.png) !important;	
 }
 .ico-attachment {
 	/*background-image: url(../../images/16x16/attach.png) !important;*/
@@ -170,18 +178,18 @@
 }
 .ico-complete {
 	/*background-image: url(../../images/16x16/complete.png) !important;*/
-	background-image: url(../../images/icons-feng-3/24x22/complete_color.png) !important;
+	background-image: url(../../images/icons-feng-3/16x16/complete_color.png) !important;
 	background-size: 16px 16px!important;	
 }
 
 .ico-reopen {
 	/*background-image: url(../../images/16x16/reopen.png) !important;*/
-	background-image: url(../../images/icons-feng-3/24x22/reopen_color.png) !important;
+	background-image: url(../../images/icons-feng-3/16x16/reopen_color.png) !important;
 	background-size: 16px 16px!important;	
 }
 .ico-refresh, .op-ico-refresh, .x-toolbar .x-tbar-loading {
 	/*background-image: url(../../images/16x16/reopen.png) !important;*/
-	background-image: url(../../images/icons-feng-3/24x22/refresh.png) !important;
+	background-image: url(../../images/icons-feng-3/16x16/refresh.png) !important;
 	background-size: 18px 18px!important;	
 }
 
@@ -213,7 +221,7 @@
 }
 .ico-edit {
 	/*background: transparent url(../../images/16x16/all_16_16_vertical.png) no-repeat scroll 0 -378px !important;*/
-	background-image: url(../../images/icons-feng-3/24x22/edit_color.png) !important;
+	background-image: url(../../images/icons-feng-3/16x16/edit_color.png) !important;
 	background-size: 16px 16px!important;	
 }
 
@@ -248,7 +256,7 @@
 }
 .ico-mark-as-unread {
 	/*background-image: url(../../images/16x16/mail_mark_unread.png) !important;*/
-	background-image: url(../../images/icons-feng-3/24x22/email.png) !important;
+	background-image: url(../../images/icons-feng-3/16x16/email.png) !important;
 	background-size: 16px 16px!important;
 }
 .ico-mail-mark-spam {
@@ -358,7 +366,7 @@
 }
 .ico-new {
 	/*background: transparent url(../../images/16x16/all_16_16_vertical.png) no-repeat scroll 0 -600px !important;*/
-	background-image: url(../../images/icons-feng-3/24x22/new_color.png) !important;
+	background-image: url(../../images/icons-feng-3/16x16/new_color.png) !important;
 	background-size: 16px 16px!important;	
 }
 
@@ -408,11 +416,6 @@
 	/*background: transparent url(../../images/16x16/all_16_16_vertical.png) no-repeat scroll 0 -219px !important;*/
 	background: url(../../images/icons-feng-3/16x16/tags.png) no-repeat !important;		
 }
-.ico-task {
-	/*background-image: url(../../images/16x16/tasks.png) !important;*/
-	background-size: 18px 20px !important;
-	background-repeat: no-repeat;
-}
 .ico-new_task_template {
 	background-image: url(../../images/16x16/tasks.png) !important;
 }
@@ -424,7 +427,7 @@
 }
 .ico-time , .ico-time-s{
 	/*background: transparent url(../../images/16x16/all_16_16_vertical.png) no-repeat scroll 0 -160px !important;*/
-	background-image: url(../../images/icons-feng-3/24x22/time_color.png) !important;
+	background-image: url(../../images/icons-feng-3/16x16/time_color.png) !important;
 	background-size: 16px 16px!important;	
 }
 
@@ -450,8 +453,7 @@
 }
 .ico-trash {
 	/*background: transparent url(../../images/16x16/all_16_16_vertical.png) no-repeat scroll 0 -138px !important;*/
-	background-image: url(../../images/icons-feng-3/24x22/trash.png) !important;
-	background-size: 18px 18px!important;	
+	background-image: url(../../images/icons-feng-3/16x16/trash.png) !important;		
 }
 
 .ico-unlocked {
@@ -464,7 +466,7 @@
 }
 .ico-view_options {
 	/*background-image: url(../../images/16x16/view.png) !important;*/	
-	background-image: url("../../images/icons-feng-3/24x22/show.png") !important;
+	background-image: url("../../images/icons-feng-3/16x16/show.png") !important;
     background-size: 16px 16px !important;
 }
 .ico-history {
@@ -477,6 +479,7 @@
 .ico-warning32 {
 	/*background-image: url(../../images/32x32/warning.png) !important; */
 	background-image: url(../../images/icons-feng-3/16x16/warning.png) !important;
+	background-repeat:no-repeat;
 }
 
 .ico-workspaces-expand {
@@ -521,7 +524,7 @@
 }
 .ico-print {
 	/*background-image: url(../../images/16x16/print.png) !important;*/
-	background-image: url(../../images/icons-feng-3/24x22/print.png) !important;
+	background-image: url(../../images/icons-feng-3/16x16/print.png) !important;
 	background-size: 16px 16px!important;	
 }
 .ico-sort-alphabetical {
@@ -1606,3 +1609,88 @@ span.member-path span a:hover {
 #typeFilter .x-tree-node-icon {
 	margin-top: 2px;
 }
+
+
+.user-role-explanation {
+	background-color: #f5f5f5;
+    border: 1px dotted #ccc;
+    border-radius: 4px;
+    color: #666;
+    margin-left: 20px;
+    padding: 1px 5px;
+	font-style: italic;
+	float: left;
+}
+
+
+/* styled checkboxes */
+.big-checkbox {
+	width: 20px;	
+	margin: 20px auto;
+	position: relative;
+}
+
+.big-checkbox input[type=checkbox] {
+	display: none;
+}
+
+.big-checkbox label {
+	cursor: pointer;
+	position: absolute;
+	width: 20px;
+	height: 20px;
+	top: 0;
+	border-radius: 4px;
+/*
+	-webkit-box-shadow: inset 0px 1px 1px rgba(0,0,0,0.3), 0px 1px 0px rgba(255,255,255,.3);
+	-moz-box-shadow: inset 0px 1px 1px rgba(0,0,0,0.3), 0px 1px 0px rgba(255,255,255,.3);
+	box-shadow: inset 0px 1px 1px rgba(0,0,0,0.3), 0px 1px 0px rgba(255,255,255,.3);
+*/
+	border: 2px solid #ccc;
+	
+	background: -webkit-linear-gradient(top, #ffffff 0%, #ffffff 100%);
+	background: -moz-linear-gradient(top, #ffffff 0%, #ffffff 100%);
+	background: -o-linear-gradient(top, #ffffff 0%, #ffffff 100%);
+	background: -ms-linear-gradient(top, #ffffff 0%, #ffffff 100%);
+	background: linear-gradient(top, #ffffff 0%, #ffffff 100%);
+	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#ffffff', endColorstr='#ffffff',GradientType=0 );
+}
+
+.big-checkbox label:after {
+	-ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=0)";
+	filter: alpha(opacity=0);
+	opacity: 0;
+	content: '';
+	position: absolute;
+	width: 20px;
+	height: 8px;
+	background: transparent;
+	top: 0px;
+	left: 3px;
+	border: 3px solid #393939;
+	border-top: none;
+	border-right: none;
+
+	-webkit-transform: rotate(-45deg);
+	-moz-transform: rotate(-45deg);
+	-o-transform: rotate(-45deg);
+	-ms-transform: rotate(-45deg);
+	transform: rotate(-45deg);
+}
+
+.big-checkbox label:hover::after {
+	-ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=30)";
+	filter: alpha(opacity=30);
+	opacity: 0.3;
+}
+
+.big-checkbox input[type=checkbox]:checked + label:after {
+	-ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=100)";
+	filter: alpha(opacity=100);
+	opacity: 1;
+}
+
+.big-checkbox.greencheck label:after {
+	border-color: #1F7408;
+}
+/* end styled checkboxes */

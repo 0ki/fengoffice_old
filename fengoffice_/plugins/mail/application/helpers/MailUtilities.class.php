@@ -951,24 +951,80 @@ class MailUtilities {
 							}
 						}
 						
-						$uids = MailContents::getUidsFromAccount($account->getId(), $box->getFolderName());
-						
+						// determine the starting uid and number of message
 						$max_uid = $account->getMaxUID($box->getFolderName());
-						if ($max_uid == "") {
-							$lastReceived = 0;
-						} else {
+						$max_summary = null;
+						if($max_uid){					
 							$max_summary = $imap->getSummary($max_uid, true);
 							if (PEAR::isError($max_summary)) {
 								Logger::log($max_summary->getMessage());
 								throw new Exception($max_summary->getMessage());
 							}
-							
-							while (is_numeric($max_uid) && !$max_summary && $max_uid > 0) {
-								$max_uid = $max_uid - 1;
-								$max_summary = $imap->getSummary($max_uid, true);
-							}
-							$lastReceived = $max_summary[0]['MSG_NUM'];
 						}
+						//check if our last mail is on mail server
+						if($max_summary){
+							$is_last_mail_on_mail_server = true;
+						}else{
+							$is_last_mail_on_mail_server = false;
+						}
+						
+						//Server Data
+						$server_max_summary = $imap->getSummary($numMessages);
+						$server_max_uid = null;
+						if (PEAR::isError($server_max_summary)) {
+							Logger::log($server_max_summary->getMessage());							
+						}else{					
+							$server_max_uid = $server_max_summary[0]['UID'];
+						}
+						
+						$server_min_summary = $imap->getSummary(1, false);
+						$server_min_uid = null;
+						if (PEAR::isError($server_min_summary)) {
+							Logger::log($server_min_summary->getMessage());
+						}else{
+							$server_min_uid = $server_min_summary[0]['UID'];
+						}
+						
+						
+						
+						if($is_last_mail_on_mail_server){
+							$lastReceived = $max_summary[0]['MSG_NUM'];
+						}else{
+							if($max_uid < $server_min_uid){
+								$lastReceived = 1;
+							}else{
+								// $max_uid is betwen $server_min_uid and $server_max_uid
+								if ($server_max_uid) {
+									
+									$diff_uids = $server_max_uid - $max_uid;
+									$lastReceived = $numMessages - $diff_uids;	
+									
+								} else {
+									// if mail with number of message = $numMessages does not exists in server, check from max_uid
+									$tmp_uid = $max_uid + 1;
+									$tmp_sum = $imap->getSummary($tmp_uid);
+									if (!PEAR::isError($tmp_sum)) {
+										$count = 0;
+										while (!$tmp_sum && $count < $numMessages) {
+											$tmp_uid++;
+											$count++;
+											$tmp_sum = $imap->getSummary($tmp_uid);
+										}
+									} else {
+										$tmp_sum = null;
+									}
+									if ($tmp_sum) {
+										$lastReceived = $tmp_sum[0]['MSG_NUM'];
+									}
+								}
+							}
+							$lastReceived = $lastReceived - 1;
+						}
+						
+						if($lastReceived < 0){
+							$lastReceived = 0;
+						}
+						
 						
 						// get mails since last received (last received is not included)
 						for ($i = $lastReceived; ($max == 0 || $received < $max) && $i < $numMessages; $i++) {
@@ -977,7 +1033,7 @@ class MailUtilities {
 							if (PEAR::isError($summary)) {
 								Logger::log($summary->getMessage());
 							} else {
-								if ($summary[0]['UID'] && !in_array($summary[0]['UID'], $uids, true)) {
+								if ($summary[0]['UID']) {
 									if ($imap->isDraft($index)) $state = 2;
 									else $state = 0;
 									

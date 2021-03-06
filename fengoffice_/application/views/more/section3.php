@@ -21,14 +21,14 @@ $links = array(
 
 foreach ($links as $link) {
 ?>
+<a class="internalLink" href="<?php echo $link['url'] ?>" <?php echo isset($link['target']) ? 'target="'.$link['target'].'"' : '' ?> <?php echo isset($icon['onclick']) ? 'onclick="'.$icon['onclick'].'"' : '' ?>>
 	<div class="link">
-		<a class="internalLink" href="<?php echo $link['url'] ?>" <?php echo isset($link['target']) ? 'target="'.$link['target'].'"' : '' ?> <?php echo isset($icon['onclick']) ? 'onclick="'.$icon['onclick'].'"' : '' ?>>
-    		<div class="coViewIconImage <?php echo $link['ico']?>"></div>
-    	</a>
-		<a class="internalLink" href="<?php echo $link['url'] ?>" <?php echo isset($link['target']) ? 'target="'.$link['target'].'"' : '' ?>><?php echo $link['name'] ?></a>
+   		<div class="coViewIconImage <?php echo $link['ico']?>"></div>
+		<?php echo $link['name'] ?>
 	</div>
+</a>
 	
 <?php
 }
 ?>
-	<div class="clear"></div>
+<div class="clear"></div>

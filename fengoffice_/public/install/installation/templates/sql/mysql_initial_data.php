@@ -363,15 +363,15 @@ INSERT INTO `<?php echo $table_prefix ?>webpage_types` (`name`,`is_system`) VALU
 
 
 INSERT INTO `<?php echo $table_prefix ?>tab_panels` (`id`,`title`,`icon_cls`,`refresh_on_context_change`,`default_controller`,`default_action`,`initial_controller`,`initial_action`,`enabled`,`type`,`ordering`,`plugin_id`,`object_type_id`) VALUES 
- ('calendar-panel','calendar','ico-calendar',1,'event','view_calendar','','',0,'system',8,0,(SELECT id FROM <?php echo $table_prefix ?>object_types WHERE name='event')),
- ('contacts-panel','contacts','ico-contacts',1,'contact','init','','',0,'system',7,0,(SELECT id FROM <?php echo $table_prefix ?>object_types WHERE name='contact')),
- ('documents-panel','documents','ico-documents',1,'files','init','','',1,'system',6,0,(SELECT id FROM <?php echo $table_prefix ?>object_types WHERE name='file')),
- ('messages-panel','messages','ico-messages',1,'message','init','','',0,'system',5,0,(SELECT id FROM <?php echo $table_prefix ?>object_types WHERE name='message')),
- ('overview-panel','overview','ico-overview',1,'dashboard','main_dashboard','dashboard','main_dashboard',1,'system',-100,0,0),
- ('reporting-panel','reporting','ico-reporting',1,'reporting','index','','',1,'system',9,0,(SELECT id FROM <?php echo $table_prefix ?>object_types WHERE name='report')),
- ('tasks-panel','tasks','ico-tasks',1,'task','new_list_tasks','','',1,'system',3,0,(SELECT id FROM <?php echo $table_prefix ?>object_types WHERE name='task')),
- ('time-panel','time','ico-time-layout',1,'time','index','','',1,'system',8,0,0),
- ('webpages-panel','web pages','ico-webpages',1,'webpage','init','','',0,'system',7,0,(SELECT id FROM <?php echo $table_prefix ?>object_types WHERE name='weblink')),
+ ('calendar-panel','calendar','ico-calendar',1,'event','view_calendar','','',0,'system',7,0,(SELECT id FROM <?php echo $table_prefix ?>object_types WHERE name='event')),
+ ('contacts-panel','contacts','ico-contacts',1,'contact','init','','',0,'system',4,0,(SELECT id FROM <?php echo $table_prefix ?>object_types WHERE name='contact')),
+ ('documents-panel','documents','ico-documents',1,'files','init','','',1,'system',3,0,(SELECT id FROM <?php echo $table_prefix ?>object_types WHERE name='file')),
+ ('messages-panel','messages','ico-messages',1,'message','init','','',0,'system',10,0,(SELECT id FROM <?php echo $table_prefix ?>object_types WHERE name='message')),
+ ('overview-panel','overview','ico-overview',1,'dashboard','main_dashboard','dashboard','main_dashboard',1,'system',1,0,0),
+ ('reporting-panel','reporting','ico-reporting',1,'reporting','index','','',1,'system',8,0,(SELECT id FROM <?php echo $table_prefix ?>object_types WHERE name='report')),
+ ('tasks-panel','tasks','ico-tasks',1,'task','new_list_tasks','','',1,'system',2,0,(SELECT id FROM <?php echo $table_prefix ?>object_types WHERE name='task')),
+ ('time-panel','time','ico-time-layout',1,'time','index','','',1,'system',5,0,0),
+ ('webpages-panel','web pages','ico-webpages',1,'webpage','init','','',0,'system',9,0,(SELECT id FROM <?php echo $table_prefix ?>object_types WHERE name='weblink')),
  ('more-panel','getting started','ico-more-tab',0,'more','index','','',1,'system',100,0,0);
 
 
@@ -504,11 +504,11 @@ INSERT INTO `<?php echo $table_prefix ?>system_permissions` (`permission_group_i
 ((SELECT id FROM <?php echo $table_prefix ?>permission_groups WHERE name = 'Administrator'),	1,	1,	1,	1,	1,		1,	1,	1,	1,	1,	1,	1, 0),
 ((SELECT id FROM <?php echo $table_prefix ?>permission_groups WHERE name = 'Manager'),	1,	0,	1,	1,	1,		0,	1,	1,	1,	1,	1,	1, 0),
 ((SELECT id FROM <?php echo $table_prefix ?>permission_groups WHERE name = 'Executive'),	1,	0,	0,	0,	1,		0,	1,	0,	1,	0,	1,	1, 0),
-((SELECT id FROM <?php echo $table_prefix ?>permission_groups WHERE name = 'Collaborator Customer'),	0,	0,	0,	0,	0,		0,	0,	0,	1,	0,	1,	1, 0),
+((SELECT id FROM <?php echo $table_prefix ?>permission_groups WHERE name = 'Collaborator Customer'),	0,	0,	0,	0,	0,		0,	0,	0,	1,	0,	0,	0, 0),
 ((SELECT id FROM <?php echo $table_prefix ?>permission_groups WHERE name = 'Internal Collaborator'),	0,	0,	0,	0,	0,		0,	0,	0,	1,	0,	0,	1, 0),
-((SELECT id FROM <?php echo $table_prefix ?>permission_groups WHERE name = 'External Collaborator'),	0,	0,	0,	0,	0,		0,	0,	0,	1,	0,	0,	1, 0),
-((SELECT id FROM <?php echo $table_prefix ?>permission_groups WHERE name = 'Guest Customer'),	0,	0,	0,	0,	0,		0,	0,	0,	0,	0,	0,	1, 0),
-((SELECT id FROM <?php echo $table_prefix ?>permission_groups WHERE name = 'Guest'),	0,	0,	0,	0,	0,		0,	0,	0,	0,	0,	0,	1, 0),
+((SELECT id FROM <?php echo $table_prefix ?>permission_groups WHERE name = 'External Collaborator'),	0,	0,	0,	0,	0,		0,	0,	0,	1,	0,	0,	0, 0),
+((SELECT id FROM <?php echo $table_prefix ?>permission_groups WHERE name = 'Guest Customer'),	0,	0,	0,	0,	0,		0,	0,	0,	0,	0,	0,	0, 0),
+((SELECT id FROM <?php echo $table_prefix ?>permission_groups WHERE name = 'Guest'),	0,	0,	0,	0,	0,		0,	0,	0,	0,	0,	0,	0, 0),
 ((SELECT id FROM <?php echo $table_prefix ?>permission_groups WHERE name = 'Non-Exec Director'),	0,	0,	0,	0,	0,		0,	0,	0,	0,	0,	1,	1, 0);
 
 INSERT INTO `<?php echo $table_prefix ?>max_system_permissions` (`permission_group_id`, `can_manage_security`, `can_manage_configuration`, `can_manage_templates`, `can_manage_time`, `can_add_mail_accounts`, `can_manage_dimensions`, `can_manage_dimension_members`, `can_manage_tasks`, `can_task_assignee`, `can_manage_billing`, `can_view_billing`, `can_see_assigned_to_other_tasks`, `can_manage_contacts`) VALUES
@@ -516,11 +516,11 @@ INSERT INTO `<?php echo $table_prefix ?>max_system_permissions` (`permission_gro
 ((SELECT id FROM <?php echo $table_prefix ?>permission_groups WHERE name = 'Administrator'),	1,	1,	1,	1,	1,		1,	1,	1,	1,	1,	1,	1, 1),
 ((SELECT id FROM <?php echo $table_prefix ?>permission_groups WHERE name = 'Manager'),	1,	0,	1,	1,	1,		0,	1,	1,	1,	1,	1,	1, 1),
 ((SELECT id FROM <?php echo $table_prefix ?>permission_groups WHERE name = 'Executive'),	1,	0,	0,	0,	1,		0,	1,	1,	1,	0,	1,	1, 1),
-((SELECT id FROM <?php echo $table_prefix ?>permission_groups WHERE name = 'Collaborator Customer'),	0,	0,	0,	0,	0,		0,	0,	0,	1,	0,	1,	1, 0),
+((SELECT id FROM <?php echo $table_prefix ?>permission_groups WHERE name = 'Collaborator Customer'),	0,	0,	0,	0,	0,		0,	0,	0,	1,	0,	0,	0, 0),
 ((SELECT id FROM <?php echo $table_prefix ?>permission_groups WHERE name = 'Internal Collaborator'),	0,	0,	0,	0,	0,		0,	0,	0,	1,	0,	0,	1, 0),
-((SELECT id FROM <?php echo $table_prefix ?>permission_groups WHERE name = 'External Collaborator'),	0,	0,	0,	0,	0,		0,	0,	0,	1,	0,	0,	1, 0),
-((SELECT id FROM <?php echo $table_prefix ?>permission_groups WHERE name = 'Guest Customer'),	0,	0,	0,	0,	0,		0,	0,	0,	0,	0,	0,	1, 0),
-((SELECT id FROM <?php echo $table_prefix ?>permission_groups WHERE name = 'Guest'),	0,	0,	0,	0,	0,		0,	0,	0,	0,	0,	0,	1, 0),
+((SELECT id FROM <?php echo $table_prefix ?>permission_groups WHERE name = 'External Collaborator'),	0,	0,	0,	0,	0,		0,	0,	0,	1,	0,	0,	0, 0),
+((SELECT id FROM <?php echo $table_prefix ?>permission_groups WHERE name = 'Guest Customer'),	0,	0,	0,	0,	0,		0,	0,	0,	0,	0,	0,	0, 0),
+((SELECT id FROM <?php echo $table_prefix ?>permission_groups WHERE name = 'Guest'),	0,	0,	0,	0,	0,		0,	0,	0,	0,	0,	0,	0, 0),
 ((SELECT id FROM <?php echo $table_prefix ?>permission_groups WHERE name = 'Non-Exec Director'),	0,	0,	0,	0,	0,		0,	0,	0,	0,	0,	1,	1, 0);
 
 INSERT INTO `<?php echo $table_prefix ?>widgets` (`name`,`title`,`plugin_id`,`path`,`default_options`,`default_section`,`default_order`,`icon_cls`) VALUES 
@@ -537,7 +537,7 @@ INSERT INTO `<?php echo $table_prefix ?>widgets` (`name`,`title`,`plugin_id`,`pa
 INSERT INTO <?php echo $table_prefix ?>role_object_type_permissions (role_id, object_type_id, can_delete, can_write)
  SELECT p.id, o.id, 1, 1
  FROM `<?php echo $table_prefix ?>object_types` o JOIN `<?php echo $table_prefix ?>permission_groups` p
- WHERE o.`name` IN ('message','weblink','file','task','milestone','event','contact','mail','timeslot','report','comment')
+ WHERE o.`name` IN ('message','weblink','file','task','milestone','event','contact','mail','timeslot','report','comment','template')
  AND p.`name` IN ('Super Administrator','Administrator','Manager','Executive');
 
 INSERT INTO <?php echo $table_prefix ?>role_object_type_permissions (role_id, object_type_id, can_delete, can_write)
@@ -582,7 +582,9 @@ INSERT INTO <?php echo $table_prefix ?>role_object_type_permissions (role_id, ob
  WHERE o.`name` IN ('message','weblink','file','task','milestone','event','contact','timeslot','report','comment')
  AND p.`name` IN ('Non-Exec Director');
 
-UPDATE <?php echo $table_prefix ?>role_object_type_permissions SET can_write = 1 WHERE object_type_id = (SELECT id FROM <?php echo $table_prefix ?>object_types WHERE name='comment');
+UPDATE <?php echo $table_prefix ?>role_object_type_permissions SET can_write = 1 
+WHERE object_type_id = (SELECT id FROM <?php echo $table_prefix ?>object_types WHERE name='comment') 
+	AND role_id IN (SELECT p.id FROM `<?php echo $table_prefix ?>permission_groups` p WHERE p.`name` IN ('Non-Exec Director','Guest Customer'));
 
 INSERT INTO `<?php echo $table_prefix ?>contact_widget_options` (widget_name,contact_id,member_type_id,`option`,`value`,config_handler_class,is_system) VALUES
 ('overdue_upcoming',0,0,'assigned_to_user',0,'UserCompanyConfigHandler',0),

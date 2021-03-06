@@ -370,7 +370,7 @@
       $attributes = array();
     } // if
     $more_classes = array_var($attributes, 'class');
-    $attributes['class'] = 'submit';
+    $attributes['class'] = array_var($attributes, 'class', 'submit');
     $attributes['type'] = 'button';
     $attributes['accesskey'] = $accesskey;
     

@@ -213,17 +213,17 @@ foreach ($links as $link) {
 		$highlighted_step = 0;
 	}
 ?>
+<a <?php echo (isset($link['onclick']) ? 'onclick="'.$link['onclick'].'"' : '') ?> class="internalLink" href="<?php echo $link['url'] ?>" <?php echo isset($link['target']) ? 'target="'.$link['target'].'"' : '' ?>>
 	<div class="link highlighted <?php echo ($highlighted_step == $count ? 'on' : 'off')?>" id="<?php echo $genid?>_link_<?php echo $count?>">
 		
 		<div class="highlighted-number"><?php echo $count?></div>
-		
-		<a <?php echo (isset($link['onclick']) ? 'onclick="'.$link['onclick'].'"' : '') ?> class="internalLink" href="<?php echo $link['url'] ?>" <?php echo isset($link['target']) ? 'target="'.$link['target'].'"' : '' ?>>
-    		<div class="coViewIconImage <?php echo $link['ico']?>"></div>
-    	</a>
-		<a <?php echo (isset($link['onclick']) ? 'onclick="'.$link['onclick'].'"' : '') ?> class="internalLink" href="<?php echo $link['url'] ?>" <?php echo isset($link['target']) ? 'target="'.$link['target'].'"' : '' ?>><?php echo $link['name'] ?></a>
+		<div class="coViewIconImage <?php echo $link['ico']?>"></div>
+    	
+		<?php echo $link['name'] ?>
 		<div class="clear"></div>
 	</div>
+</a>
 <?php
 }
 ?>
-	<div class="clear"></div>
+<div class="clear"></div>

@@ -12,7 +12,7 @@
 <div class="coInputHeader">
 <div class="coInputHeaderUpperRow">
 	<div class="coInputTitle"><table style="width:535px"><tr><td><?php echo $cotemplate->isNew() ? lang('new template') : lang('edit template') ?>
-	</td><td style="text-align:right"><?php echo submit_button($cotemplate->isNew() ? lang('save template') : lang('save changes'),'s',array('style'=>'margin-top:0px;margin-left:10px')) ?></td></tr></table>
+	</td><td style="text-align:right"><?php echo submit_button($cotemplate->isNew() ? lang('add template') : lang('save changes'),'s',array('style'=>'margin-top:0px;margin-left:10px', 'class'=>'blue')) ?></td></tr></table>
 	</div>
 </div>
 	<div>

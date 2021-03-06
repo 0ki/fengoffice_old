@@ -605,6 +605,10 @@ div.add-person-form div.field label.checkbox {
 
 .user-typegroup-selector {
 	margin-right: 5px;
+	float: left;
+}
+.user-type-selector {
+	float: left;
 }
 
 .coInputMainBlock .user-groups-container .user-group {

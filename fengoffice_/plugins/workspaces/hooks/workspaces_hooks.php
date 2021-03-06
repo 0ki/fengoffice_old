@@ -175,3 +175,18 @@ function workspaces_page_rendered() {
 	}
 
 }
+
+function workspaces_after_user_add($object, $ignored) {
+	/* @var $object Contact */
+	$workspaces_dim = Dimensions::findOne(array("conditions" => "`code` = 'workspaces'"));
+
+	if ($workspaces_dim instanceof Dimension) {
+
+		$sql = "INSERT INTO `".TABLE_PREFIX."contact_dimension_permissions` (`permission_group_id`, `dimension_id`, `permission_type`)
+				 SELECT `c`.`permission_group_id`, ".$workspaces_dim->getId().", 'check'
+				 FROM `".TABLE_PREFIX."contacts` `c`
+				 WHERE `c`.`is_company`=0 AND `c`.`user_type`!=0 AND `c`.`disabled`=0 AND `c`.`object_id`=".$object->getId()."
+				 ON DUPLICATE KEY UPDATE `dimension_id`=`dimension_id`;";
+		DB::execute($sql);
+	}
+}

@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Mondongo upgrade script will upgrade FengOffice 2.7.1.1 to FengOffice 3.0-rc2
+ * Mondongo upgrade script will upgrade FengOffice 2.7.1.1 to FengOffice 3.0
  *
  * @package ScriptUpgrader.scripts
  * @version 1.0
@@ -40,7 +40,7 @@ class MondongoUpgradeScript extends ScriptUpgraderScript {
 	function __construct(Output $output) {
 		parent::__construct($output);
 		$this->setVersionFrom('2.7.1.1');
-		$this->setVersionTo('3.0-rc2');
+		$this->setVersionTo('3.0');
 	} // __construct
 
 	function getCheckIsWritable() {
@@ -184,7 +184,7 @@ class MondongoUpgradeScript extends ScriptUpgraderScript {
  				ON DUPLICATE KEY UPDATE name=name;
 				
 				INSERT INTO `".$t_prefix."config_options` (`category_name`, `name`, `value`, `config_handler_class`, `is_system`, `option_order`, `dev_comment`) VALUES
-				 ('general', 'enabled_dimensions', (SELECT GROUP_CONCAT(id) FROM `".$t_prefix."dimensions` WHERE `code` NOT IN ('tags','feng_persons')), 'RootDimensionsConfigHandler', '1', '0', NULL)
+				 ('general', 'enabled_dimensions', (SELECT GROUP_CONCAT(id) FROM `".$t_prefix."dimensions` WHERE `code` NOT IN ('feng_persons')), 'RootDimensionsConfigHandler', '1', '0', NULL)
 				ON DUPLICATE KEY UPDATE name=name;
 				
 				update ".$t_prefix."tab_panels set plugin_id=(SELECT id from ".$t_prefix."plugins where name='mail') where id='mails-panel';
@@ -199,11 +199,11 @@ class MondongoUpgradeScript extends ScriptUpgraderScript {
 					((SELECT id FROM ".$t_prefix."permission_groups WHERE name = 'Administrator'),	1,	1,	1,	1,	1,		1,	1,	1,	1,	1,	1,	1, 1),
 					((SELECT id FROM ".$t_prefix."permission_groups WHERE name = 'Manager'),	1,	0,	1,	1,	1,		0,	1,	1,	1,	1,	1,	1, 1),
 					((SELECT id FROM ".$t_prefix."permission_groups WHERE name = 'Executive'),	1,	0,	0,	0,	1,		0,	1,	1,	1,	0,	1,	1, 1),
-					((SELECT id FROM ".$t_prefix."permission_groups WHERE name = 'Collaborator Customer'),	0,	0,	0,	0,	0,		0,	0,	0,	1,	0,	1,	1, 0),
+					((SELECT id FROM ".$t_prefix."permission_groups WHERE name = 'Collaborator Customer'),	0,	0,	0,	0,	0,		0,	0,	0,	1,	0,	0,	0, 0),
 					((SELECT id FROM ".$t_prefix."permission_groups WHERE name = 'Internal Collaborator'),	0,	0,	0,	0,	0,		0,	0,	0,	1,	0,	0,	1, 0),
-					((SELECT id FROM ".$t_prefix."permission_groups WHERE name = 'External Collaborator'),	0,	0,	0,	0,	0,		0,	0,	0,	1,	0,	0,	1, 0),
-					((SELECT id FROM ".$t_prefix."permission_groups WHERE name = 'Guest Customer'),	0,	0,	0,	0,	0,		0,	0,	0,	0,	0,	0,	1, 0),
-					((SELECT id FROM ".$t_prefix."permission_groups WHERE name = 'Guest'),	0,	0,	0,	0,	0,		0,	0,	0,	0,	0,	0,	1, 0),
+					((SELECT id FROM ".$t_prefix."permission_groups WHERE name = 'External Collaborator'),	0,	0,	0,	0,	0,		0,	0,	0,	1,	0,	0,	0, 0),
+					((SELECT id FROM ".$t_prefix."permission_groups WHERE name = 'Guest Customer'),	0,	0,	0,	0,	0,		0,	0,	0,	0,	0,	0,	0, 0),
+					((SELECT id FROM ".$t_prefix."permission_groups WHERE name = 'Guest'),	0,	0,	0,	0,	0,		0,	0,	0,	0,	0,	0,	0, 0),
 					((SELECT id FROM ".$t_prefix."permission_groups WHERE name = 'Non-Exec Director'),	0,	0,	0,	0,	0,		0,	0,	0,	0,	0,	1,	1, 0)
 					ON DUPLICATE KEY UPDATE permission_group_id=permission_group_id;
 				";
@@ -218,8 +218,30 @@ class MondongoUpgradeScript extends ScriptUpgraderScript {
 			";
 		}
 		
-		
-		
+		if (version_compare($installed_version, '3.0') < 0) {
+			$upgrade_script .= "
+				UPDATE ".$t_prefix."system_permissions SET can_see_assigned_to_other_tasks=0, can_view_billing=0
+				WHERE permission_group_id IN (SELECT id FROM ".$t_prefix."permission_groups WHERE name IN ('Collaborator Customer'));
+				UPDATE ".$t_prefix."max_system_permissions SET can_see_assigned_to_other_tasks=0, can_view_billing=0
+				WHERE permission_group_id IN (SELECT id FROM ".$t_prefix."permission_groups WHERE name IN ('Collaborator Customer'));
+				UPDATE ".$t_prefix."system_permissions SET can_see_assigned_to_other_tasks=0, can_view_billing=0
+				WHERE permission_group_id IN (SELECT permission_group_id FROM ".$t_prefix."contacts WHERE user_type IN (SELECT id FROM ".$t_prefix."permission_groups WHERE name IN ('Collaborator Customer')));
+				
+				UPDATE ".$t_prefix."system_permissions SET can_see_assigned_to_other_tasks=0
+				WHERE permission_group_id IN (SELECT id FROM ".$t_prefix."permission_groups WHERE name IN ('External Collaborator', 'Guest Customer', 'Guest'));
+				UPDATE ".$t_prefix."max_system_permissions SET can_see_assigned_to_other_tasks=0
+				WHERE permission_group_id IN (SELECT id FROM ".$t_prefix."permission_groups WHERE name IN ('External Collaborator', 'Guest Customer', 'Guest'));
+				UPDATE ".$t_prefix."system_permissions SET can_see_assigned_to_other_tasks=0
+				WHERE permission_group_id IN (SELECT permission_group_id FROM ".$t_prefix."contacts WHERE user_type IN (SELECT id FROM ".$t_prefix."permission_groups WHERE name IN ('External Collaborator', 'Guest Customer', 'Guest')));
+				
+				UPDATE ".$t_prefix."role_object_type_permissions SET can_write = 1 
+				WHERE object_type_id = (SELECT id FROM ".$t_prefix."object_types WHERE name='comment') 
+					AND role_id IN (SELECT p.id FROM `".$t_prefix."permission_groups` p WHERE p.`name` IN ('Non-Exec Director','Guest Customer'));
+				UPDATE ".$t_prefix."role_object_type_permissions SET can_write = 0 
+				WHERE object_type_id = (SELECT id FROM ".$t_prefix."object_types WHERE name='comment') 
+					AND role_id IN (SELECT p.id FROM `".$t_prefix."permission_groups` p WHERE p.`name` IN ('Guest'));
+			";
+		}
 		
 		// Execute all queries
 		if(!$this->executeMultipleQueries($upgrade_script, $total_queries, $executed_queries, $this->database_connection)) {

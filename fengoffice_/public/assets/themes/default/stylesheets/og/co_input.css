@@ -108,9 +108,11 @@
 }
 .task-data .left-section {
 	min-width: 465px;
+	border-right:1px solid #ccc;	
 }
 .task-data .right-section {
-	min-width: 465px;	
+	min-width: 465px;
+	padding-left: 10px;	
 }
 .task-data {
 	min-width: 950px;

@@ -947,7 +947,11 @@ function create_user($user_data, $permissionsString, $rp_permissions_data = arra
 			}
 			$_POST['permissions'] = json_encode($permissions);
 		} else {
-			$_POST['permissions'] = $permissionsString;
+			if ($permissions_sent) {
+				$_POST['permissions'] = $permissionsString;
+			} else {
+				$_POST['permissions'] = "";
+			}
 		}
 		
 		if (config_option('let_users_create_objects_in_root') && ($contact->isAdminGroup() || $contact->isExecutive() || $contact->isManager())) {

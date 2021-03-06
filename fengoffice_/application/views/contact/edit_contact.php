@@ -257,7 +257,7 @@
 	
 	<div class="contact_form_container form-tab" id="<?php echo $genid?>contact_data">
 		<div class="information-block no-border-bottom">
-		  <div style="float:left;min-width: 750px;">
+		  <div style="float:left;min-width: 100%;">
 			
 			<div id="<?php echo $genid?>_contact_data_role" class="dataBlock" style="display:none;"></div>
 			<div>
@@ -652,8 +652,6 @@
 	    	<?php if (array_var($_REQUEST, 'is_user') == 1 && isset($user_type) && $user_type > 0 && $can_change_permissions) { ?>
 		    	og.renderUserTypeSelector({container_id:"<?php echo $genid?>_user_type_container", input_name:'contact[user][type]', selected_value: <?php echo $user_type?>, id:'<?php echo $genid?>_user_type_sel'});
 
-		    	og.with_perm_user_types = Ext.util.JSON.decode('<?php echo json_encode($allowed_user_type_ids)?>');
-		    	
 	    		$("#<?php echo $genid?>_contact_data_role").html($("#user_role_div").html() + '<div class="clear"></div>');
 	    		$("#<?php echo $genid?>_contact_data_role").show();
 	    		$("#<?php echo $genid?>_contact_data_role select.user-type-selector").change(function(){

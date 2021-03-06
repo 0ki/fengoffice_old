@@ -27,7 +27,7 @@ foreach ($default_user_permissions as $perm_info) {
 <input type="checkbox" id="<?php echo $genid?>_set_manual_permissions_checkbox" onchange="og.toggleManualPermissions('<?php echo $genid?>', <?php echo (array_var($_REQUEST, 'modal')?'1':'0')?>);" style="float:left;cursor:pointer;margin-top:4px;margin-right:5px;"/>
 <label for="<?php echo $genid?>_set_manual_permissions_checkbox" style="float: left;" class="checkbox"><?php echo lang('set manual permissions')?></label>
 <div class="desc" style="float:left;margin:1px 0 1px 10px;" id="<?php echo $genid?>_manual_perm_help"><?php echo lang('set manual permissions desc')?></div>
-<input type="hidden" id="<?php echo $genid?>_set_manual_permissions" name="manual_permissions_setted" value="1" />
+<input type="hidden" id="<?php echo $genid?>_set_manual_permissions" name="manual_permissions_setted" value="0" />
 <div class="clear"></div>
 <?php } ?>
 

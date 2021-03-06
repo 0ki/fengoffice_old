@@ -210,7 +210,7 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
 		?>
 		
   	</div>
-  	<div class="section-separator" style="float:left; width:10px; border-left:1px solid #ccc;"></div>
+  	
   	<div class="right-section">
   		<div id="<?php echo $genid ?>add_task_select_context_div" class="context-selector-container">
 		<?php
@@ -906,9 +906,6 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
 
 		$("#<?php echo $genid?>tabs").tabs();
 
-		setTimeout(function(){
-			$(".section-separator").css('height', $("#<?php echo $genid?>add_task_more_div").height() + 'px');
-		}, 250);
 		
 		$("#ogTasksPanelATTitle").focus();
 	});

@@ -928,8 +928,8 @@ class ReportingController extends ApplicationController {
 				if ($k == 'object_type_id') continue;
 				$db_col = isset($results['columns'][$i]) && isset($results['db_columns'][$results['columns'][$i]]) ? $results['db_columns'][$results['columns'][$i]] : '';
 
-				$value = str_replace("\n", " ", $value);
-				$cell = format_value_to_print($db_col, html_to_text($value), ($k == 'link'?'':array_var($types, $k)), array_var($row, 'object_type_id'), '', is_numeric(array_var($results['db_columns'], $k)) ? "Y-m-d" : user_config_option('date_format'));
+				$value = str_replace(array("\r\n","\n","\r"), " ", html_to_text($value));
+				$cell = format_value_to_print($db_col, $value, ($k == 'link'?'':array_var($types, $k)), array_var($row, 'object_type_id'), '', is_numeric(array_var($results['db_columns'], $k)) ? "Y-m-d" : user_config_option('date_format'));
 				if (function_exists('mb_internal_encoding')) {
 					$cell = iconv(mb_internal_encoding(),"UTF-8",html_entity_decode($cell ,ENT_COMPAT));
 				}

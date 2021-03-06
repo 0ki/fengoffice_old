@@ -967,7 +967,7 @@
 								}
 								$sql_insert_values .= ($sql_insert_values == "" ? "" : ",") . "('".$pg_id."','".$perm->m."','".$perm->o."','".$perm->d."','".$perm->w."')";
 								
-								if (!$member_object_types_to_delete[$perm->m]) $member_object_types_to_delete[$perm->m] = array();
+								if (!isset($member_object_types_to_delete[$perm->m])) $member_object_types_to_delete[$perm->m] = array();
 								$member_object_types_to_delete[$perm->m][] = $perm->o;
 							}
 							
@@ -1419,11 +1419,16 @@
 	}
 	
 
+	function can_save_permissions_in_background() {
+		if (defined('DONT_SAVE_PERMISSIONS_IN_BACKGROUND') && DONT_SAVE_PERMISSIONS_IN_BACKGROUND) {
+			return false;
+		}
+		return defined('SAVE_PERMISSIONS_IN_BACKGROUND') && SAVE_PERMISSIONS_IN_BACKGROUND && is_exec_available();
+	}
 	
 	function save_member_permissions_background($user, $member, $permissions) {
-		if (!defined('DONT_SAVE_PERMISSIONS_IN_BACKGROUND')) define('DONT_SAVE_PERMISSIONS_IN_BACKGROUND', !is_exec_available());
 		
-		if (substr(php_uname(), 0, 7) == "Windows" || (defined('DONT_SAVE_PERMISSIONS_IN_BACKGROUND') && DONT_SAVE_PERMISSIONS_IN_BACKGROUND)){
+		if (substr(php_uname(), 0, 7) == "Windows" || !can_save_permissions_in_background()){
 			//pclose(popen("start /B ". $command, "r"));
 			save_member_permissions($member, $permissions);
 		} else {
@@ -1484,7 +1489,6 @@
 	
 	
 	function save_user_permissions_background($user, $pg_id, $is_guest=false, $users_ids_to_check = array()) {
-		if (!defined('DONT_SAVE_PERMISSIONS_IN_BACKGROUND')) define('DONT_SAVE_PERMISSIONS_IN_BACKGROUND', !is_exec_available());
 		
 		// system permissions
 		$sys_permissions_data = array_var($_POST, 'sys_perm');
@@ -1504,7 +1508,7 @@
 		
 		
 		
-		if (substr(php_uname(), 0, 7) == "Windows" || (defined('DONT_SAVE_PERMISSIONS_IN_BACKGROUND') && DONT_SAVE_PERMISSIONS_IN_BACKGROUND)){
+		if (substr(php_uname(), 0, 7) == "Windows" || !can_save_permissions_in_background()){
 			//pclose(popen("start /B ". $command, "r"));
 			save_permissions($pg_id, $is_guest, null, true, true, true, true, $users_ids_to_check);
 		} else {
@@ -1559,9 +1563,7 @@
 	function add_object_to_sharing_table($object, $user) {
 		if (!$object instanceof ContentDataObject) return;
 		
-		if (!defined('DONT_SAVE_PERMISSIONS_IN_BACKGROUND')) define('DONT_SAVE_PERMISSIONS_IN_BACKGROUND', !is_exec_available());
-		
-		if (substr(php_uname(), 0, 7) == "Windows" || (defined('DONT_SAVE_PERMISSIONS_IN_BACKGROUND') && DONT_SAVE_PERMISSIONS_IN_BACKGROUND)){
+		if (substr(php_uname(), 0, 7) == "Windows" || !can_save_permissions_in_background()){
 			$object->addToSharingTable();
 		} else {
 			$command = "nice -n19 php ". ROOT . "/application/helpers/add_object_to_sharing_table.php ".ROOT." ".$user->getId()." ".$user->getTwistedToken()." ".$object->getId();
@@ -1570,9 +1572,8 @@
 	}
 	
 	function add_multilple_objects_to_sharing_table($ids_str, $user) {
-		if (!defined('DONT_SAVE_PERMISSIONS_IN_BACKGROUND')) define('DONT_SAVE_PERMISSIONS_IN_BACKGROUND', !is_exec_available());
 		
-		if (substr(php_uname(), 0, 7) == "Windows" || (defined('DONT_SAVE_PERMISSIONS_IN_BACKGROUND') && DONT_SAVE_PERMISSIONS_IN_BACKGROUND)){
+		if (substr(php_uname(), 0, 7) == "Windows" || !can_save_permissions_in_background()){
 			$ids = explode(',', $ids_str);
 			foreach ($ids as $id) {
 				$object = Objects::instance()->findObject($id);

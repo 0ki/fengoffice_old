@@ -519,12 +519,14 @@ Ext.extend(og.TasksTopToolbar, Ext.Toolbar, {
 	},
 	updateCheckedStatus : function(){
 		var checked = false;
-		var allIncomplete = true, allUnread = true, allRead = true;
+		var allIncomplete = true, anyIncomplete = false, allUnread = true, allRead = true;
 		for (var i = 0; i < ogTasks.Tasks.length; i++)
 			if (ogTasks.Tasks[i].isChecked) {
 				checked = true;
 				if (ogTasks.Tasks[i].status == 1) {
 					allIncomplete = false;
+				} else {
+					anyIncomplete = true;
 				}
 				if (ogTasks.Tasks[i].isRead) {
 					allUnread = false;
@@ -552,7 +554,7 @@ Ext.extend(og.TasksTopToolbar, Ext.Toolbar, {
 			} else {
 				this.markactions.markAsRead.enable();
 			}
-			if (allIncomplete) {
+			if (anyIncomplete) {
 				this.actions.complete.enable();
 			} else {
 				this.actions.complete.disable();

@@ -1104,7 +1104,7 @@ ogTasks.drawAddSubTaskAssignedToInput = function(usersStore, data, genid, i) {
         triggerAction: 'all',
         selectOnFocus: true,
         valueField: 'value',
-        emptyText: (lang('select user or group') + '...'),
+        emptyText: (lang('select user or group') + '...')
 	});
 	stAssignCombo.on('select', function(combo, record, index) {
 		var hf = document.getElementById(genid + '_' + combo.subtask_index + '_assigned_to');

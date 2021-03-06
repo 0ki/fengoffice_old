@@ -271,7 +271,7 @@ class ApplicationLogs extends BaseApplicationLogs {
 			
 		$permissions_condition = "al.rel_object_id IN (
 		SELECT sh.object_id FROM ".TABLE_PREFIX."sharing_table sh
-		WHERE al.rel_object_id = sh.object_id
+		WHERE al.rel_object_id = sh.object_id AND sh.object_id > 0
 		AND sh.group_id  IN ($logged_user_pgs)
 		)";
 

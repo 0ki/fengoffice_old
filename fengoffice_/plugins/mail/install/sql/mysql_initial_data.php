@@ -3,7 +3,7 @@ INSERT INTO <?php echo $table_prefix ?>object_types (name, handler_class, table_
 ON DUPLICATE KEY UPDATE name=name;
 
 INSERT INTO `<?php echo $table_prefix ?>tab_panels` (`id`,`ordering`,`title`,`icon_cls`,`refresh_on_context_change`,`default_controller`,`default_action`,`initial_controller`,`initial_action`,`type`,`object_type_id`, `enabled`, `plugin_id`) VALUES
- ('mails-panel', 4, 'email tab', 'ico-mail', 1, 'mail', 'init', '', '', 'system', (SELECT id FROM <?php echo $table_prefix ?>object_types WHERE name='mail'), 1, (SELECT id FROM <?php echo $table_prefix ?>plugins WHERE name='mail'))
+ ('mails-panel', 12, 'email tab', 'ico-mail', 1, 'mail', 'init', '', '', 'system', (SELECT id FROM <?php echo $table_prefix ?>object_types WHERE name='mail'), 1, (SELECT id FROM <?php echo $table_prefix ?>plugins WHERE name='mail'))
 ON DUPLICATE KEY UPDATE id=id;
 
 

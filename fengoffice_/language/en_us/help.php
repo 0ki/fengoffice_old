@@ -58,7 +58,20 @@ return array(
 	'how to purchase' => 'How to purchase',
 	'how to purchase desc' => 'Information about our different plans and benefits', 
 	'add ticket' => 'Add a new support ticket',
-	'add ticket desc' => "To get personalized help about Feng Office",	
+	'add ticket desc' => "To get personalized help about Feng Office",
+
+	'Super Administrator user role description' => 'Can see and do absolutely everything. Ideal role for the business owner of the Feng Office system.',
+	'Administrator user role description' => 'Can do everything, except managing permissions for other administrators and super administrators.',
+	'Manager user role description' => 'Can do everything on Clients, Projects and Workspaces for which administrators have granted them access.',
+	'Executive user role description' => 'Can work on everything she is allowed to, but cannot set permissions. This role is used for people who work on tasks, as well as for third-party resources working side by side on a project. Cannot define billing settings.',
+	'Collaborator Customer user role description' => 'It is a client who gets quite involved in collaborating on a project: can be assigned tasks, complete their own tasks, modify and upload documents, and read and comment anything else we grant them permissions to. By default they cannot see other users\' nor unassigned tasks, nor billing information.',
+	'Internal Collaborator user role description' => 'It is a colleague of ours that does not require as many permissions as the Executive user. This kind of user can: complete, log time, and comment on own tasks, modify and upload documents, and read and comment on anything else we grant them permissions to. By default they can see other users\' and unassigned tasks. By default they do not see billing information.',
+	'External Collaborator user role description' => 'It is an external user of the organization that does not require as many permissions as the Executive user. This kind of user can: complete, log time, and comment on own tasks, modify and upload documents, and read and comment on anything else we grant them permissions to. By default they cannot see other users\' nor unassigned tasks. By default they do not see billing information.',
+	'Guest Customer user role description' => 'It is a client with limited access to information (read-only), but who cannot modify, create, or upload data. However, they can make comments on all data they are granted access to. By default they cannot see other users\' nor unassigned tasks, nor billing information.',
+	'Guest user role description' => 'It is someone who we are sharing information with, but who cannot modify, create, or upload data. It cannot make comments. They cannot see other users\' nor unassigned tasks, nor billing information.',
+	'Non-Exec Director user role description' => 'Has access to all data, but cannot modify it, so things cannot be broken :) By default they can see all tasks, time logs, and billing information.',
+	'more information about user roles' => 'More information about user roles',
+	
 	
 ); // array
 

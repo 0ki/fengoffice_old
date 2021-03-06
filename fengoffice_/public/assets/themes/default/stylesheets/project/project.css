@@ -1,5 +1,3 @@
-@CHARSET "ISO-8859-1";
-
 /* -------------------------------- COMMENTS -------------------------------*/
 
 .objectComments div.comment {
@@ -430,7 +428,7 @@ table tr td.line_comments_icons{
 	vertical-align:top;
 	padding-top:4px;
 	min-height:20px;
-	border-top:1px solid #CCC
+	border-top:1px solid #CCC;
 }
 
 

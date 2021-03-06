@@ -33,33 +33,57 @@ class MoreController extends ApplicationController {
 		}
 		ajx_set_no_toolbar();
 		
-		$tab_panels = TabPanels::findAll(array('conditions' => "id<>'more-panel' AND (plugin_id is NULL OR plugin_id = 0 OR plugin_id IN (SELECT id FROM ".TABLE_PREFIX."plugins WHERE is_activated > 0 AND is_installed > 0))", 'order' => 'ordering'));
 		$modules = array();
+		$other_modules = array();
+		$disabled_modules = array();
+		
+		// mail
+		$mail_info = null;
+		if (!Plugins::instance()->isActivePlugin('mail')) {
+			$mail_info = array(
+					'id' => 'mails-panel',
+					'name' => lang('email tab'),
+					'link' => 'http://www.fengoffice.com/web/email.php',
+					'ico' => 'ico-large-mail',
+			);
+			$disabled_modules[] = $mail_info;
+		}
+		
+		$tab_panels = TabPanels::findAll(array('conditions' => "id<>'more-panel' AND (plugin_id is NULL OR plugin_id = 0 OR plugin_id IN (SELECT id FROM ".TABLE_PREFIX."plugins WHERE is_installed > 0))", 'order' => 'ordering'));
 		foreach ($tab_panels as $panel) {
+			if ($panel->getId() == 'mails-panel' && $mail_info != null) continue;
+			$enabled = $panel->getEnabled();
+			if ($enabled && $panel->getPluginId() > 0) {
+				$plugin = Plugins::findById($panel->getPluginId());
+				$enabled = $enabled && $plugin instanceof Plugin && $plugin->isActive();
+			}
 			$modules[] = array(
 					'id' => $panel->getId(),
 					'name' => lang($panel->getTitle()),
-					'enabled' => $panel->getEnabled(),
+					'enabled' => $enabled,
 					'ico' => str_replace('ico-', 'ico-large-', $panel->getIconCls()),
 					'hint' => str_replace("'", "\'", lang('system module '.$panel->getId().' hint')),
 			);
 		}
 		
-		$other_modules = array();
-		$disabled_modules = array();
-/*		
-		// mail
-		if (!Plugins::instance()->isActivePlugin('mail')) {
-			$mail_info = array(
-					'id' => 'mails-panel',
-					'name' => lang('email tab'),
-					'ico' => 'ico-large-mail',
-			);
-			if (!Plugins::instance()->isActivePlugin('mail')) {
-				$disabled_modules[] = $mail_info;
-			}
-		}
 		
+		
+		// gantt
+		$gantt_plugin = Plugins::instance()->findOne(array('conditions' => "name='gantt'"));
+		if ($gantt_plugin instanceof Plugin) {
+			$gantt_info = array(
+					'id' => 'gantt',
+					'name' => lang('gantt chart'),
+					'enabled' => $gantt_plugin->isActive(),
+					'ico' => 'ico-large-gantt-module',
+					'hint' => str_replace("'", "\'", lang('system module gantt hint')),
+			);
+			$other_modules[] = $gantt_info;
+		}
+
+		
+		
+/*		
 		// gantt
 		$gantt_info = array(
 				'id' => 'gantt',
@@ -172,9 +196,43 @@ class MoreController extends ApplicationController {
 				if ($enabled > 0) {
 					DB::execute("INSERT INTO ".TABLE_PREFIX."tab_panel_permissions (permission_group_id, tab_panel_id) VALUES (".logged_user()->getPermissionGroupId().",'".$tab_panel->getId()."') ON DUPLICATE KEY UPDATE tab_panel_id=tab_panel_id;");
 				}
+				if ($tab_panel->getPluginId() > 0) {
+					$plugin = Plugins::findById($tab_panel->getPluginId());
+					if ($plugin instanceof Plugin) {
+						if ($enabled) $plugin->activate();
+						else $plugin->deactivate();
+					}
+				}
 				$key = ($enabled > 0) ? "enabled" : "disabled";
 				ajx_extra_data(array('ok' => '1', 'msg' => lang("success $key module", lang($tab_panel->getTitle())) ));
 			}
+		} catch (Exception $e) {
+			ajx_extra_data(array('error' => 'Error occurred when enabling/disabling module "'.($tab_panel instanceof TabPanel ? lang($tab_panel->getTitle()) : $module_id).'": '.$e->getMessage()));
+		}
+	}
+	
+	function enable_disable_plugin() {
+		ajx_current("empty");
+		if (!can_manage_configuration(logged_user())) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		}
+		
+		$plugin_name = array_var($_REQUEST, 'plugin');
+		$enabled = array_var($_REQUEST, 'enabled');
+		
+		$plugin = Plugins::instance()->findOne(array('conditions' => array("name=?", $plugin_name)));
+		
+		try {
+			if ($plugin instanceof Plugin) {
+				if ($enabled) $plugin->activate();
+				else $plugin->deactivate();
+				
+				$key = ($enabled > 0) ? "enabled" : "disabled";
+				ajx_extra_data(array('ok' => '1', 'msg' => lang("success $key module", lang($plugin->getName())) ));
+			}
+		
 		} catch (Exception $e) {
 			ajx_extra_data(array('error' => 'Error occurred when enabling/disabling module "'.($tab_panel instanceof TabPanel ? lang($tab_panel->getTitle()) : $module_id).'": '.$e->getMessage()));
 		}
@@ -200,6 +258,13 @@ class MoreController extends ApplicationController {
 					$tab_panel->save();
 					if ($enabled > 0) {
 						DB::execute("INSERT INTO ".TABLE_PREFIX."tab_panel_permissions (permission_group_id, tab_panel_id) VALUES (".logged_user()->getPermissionGroupId().",'".$tab_panel->getId()."') ON DUPLICATE KEY UPDATE tab_panel_id=tab_panel_id;");
+					}
+					if ($tab_panel->getPluginId() > 0) {
+						$plugin = Plugins::findById($tab_panel->getPluginId());
+						if ($plugin instanceof Plugin) {
+							if ($enabled) $plugin->activate();
+							else $plugin->deactivate();
+						}
 					}
 				}
 			}
@@ -262,6 +327,19 @@ class MoreController extends ApplicationController {
 				if (!in_array($dim_id, $root_dids)) {
 					$root_dids[] = $dim_id;
 					$update_root_dimensions = true;
+				}
+				
+				$dim = Dimensions::findById($dim_id);
+				if (($dim->getCode() == 'workspaces' || $dim->getCode() == 'tags') && !Plugins::instance()->isActivePlugin('workspaces')) {
+					$plugin = Plugins::instance()->findOne(array('conditions' => "name='workspaces'"));
+					if ($plugin instanceof Plugin) {
+						$plugin->activate();
+					}
+				} else if ($dim->getCode() == 'customer_project' && !Plugins::instance()->isActivePlugin('crpm')) {
+					$plugin = Plugins::instance()->findOne(array('conditions' => "name='crpm'"));
+					if ($plugin instanceof Plugin) {
+						$plugin->activate();
+					}
 				}
 			}
 			

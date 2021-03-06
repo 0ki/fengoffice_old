@@ -1,4 +1,4 @@
-@CHARSET "ISO-8859-1";
+
 
 .widget {
 	/* Shadow for ie7 */
@@ -47,3 +47,45 @@ div.login-body div.form-container button[type=submit] {
 div.login-body div.form-container button[type=submit]:hover {
 	border: 2px solid #3D6A27;
 }
+
+ul.x-tab-strip li:hover {
+	filter: alpha(opacity=10);
+	background: #e7e7e7;
+}
+
+.add-factor-container {
+	margin-top: 15px;
+}
+
+.factors-status {
+	border: 1px solid #ccc;
+	margin: 10px 0;
+	padding: 10px;
+}
+
+#header .header-content-right .gen-search{
+	top: 20%!important; 	
+}
+
+.dimension-selector-container label{
+	min-width: 10px!important;
+}
+
+.big-checkbox input[type=checkbox] {
+	display: block !important;
+	margin-top:5px;
+}
+
+.big-checkbox label, .big-checkbox label:after {
+	display:none;
+}
+
+.ext-ie TD .x-form-text.ico-search-m{
+	top: 0!important;
+	border-width: 1px!important;
+	border-color: #b5b8c8!important;
+	border-top-width: 2px!important;
+	border-bottom-width: 2px!important;
+}
+
+

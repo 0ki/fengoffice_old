@@ -89,13 +89,13 @@
 					<div class="clear"></div>
 				<?php endif;?>
 				
-				<?php if (count($contacts) > 0) :?>
-					<div class="person-list-separator"></div>
-				<?php endif; ?>
 			
 				<div class="clear"></div>
 				<div id="person-form-<?php echo $genid ?>" class="add-person-form" style="<?php echo isset($add_people_btn) ? "" : "display:none;"?>">
 					 
+				<?php if (count($contacts) > 0) :?>
+					<div class="person-list-separator"></div>
+				<?php endif; ?>
 					 <?php 
 					/*
 					 * Contact registered

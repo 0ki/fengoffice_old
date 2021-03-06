@@ -21,8 +21,17 @@
 	<?php echo meta_tag('content-type', 'text/html; charset=utf-8', true) ?>
 <?php
 
+	// Old Internet Explorer versions does not allow to import more than 32 css files, so we must use the compressed css.
+	include_once ROOT . "/library/browser/Browser.php";
+	$is_old_ie = Browser::instance()->getBrowser() == Browser::BROWSER_IE && Browser::instance()->getVersion() < 10;
+	
+	// By default use compressed css
+	if (!defined('COMPRESSED_CSS')) {
+		define('COMPRESSED_CSS', true);
+	}
+	
 	$version = product_version();
-	if (defined('COMPRESSED_CSS') && COMPRESSED_CSS) {
+	if ($is_old_ie || COMPRESSED_CSS) {
 		echo stylesheet_tag("ogmin.css");
 	} else {
 		echo stylesheet_tag('website.css');
@@ -286,7 +295,8 @@ og.config = {
 		brand_colors_head_font: '<?php echo config_option('brand_colors_head_font')?>',
 		brand_colors_tabs_back: '<?php echo config_option('brand_colors_tabs_back')?>',
 		brand_colors_tabs_font: '<?php echo config_option('brand_colors_tabs_font')?>'
-	}
+	},
+	'with_perm_user_types': Ext.util.JSON.decode('<?php echo json_encode(config_option('give_member_permissions_to_new_users'))?>')
 };
 og.preferences = {
 	'viewContactsChecked': <?php echo json_encode(user_config_option('viewContactsChecked')) ?>,
@@ -314,7 +324,12 @@ og.preferences = {
 og.userRoles = {};
 <?php $all_roles = PermissionGroups::instance()->getNonPersonalSameLevelPermissionsGroups();
 	foreach ($all_roles as $role) {?>
-		og.userRoles[<?php echo $role->getId()?>] = {code:'<?php echo $role->getName() ?>', name:'<?php echo str_replace("'", "\'", lang($role->getName()))?>', parent:'<?php echo $role->getParentId()?>'};
+		og.userRoles[<?php echo $role->getId()?>] = {
+			code:'<?php echo $role->getName() ?>', 
+			name:'<?php echo str_replace("'", "\'", lang($role->getName()))?>', 
+			parent:'<?php echo $role->getParentId()?>',
+			hint:'<?php echo str_replace("'", "\'", lang($role->getName().' user role description') . '&nbsp;<a href="http://www.fengoffice.com/web/user_types.php" target="_blank">'.lang('more information about user roles').'</a>') ?>'
+		};
 <?php } ?>
 
 og.userTypes = {};
@@ -335,6 +350,8 @@ $maxRolePermissions = MaxSystemPermissions::getAllMaxRolesPermissions();
 echo "og.userMaxRolesPermissions =".json_encode($maxRolePermissions).";";
 
 echo "og.defaultRoleObjectTypePermissions = ".json_encode(RoleObjectTypePermissions::getAllRoleObjectTypePermissionsInfo());
+// para cuando se tenga la tabla de MaxRoleObjectTypePermissions
+// echo "og.maxRoleObjectTypePermissions = ".json_encode(MaxRoleObjectTypePermissions::getAllRoleObjectTypePermissionsInfo());
 ?>
 
 <?php 

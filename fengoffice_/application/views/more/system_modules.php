@@ -19,11 +19,14 @@ $genid = gen_id();
 			<ul id="sortable-modules"><?php
 		$number = 1;
 		foreach ($modules as $module) {?>
-				<li class="module<?php echo $module['enabled'] ? ' active' : ''?>" id="<?php echo $module['id']?>">
+				<li class="module sortable<?php echo $module['enabled'] ? ' active' : ''?>" id="<?php echo $module['id']?>">
 					<div class="module-order"><?php echo $number?></div>
 					<div class="coViewIconImage <?php echo $module['ico']?>" style=""></div>
 			    	<div class="module-name"><?php echo $module['name'] ?></div>
-			    	<div class="module-enabled-div"><?php echo checkbox_field($module['id'].'_enabled', $module['enabled'], array('onchange' => 'og.enable_disable_system_module(this);'))?></div>
+			    	<div class="module-enabled-div big-checkbox greencheck">
+						<?php echo checkbox_field($module['id'].'_enabled', $module['enabled'], array('onchange' => 'og.enable_disable_system_module(this);', 'id' => $genid.$module['id']."_checkbox"))?>
+						<label for="big-checkbox greencheck"></label>
+					</div>
 				</li>
 		<?php
 			$number++; 
@@ -32,20 +35,29 @@ $genid = gen_id();
 			<ul>
 		<?php
 		foreach ($other_modules as $module) {?>
-				<li class="module not-sortable" id="<?php echo $module['id']?>">
+				<li class="module not-sortable<?php echo $module['enabled'] ? ' active' : ''?>" id="<?php echo $module['id']?>">
 					<div class="coViewIconImage <?php echo $module['ico']?>" style=""></div>
 			    	<div class="module-name"><?php echo $module['name'] ?></div>
+			    	<div class="module-enabled-div big-checkbox greencheck">
+						<?php echo checkbox_field($module['id'].'_enabled', $module['enabled'], array('onchange' => 'og.enable_disable_plugin(this);', 'id' => $genid.$module['id']."_checkbox"))?>
+						<label for="big-checkbox greencheck"></label>
+					</div>
 				</li><?php
 		} ?>
 			</ul>
 			<ul>
 		<?php
 		foreach ($disabled_modules as $module) {?>
-				<li class="module disabled" id="<?php echo $module['id']?>"><a href="http://www.fengoffice.com/web/pricing_sky.php" target="_blank">
+				<li class="module disabled" id="<?php echo $module['id']?>">
+				  <a href="<?php echo array_var($module, 'link', 'http://www.fengoffice.com/web/pricing_sky.php');?>" target="_blank" class="disabled_link"><div style="height:72px;">
 					<div class="coViewIconImage <?php echo $module['ico']?>" style=""></div>
 			    	<div class="module-name"><?php echo $module['name'] ?></div>
-			    	<div class="module-enabled-div"><?php echo checkbox_field($module['id'].'_enabled', false, array('disabled' => 'disabled'))?></div>
-				</a></li><?php
+			    	<div class="module-enabled-div big-checkbox greencheck">
+			    		<?php echo checkbox_field($module['id'].'_enabled', false, array('disabled' => 'disabled'))?>
+						<label for="big-checkbox greencheck"></label>
+					</div>
+				  </div></a>
+				</li><?php
 		} ?>
 			</ul>
 			<?php
@@ -64,11 +76,14 @@ $genid = gen_id();
 		<?php
 		$number = 1;
 		foreach ($active_dimensions as $dim) {?>
-				<li class="module<?php echo in_array($dim['id'], $user_dimension_ids) ? ' active' : ''?>" id="<?php echo $dim['id']?>">
+				<li class="dimension module<?php echo in_array($dim['id'], $user_dimension_ids) ? ' active' : ''?>" id="<?php echo $dim['id']?>">
 					<div class="dimension-order"><?php echo $number?></div>
 					<div class="coViewIconImage <?php echo $dim['ico']?>" style=""></div>
 			    	<div class="module-name"><?php echo $dim['name'] ?></div>
-			    	<div class="module-enabled-div"><?php echo checkbox_field($dim['id'].'_enabled', in_array($dim['id'], $user_dimension_ids), array('onchange' => 'og.enable_disable_dimension(this);'))?></div>
+			    	<div class="module-enabled-div big-checkbox greencheck">
+			    		<?php echo checkbox_field($dim['id'].'_enabled', in_array($dim['id'], $user_dimension_ids), array('onchange' => 'og.enable_disable_dimension(this);', 'id' => $genid.$dim['id']."_dim_checkbox"))?>
+						<label for="big-checkbox greencheck"></label>
+			    	</div>
 				</li><?php
 			$number++;
 		} ?>
@@ -76,10 +91,13 @@ $genid = gen_id();
 			<ul>
 		<?php
 		foreach ($other_dimensions as $dim) {?>
-				<li class="module disabled"><a href="http://www.fengoffice.com/web/pricing_sky.php" target="_blank">
+				<li class="dimension module disabled"><a href="http://www.fengoffice.com/web/pricing_sky.php" target="_blank">
 					<div class="coViewIconImage <?php echo $dim['ico']?>" style=""></div>
 			    	<div class="module-name"><?php echo $dim['name'] ?></div>
-			    	<div class="module-enabled-div"><?php echo checkbox_field($dim['name'].'_enabled', false, array('disabled' => 'disabled'))?></div>
+			    	<div class="module-enabled-div big-checkbox greencheck">
+			    		<?php echo checkbox_field($dim['name'].'_enabled', false, array('disabled' => 'disabled'))?>
+						<label for="big-checkbox greencheck"></label>
+			    	</div>
 				</a></li><?php
 		} ?>
 			</ul>
@@ -135,6 +153,24 @@ $genid = gen_id();
 			og.openLink(og.getUrl('more', 'enable_disable_dimensions', {dims: Ext.util.JSON.encode(status_array)}));
 		}
 		og.goback(btn);
+	}
+
+	// plugin activation
+	og.enable_disable_plugin = function(checkbox) {
+		var plugin_name = checkbox.name.substring(0, checkbox.name.indexOf('_enabled'));
+		og.openLink(og.getUrl('more', 'enable_disable_plugin', {plugin: plugin_name, enabled: checkbox.checked ? 1 : 0}), {
+			hideLoading: true,
+			callback: function(success, data) {
+				if (data.ok) {
+					og.must_reload_system_modules = true;
+					if (checkbox.checked) {
+						$(checkbox).closest('.module').addClass('active');
+					} else {
+						$(checkbox).closest('.module').removeClass('active');
+					}
+				}
+			}
+		});
 	}
 
 	// system modules
@@ -254,7 +290,12 @@ $genid = gen_id();
 		og.order_dimensions();
 		og.original_ordered_dimensions = og.ordered_dimensions;
 
+		og.dragging_object_ids = {};
+		
 		$( "#sortable-modules" ).sortable({
+			start: function(event, object) {
+				og.dragging_object_ids[object.item[0].id] = true;
+			},
 			stop: function(event, object) {
 				og.order_modules();
 				og.update_system_module_order();
@@ -263,6 +304,9 @@ $genid = gen_id();
 		$( "#sortable-modules" ).disableSelection();
 
 		$( "#sortable-dimensions" ).sortable({
+			start: function(event, object) {
+				og.dragging_object_ids['dim_' + object.item[0].id] = true;
+			},
 			stop: function(event, object) {
 				og.order_dimensions();
 				og.update_dimensions_order();
@@ -308,6 +352,37 @@ $genid = gen_id();
 				trigger: 'hover'
 			});
 		<?php } ?>
+
+		$(".system-modules-section .module.sortable").click(function() {
+			var checkbox = $("#<?php echo $genid?>" + this.id + "_checkbox");
+			if (checkbox.length > 0 && !og.dragging_object_ids[this.id]) {
+				checkbox.attr('checked', checkbox.attr('checked') ? null : 'checked');
+				og.enable_disable_system_module(checkbox[0]);
+			} else {
+				og.dragging_object_ids[this.id] = false;
+			}
+		});
+
+		$(".system-modules-section .module.not-sortable").click(function() {
+			var checkbox = $("#<?php echo $genid?>" + this.id + "_checkbox");
+			if (checkbox.length > 0 && !og.dragging_object_ids[this.id]) {
+				checkbox.attr('checked', checkbox.attr('checked') ? null : 'checked');
+				og.enable_disable_plugin(checkbox[0]);
+			} else {
+				og.dragging_object_ids[this.id] = false;
+			}
+		});
+
+
+		$(".system-modules-section .dimension.module").click(function() {
+			var checkbox = $("#<?php echo $genid?>" + this.id + "_dim_checkbox");
+			if (checkbox.length > 0 && !og.dragging_object_ids['dim_' + this.id]) {
+				checkbox.attr('checked', checkbox.attr('checked') ? null : 'checked');
+				og.enable_disable_dimension(checkbox[0]);
+			} else {
+				og.dragging_object_ids['dim_' + this.id] = false;
+			}
+		});
 		
 	});
 </script>

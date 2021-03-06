@@ -1940,7 +1940,7 @@ og.expandDocumentView = function(link) {
 
 		$(document_view).css({
 			'height': link.old_height + 'px',
-			'position':'relative',
+			'position':'relative'
 		});
 		link.title = lang('expand');
 		link.className = 'ico-expand';
@@ -1956,7 +1956,7 @@ og.expandDocumentView = function(link) {
 			'z-index': '500',
 			'top': '0px',
 			'height': '100%',
-			'position':'absolute',
+			'position':'absolute'
 		});
 
 		link.title = lang('collapse');
@@ -2995,6 +2995,7 @@ og.submit_modal_form = function(form_id, callback_fn, options) {
 
 
 og.checkAndAdjustTabsSize = function() {
+  setTimeout(function() {
 	
 	$(".x-tab-with-icon .x-tab-strip-text").css('width', 'auto');
 	
@@ -3019,6 +3020,7 @@ og.checkAndAdjustTabsSize = function() {
 		$(".x-tab-with-icon.x-tab-strip-active .x-tab-left").css('padding-right', '10px');
 		
 	}
+  }, 500);
 }
 
 og.removeFileExtension = function(filename) {
@@ -3177,7 +3179,8 @@ og.renderUserTypeSelector = function(config) {
 	for (type_id in og.userTypes) {
 	    var option = document.createElement("option");
 	    option.value = type_id;
-	    option.text = og.userTypes[type_id].name;
+	    //option.text = og.userTypes[type_id].name;
+	    option.innerHTML = og.userTypes[type_id].name;
 	    if (selected_type == type_id) {
 		    option.setAttribute('selected', 'selected');
 	    }
@@ -3185,6 +3188,12 @@ og.renderUserTypeSelector = function(config) {
 	}
 	
 	og.renderUserRoleSelector(config, selected_type);
+	
+	// explanation div
+	$("#"+container_id).append('<div style="display:none;" id="'+genid+'user_role_explanation" class="user-role-explanation">'+ og.userRoles[config.selected_value].hint +'</div><div class="clear"></div>');
+	setTimeout(function(){
+		$("#"+genid+"user_role_explanation").css('width', ($("#"+container_id).width() - 275 - $("#"+config.id+"_type").outerWidth() - $("#"+config.id+"_role").outerWidth() ) + 'px').show();
+	}, 100);
 }
 
 og.renderUserRoleSelector = function(config, parent_type) {
@@ -3201,7 +3210,8 @@ og.renderUserRoleSelector = function(config, parent_type) {
 		if (og.userRoles[role_id].parent == parent_type) {
 		    var option = document.createElement("option");
 		    option.value = role_id;
-		    option.text = og.userRoles[role_id].name;
+		    //option.text = og.userRoles[role_id].name;
+		    option.innerHTML = og.userRoles[role_id].name;
 		    if (config.selected_value) {
 			    if (config.selected_value == role_id) {
 			    	option.setAttribute('selected', 'selected');

@@ -84,20 +84,21 @@
 	float: right;
    	height: 35px;
    	width: 20px;
+   	margin-right: 4px;
 }
 
 #userboxWrapper img{
 	border-radius: 2px;
-	height: 26px;
+	max-height: 26px;
 	margin-left: 5px;
 	vertical-align: middle;
-	width: 26px;
+	max-width: 26px;
 }
 
 #userboxWrapper a{
 	color: #fff;
 	font-weight: bold;
-	line-height: 32px;
+	line-height: 33px;
 	text-shadow: 0 -1px rgba(0, 0, 0, 0.5);
 }
 
@@ -135,11 +136,19 @@
 	background-image: url(../../images/icons-feng-3/24x22/documents.png) !important;
 	background-position: 0 center !important;
 }
-.ico-tasks, .ico-task {
+.ico-tasks{
 	/*background: transparent url(../../images/16x16/all_16_16_vertical.png) no-repeat scroll 0 -177px !important;*/
 	background-image: url(../../images/icons-feng-3/24x22/tasks.png) !important;
 	background-position: 0 center !important;
 }
+
+.ico-task {
+	/*background: transparent url(../../images/16x16/all_16_16_vertical.png) no-repeat scroll 0 -177px !important;*/
+	background-image: url(../../images/icons-feng-3/16x16/tasks.png) !important;
+	background-position: 0 center !important;
+	background-repeat: no-repeat;
+}
+
 .ico-webpages {
 	/*background: transparent url(../../images/16x16/all_16_16_vertical.png) no-repeat scroll 0 -78px !important;*/
 	background-image: url(../../images/icons-feng-3/24x22/links.png) !important;

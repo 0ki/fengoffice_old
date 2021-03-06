@@ -121,12 +121,16 @@ function _log($message) {
 }
 
 function import_google_calendar() {
+	// deshabilitado hasta no desarrollar la nueva importacion con la nueva api de google
+	return;
     _log("import with google calendar...");
     ProjectEvents::import_google_calendar();
     _log("end import with google calendar...");
 }
 
 function export_google_calendar() {
+	// deshabilitado hasta no desarrollar la nueva exportacion con la nueva api de google
+	return;
     _log("export with google calendar...");
     ProjectEvents::export_google_calendar();
     _log("end export with google calendar...");

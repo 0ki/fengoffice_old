@@ -54,12 +54,12 @@ $right_links[] = array(
 <?php
 foreach ($links as $link) {
 ?>
+<a href="<?php echo $link['url'] ?>" <?php echo isset($link['target']) ? 'target="'.$link['target'].'"' : '' ?> <?php echo isset($icon['onclick']) ? 'onclick="'.$icon['onclick'].'"' : '' ?>>
 	<div class="link">
-		<a href="<?php echo $link['url'] ?>" <?php echo isset($link['target']) ? 'target="'.$link['target'].'"' : '' ?> <?php echo isset($icon['onclick']) ? 'onclick="'.$icon['onclick'].'"' : '' ?>>
-    		<div class="coViewIconImage <?php echo $link['ico']?>"></div>
-    	</a>
-		<a href="<?php echo $link['url'] ?>" <?php echo isset($link['target']) ? 'target="'.$link['target'].'"' : '' ?>><?php echo $link['name'] ?></a>
+		<div class="coViewIconImage <?php echo $link['ico']?>"></div>
+    	<?php echo $link['name'] ?>
 	</div>
+</a>
 	
 <?php
 }
@@ -72,12 +72,12 @@ foreach ($links as $link) {
 <?php
 foreach ($right_links as $link) {
 ?>
+<a href="<?php echo $link['url'] ?>" <?php echo isset($link['target']) ? 'target="'.$link['target'].'"' : '' ?> <?php echo isset($icon['onclick']) ? 'onclick="'.$icon['onclick'].'"' : '' ?>>
 	<div class="link">
-		<a href="<?php echo $link['url'] ?>" <?php echo isset($link['target']) ? 'target="'.$link['target'].'"' : '' ?> <?php echo isset($icon['onclick']) ? 'onclick="'.$icon['onclick'].'"' : '' ?>>
-    		<div class="coViewIconImage <?php echo $link['ico']?>"></div>
-    	</a>
-		<a href="<?php echo $link['url'] ?>" <?php echo isset($link['target']) ? 'target="'.$link['target'].'"' : '' ?>><?php echo $link['name'] ?></a>
+    	<div class="coViewIconImage <?php echo $link['ico']?>"></div>
+		<?php echo $link['name'] ?>
 	</div>
+</a>
 	
 <?php
 }

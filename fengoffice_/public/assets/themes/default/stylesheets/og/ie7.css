@@ -1,4 +1,4 @@
-@CHARSET "ISO-8859-1";
+
 .abm-members-name {
 	float: left;
 }
@@ -72,4 +72,28 @@ div.login-body div.form-container button[type=submit] {
 }
 div.login-body div.form-container button[type=submit]:hover {
 	border: 2px solid #3D6A27;
+}
+
+ul.x-tab-strip li:hover {
+	filter: alpha(opacity=10);
+	background: #e7e7e7;
+}
+
+.add-factor-container {
+	margin-top: 15px;
+}
+
+.factors-status {
+	border: 1px solid #ccc;
+	margin: 10px 0;
+	padding: 10px;
+}
+
+.big-checkbox input[type=checkbox] {
+	display: block !important;
+	margin-top:5px;
+}
+
+.big-checkbox label, .big-checkbox label:after {
+	display:none;
 }

@@ -821,9 +821,8 @@ class FilesController extends ApplicationController {
 
 				$member_ids = array();
 				$object_controller = new ObjectController();
-				if(count(active_context_members(false)) > 0 ){
-					$object_controller->add_to_members($file, active_context_members(false));
-				}elseif(array_var($file_data, 'member_ids')) {
+									
+				if(array_var($file_data, 'member_ids')) {
 					$member_ids = explode(',', array_var($file_data, 'member_ids'));
 					if (is_numeric($member_ids) && $member_ids > 0) $member_ids = array($member_ids);
 				}elseif(array_var($file_data, 'object_id')){
@@ -834,7 +833,9 @@ class FilesController extends ApplicationController {
 					} else {
 						// add only to logged_user's person member						
 					}
-				} else {
+				}elseif(count(active_context_members(false)) > 0 ){
+					$object_controller->add_to_members($file, active_context_members(false));
+				}else {
 					// add only to logged_user's person member					
 				}
 				
