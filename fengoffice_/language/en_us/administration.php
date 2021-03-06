@@ -167,10 +167,7 @@
 	'config option desc use_object_properties' => 'Enabling this option will allow you to define custom (key - value) properties for every object.',
 	'config option name automatic_crpm_status_calculation' => 'Clients & Project automatic status',
   	'config option desc automatic_crpm_status_calculation' => 'When enabled, you will be able to set up the formulas for the Clients & Project different status so that they are calculated automatically',
-    
-  	'config option name let_users_create_objects_in_root' => 'Let users create objects without classifying them',
-  	
-  	'group users' => 'Group users',
+    'group users' => 'Group users',
     'timeslot' => 'Time',
     'module permissions' => 'Module Permissions',
     'module permission uncheck warning' => 'Module Permission Uncheck Warning',
@@ -252,8 +249,8 @@
     'user config option name reminders_events' =>'Event Reminders',
     'user config option desc reminders_events' =>'Default value for event reminders',
   		
-  	'config option name updateOnLinkedObjects' => 'Update objects when linking others:',
-  	'config option desc updateOnLinkedObjects' => 'If this option is enabled, whenever you link or unlink an object with another, both their Updated On fields will be modified.',
+  	'user config option name updateOnLinkedObjects' => 'Update objects when linking others:',
+  	'user config option desc updateOnLinkedObjects' => 'If this option is enabled, whenever you link or unlink an object with another, both their Updated On fields will be modified.',
   		 
   
   	'user config option name reminders_tasks' =>'Task Reminders',

@@ -162,6 +162,11 @@ if(Env::isDebugging()) {
 	benchmark_timer_set_marker('Handle request');
 } // if
 
+// Remove injection from url parameters
+foreach($_GET as $k => &$v) {
+	$v = remove_css_and_scripts($v);
+}
+
 // Get controller and action and execute...
 try {
 	if (!defined( 'CONSOLE_MODE' )) {

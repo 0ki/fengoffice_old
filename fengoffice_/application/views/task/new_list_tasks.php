@@ -47,11 +47,15 @@
 		}
 	}
 	
+	$assigned_users = array();
 	$ids = array();
 	if (isset($tasks)) {
 		foreach($tasks as $task) {
 			$ids[] = $task['id'];
 			$tasks_array[] = ProjectTasks::getArrayInfo($task);
+			if ($task['assigned_to_contact_id'] > 0) {
+				$assigned_users[$task['assigned_to_contact_id']] = $task['assigned_to_contact_id'];
+			}
 		}
 
 		$read_objects = ReadObjects::getReadByObjectList($ids, logged_user()->getId());
@@ -72,11 +76,21 @@
 		}
 	}
 	
+	$user_ids = array();
 	foreach($users as $user) {
 		$user_info = $user->getArrayInfo();
-		if ($user->getId() == logged_user()->getId())
+		if ($user->getId() == logged_user()->getId()) {
 			$user_info['isCurrent'] = true;
+		}
+		$user_ids[$user->getId()] = $user->getId();
 		$users_array[] = $user_info;
+	}
+	// add assigned users to users array
+	foreach ($assigned_users as $auser) {
+		if (!in_array($auser, $user_ids)) {
+			$user = Contacts::findById($auser);
+			if ($user instanceof Contact) $users_array[] = $user->getArrayInfo();
+		}
 	}
 	
 	foreach($allUsers as $usr) {
@@ -154,6 +168,8 @@ if (!task_ids) task_ids = [];
 	if (og.TasksTopToolbar == 'undefined') {
 		mili = 500;
 	}
+
+	ogTasks.expandedGroups = [];
 
 	// to prevent js execution before the js files are received
 	setTimeout(function () {

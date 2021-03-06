@@ -34,15 +34,13 @@ function langhtml(name) {
 function addLangs(langs) {
 	for (var k in langs) {
 		_lang[k] = langs[k];
-		
-	}	
+	}
 }
 
 function addLangsDefault(langs) {
 	for (var k in langs) {
 		_langDefault[k] = langs[k];
-		
-	}	
+	}
 }
 
 var color_utils = {};

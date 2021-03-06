@@ -1477,12 +1477,15 @@ abstract class ContentDataObject extends ApplicationDataObject {
 						
 						// If an user has permissions in one dim using a group and in other dim using his personal permissions then add to sharing table its personal permission group
 						$pg_ids = array_unique(array_flat($original_mandatory_dim_allowed_pgs));
+						if (count($pg_ids) == 0) $pg_ids[0] = 0;
 						
 						$contact_pgs = array();
 						$contact_pg_rows = DB::executeAll("SELECT * FROM ".TABLE_PREFIX."contact_permission_groups WHERE permission_group_id IN (".implode(',',$pg_ids).") ORDER BY permission_group_id");
-						foreach ($contact_pg_rows as $cpgr) {
-							if (!isset($contact_pgs[$cpgr['contact_id']])) $contact_pgs[$cpgr['contact_id']] = array();
-							$contact_pgs[$cpgr['contact_id']][] = $cpgr['permission_group_id'];
+						if (is_array($contact_pg_rows)) {
+							foreach ($contact_pg_rows as $cpgr) {
+								if (!isset($contact_pgs[$cpgr['contact_id']])) $contact_pgs[$cpgr['contact_id']] = array();
+								$contact_pgs[$cpgr['contact_id']][] = $cpgr['permission_group_id'];
+							}
 						}
 						
 						// each user must have at least one pg for every dimension
@@ -1833,13 +1836,15 @@ abstract class ContentDataObject extends ApplicationDataObject {
 		
 		$active_context_ids = active_context_members(false);
 
+		$to_display = user_config_option('breadcrumb_member_count');
+		
 		if(count($members) > 0){
 			foreach ($members as $mem) {
 				$options = Dimensions::getDimensionById($mem['dimension_id'])->getOptions(true);
 				if (isset($options->showInPaths) && $options->showInPaths) {
 					if (!isset($members_info[$mem['dimension_id']])) $members_info[$mem['dimension_id']] = array();
 					
-					if (!$show_all_members && count($members_info[$mem['dimension_id']]) < 2 && !in_array($mem['id'], $active_context_ids)) {
+					if (!$show_all_members && count($members_info[$mem['dimension_id']]) < $to_display && !in_array($mem['id'], $active_context_ids)) {
 						$members_info[$mem['dimension_id']][$mem['id']] = array(
 							'ot' => $mem['object_type_id'],
 							'c' => Members::getMemberById($mem['id'])->getMemberColor(),

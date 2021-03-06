@@ -207,8 +207,8 @@ INSERT INTO `fo_contact_addresses` (`contact_id`, `address_type_id`, `street`, `
 
 -- USER PERMISSIONS
 
-INSERT INTO `fo_permission_groups` (`name`, `contact_id`)
- SELECT CONCAT('User ', `object_id`, ' Personal'), `object_id` FROM `fo_contacts` WHERE `user_type` != 0
+INSERT INTO `fo_permission_groups` (`name`, `contact_id`, `type`)
+ SELECT CONCAT('User ', `object_id`, ' Personal'), `object_id`, 'permission_groups' FROM `fo_contacts` WHERE `user_type` != 0
 ON DUPLICATE KEY UPDATE `contact_id`=`contact_id`;
 
 UPDATE `fo_contacts` SET `permission_group_id` = (SELECT `id` FROM `fo_permission_groups` WHERE `contact_id` = `object_id`);
@@ -293,8 +293,8 @@ ON DUPLICATE KEY UPDATE member_id=member_id;
 
 -- GROUP PERMISSIONS
 
-INSERT INTO `fo_permission_groups` (`name`, `contact_id`)
- SELECT `name`, `id` FROM `og_groups`
+INSERT INTO `fo_permission_groups` (`name`, `contact_id`, `type`)
+ SELECT `name`, `id`, 'user_groups' FROM `og_groups`
 ON DUPLICATE KEY UPDATE `contact_id`=`contact_id`;
 
 INSERT INTO `fo_contact_permission_groups` (`contact_id`, `permission_group_id`)
@@ -760,9 +760,20 @@ INSERT INTO fo_custom_properties (`id`, `object_type_id`, `name`, `type`, `descr
 ON DUPLICATE KEY UPDATE name=cp.name;
 
 INSERT INTO fo_custom_property_values (`object_id`, `custom_property_id`, `value`)
- SELECT (SELECT `id` FROM `fo_objects` WHERE `f1_id` = `cpv`.`object_id` AND `object_type_id` = (SELECT `ot`.`id` FROM `fo_object_types` `ot` WHERE `ot`.`handler_class`=(SELECT cp.object_type FROM og_custom_properties cp WHERE cp.id=cpv.custom_property_id) limit 1)),
-  `cpv`.`custom_property_id`, `cpv`.`value`
+ SELECT (
+	SELECT `id` FROM `fo_objects` WHERE `f1_id` = `cpv`.`object_id` AND `object_type_id` = (
+		SELECT `ot`.`id` FROM `fo_object_types` `ot` WHERE `ot`.`handler_class`=(
+			SELECT cp.object_type FROM og_custom_properties cp WHERE cp.id=cpv.custom_property_id limit 1
+		) limit 1
+	) limit 1
+ ) as oid,  `cpv`.`custom_property_id`, `cpv`.`value`
  FROM og_custom_property_values cpv
+ WHERE 
+ 	NOT ((SELECT `id` FROM `fo_objects` WHERE `f1_id` = `cpv`.`object_id` AND `object_type_id` = (
+		SELECT `ot`.`id` FROM `fo_object_types` `ot` WHERE `ot`.`handler_class`=(
+			SELECT cp.object_type FROM og_custom_properties cp WHERE cp.id=cpv.custom_property_id limit 1
+		) limit 1
+	) limit 1) is NULL)
 ON DUPLICATE KEY UPDATE id=cpv.id;
 
 

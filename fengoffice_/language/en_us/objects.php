@@ -107,7 +107,7 @@
     'the emailunclassified activity' => 'the email{0}',
     'the contact activity' => 'the contact{0}',
   	'the workspace activity' => 'the workspace{0}',
-  	'the company activity' => 'the company{0}',
+    'the company activity' => 'the company{0}',
     'the event activity' => 'the event{0}',
     'the file activity' => 'the file{0}',
     'the file revision activity' => 'the file revision{0}',

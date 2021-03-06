@@ -187,7 +187,7 @@
 				</tr><tr height=20><td></td><td></td></tr>
 				<tr>
 					<td class="td-pr"><?php echo label_tag(lang('address'), $genid.'profileFormWAddress') ?></td>
-					<td><?php echo text_field('contact[w_address]', array_var($contact_data, 'w_address'), array('id' => $genid.'profileFormWAddress', 'tabindex' => '75', 'maxlength' => 200)) ?></td>
+					<td><?php echo textarea_field('contact[w_address]', array_var($contact_data, 'w_address'), array('id' => $genid.'profileFormWAddress', 'tabindex' => '75', 'class' => 'short textarea')) ?></td>
 				</tr><tr>
 					<td class="td-pr"><?php echo label_tag(lang('city'), $genid.'profileFormWCity') ?></td>
 					<td><?php echo text_field('contact[w_city]', array_var($contact_data, 'w_city'), array('id' => $genid.'profileFormWCity', 'tabindex' => '80', 'maxlength' => 50)) ?></td>
@@ -283,7 +283,7 @@
 			<td  style="padding-right:30px">
 			<table><tr>
 				<td class="td-pr"><?php echo label_tag(lang('address'), $genid.'profileFormHAddress') ?></td>
-				<td><?php echo text_field('contact[h_address]', array_var($contact_data, 'h_address'), array('id' => $genid.'profileFormHAddress', 'tabindex' => '160', 'maxlength' => 200)) ?></td>
+				<td><?php echo textarea_field('contact[h_address]', array_var($contact_data, 'h_address'), array('id' => $genid.'profileFormHAddress', 'tabindex' => '160', 'class' => 'short textarea')) ?></td>
 			</tr><tr>
 				<td class="td-pr"><?php echo label_tag(lang('city'), $genid.'profileFormHCity') ?> </td>
 				<td><?php echo text_field('contact[h_city]', array_var($contact_data, 'h_city'), array('id' => $genid.'profileFormHCity', 'tabindex' => '165', 'maxlength' => 50)) ?></td>
@@ -333,7 +333,7 @@
 			<td style="padding-right:30px">
 			<table><tr>
 				<td class="td-pr"><?php echo label_tag(lang('address'), $genid.'profileFormOAddress') ?></td>
-				<td><?php echo text_field('contact[o_address]', array_var($contact_data, 'o_address'), array('id' => $genid.'profileFormOAddress', 'tabindex' => '220', 'maxlength' => 200)) ?></td>
+				<td><?php echo textarea_field('contact[o_address]', array_var($contact_data, 'o_address'), array('id' => $genid.'profileFormOAddress', 'tabindex' => '220', 'class' => 'short textarea')) ?></td>
 			</tr><tr>
 				<td class="td-pr"><?php echo label_tag(lang('city'), $genid.'profileFormOCity') ?> </td>
 				<td><?php echo text_field('contact[o_city]', array_var($contact_data, 'o_city'), array('id' => $genid.'profileFormOCity', 'tabindex' => '225', 'maxlength' => 50)) ?></td>
@@ -414,16 +414,9 @@
   	<?php echo submit_button($contact->isNew() ? lang('add contact') : lang('save changes'),'s',array('tabindex' => '20000', 'id' => $genid . 'submit2')) ?>
 
 	<script>
-				
-		Ext.get('<?php echo $genid ?>profileFormFirstName').focus();
-
-		$(function(){
-			og.checkEmailAddress("#<?php echo $genid ?>profileFormEmail",'<?php echo $contact->getId();?>','<?php echo $genid ?>');
-		});
-		
-		og.load_company_combo("<?php echo $genid?>profileFormCompany", '<?php echo (isset ($_POST['widget_company'])? $_POST['widget_company']:array_var($contact_data, 'company_id', '0')) ?>');
-
 		$(document).ready(function() {
+			og.load_company_combo("<?php echo $genid?>profileFormCompany", '<?php echo (isset ($_POST['widget_company'])? $_POST['widget_company']:array_var($contact_data, 'company_id', '0')) ?>');
+			
 			<?php if(isset ($_POST['widget_is_user'])){ ?>
 				$('input[name*="contact[user][create-user]"]').prop("checked",true);
 				$(".user-data").show();
@@ -431,6 +424,10 @@
 			<?php if(isset ($_POST['widget_user_type'])){ ?>
 				$('[name="contact[user][type]"]').val(<?php echo $_POST['widget_user_type'] ?>);
 			<?php } ?>
+
+			og.checkEmailAddress("#<?php echo $genid ?>profileFormEmail",'<?php echo $contact->getId();?>','<?php echo $genid ?>');
+			
+			Ext.get('<?php echo $genid ?>profileFormFirstName').focus();
 		});
 			
 	</script>

@@ -409,7 +409,7 @@ class ProjectEvents extends BaseProjectEvents {
                                         $query->setStartMin($start_sel);
                                         $query->setStartMax($end_sel);
                                         $query->setMaxResults(2000);
-                                     	//$query->setParam('showdeleted', 'true');                                 
+                                     	$query->setParam('showdeleted', 'true');                                 
                                         // execute and get results
                                         $event_list = $gdataCal->getCalendarEventFeed($query);
                                         $array_events_google = array();
@@ -424,11 +424,8 @@ class ProjectEvents extends BaseProjectEvents {
                                             $new_event = ProjectEvents::findBySpecialId($special_id);
                                             $is_invitation = EventInvitations::findBySpecialId($special_id); 
                                         //If event deleted in google, delete event from feng
-                                       /* if(array_pop(explode( '.', $event->getEventStatus() )) == "canceled"){
-                                        	if($new_event|| $is_invitation){
-                                            	if($is_invitation){
-                                            		$new_event = ProjectEvents::findById($is_invitation->getEventId());
-                                            	}
+                                            if(array_pop(explode( '.', $event->getEventStatus() )) == "canceled"){
+                                        	if($new_event){
                                             		$event_controller->delete_event_calendar_extern($new_event);
                                             		EventInvitations::delete(array("conditions"=>"event_id = ".$new_event->getId()));
                                             		$new_event->trash();
@@ -436,8 +433,12 @@ class ProjectEvents extends BaseProjectEvents {
                                             		$new_event->setSpecialID("");
                                             		$new_event->setExtCalId(0);
                                             		$new_event->save();
+                                            	}elseif ($is_invitation){
+                                            		//$new_event = ProjectEvents::findById($is_invitation->getEventId());
+                                            		EventInvitations::delete(array("conditions"=>"special_id = '".$special_id."'"));
+                                            		
                                             	}
-                                            }else{*/
+                                            }else{
                                             
                                             if($new_event || $is_invitation){
                                             	if($is_invitation){
@@ -466,8 +467,27 @@ class ProjectEvents extends BaseProjectEvents {
                                                         $new_event->setDuration(ProjectEvents::date_google_to_sql($event->when[0]->endTime));
                                                     }
 
-                                                    $new_event->setObjectName($event_name);
-                                                    $new_event->setDescription($event->content->text);
+                                                     if( strlen($event_name) > 100){
+                                                    	$pieces = explode(" ", $event_name);
+                                                    	$name = $pieces[0];
+                                                    	if(strlen($name) > 100){
+                                                    		$name = substr($pieces[0], 0, 100);
+                                                    		$desc = substr($pieces[0], 100, strlen($pieces[0]));
+                                                    	}else{
+                                                    		$desc = "";
+                                                    		foreach ($pieces as $piece){
+                                                    			if(strlen($name.$piece) < 100)
+                                                    				$name .= " ".$piece;
+                                                    			else
+                                                    				$desc .= " ".$piece;
+                                                    		}
+                                                    	}
+                                                    	$new_event->setObjectName($name);
+                                                    	$new_event->setDescription($desc." ".$event->content->text);
+                                                    }else{
+                                                    	$new_event->setObjectName($event_name);
+                                                    	$new_event->setDescription($event->content->text);
+                                                    }
                                                     $new_event->setUpdateSync(ProjectEvents::date_google_to_sql($event->updated));
                                                     if(!$is_invitation) $new_event->setExtCalId($calendar->getId());
                                                     $new_event->save();
@@ -500,9 +520,27 @@ class ProjectEvents extends BaseProjectEvents {
                                                     $new_event->setDuration(ProjectEvents::date_google_to_sql($event->when[0]->endTime));
                                                     $new_event->setTypeId(1);
                                                 }
-
-                                                $new_event->setObjectName($event_name);
-                                                $new_event->setDescription($event->content->text);
+                                            	if( strlen($event_name) > 100){
+                                                	$pieces = explode(" ", $event_name);
+                                                	$name = $pieces[0];
+                                                	if(strlen($name) > 100){
+                                                		$name = substr($pieces[0], 0, 100);
+                                                		$desc = substr($pieces[0], 100, strlen($pieces[0]));
+                                                	}else{
+                                                		$desc = "";
+                                                		foreach ($pieces as $piece){
+                                                			if(strlen($name.$piece) < 100)
+                                                				$name .= " ".$piece;
+                                                			else
+                                                				$desc .= " ".$piece;
+                                                		}
+                                                	}
+                                                	$new_event->setObjectName($name);
+                                                	$new_event->setDescription($desc." ".$event->content->text);
+                                                }else{
+                                                	$new_event->setObjectName($event_name);
+                                                	$new_event->setDescription($event->content->text);
+                                                }
                                                 $new_event->setSpecialID($special_id);
                                                 $new_event->setUpdateSync(ProjectEvents::date_google_to_sql($event->updated));
                                                 $new_event->setExtCalId($calendar->getId());                                            
@@ -562,7 +600,7 @@ class ProjectEvents extends BaseProjectEvents {
                                             }
                                             }  
                                             }
-                                       // }
+                                        }
                                     }else{
                                         $events = ProjectEvents::findByExtCalId($calendar->getId());
                                         if($calendar->delete()){

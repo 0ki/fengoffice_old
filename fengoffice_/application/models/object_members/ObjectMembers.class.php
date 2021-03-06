@@ -11,14 +11,8 @@
   		static function addObjectToMembers($object_id, $members_array){
   			
   			foreach ($members_array as $member){
-  				$exists = self::findOne(array("conditions" => array("`object_id` = ? AND `member_id` = ? ", $object_id, $member->getId()))) != null;
-  				if (!$exists) {
-	  				$om = new ObjectMember();
-	  				$om->setObjectId($object_id);
-	  				$om->setMemberId($member->getId());
-	  				$om->setIsOptimization(0);
-	  				$om->save();
-  				}
+  				$values = "(".$object_id.",".$member->getId().",0)";
+  				DB::execute("INSERT INTO ".TABLE_PREFIX."object_members (object_id,member_id,is_optimization) VALUES $values ON DUPLICATE KEY UPDATE object_id=object_id");
   			}
   			
   			foreach ($members_array as $member){
@@ -26,15 +20,11 @@
   				$stop = false;
   				foreach ($parents as $parent){
   					if (!$stop){
-	  					$exists = self::findOne(array("conditions" => array("`object_id` = ? AND `member_id` = ? ", 
-	  							  $object_id, $parent->getId())))!= null;
+	  					$exists = self::findOne(array("conditions" => array("`object_id` = ? AND `member_id` = ? ", $object_id, $parent->getId())))!= null;
 	  					if (!$exists){
-	  						$om = new ObjectMember();
-			  				$om->setObjectId($object_id);
-			  				$om->setMemberId($parent->getId());
-			  				$om->setIsOptimization(1);
-			  				$om->save();
-	  					} 	
+	  						$values = "(".$object_id.",".$parent->getId().",1)";
+  							DB::execute("INSERT INTO ".TABLE_PREFIX."object_members (object_id,member_id,is_optimization) VALUES $values ON DUPLICATE KEY UPDATE object_id=object_id");
+	  					}
 	  					else $stop = true;	
   					} 
   				}

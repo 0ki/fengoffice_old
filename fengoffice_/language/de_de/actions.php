@@ -175,4 +175,5 @@
 	'confirm delete permanently' => 'Wollen sie wirklich {0} löschen?',
 	'confirm archive member' => 'Wollen Sie wirklich {0} archivieren? Es werden auch alle Objekte darunter mitarchiviert.',
 	'confirm unarchive member' => 'Wollen Sie wirklich {0} reaktivieren? Es werden auch alle Objekte darunter reaktiviert.',
+	'save with a new name' => 'Unter einem neuen Namen speichern',
 ); ?>

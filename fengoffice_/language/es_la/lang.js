@@ -763,6 +763,8 @@ addLangs({
 	'confirm disable user': '¿Realmente quiere desactivar esta cuenta?',
 	'confirm delete user': '¿Realmente quiere eliminar esta cuenta?',
 	'add sub task': 'Nueva subtarea',
+	'edit variables' : 'Editar variables',
+	'new_task_template' : 'Nueva tarea',
 	'add first task': 'Agregar la primera tarea',
 	'do you want to mantain the current associations of this obj with members of': '¿Desea mantener las actuales asociaciones de este objeto con {0}?',
 	'company not found': 'Empresa no encontrada (id: {0})',
@@ -791,6 +793,8 @@ addLangs({
 	'filters': 'Filtros',
 	'project': 'Espacio de Trabajo',
 	'there are no changes': 'No se han realizado cambios. El documento no ha sido sobreescrito. ',
+	
+	'confirm_mail_without_attach': 'Hola! He notado que has ingresado una palabra igual o similar a adjunto en este correo, pero en el mismo no se encuentra ningún documento adjunto.\n¿Deseas enviar el correo de todos modos?',
 	
 	'new member added popup title' : '{0} {1} agregado exitosamente',
 	'new member added popup msg' : 'Has agregado exitosamente el {0} {1}.',

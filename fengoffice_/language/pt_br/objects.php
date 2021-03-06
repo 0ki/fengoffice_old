@@ -150,7 +150,7 @@
 	'the mail' => 'o email',
 	'the weblink' => 'o link web',
 	'the timeslot' => 'o intervalo de tempo',
-	'activity made several changes' => '{1} fez várias mudanças em {0} {2}',
+	'activity made ​​several changes' => '{1} fez várias mudanças em {0} {2}',
 	'log read task' => 'O usuário acessou a tarefa',
 	'log read message' => 'O usuário acessou a nota',
 	'log read file' => 'O usuário acessou o documento',
@@ -158,4 +158,6 @@
 	'log read event' => 'O usuário acessou o evento',
 	'log read weblink' => 'O usuário acessou o link na web',
 	'warning file extension type' => 'Atenção: você está prestes a salvar um documento com uma extensão de arquivo diferente do anterior',
+	'the object' => 'o objeto',
+	'activity made several changes' => '{1} fez várias alterações no {0} {2}',
 ); ?>

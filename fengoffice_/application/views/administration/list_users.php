@@ -69,7 +69,7 @@ if(isset($users) && is_array($users) && $cantUsers) { ?>
 <p><?php echo lang('no users in company') ; ?></p>
 <?php } 
  		$temp = new Contact();
- 		$companyUrl =  ($company) ? $company->getAddUserUrl() : $temp->getAddUserUrl() ;
+ 		$companyUrl =  isset($company) && $company instanceof Contact ? $company->getAddUserUrl() : $temp->getAddUserUrl() ;
 		echo  "<div style='padding:10px'><a href='$companyUrl' class='internalLink coViewAction ico-add'>" . lang('add user') . "</a></div>";
 		if ($cantPages > 0): ?>
 
@@ -90,7 +90,7 @@ if(isset($users) && is_array($users) && $cantUsers) { ?>
 				paginateDiv.innerHTML += html;
 			}
 		};
-		og.paginate(<?php echo $cantPages; ?>,<?php  echo ($company)?$company->getId():'0'?>);
+		og.paginate(<?php echo $cantPages; ?>,<?php  echo (isset($company) && $company instanceof Contact)?$company->getId():'0'?>);
  </script>
  
 		<?php endif; ?>

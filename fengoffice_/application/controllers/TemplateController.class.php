@@ -33,6 +33,12 @@ class TemplateController extends ApplicationController {
 				'name' => '',
 				'description' => ''
 				);
+			
+			//delete old temporaly template tasks
+			$conditions = array('conditions' => '`session_id` =  '.logged_user()->getId().' AND `template_id` = 0');
+			TemplateTasks::delete($conditions);
+			TemplateMilestones::delete($conditions);
+			
 		} else {
 			//No le agrego miembros
 // 			$member_ids = json_decode(array_var($_POST, 'members'));
@@ -145,6 +151,63 @@ class TemplateController extends ApplicationController {
 		tpl_assign('template_data', $template_data);
 	}
 
+	/**
+	 * Add template objects to the view
+	 * @param template_id
+	 * @return array
+	 */
+	function add_template_object_to_view($template_id) {
+		$objects = array();
+		$conditions = array('conditions' => '`template_id` = '.$template_id);
+		$tasks = TemplateTasks::findAll($conditions);			
+		$milestones = TemplateMilestones::findAll($conditions);	
+				
+		foreach ($milestones as $milestone){
+			$objectId = $milestone->getObjectId();
+			$id = $milestone->getId();
+			$objectTypeName = $milestone->getObjectTypeName();
+			$objectName = $milestone->getObjectName();
+			$manager = get_class($milestone->manager());
+			$ico = "ico-milestone";
+			$objects[] = $this->prepareObject($objectId, $id, $objectName, $objectTypeName, $manager, null, null, null, $ico);
+		}
+		
+		foreach ($tasks as $task){
+			$objectId = $task->getObjectId();
+			$id = $task->getId();
+			$objectTypeName = $task->getObjectTypeName();
+			$objectName = $task->getObjectName();
+			$manager = get_class($task->manager());
+			$milestoneId = $task instanceof TemplateTask ? $task->getMilestoneId() : '0';
+			$subTasks = $task->getSubTasks();
+			$parentId = $task->getParentId();
+			$ico = "ico-task";
+			$objects[] = $this->prepareObject($objectId, $id, $objectName, $objectTypeName, $manager, $milestoneId, $subTasks, $parentId, $ico);
+		}
+		
+		return $objects;
+	}
+		
+	function prepareObject($objectId, $id, $objectName, $objectTypeName, $manager, $milestoneId = null , $subTasks = null, $parentId = null, $ico = null) {
+		$object = array(
+				"object_id" => $objectId,
+				"type" => $objectTypeName,
+				"id" => $id,
+				"name" => $objectName,
+				"manager" => $manager,
+				"milestone_id" => $milestoneId,
+				"sub_tasks" => $subTasks,
+				"ico" => $ico,
+				"parent_id" => $parentId
+		);
+			
+		return $object;
+	}
+	
+	
+	
+	
+	
 	function edit() {
 		if (!can_manage_templates(logged_user())) {
 			flash_error(lang("no access permissions"));
@@ -259,9 +322,12 @@ class TemplateController extends ApplicationController {
 				ajx_current("empty");
 			}
 		}
+				
+		$objects = $this->add_template_object_to_view($cotemplate->getId());
+				
 		tpl_assign('object_properties', $object_properties);
 		tpl_assign('parameters', TemplateParameters::getParametersByTemplate(get_id()));
-		tpl_assign('objects', $cotemplate->getObjects());
+		tpl_assign('objects', $objects);
 		tpl_assign('cotemplate', $cotemplate);
 		tpl_assign('template_data', $template_data);
 	}
@@ -420,35 +486,65 @@ class TemplateController extends ApplicationController {
 		foreach ($objects as $object) {
 			if (!$object instanceof ContentDataObject) continue;
 			// copy object
-			$copy = $object->copy(false);
+			if ($object instanceof TemplateTask) {
+				$copy = $object->copyToProjectTask();
+				//if is subtask
+				if($copy->getParentId() > 0){	
+					foreach ($copies as $c) {
+						if($c instanceof ProjectTask){
+							if($c->getFromTemplateObjectId() == $object->getParentId()){
+								$copy->setParentId($c->getId());								
+							}
+						}
+						
+					}					
+				}
+			}else if ($object instanceof TemplateMilestone) {
+				$copy = $object->copyToProjectMilestone();
+							
+			}else{
+				$copy = $object->copy(false);
+				if ($copy->columnExists('from_template_id')) {
+					$copy->setColumnValue('from_template_id', $object->getId());
+				
+				}
+			}
 			if ($copy->columnExists('is_template')) {
 				$copy->setColumnValue('is_template', false);
 			}
-			if ($copy->columnExists('from_template_id')) {
-				$copy->setColumnValue('from_template_id', $object->getId());
-			}
+			
 			if ($copy instanceof ProjectTask) {
 				// don't copy parent task and milestone
 				//$copy->setMilestoneId(0);
-				$copy->setParentId(0);
+				//$copy->setParentId(0);
 			}
+			
 			$copy->save();
 			$copies[] = $copy;
+			
 			
 			/* Set instantiated object members:
 			 * 		if no member is active then the instantiated object is put in the same members as the original
 			 * 		if any members are selected then the instantiated object will be put in those members  
 			 */
-			$template_object_members = $object->getMemberIds();
+			$template_object_members = $object->getMembers();
+			
 			$object_members = array();
+					
+			//change members according to context 
 			foreach( $active_context as $selection ) {
 				if ($selection instanceof Member) { // member selected
+					foreach( $template_object_members as $i => $object_member){
+						if ($object_member instanceof Member && $object_member->getObjectTypeId() == $selection->getObjectTypeId()) {
+							unset($template_object_members[$i]);
+						}						
+					}
+					
 					$object_members[] = $selection->getId();
 				}
 			}
-			
-			if (count($object_members) == 0) {
-				$object_members = $template_object_members;
+			foreach( $template_object_members as $object_member ) {
+				$object_members[] = $object_member->getId();
 			}
 			
 			$controller->add_to_members($copy, $object_members);
@@ -456,10 +552,10 @@ class TemplateController extends ApplicationController {
 			$copy->copyLinkedObjectsFrom($object);
 			// copy subtasks if applicable
 			if ($copy instanceof ProjectTask) {
-				ProjectTasks::copySubTasks($object, $copy, false);
+				/*ProjectTasks::copySubTasks($object, $copy, false);
 				foreach($copy->getOpenSubTasks(false) as $m_task){
 					$controller->add_to_members($m_task, $object_members);
-				}
+				}*/
 				$manager = $copy->manager();
 			} else if ($copy instanceof ProjectMilestone) {
 				ProjectMilestones::copyTasks($object, $copy, false);
@@ -468,10 +564,13 @@ class TemplateController extends ApplicationController {
 				}
 				$manager = $copy->manager();
 			}
+			
 			// copy custom properties
 			$copy->copyCustomPropertiesFrom($object);
 			// set property values as defined in template
 			$objProp = TemplateObjectProperties::getPropertiesByTemplateObject($id, $object->getId());
+			
+			//$manager = $copy->manager();
 			foreach($objProp as $property) {
 				
 				$propName = $property->getProperty();
@@ -563,7 +662,7 @@ class TemplateController extends ApplicationController {
 				if ($c->getMilestoneId() > 0) {
 					// find milestone in copies
 					foreach ($copies as $m) {
-						if ($m instanceof ProjectMilestone && $m->getFromTemplateId() == $c->getMilestoneId()) {
+						if ($m instanceof ProjectMilestone && $m->getFromTemplateObjectId() == $c->getMilestoneId()) {
 							$c->setMilestoneId($m->getId());
 							$c->save();
 							break;

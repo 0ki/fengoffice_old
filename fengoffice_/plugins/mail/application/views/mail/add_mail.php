@@ -93,7 +93,7 @@ sig.actualHtmlSignature = '';
   	<div style="display: none;">
   		<table><tr><td>
   			<?php echo submit_button(lang('send mail'), '', 
-  			array('id'=>'sendMail','onclick'=>"og.setHfValue('$genid', 'isDraft', 'false');og.stopAutosave('$genid');"))?>
+  			array('id'=>'sendMail','onclick'=>"og.checkAttach();"))?>
   		</td><td>
   			<?php echo submit_button(lang('save')." ".lang('draft'), '', 
   			array('id'=>'saveMail','onclick'=>"og.setHfValue('$genid', 'isDraft', 'true');og.stopAutosave('$genid');")) ?>
@@ -214,15 +214,6 @@ sig.actualHtmlSignature = '';
  	</script>
  	</fieldset>
  	</div>
-                    
-        <div id="<?php echo $genid ?>add_subscribers_div" style="display:none">
-            <fieldset>
-                <legend><?php echo lang('object subscribers') ?></legend>
-                <div id="<?php echo $genid ?>add_subscribers_content">
-                    <?php echo render_add_subscribers($object, $genid); ?>
-                </div>
-            </fieldset>
-        </div>
  	
  	<div id="<?php echo $genid ?>add_mail_add_contacts" style="display:none;">
  	<fieldset id="<?php echo $genid ?>fieldset_add_contacts">
@@ -420,5 +411,22 @@ Ext.onReady(function() {
 	});
 });
 
+og.checkAttach = function() {
+	var attach = $("#<?php echo $genid;?>attachments").children().length;
+	var editor = og.getCkEditorInstance(genid + 'ckeditor');
+	text = editor.getData();
+	var originalMail = text.indexOf("original_mail");
+	
+	if(!attach && ((text.indexOf("adjunt") !== -1 && (text.indexOf("adjunt") < originalMail || originalMail == -1)) || (text.indexOf("attach") !== -1 && (text.indexOf("attach") < originalMail || originalMail == -1)))){
+		var conf = confirm(lang("confirm_mail_without_attach"));
+		if (conf==true){
+			og.setHfValue('<?php echo $genid;?>', 'isDraft', 'false');
+			og.stopAutosave('<?php echo $genid;?>');
+		}
+	}else{
+		og.setHfValue('<?php echo $genid;?>', 'isDraft', 'false');
+		og.stopAutosave('<?php echo $genid;?>');
+	}
+}
 
 </script>

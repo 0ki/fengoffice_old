@@ -227,28 +227,32 @@ class ChorizoUpgradeScript extends ScriptUpgraderScript {
 				  AND om.member_id IN (
 				    SELECT m.id FROM ".$t_prefix."members m WHERE m.dimension_id IN (SELECT d.id FROM ".$t_prefix."dimensions d WHERE d.defines_permissions=1 AND d.is_manageable=1)
 				  )
-				);
+				) ON DUPLICATE KEY UPDATE group_id=group_id;
 			";
-		}
 		
-		if (version_compare($installed_version, '2.3.2-rc') < 0) {
-			$upgrade_script .= "
-				ALTER TABLE `".$t_prefix."object_types` DROP INDEX `name`,
-				 ADD UNIQUE INDEX `name` USING BTREE(`name`);
-			";
-		}
-		
-		
-		if (version_compare($installed_version, '2.3.2-rc2') < 0) {
-			$upgrade_script .= "
-				UPDATE `".$t_prefix."administration_tools` SET `visible` = '0' WHERE `name`='mass_mailer';
-				DELETE FROM `".$t_prefix."contact_emails` WHERE `contact_id` = '0';
-			";
-			
-			if (!$this->checkColumnExists($t_prefix."application_logs", "member_id", $this->database_connection)) {
+			if (version_compare($installed_version, '2.3.2-rc') < 0) {
 				$upgrade_script .= "
-					ALTER TABLE ".$t_prefix."application_logs ADD member_id int(10) NOT NULL default '0';
+					CREATE TABLE `to_delete` (`id` INTEGER UNSIGNED, PRIMARY KEY (`id`)) ENGINE = InnoDB;
+					insert into to_delete select o.id from ".$t_prefix."object_types o inner join ".$t_prefix."object_types o2 on o.id>o2.id and o.name=o2.name;
+					delete from ".$t_prefix."object_types where id in (select id from to_delete);
+					DROP TABLE `to_delete`;
+					ALTER TABLE `".$t_prefix."object_types` DROP INDEX `name`,
+					 ADD UNIQUE INDEX `name` USING BTREE(`name`);
 				";
+			}
+			
+			
+			if (version_compare($installed_version, '2.3.2-rc2') < 0) {
+				$upgrade_script .= "
+					UPDATE `".$t_prefix."administration_tools` SET `visible` = '0' WHERE `name`='mass_mailer';
+					DELETE FROM `".$t_prefix."contact_emails` WHERE `contact_id` = '0';
+				";
+				
+				if (!$this->checkColumnExists($t_prefix."application_logs", "member_id", $this->database_connection)) {
+					$upgrade_script .= "
+						ALTER TABLE ".$t_prefix."application_logs ADD member_id int(10) NOT NULL default '0';
+					";
+				}
 			}
 		}
 		

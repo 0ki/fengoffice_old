@@ -1,4 +1,7 @@
 <script>
+og.eventManager.addListener('template object added',function(data){
+	og.redrawTemplateObjectsLists(data);
+});
 
 og.eventManager.addListener('reload member restrictions', 
  	function (genid){ 

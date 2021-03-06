@@ -87,6 +87,17 @@
     } // log
     
     /**
+    * Log the result of applying the print_r() function to the variable $message (this will create a Logger_Entry in $session_name session - NULL for default session)
+    *
+    * @param string $message
+    * @return boolean
+    * @throws InvalidParamError If we don't get session by $session_name
+    */
+    static function log_r($message, $severity = Logger::DEBUG, $session_name = null) {
+    	return self::log(print_r($message, 1), $severity, $session_name);
+    }
+    
+    /**
     * Seve single session into specific backend
     *
     * @param string $session_name

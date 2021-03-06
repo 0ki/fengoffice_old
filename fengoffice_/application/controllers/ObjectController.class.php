@@ -1016,7 +1016,7 @@ class ObjectController extends ApplicationController {
 			$type_condition = " AND name IN ('".implode("','",$types) ."')";  
 		}
 		
-		$res = DB::executeAll("SELECT id from ".TABLE_PREFIX."object_types WHERE type IN ('". implode("','",$obj_type_types)."') AND name <> 'file revision' $type_condition ");
+		$res = DB::executeAll("SELECT id from ".TABLE_PREFIX."object_types WHERE type IN ('". implode("','",$obj_type_types)."') AND name <> 'template_task' AND name <> 'template_milestone' AND name <> 'file revision' $type_condition ");
 		$type_ids = array();
 
 		foreach ($res as $row){
@@ -1473,6 +1473,7 @@ class ObjectController extends ApplicationController {
 			return;
 		}
 		$object_id = get_id('object_id');
+		$dont_reload = array_var($_GET, 'dont_reload');
 		$object = Objects::findObject($object_id);
 		if ($object instanceof ContentDataObject && $object->canDelete(logged_user()) && (!$object instanceof Contact || !$object->isUser())) {
 			try {
@@ -1492,7 +1493,12 @@ class ObjectController extends ApplicationController {
 		} else {
 			flash_error(lang("no access permissions"));
 		}
-		ajx_current("back");
+		
+		if($dont_reload){
+			ajx_current("empty");
+		}else{		
+			ajx_current("back");		
+		}
 	}
 
 	function trash() {

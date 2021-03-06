@@ -14,7 +14,17 @@ og.pickObjectForTemplate = function(before) {
 //	}
 //	
 //	og.contextManager.getCheckedMembers();
-	og.ObjectPicker.show(function (objs) {
+	//get_url('task', 'add_task', array('template_task' => "true"))?>
+	
+	var params = new Array();
+	params["template_task"] = true;	
+	og.openLink(og.getUrl('task','add_task'), {'post' : params});
+	
+	//obj={type:"task",object_id:"Doe",name:"blue"}; 
+	//og.addObjectToTemplate(this, obj);
+	
+	
+	/*og.ObjectPicker.show(function (objs) {
 		if (objs) {
 			for (var i=0; i < objs.length; i++) {
 				var obj = objs[i].data;
@@ -35,7 +45,7 @@ og.pickObjectForTemplate = function(before) {
 		types: ['task','milestone'],
 		selected_type: 'task'
 //		context: og.contextManager.plainCheckedMembers(13)
-	});
+	});*/
 	
 };
 
@@ -91,36 +101,87 @@ og.drawTemplateObjectMilestonesCombo = function(object_div, object) {
 	}
 }
 
-
-og.addObjectToTemplate = function(before, obj, dont_draw_milestone_combo) {
-	
-	var parent = before.parentNode;
-	var count = 0;
-	var inputs = parent.getElementsByTagName('input');
-	for (var i=0; i < inputs.length; i++) {
-		if(inputs[i].className == 'objectID'){
-			count++;
-		}
+og.toggleTemplateSubtasks = function(taskId){
+	var subtasksDiv = document.getElementById('ogTasksPanelSubtasksT' + taskId);
+	var expander = document.getElementById('ogTasksPanelFixedExpanderT' + taskId);
+	var task = this.getTask(taskId);
+	if (subtasksDiv){
+		task.isExpanded = !task.isExpanded;
+		subtasksDiv.style.display = (task.isExpanded)? 'block':'none';
+		expander.className = "og-task-expander " + ((task.isExpanded)?'toggle_expanded':'toggle_collapsed');
 	}
+}
+
+og.addObjectToTemplate = function(target, obj, dont_draw_milestone_combo) {
+	target = $('#'+target);
+	
+	var count = 0;
+	count = target.children('[id^= objectDiv]').length;
+	
+	
 	var div = document.createElement('div');
-	div.className = "og-add-template-object ico-" + obj.type;
-	/*div.onmouseover = og.templateObjectMouseOver;
-	div.onmouseout = og.templateObjectMouseOut;*/
+	div.id = 'template-object' + obj.object_id;
+	div.className = "template-add-template-object ico-" + obj.type;
+	
 	div.innerHTML =
-		'<input class="objectID" type="hidden" name="objects[' + count + ']" value="' + obj.object_id + '" />' +'<div class="namecontainer">'+
-		'<span class="name">' + og.clean(obj.name) + '</span>' +'</div>'+
-		'<a href="#" onclick="og.removeObjectFromTemplate(this.parentNode, ' + obj.object_id + ')" class="removeDiv">'+lang('remove')+'</a>';
+		'<input class="objectID" type="hidden" name="objects[' + obj.object_id + ']" value="' + obj.object_id + '" />' +
+		'<div style="float: left;" class="db-ico '+obj.ico+'"></div>' +
+		'<a href="#" class="internalLink" onclick="og.viewTempObj('+obj.object_id+',  \''+obj.type+'\')">'+og.clean(obj.name)+'</a>';
+			
+	var divActions = document.createElement('div');
+	divActions.className = "template-object-actions";
+	divActions.innerHTML =
+		'<a id="toggleTemplatePropertys'+obj.object_id+'" href="#" onclick="og.toggleTemplatePropertys('+obj.object_id+')" class="toggle_collapsed">'+ lang("edit variables") + '</a>'+
+		"<a href='#' class='internalLink coViewAction ico-edit' onclick='"+"og.editTempObj("+obj.object_id+", \""+obj.type+"\")"+"'>" + lang('edit') + '</a>'+
+		'<a href="#" onclick="og.openLink(og.getUrl(\'task\', \'add_task\', {template_task:1, parent_id:'+ obj.object_id +'}), {caller:\'new_task_template\'})" class="internalLink ico-add coViewAction">'+lang("add sub task")+'</a>'+
+		'<a href="#" onclick="og.removeObjectFromTemplate(this.parentNode, ' + obj.object_id + ')" class="internalLink coViewAction ico-delete">'+lang('delete')+'</a>';
+		
+	//if(obj.sub_tasks.length > 0){
+		var subtasksExpander = document.createElement('div');
+		subtasksExpander.id = 'subtasksExpander' + obj.object_id;
+		subtasksExpander.className = "template-subtasksExpander";
+		subtasksExpander.innerHTML = '<a href="#" onclick="og.toggleTemplateSubtasks('+obj.object_id+')" class="toggle_collapsed"></a>';
+		subtasksExpander.style.display="none"; 
+		div.insertBefore(subtasksExpander,div.firstChild);
+	//}
+	
+	
+	var subTasksDiv = document.createElement('fieldset');
+	subTasksDiv.id = 'subTasksDiv' + obj.object_id;
+	subTasksDiv.className = "template-subtasks-div ";
+	subTasksDiv.style.display = 'none';
+	subTasksDiv.innerHTML =	'<legend>Subtasks of '+og.clean(obj.name)+'</legend>';	
+	
 	var editPropDiv = document.createElement('div');
-	editPropDiv.id = 'propDiv' + count;
+	editPropDiv.id = 'propDiv' + obj.object_id;
 	editPropDiv.style.paddingLeft = '30px';
-	editPropDiv.innerHTML = '<a href="#" onclick="og.addTemplateObjectProperty(' + obj.object_id + ',' + count + ',\'\', \'\')" class="link-ico ico-add">'+ lang('edit object property') + '</a>';
+	
+	var addTempObjProp = document.createElement('a');
+	addTempObjProp.innerHTML = '<a href="#" onclick="og.addTemplateObjectProperty(' + obj.object_id + ',' + obj.object_id + ',\'\', \'\')" class="link-ico ico-add">'+ "Add a variable to this task" + '</a>';
+	var propertyDiv = document.createElement('fieldset');
+	propertyDiv.id = 'propertyDiv'+ obj.object_id;	
+	propertyDiv.className = 'template-property-div';
+	propertyDiv.innerHTML =	'<legend>Variables</legend>';	
+	propertyDiv.style.display = 'none';
+	propertyDiv.appendChild(editPropDiv);
+	propertyDiv.appendChild(addTempObjProp);
+	
 	var objectDiv = document.createElement('div');
-	objectDiv.id = 'objectDiv' + count;
-	objectDiv.className = "template-object-div" + (count % 2 ? " odd" : "");
-	parent.insertBefore(objectDiv, before);
+	objectDiv.id = 'objectDiv' + obj.object_id;
+			
+	objectDiv.className = "template-object-div" + (count % 2 ? " odd" : " pair");
+		
 	objectDiv.appendChild(div);
-	objectDiv.appendChild(editPropDiv);
+	objectDiv.appendChild(divActions);
+	objectDiv.appendChild(propertyDiv);
+	
+	var params = new Array();
+	params["template_task"] = 1;
+			
+	objectDiv.appendChild(subTasksDiv);
 	og.templateObjects.push(obj);
+	
+	target.append( objectDiv );
 	
 	if (!dont_draw_milestone_combo) {
 		// if new object is a task and template has milestones -> add milestones combo.
@@ -130,13 +191,6 @@ og.addObjectToTemplate = function(before, obj, dont_draw_milestone_combo) {
 		
 		// if new object is a milestone -> refresh milestones combo for all tasks.
 		if (obj.type == 'milestone') {
-			og.add_template_input_divs = [];
-			var inputs = parent.getElementsByTagName('input');
-			for (var i=0; i < inputs.length; i++) {
-				if(inputs[i].className == 'objectID') {
-					og.add_template_input_divs[inputs[i].value] = inputs[i].parentNode.parentNode.id;
-				}
-			}
 			for (k=0; k<og.templateObjects.length; k++) {
 				if (og.templateObjects[k].type == 'task') {
 					og.drawTemplateObjectMilestonesCombo(Ext.get(og.add_template_input_divs[og.templateObjects[k].object_id]).dom, og.templateObjects[k]);
@@ -144,9 +198,24 @@ og.addObjectToTemplate = function(before, obj, dont_draw_milestone_combo) {
 			}
 		}
 	}
+		
 };
 
+og.toggleTemplateSubtasks = function(object_id){
+	$('[id^=subTasksDiv' + object_id +']').toggle();
+	$('[id^=subtasksExpander' + object_id +'] a').toggleClass('toggle_collapsed');
+	$('[id^=subtasksExpander' + object_id +'] a').toggleClass('toggle_expanded');		
+	
+}
+
+og.toggleTemplatePropertys = function(object_id){
+	$('[id^=propertyDiv' + object_id +']').toggle();
+	$('[id^=toggleTemplatePropertys' + object_id +'] a').toggleClass('toggle_collapsed');
+	$('[id^=toggleTemplatePropertys' + object_id +'] ').toggleClass('toggle_expanded');		
+}
+
 og.removeObjectFromTemplate = function(div, obj_id) {
+	og.openLink(og.getUrl('object','delete_permanently', {object_id: obj_id, dont_reload: true}));
 	var parent = div.parentNode.parentNode;
 	var removeId = div.parentNode.id;
 	parent.removeChild(div.parentNode);
@@ -168,13 +237,18 @@ og.removeObjectFromTemplate = function(div, obj_id) {
 			count++;
 		}
 	}
-	for(var j=0; j < og.templateObjects.length - 1; j++){
-		d = document.getElementById('objectDiv' + j);
-		Ext.fly(d).removeClass("odd");
-		if (j % 2) {
-			Ext.fly(d).addClass("odd");
+	
+	//rebuild colors 
+	$("#"+parent.getAttribute("id")).children("[id^='objectDiv']").each(function( index ) {
+		if (index%2==0){
+			$( this ).removeClass( "odd" );
+			$( this ).addClass( "pair" );
+		}else{
+			$( this ).removeClass( "pair" );
+			$( this ).addClass( "odd" );
 		}
-	}
+	});
+	
 	var removed_objects = [];
 	for(var k=0; k < og.templateObjects.length; k++){
 		if(og.templateObjects[k].object_id == obj_id ){
@@ -196,6 +270,14 @@ og.removeObjectFromTemplate = function(div, obj_id) {
 			}
 		}
 	}
+
+	//subtasks div empty?
+	/*
+	if (parent.getAttribute("id").match(/subTasksDiv.*//*)) {
+		if($("#"+parent.getAttribute("id")+ " > div").length == 0){
+			$("#"+parent.getAttribute("id")).hide();
+		}
+	}*/
 };
 
 og.templateObjectMouseOver = function() {
@@ -671,7 +753,7 @@ og.promptAddParameter = function(before, edit, pos) {
 		    	value: loadType,
 		    	store: new Ext.data.SimpleStore({
 					fields: ['id', 'name'],
-					data : [['string', lang('string')],['date', lang('date')],['user', lang('user')]]
+					data : [['string', lang('text')],['date', lang('date')],['user', lang('user')]]
 				})
 		    }
 		]

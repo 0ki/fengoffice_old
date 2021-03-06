@@ -107,3 +107,30 @@ og.removeCPDateValue = function(genid, id, pos){
 	}
 	dateTable.replaceChild(newTBody, tBody);
 };
+
+og.addTableCustomPropertyRow = function(parent, focus, values, col_count, ti, cpid) {
+	var count = parent.getElementsByTagName("tr").length;
+	var tbody = parent.getElementsByTagName("tbody")[0];
+	var tr = document.createElement("tr");
+	ti = ti + col_count * count;
+	var cell_w = (600 / col_count) + 'px';					
+	for (row = 0; row < col_count; row++) {
+		var td = document.createElement("td");						
+		var row_val = values && values[row] ? values[row] : "";
+		td.innerHTML = '<input class="value" style="width:'+cell_w+';min-width:120px;" type="text" name="object_custom_properties[' + cpid + '][' + count + '][' + row + ']" value="' + row_val + '" tabindex=' + ti + '>';
+		if (td.children && row == 0) var input = td.children[0];
+		tr.appendChild(td);
+		ti += 1;
+	}
+	tbody.appendChild(tr);
+	var td = document.createElement("td");
+	td.innerHTML = '<div class="ico ico-delete" style="width:16px;height:16px;cursor:pointer" onclick="og.removeTableCustomPropertyRow(this.parentNode.parentNode);return false;">&nbsp;</div>';
+	tr.appendChild(td);
+	tbody.appendChild(tr);
+	if (input && focus)
+		input.focus();
+}
+og.removeTableCustomPropertyRow = function(tr) {
+	var parent = tr.parentNode;
+	parent.removeChild(tr);
+}

@@ -252,4 +252,5 @@
 	'field ProjectTasks assigned_to_contact_id' => 'Designado para',
 	'field ProjectTasks percent_completed' => 'Percentual executado',
 	'field ProjectTasks original_task_id' => 'Id original de tarefa',
+	'field Contacts comments' => 'Notas',
 ); ?>

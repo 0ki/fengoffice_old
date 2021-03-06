@@ -151,7 +151,7 @@ og.MemberTree = function(config) {
 						}
 					});                                        
 				} else {
-                        if (this.selectionHasAttachments() && e.target.id) {
+					if (this.selectionHasAttachments() && e.target.id) {
 						if (og.preferences['mail_drag_drop_prompt'] == 'prompt') {
 							var attachment = confirm(lang('do you want to classify the unclassified emails attachments', config.title)) ? "1" : "0";
 						} else if (og.preferences['mail_drag_drop_prompt'] == 'classify') {

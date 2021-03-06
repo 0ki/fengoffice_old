@@ -181,7 +181,8 @@ abstract class ContentDataObjects extends DataManager {
       $table_prefix = defined('FORCED_TABLE_PREFIX') && FORCED_TABLE_PREFIX ? FORCED_TABLE_PREFIX : TABLE_PREFIX;
 
       // Prepare query parts
-      $where_string = trim($conditions) == '' ? '' : "WHERE " . preg_replace("/\s+in\s*\(\s*\)/i", " = -1", $conditions);
+      //$where_string = trim($conditions) == '' ? '' : "WHERE " . preg_replace("/\s+in\s*\(\s*\)/i", " = -1", $conditions);
+      $where_string = trim($conditions) == '' ? '' : "WHERE " . trim($conditions);
       $order_by_string = trim($order_by) == '' ? '' : "ORDER BY $order_by";
       $limit_string = $limit > 0 ? "LIMIT $offset, $limit" : '';
       $distinct = $distinct ? "DISTINCT " : "";
@@ -464,25 +465,30 @@ abstract class ContentDataObjects extends DataManager {
 		if (logged_user() instanceof Contact) {
 			$uid = logged_user()->getId();
 			// Build Main SQL
+			
+			$permissions_condition = "o.id IN ( 
+		    			SELECT object_id FROM ".TABLE_PREFIX."sharing_table
+		    			WHERE group_id  IN (
+			     			SELECT permission_group_id FROM ".TABLE_PREFIX."contact_permission_groups WHERE contact_id = $uid
+						)
+					)";
+			if ($this instanceof Contacts && $this->object_type_name == 'contact' && can_manage_contacts(logged_user())) {
+				$permissions_condition = "true";
+			}
 		    $sql = "
 		    	SELECT $SQL_FOUND_ROWS $SQL_COLUMNS FROM ".TABLE_PREFIX."objects o
 				$SQL_BASE_JOIN
 		    	$SQL_EXTRA_JOINS 
 		    	
 		    	WHERE 
-		    		o.id IN ( 
-		    			SELECT object_id FROM ".TABLE_PREFIX."sharing_table
-		    			WHERE group_id  IN (
-			     			SELECT permission_group_id FROM ".TABLE_PREFIX."contact_permission_groups WHERE contact_id = $uid
-						)
-					) 
+		    		$permissions_condition
 					AND	$SQL_CONTEXT_CONDITION
 					AND $SQL_TYPE_CONDITION
 					AND $SQL_TRASHED_CONDITION $SQL_ARCHIVED_CONDITION $SQL_EXTRA_CONDITIONS 
 				$SQL_ORDER 
 		    	$SQL_LIMIT";
-	
-	
+
+
 			// Execute query and build the resultset
 	    	$rows = DB::executeAll($sql);
 	    	if ($return_raw_data) {

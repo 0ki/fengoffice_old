@@ -326,6 +326,9 @@
 .ico-task {
 	background-image: url(../../images/16x16/tasks.png) !important;
 }
+.ico-new_task_template {
+	background-image: url(../../images/16x16/tasks.png) !important;
+}
 .ico-task-high-priority {
 	background: transparent url(../../images/16x16/all_16_16_vertical.png) no-repeat scroll 0 -199px !important;
 }

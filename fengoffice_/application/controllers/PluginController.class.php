@@ -68,6 +68,7 @@ class PluginController extends ApplicationController {
 				$plg->update();
 			}
 		} catch (Exception $e) {
+			$name = $plg instanceof Plugin ? $plg->getName() : 'n/a';
 			throw new Error("Error updating plugin '$name': " . $e->getMessage());
 		}
 	}

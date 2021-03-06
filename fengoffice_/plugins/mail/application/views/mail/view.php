@@ -111,8 +111,8 @@ if (isset($email)){
 	
 	if ($email->getHasAttachments() && is_array($attachments) && count($attachments) > 0) {
 		$description .=	'<tr><td colspan=2>	<fieldset>
-		<legend class="toggle_collapsed" onclick="og.toggle(\'mv_attachments\',this)">' . lang('attachments') . '</legend>
-		<div id="mv_attachments" style="display:none">
+		<legend class="toggle_expanded" onclick="og.toggle(\'mv_attachments\',this)">' . lang('attachments') . '</legend>
+		<div id="mv_attachments" >
 		<table>';
 		foreach($attachments as $att) {
 			if (!array_var($att, 'hide')) {

@@ -627,54 +627,60 @@ og.ContactManager = function() {
 		            	new Ext.Action({
 		            		text: lang('export'),
 		            		iconCls: 'ico-download',
-		            		menu: { items: [
-		            			{ text: lang('to csv'), iconCls: 'ico-text', handler: function() {
-		            								var ids = getSelectedIds();
-		            								if (ids != '') {
-		            											var url = og.getUrl('contact', 'export_to_csv_file', {ids:getSelectedIds()});
-		            											og.openLink(url);
-		            									}else{
-		            										var idsAll = getAllIds();
-		            										if (idsAll != '') {
-		            											var url = og.getUrl('contact', 'export_to_csv_file', {allIds:getAllIds()});
-		            											og.openLink(url);
-		            										}else og.err(lang("there are no contacts to export"));
-		            									}
-                                                        }
-                                                },
-                                                { text: lang('to vcard'), iconCls: 'ico-account', handler: function() {
-                                                                var ids = getSelectedIds();
-                                                                if (ids != '') {
-                                                                        var url = og.getUrl('contact', 'export_to_vcard', {ids:getSelectedIds()});
-                                                                        location.href = url;
-                                                                } else og.err(lang("you must select the contacts from the grid"));
-                                                        }
-                                                },
-                                                { text: lang('to vcard all'), iconCls: 'ico-account', handler: function() {										
-                                                                var url = og.getUrl('contact', 'export_to_vcard_all');
-                                                                location.href = url;										
-                                                        }
-                                                }
-		            		]}
+		            		menu: {
+			            		items: [{
+			            			text: lang('to csv'), iconCls: 'ico-text', handler: function() {
+			            				var ids = getSelectedIds();
+			            				if (ids != '') {
+			            					var url = og.getUrl('contact', 'export_to_csv_file', {ids:getSelectedIds()});
+			            					og.openLink(url);
+			            				}else{
+			            					var url = og.getUrl('contact', 'export_to_csv_file', {export_all:1});
+			            					og.openLink(url);
+			            				}
+			            			}
+			    				}, {
+			    					text: lang('to vcard'), iconCls: 'ico-account', handler: function() {
+			    						var ids = getSelectedIds();
+			    						if (ids != '') {
+			    							var url = og.getUrl('contact', 'export_to_vcard', {ids:getSelectedIds()});
+			    							location.href = url;
+			    						} else {
+			    							og.err(lang("you must select the contacts from the grid"));
+			    						}
+			    					}
+			    				}, {
+			    					text: lang('to vcard all'), iconCls: 'ico-account', handler: function() {
+			    						var url = og.getUrl('contact', 'export_to_vcard_all');
+			    						location.href = url;
+			    					}
+			    				}]
+		            		}
 		            	})
 					]}
 				}),
 				new Ext.Action({
 					text: lang('companies'),
 					iconCls: 'ico-company',
-                                        menu: { items: [
-						{ text: lang('import'), iconCls: 'ico-upload', handler: function() {
-							var url = og.getUrl('contact', 'import_from_csv_file', {type:'company', from_menu:1});
-							og.openLink(url);
-						}},
-						{ text: lang('export'), iconCls: 'ico-download', handler: function() {
-							var idsAll = getAllIdsCompanys();
-							if (idsAll != ''){
-							var url = og.getUrl('contact', 'export_to_csv_file', {type:'company',allIds:getAllIdsCompanys()});
-							og.openLink(url);
-						} else og.err(lang("there are no companies to export")); 
-						}}
-					]}
+					menu: {
+						items: [{
+							text: lang('import'), iconCls: 'ico-upload', handler: function() {
+								var url = og.getUrl('contact', 'import_from_csv_file', {type:'company', from_menu:1});
+								og.openLink(url);
+							}
+						}, {
+							text: lang('export'), iconCls: 'ico-download', handler: function() {
+								var idsAll = getAllIdsCompanys();
+								if (idsAll != ''){
+									var url = og.getUrl('contact', 'export_to_csv_file', {type:'company',allIds:idsAll});
+									og.openLink(url);
+								} else {
+									var url = og.getUrl('contact', 'export_to_csv_file', {type:'company',export_all:1});
+									og.openLink(url);
+								}
+							}
+						}]
+					}
 				})
 			]}
 		})

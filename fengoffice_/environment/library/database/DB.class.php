@@ -362,7 +362,7 @@ final class DB {
 	 * @param string $sql
 	 * @return void
 	 */
-	function addToSQLLog($sql) {
+	static function addToSQLLog($sql) {
 		self::$sql_log[] = $sql;
 	} // addToSQLLog
 
@@ -373,7 +373,7 @@ final class DB {
 	 * @param void
 	 * @return array
 	 */
-	function getSQLLog() {
+	static function getSQLLog() {
 		return self::$sql_log;
 	} // getSQLLog
 

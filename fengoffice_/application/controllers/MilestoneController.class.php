@@ -100,7 +100,17 @@ class MilestoneController extends ApplicationController {
 				'is_template' => array_var($_GET, "is_template", false)
 			); // array
 		} // if
-		$milestone = new ProjectMilestone();
+		
+		//is template milestone?
+		if(array_var($_REQUEST, 'template_milestone') == true){
+			$milestone = new TemplateMilestone();
+			$this->setTemplate(get_template_path('add_template_milestone', 'template_milestone'));
+		
+		}else{
+			$milestone = new ProjectMilestone();
+		}
+		
+		
 		tpl_assign('milestone_data', $milestone_data);
 		tpl_assign('milestone', $milestone);
 
@@ -116,6 +126,10 @@ class MilestoneController extends ApplicationController {
 			try {
 				$member_ids = json_decode(array_var($_POST, 'members'));
 				
+				if($milestone instanceof TemplateMilestone){
+					$milestone->setSessionId(logged_user()->getId());
+					$milestone->setIsTemplate(true);
+				}
 				DB::beginWork();
 
 				$milestone->save();
@@ -137,6 +151,20 @@ class MilestoneController extends ApplicationController {
 				ApplicationLogs::createLog($milestone, ApplicationLogs::ACTION_ADD);
 				
 				DB::commit();
+				
+				//Send Template milestone to view
+				if($milestone instanceof TemplateMilestone){
+					$object = array(
+							"object_id" => $milestone->getObjectId(),
+							"type" => $milestone->getObjectTypeName(),
+							"id" => $milestone->getId(),
+							"name" => $milestone->getObjectName(),
+							"ico" => "ico-milestone",
+							"manager" => get_class($milestone->manager())							
+					);
+					
+					evt_add("template object added", $object);
+				}
 
 				// Send notification
 				try {
@@ -176,14 +204,23 @@ class MilestoneController extends ApplicationController {
 			return;
 		}
 		$this->setTemplate('add_milestone');
-
-		$milestone = ProjectMilestones::findById(get_id());
-		if(!($milestone instanceof ProjectMilestone)) {
-			flash_error(lang('milestone dnx'));
-			ajx_current("empty");
-			return;
-		} // if
-
+		
+		if(array_var($_REQUEST, "template_milestone")){
+			$milestone = TemplateMilestones::findById(get_id());
+			$this->setTemplate(get_template_path('add_template_milestone', 'template_milestone'));
+			if(!($milestone instanceof TemplateMilestone)) {
+				flash_error(lang('milestone dnx'));
+				ajx_current("empty");
+				return;
+			} // if
+		}else{
+			$milestone = ProjectMilestones::findById(get_id());
+			if(!($milestone instanceof ProjectMilestone)) {
+				flash_error(lang('milestone dnx'));
+				ajx_current("empty");
+				return;
+			} // if
+		}
 		if(!$milestone->canEdit(logged_user())) {
 			flash_error(lang('no access permissions'));
 			ajx_current("empty");

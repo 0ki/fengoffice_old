@@ -23,9 +23,14 @@
 				$intersection = array_intersect($intersection, $allowed_contact_ids[$i]);
 			}
 		}
+		foreach ($intersection as $k => &$v) {
+			if ($v == '') unset($intersection[$k]); 
+		}
+		
 		//user to display on the widget
+		$intersection_condition = count($intersection) > 0 ? 'object_id IN ('.implode(',',$intersection).') AND' : '';
 		$contacts = Contacts::findAll(array(
-			'conditions' => 'object_id IN ('.implode(',',$intersection).') AND `is_company` = 0 AND disabled = 0',
+			'conditions' => $intersection_condition . ' `is_company` = 0 AND disabled = 0',
 			'limit' => $limit,
 			'order' => 'last_activity, updated_on',
 			'order_dir' => 'desc',
@@ -36,15 +41,13 @@
 		//if logged user can assign permissions
 		if(can_manage_security(logged_user())){
 			//users to display on the combo
+			$intersection_condition = count($intersection) > 0 ? 'o.id NOT IN ('.implode(',',$intersection).') AND' : '';
 			$contacts_for_combo = Contacts::findAll(array(
-					'conditions' => 'object_id NOT IN ('.implode(',',$intersection).') AND `is_company` = 0 AND `user_type` > '.logged_user()->getUserType().' AND disabled = 0',
-					'order' => 'last_activity, updated_on',
-					'order_dir' => 'desc',
+				'conditions' => $intersection_condition . ' `is_company` = 0 AND `user_type` > '.logged_user()->getUserType().' AND disabled = 0',
+				'order' => 'last_activity, updated_on',
+				'order_dir' => 'desc',
 			));
-			
 		}
-		
-		
 		
 		//add people button name
 		if (isset($mnames[0])){

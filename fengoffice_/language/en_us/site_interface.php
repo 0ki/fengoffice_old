@@ -387,7 +387,7 @@ return array(
   'modified by on short' => '<a class="internalLink" href="{0}">{1}</a>, {2}',
   'time used in search' => 'Search performed in {0} seconds',
   'more results' => 'There are {0} more results...',
-
+  'many'	=> 'Many',
 
   'parent workspace' => 'Parent Workspace',
   'close' => 'Close',

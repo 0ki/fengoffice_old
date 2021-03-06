@@ -706,7 +706,6 @@ class MemberController extends ApplicationController {
 			
 			$ok = $member->delete(false);
 			if ($ok) {
-				//ApplicationLogs::createLog($member, ApplicationLogs::ACTION_DELETE);
 				evt_add("reload dimension tree", array('dim_id' => $dim_id, 'node' => null));
 				evt_add("select dimension member", array('dim_id' => $dim_id, 'node' => 'root'));
 			}

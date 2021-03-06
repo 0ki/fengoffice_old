@@ -175,4 +175,5 @@
 	'recent activities to show lines' => 'linhas',
 	'views and downloads' => 'Ver visualizações e downloads',
 	'confirm delete permanently sync' => 'Tem certeza de que quer apagar os dados de sincronização?',
+	'save with a new name' => 'Salvar com um novo nome',
 ); ?>

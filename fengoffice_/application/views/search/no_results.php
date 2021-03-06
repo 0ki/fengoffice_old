@@ -19,3 +19,4 @@
 		<?php echo lang("no search result for", $search_string);?>
 	</div>
 </div>
+<script>$("#searchButton").prop("disabled",false);</script>

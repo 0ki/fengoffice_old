@@ -61,6 +61,10 @@ class ContactMemberPermissions extends BaseContactMemberPermissions {
 		$can_write_cond = $can_write ? " AND `can_write` = 1" : "";
 		$can_delete_cond = $can_delete ? " AND `can_delete` = 1" : "";
 		
+		$ret = false;
+		Hook::fire('can_read_ot_in_member', array('pgs'=>$permission_group_ids, 'ot'=>$object_type_id, 'can_write' => $can_write_cond, 'can_delete' => $can_delete_cond), $ret);
+		if ($ret) return $ret;
+		
 		$res = DB::execute("SELECT permission_group_id FROM ".TABLE_PREFIX."contact_member_permissions WHERE `member_id` = '$member_id' AND `object_type_id` = '$object_type_id' AND 
 	  							`permission_group_id` IN ( $permission_group_ids ) $can_write_cond $can_delete_cond limit 1");
 

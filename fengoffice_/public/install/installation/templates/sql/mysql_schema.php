@@ -206,6 +206,7 @@ CREATE TABLE `<?php echo $table_prefix ?>system_permissions` (
   `can_manage_billing` tinyint(1) unsigned NOT NULL DEFAULT '0',
   `can_view_billing` tinyint(1) unsigned NOT NULL DEFAULT '0',
   `can_see_assigned_to_other_tasks` tinyint(1) unsigned NOT NULL DEFAULT '1',
+  `can_manage_contacts` tinyint(1) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY  (`permission_group_id`)
 ) ENGINE=<?php echo $engine ?> <?php echo $default_charset ?>;
 
@@ -591,6 +592,7 @@ CREATE TABLE `<?php echo $table_prefix ?>project_milestones` (
   `completed_by_id` int(10) unsigned default NULL,
   `is_template` BOOLEAN NOT NULL default '0',
   `from_template_id` int(10) NOT NULL default '0',
+  `from_template_object_id` int(10) unsigned DEFAULT '0',
   PRIMARY KEY  (`object_id`),
   KEY `due_date` (`due_date`),
   KEY `completed_on` (`completed_on`)
@@ -616,6 +618,7 @@ CREATE TABLE `<?php echo $table_prefix ?>project_tasks` (
   `milestone_id` INTEGER UNSIGNED,
   `is_template` BOOLEAN NOT NULL default '0',
   `from_template_id` int(10) NOT NULL default '0',
+  `from_template_object_id` int(10) unsigned DEFAULT '0',
   `repeat_end` DATETIME NOT NULL default '0000-00-00 00:00:00',
   `repeat_forever` tinyint(1) NOT NULL,
   `repeat_num` int(10) unsigned NOT NULL default '0',
@@ -1030,3 +1033,65 @@ CREATE TABLE IF NOT EXISTS `<?php echo $table_prefix ?>external_calendars` (
   `calendar_feng` TINYINT( 1 ) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`)
 ) ENGINE = <?php echo $engine ?> <?php echo $default_charset ?>;
+
+CREATE TABLE IF NOT EXISTS `<?php echo $table_prefix ?>template_tasks` (
+  `template_id` int(10) unsigned DEFAULT NULL,
+  `session_id` int(10) DEFAULT NULL,
+  `object_id` int(10) unsigned NOT NULL,
+  `parent_id` int(10) unsigned DEFAULT NULL,
+  `text` text <?php echo $default_collation ?>,
+  `due_date` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `start_date` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `assigned_to_contact_id` int(10) unsigned DEFAULT NULL,
+  `assigned_on` datetime DEFAULT NULL,
+  `assigned_by_id` int(10) unsigned DEFAULT NULL,
+  `time_estimate` int(10) unsigned NOT NULL DEFAULT '0',
+  `completed_on` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `completed_by_id` int(10) unsigned DEFAULT NULL,
+  `started_on` datetime DEFAULT NULL,
+  `started_by_id` int(10) unsigned NOT NULL,
+  `priority` int(10) unsigned DEFAULT '200',
+  `state` int(10) unsigned DEFAULT NULL,
+  `order` int(10) unsigned DEFAULT '0',
+  `milestone_id` int(10) unsigned DEFAULT NULL,
+  `is_template` tinyint(1) NOT NULL DEFAULT '0',
+  `from_template_id` int(10) NOT NULL DEFAULT '0',
+  `from_template_object_id` int(10) unsigned DEFAULT '0',
+  `repeat_end` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `repeat_forever` tinyint(1) NOT NULL,
+  `repeat_num` int(10) unsigned NOT NULL DEFAULT '0',
+  `repeat_d` int(10) unsigned NOT NULL,
+  `repeat_m` int(10) unsigned NOT NULL,
+  `repeat_y` int(10) unsigned NOT NULL,
+  `repeat_by` varchar(15) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL DEFAULT '',
+  `object_subtype` int(10) unsigned NOT NULL DEFAULT '0',
+  `percent_completed` int(10) unsigned NOT NULL DEFAULT '0',
+  `use_due_time` tinyint(1) DEFAULT '0',
+  `use_start_time` tinyint(1) DEFAULT '0',
+  `original_task_id` int(10) unsigned DEFAULT '0',
+  `type_content` enum('text','html') NOT NULL DEFAULT 'text',
+  PRIMARY KEY (`object_id`),
+  KEY `parent_id` (`parent_id`),
+  KEY `completed_on` (`completed_on`),
+  KEY `order` (`order`),
+  KEY `milestone_id` (`milestone_id`),
+  KEY `priority` (`priority`),
+  KEY `assigned_to` USING HASH (`assigned_to_contact_id`)
+) ENGINE=<?php echo $engine ?> <?php echo $default_charset ?>;
+
+CREATE TABLE `<?php echo $table_prefix ?>template_milestones` (
+  `template_id` int(10) unsigned DEFAULT NULL,
+  `session_id` int(10) DEFAULT NULL,
+  `object_id` int(10) unsigned NOT NULL,
+  `description` text <?php echo $default_collation ?>,
+  `due_date` datetime NOT NULL default '0000-00-00 00:00:00',
+  `is_urgent` BOOLEAN NOT NULL default '0',
+  `completed_on` datetime NOT NULL default '0000-00-00 00:00:00',
+  `completed_by_id` int(10) unsigned default NULL,
+  `is_template` BOOLEAN NOT NULL default '0',
+  `from_template_id` int(10) NOT NULL default '0',
+  `from_template_object_id` int(10) unsigned DEFAULT '0',
+  PRIMARY KEY  (`object_id`),
+  KEY `due_date` (`due_date`),
+  KEY `completed_on` (`completed_on`)
+) ENGINE=<?php echo $engine ?> <?php echo $default_charset ?>;

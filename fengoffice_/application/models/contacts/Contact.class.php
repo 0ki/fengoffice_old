@@ -125,12 +125,12 @@ class Contact extends BaseContact {
 	   			$searchable_object->save();	   			   			
 	   		}
 	   		//save addresses on searchable_objects
-	   		$addresses = $this->getAllAddresses();
-	   		$lengthAd = count($addresses);
-	   		for ($i = 0; $i < $lengthAd; $i++) {
+			$addresses = $this->getAllAddresses();
+			$lengthAd = count($addresses);
+			for ($i = 0; $i < $lengthAd; $i++) {
 	   			$j=strval($i);
 	   			$address = array_var($addresses, $j);
-	   			if (!$address instanceof ContactAddress){	   				
+	   			if (!$address instanceof ContactAddress){
 	   				continue;
 	   			}
 	   			$address = strval(array_var($addresses, $j)->getStreet())." ";
@@ -142,7 +142,7 @@ class Contact extends BaseContact {
 	   			$searchable_object->setRelObjectId($this->getId());
 	   			$searchable_object->setColumnName("address".$j);
 	   			$searchable_object->setContent($address);
-	   			$searchable_object->save();	   			
+	   			$searchable_object->save();
 	   		}
 	   		return true;
 	}
@@ -1017,7 +1017,7 @@ class Contact extends BaseContact {
 	
 	
 	function canAdd(Contact $user, $context, &$notAllowedMember = ''){
-		return can_add($user, $context, Contacts::instance()->getObjectTypeId(), $notAllowedMember);
+		return can_manage_contacts($user) || can_add($user, $context, Contacts::instance()->getObjectTypeId(), $notAllowedMember);
 	}
 
 	/**
@@ -1064,7 +1064,7 @@ class Contact extends BaseContact {
 			return can_manage_security ($user) || $this->getObjectId () == $user->getObjectId () || can_write ($user, $this->getMembers(), $this->getObjectTypeId());
 		} 
 		if ($this->isOwnerCompany()) return can_manage_configuration($user);
-		return can_write ($user, $this->getMembers(), $this->getObjectTypeId());
+		return can_manage_contacts($user) || can_write ($user, $this->getMembers(), $this->getObjectTypeId());
 	} // canEdit
 	
 
@@ -1083,7 +1083,7 @@ class Contact extends BaseContact {
 		if (parent::getUserType() != 0) {
 			return can_manage_security($user) && $this->getUserType() > $user->getUserType();
 		} else {
-			return can_delete($user, $this->getMembers(), $this->getObjectTypeId());
+			return can_manage_contacts($user) || can_delete($user, $this->getMembers(), $this->getObjectTypeId());
 		}
 	} // canDelete
 	
@@ -1428,7 +1428,7 @@ class Contact extends BaseContact {
 		Env::useLibrary('simplegd');
 
 		$image = new SimpleGdImage($source);
-		if ($image->getImageType() == IMAGETYPE_PNG) {
+/*		if ($image->getImageType() == IMAGETYPE_PNG) {
 			if ($image->getHeight() > 128 || $image->getWidth() > 128) {
 				//	resize images if are png bigger than 128 px
 				$thumb = $image->scale($max_width, $max_height, SimpleGdImage::BOUNDARY_DECREASE_ONLY, false);
@@ -1439,10 +1439,10 @@ class Contact extends BaseContact {
 				$public_fileId = FileRepository::addFile($source, array('type' => 'image/png', 'public' => true));
 			}
 		} else {
-			$thumb = $image->scale($max_width, $max_height, SimpleGdImage::BOUNDARY_DECREASE_ONLY, false);
+*/			$thumb = $image->scale($max_width, $max_height, SimpleGdImage::BOUNDARY_DECREASE_ONLY, false);
 			$thumb->saveAs($temp_file, IMAGETYPE_PNG);
 			$public_fileId = FileRepository::addFile($temp_file, array('type' => 'image/png', 'public' => true));
-		}
+//		}
 
 		if($public_fileId) {
 			$this->setPictureFile($public_fileId);

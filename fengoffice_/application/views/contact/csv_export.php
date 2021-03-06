@@ -1,6 +1,12 @@
 <?php
-	$submit_url = get_url('contact', 'export_to_csv_file',array('ids'=>array_var($_GET, 'ids'),'allIds'=>array_var($_GET, 'allIds')));
+	$export_all = array_var($_GET, 'export_all');
+	if ($export_all) {
+		$submit_url = get_url('contact', 'export_to_csv_file',array('export_all' => $export_all));
+	} else {
+		$submit_url = get_url('contact', 'export_to_csv_file',array('ids'=>array_var($_GET, 'ids'),'allIds'=>array_var($_GET, 'allIds')));
+	}
 	$genid = gen_id();
+	if (!isset($import_type)) $import_type = 'contact';
 ?>
 <script>
 og.download_exported_file = function() {
@@ -21,18 +27,19 @@ og.download_exported_file = function() {
 <div class="coInputTitle">
 	<table style="width:535px"><tr><td><?php echo ($import_type == 'contact' ? lang('export contacts to csv') : lang('export companies to csv')) ?></td>
 	<?php if (!isset($result_msg)) { ?>
-	<td style="text-align:right">
-		<?php 
-			echo submit_button(lang('export'), 'e', array('style'=>'margin-top:0px;margin-left:10px', 'tabindex' => '10','id' => $genid.'csv_export_submit1', 
-			'onclick'=>'og.download_exported_file()')) 
-		?>
-		
-		</td>
+	<td style="text-align:right"><?php
+		echo submit_button(lang('export'), 'e', array('style'=>'margin-top:0px;margin-left:10px', 'tabindex' => '10','id' => $genid.'csv_export_submit1', 'onclick'=>'og.download_exported_file()')) 
+	?></td>
 	<?php } //if ?>
 	<td><div id="<?php echo $genid."downloadlink"?>" style="padding-left:20px; font-size: 9pt; vertical-align: middle;"></div></td>
 	</tr></table>
 </div>
 </div>
+<span class="bold"><?php echo lang('field delimiter')?>: </span>
+<select name="delimiter">
+	<option value=",">,</option>
+	<option value=";">;</option>
+</select>
 </div>
 	<div class="coInputMainBlock adminMainBlock">
 	<?php if (!isset($result_msg)) { ?>

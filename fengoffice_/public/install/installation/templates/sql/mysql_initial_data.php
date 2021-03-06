@@ -123,8 +123,8 @@ INSERT INTO `<?php echo $table_prefix ?>cron_events` (`name`, `recursive`, `dela
 	('delete_mails_from_server', '1', '1440', '1', '1', '0000-00-00 00:00:00'),
 	('clear_tmp_folder', '1', '1440', '1', '1', '0000-00-00 00:00:00'),
 	('check_upgrade', '1', '1440', '0', '1', '0000-00-00 00:00:00'),
-        ('import_google_calendar', '1', '10', '0', '0', '0000-00-00 00:00:00'),
-        ('export_google_calendar', '1', '10', '0', '0', '0000-00-00 00:00:00');
+	('import_google_calendar', '1', '10', '0', '0', '0000-00-00 00:00:00'),
+	('export_google_calendar', '1', '10', '0', '0', '0000-00-00 00:00:00');
 	
 INSERT INTO `<?php echo $table_prefix ?>object_reminder_types` (`name`) VALUES
   ('reminder_email'),
@@ -273,27 +273,38 @@ INSERT INTO `<?php echo $table_prefix ?>contact_config_options` (`category_name`
  ('general', 'viewCompaniesChecked', '1', 'BoolConfigHandler', '1', '0', 'in people panel is view companies checked'),
  ('general', 'updateOnLinkedObjects', '1', 'BoolConfigHandler', '0', '0', 'Update objects when linking others'),
  ('dashboard', 'overviewAsList', '0', 'BoolConfigHandler', '1', '0', 'View Overview as list'),
- ('general', 'contacts_per_page', '50', 'IntegerConfigHandler', '0', '1200', NULL);
+ ('general', 'contacts_per_page', '50', 'IntegerConfigHandler', '0', '1200', NULL),
+ ('listing preferences', 'breadcrumb_member_count', '5', 'IntegerConfigHandler', '0', '5', NULL),
+ ('general', 'timeReportDate', '4', 'IntegerConfigHandler', 1, 0, ''),
+ ('general', 'timeReportDateStart', '0000-00-00 00:00:00', 'DateTimeConfigHandler', 1, 0, ''),
+ ('general', 'timeReportDateEnd', '0000-00-00 00:00:00', 'DateTimeConfigHandler', 1, 0, ''),
+ ('general', 'timeReportPerson', '0', 'IntegerConfigHandler', 1, 0, ''),
+ ('general', 'timeReportTimeslotType', '2', 'IntegerConfigHandler', 1, 0, ''),
+ ('general', 'timeReportGroupBy', '0,0,0', 'StringConfigHandler', 1, 0, ''),
+ ('general', 'timeReportAltGroupBy', '0,0,0', 'StringConfigHandler', 1, 0, ''),
+ ('general', 'timeReportShowBilling', '0', 'BoolConfigHandler', 1, 0, '');
  
 
-INSERT INTO `<?php echo $table_prefix ?>object_types` (`id`,`name`,`handler_class`,`table_name`,`type`,`icon`,`plugin_id`) VALUES
- (1,'workspace', 'Workspaces', 'workspaces', 'dimension_object', 'workspace', null),
- (2,'tag', '', '', 'dimension_group', 'tag', null),
- (3,'message', 'ProjectMessages', 'project_messages', 'content_object', 'message', null),
- (4,'weblink', 'ProjectWebpages', 'project_webpages', 'content_object', 'weblink', null),
- (5,'task', 'ProjectTasks', 'project_tasks', 'content_object', 'task', null),
- (6,'file', 'ProjectFiles', 'project_files', 'content_object', 'file', null),
- (8,'form', 'ProjectForms', 'project_forms', '', '', null),
- (9,'chart', 'ProjectCharts', 'project_charts', '', '', null),
- (10,'milestone', 'ProjectMilestones', 'project_milestones', 'content_object', 'milestone', null),
- (11,'event', 'ProjectEvents', 'project_events', 'content_object', 'event', null), 
- (12,'report', 'Reports', 'reports', 'located', 'reporting', null),
- (13,'template', 'COTemplates', 'templates', 'located', 'template', null),
- (14,'comment', 'Comments', 'comments', 'comment', 'comment', null), 
- (15,'billing', 'Billings', 'billings', '', '', null),
- (16,'contact', 'Contacts', 'contacts', 'content_object', 'contact', null),
- (17,'file revision', 'ProjectFileRevisions', 'file_revisions', 'content_object', 'file', null),
- (18,'timeslot', 'Timeslots', 'timeslots', 'located', 'time', null);
+INSERT INTO `<?php echo $table_prefix ?>object_types` (`name`,`handler_class`,`table_name`,`type`,`icon`,`plugin_id`) VALUES
+ ('workspace', 'Workspaces', 'workspaces', 'dimension_object', 'workspace', null),
+ ('tag', '', '', 'dimension_group', 'tag', null),
+ ('message', 'ProjectMessages', 'project_messages', 'content_object', 'message', null),
+ ('weblink', 'ProjectWebpages', 'project_webpages', 'content_object', 'weblink', null),
+ ('task', 'ProjectTasks', 'project_tasks', 'content_object', 'task', null),
+ ('file', 'ProjectFiles', 'project_files', 'content_object', 'file', null),
+ ('form', 'ProjectForms', 'project_forms', '', '', null),
+ ('chart', 'ProjectCharts', 'project_charts', '', '', null),
+ ('milestone', 'ProjectMilestones', 'project_milestones', 'content_object', 'milestone', null),
+ ('event', 'ProjectEvents', 'project_events', 'content_object', 'event', null), 
+ ('report', 'Reports', 'reports', 'located', 'reporting', null),
+ ('template', 'COTemplates', 'templates', 'located', 'template', null),
+ ('comment', 'Comments', 'comments', 'comment', 'comment', null), 
+ ('billing', 'Billings', 'billings', '', '', null),
+ ('contact', 'Contacts', 'contacts', 'content_object', 'contact', null),
+ ('file revision', 'ProjectFileRevisions', 'file_revisions', 'content_object', 'file', null),
+ ('timeslot', 'Timeslots', 'timeslots', 'located', 'time', null),
+ ('template_task', 'TemplateTasks', 'template_tasks', 'content_object', 'task', null),
+ ('template_milestone', 'TemplateMilestones', 'template_milestones', 'content_object', 'milestone', null);
 
 INSERT INTO `<?php echo $table_prefix ?>address_types` (`name`,`is_system`) VALUES
  ('home', 1),
@@ -323,15 +334,15 @@ INSERT INTO `<?php echo $table_prefix ?>webpage_types` (`name`,`is_system`) VALU
 
 
 INSERT INTO `<?php echo $table_prefix ?>tab_panels` (`id`,`title`,`icon_cls`,`refresh_on_context_change`,`default_controller`,`default_action`,`initial_controller`,`initial_action`,`enabled`,`type`,`ordering`,`plugin_id`,`object_type_id`) VALUES 
- ('calendar-panel','calendar','ico-calendar',1,'event','view_calendar','','',0,'system',8,0,11),
- ('contacts-panel','contacts','ico-contacts',1,'contact','init','','',0,'system',7,0,16),
- ('documents-panel','documents','ico-documents',1,'files','init','','',1,'system',6,0,6),
- ('messages-panel','messages','ico-messages',1,'message','init','','',1,'system',5,0,3),
+ ('calendar-panel','calendar','ico-calendar',1,'event','view_calendar','','',0,'system',8,0,(SELECT id FROM <?php echo $table_prefix ?>object_types WHERE name='event')),
+ ('contacts-panel','contacts','ico-contacts',1,'contact','init','','',0,'system',7,0,(SELECT id FROM <?php echo $table_prefix ?>object_types WHERE name='contact')),
+ ('documents-panel','documents','ico-documents',1,'files','init','','',1,'system',6,0,(SELECT id FROM <?php echo $table_prefix ?>object_types WHERE name='file')),
+ ('messages-panel','messages','ico-messages',1,'message','init','','',1,'system',5,0,(SELECT id FROM <?php echo $table_prefix ?>object_types WHERE name='message')),
  ('overview-panel','overview','ico-overview',1,'dashboard','main_dashboard','dashboard','main_dashboard',1,'system',-100,0,0),
- ('reporting-panel','reporting','ico-reporting',1,'reporting','index','','',0,'system',9,0,12),
- ('tasks-panel','tasks','ico-tasks',1,'task','new_list_tasks','','',1,'system',3,0,5),
+ ('reporting-panel','reporting','ico-reporting',1,'reporting','index','','',0,'system',9,0,(SELECT id FROM <?php echo $table_prefix ?>object_types WHERE name='report')),
+ ('tasks-panel','tasks','ico-tasks',1,'task','new_list_tasks','','',1,'system',3,0,(SELECT id FROM <?php echo $table_prefix ?>object_types WHERE name='task')),
  ('time-panel','time','ico-time-layout',1,'time','index','','',0,'system',8,0,0),
- ('webpages-panel','web pages','ico-webpages',1,'webpage','init','','',0,'system',7,0,4);
+ ('webpages-panel','web pages','ico-webpages',1,'webpage','init','','',0,'system',7,0,(SELECT id FROM <?php echo $table_prefix ?>object_types WHERE name='weblink'));
  
 
 

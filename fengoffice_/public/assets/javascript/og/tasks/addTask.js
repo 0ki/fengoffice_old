@@ -162,7 +162,7 @@ ogTasks.drawTaskForm = function(container_id, data){
         }
 	
 	var chkIsVisible = data.assignedTo && data.assignedTo != '0';
-	var chkIsChecked = chkIsVisible && ogTasks.userPreferences.defaultNotifyValue && data.assignedTo != this.currentUser.id;	
+	var chkIsChecked = chkIsVisible && ogTasks.userPreferences.defaultNotifyValue && (!this.currentUser || data.assignedTo != this.currentUser.id);
 	
 	html += "<div id='ogTasksPanelATContext' style='padding-top:5px;padding-bottom: 10px; display:none'><table><tr><td style='width:120px;'><b>" + lang('context') + ":&nbsp;</b></td><td><input type=\"hidden\" id=\"ogTasksPanelMembers\" name=\"members\" value=\"\"/><div id='ogTasksPanelContextSelector'>";
 
@@ -319,8 +319,12 @@ ogTasks.drawTaskForm = function(container_id, data){
 	ogTasks.selectedMilestone = data.milestoneId;
 	og.openLink(og.getUrl('milestone', 'get_assignable_milestones'), {callback:ogTasks.drawMilestonesCombo});
 	
+	var get_params = {};
+	if (data.members && data.members.length > 0) {
+		get_params['member_ids'] = data.members;
+	}
 	ogTasks.assignedTo = data.assignedTo ? data.assignedTo : 0;
-	og.openLink(og.getUrl('task', 'allowed_users_to_assign'), {callback:ogTasks.drawAssignedToCombo});
+	og.openLink(og.getUrl('task', 'allowed_users_to_assign', get_params), {callback:ogTasks.drawAssignedToCombo});
 	
 	document.getElementById('ogTasksPanelATTitle').value = data.title;
 	document.getElementById('ogTasksPanelATTitle').focus();

@@ -67,6 +67,7 @@ og.TasksBottomToolbar = function(config) {
         	'select' : function(combo, record) {
         		ogTasks.setAllCheckedValue(false);
         		ogTasks.setAllExpandedValue(false);
+        		ogTasks.expandedGroups = [];
 				ogTasks.draw();
         		var url = og.getUrl('account', 'update_user_preference', {name: 'tasksGroupBy', value:record.data.value});
 				og.openLink(url,{hideLoading:true});
@@ -228,9 +229,12 @@ og.TasksBottomToolbar = function(config) {
 		}
 	}
 	
-	var compData = [['0','--']];
-	for (i in companiesArray) {
-		if (companiesArray[i].id) compData[compData.length] = [companiesArray[i].id, og.clean(companiesArray[i].name)];
+	var compData = [];
+	if (og.config.can_assign_tasks_to_companies) {
+		compData = compData.concat([['0','--']]);
+		for (i in companiesArray) {
+			if (companiesArray[i].id) compData[compData.length] = [companiesArray[i].id, og.clean(companiesArray[i].name)];
+		}
 	}
 	
 	//ucsData = ucsData.concat(ogTasksOrderUsers(ucsOtherUsers)).concat(compData);

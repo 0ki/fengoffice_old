@@ -560,6 +560,7 @@ ogTasks.drawGroup = function(displayCriteria, drawOptions, group){
 	sb.append("<div id='ogTasksPanelTaskRowsContainer" + group.group_id + "'>");
 	//draw the group's tasks
 	var time_estimated = 0;
+	group.isExpanded = ogTasks.expandedGroups.indexOf(group.group_id) > -1;
 	for (var i = 0; i < group.group_tasks.length; i++){
 		if (i == og.noOfTasks){//Draw expander if group has more than og.noOfTasks tasks
 			sb.append("<div class='ogTasksTaskRow' style='display:" + (group.isExpanded? "none" : "inline") + "' id='ogTasksGroupExpandTasksTitle" + group.group_id + "'>");
@@ -656,6 +657,7 @@ ogTasks.expandGroup = function(group_id){
 			html += this.drawTask(group.group_tasks[i], drawOptions, displayCriteria, group.group_id, 1);
 		div.innerHTML = html;
 		divLink.style.display = 'none';
+		ogTasks.expandedGroups.push(group.group_id);
 /*		if (drawOptions.show_workspaces)
 			og.showWsPaths('ogTasksGroupExpandTasks' + group_id);*/
 	}

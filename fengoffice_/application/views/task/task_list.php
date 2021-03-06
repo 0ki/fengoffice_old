@@ -2,6 +2,7 @@
 require_javascript("og/modules/addTaskForm.js");
 $task_list = $object;
 $genid = gen_id();
+$description = "";
 ?>
 <script>
   if(App.modules.addTaskForm) {
@@ -52,7 +53,7 @@ if($task_list->getAssignedTo()){
 	}else{
 		$username = clean($task_list->getAssignedToName());
 	}
- $description .= '<span style="font-weight:bold">' . lang("assigned to") . ': </span><a class=\'internalLink\' href=\''
+ 	$description .= '<span style="font-weight:bold">' . lang("assigned to") . ': </span><a class=\'internalLink\' href=\''
 	. $task_list->getAssignedTo()->getCardUserUrl() . '\' title=\'' . escape_single_quotes(lang('user card of', clean($task_list->getAssignedToName()))). '\'>'
 	. $username . '</a>';
 } 

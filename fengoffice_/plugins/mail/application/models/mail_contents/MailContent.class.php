@@ -532,36 +532,40 @@ class MailContent extends BaseMailContent {
     	
     	if (count($columns_to_drop) > 0){
     		SearchableObjects::dropContentByObjectColumns($this,$columns_to_drop);
-    		
-	        foreach($columns_to_drop as $column_name) {
-	          $content = $this->getSearchableColumnContent($column_name);
-	          if(trim($content) <> '') {
 
-	          	$searchable_object = SearchableObjects::findById(array('rel_object_id' => $this->getObjectId(), 'colummn_name' => $column_name));
-	          	if (!$searchable_object instanceof SearchableObject) {
-	            	$searchable_object = new SearchableObject();
-	            	$searchable_object->setRelObjectId($this->getObjectId());
-	            	$searchable_object->setColumnName($column_name);
-	          	}
-	            
-	            $searchable_object->setContent($content);
-	            $searchable_object->setContactId($this->getAccount() instanceof MailAccount ? $this->getAccount()->getContactId() : 0);
-	            $searchable_object->save();
-	          } // if
-	        } // foreach
+			foreach($columns_to_drop as $column_name) {
+    			$content = $this->getSearchableColumnContent($column_name);
+    			if(trim($content) != '') {
+
+    				$searchable_object = SearchableObjects::findById(array('rel_object_id' => $this->getObjectId(), 'column_name' => $column_name));
+    				if (!$searchable_object instanceof SearchableObject) {
+    					$searchable_object = new SearchableObject();
+    					$searchable_object->setRelObjectId($this->getObjectId());
+    					$searchable_object->setColumnName($column_name);
+    				}
+    				 
+    				$searchable_object->setContent($content);
+    				$searchable_object->setContactId($this->getAccount() instanceof MailAccount ? $this->getAccount()->getContactId() : 0);
+    				$searchable_object->save();
+    			} // if
+    		} // foreach
     	} // if
+
+    	$rows = DB::executeAll("select column_name from fo_searchable_objects where rel_object_id=".$this->getObjectId());
     	
     	if ($wasNew){
-        	SearchableObjects::dropContentByObjectColumns($this,array('uid'));
-        	$searchable_object = new SearchableObject();
-            
-            $searchable_object->setRelObjectId($this->getObjectId());
-            $searchable_object->setColumnName('uid');
-            $searchable_object->setContent($this->getUniqueObjectId());
+    		SearchableObjects::dropContentByObjectColumn($this, 'uid');
+    		$searchable_object = new SearchableObject();
 
-            
-            $searchable_object->save();
-        }
+    		$searchable_object->setRelObjectId($this->getObjectId());
+    		$searchable_object->setColumnName('uid');
+    		$searchable_object->setContent($this->getUniqueObjectId());
+    		$searchable_object->setContactId($this->getAccount() instanceof MailAccount ? $this->getAccount()->getContactId() : 0);
+
+    		$searchable_object->save();
+    	}
+    	$rows = DB::executeAll("select column_name from fo_searchable_objects where rel_object_id=".$this->getObjectId());
+    	
     }
 	
 	/**

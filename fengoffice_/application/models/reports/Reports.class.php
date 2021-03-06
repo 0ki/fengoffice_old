@@ -263,13 +263,18 @@ class Reports extends BaseReports {
 				if ($order_by_col == "order"){
 					$order_by_col = "`$order_by_col`";
 				};
-				$result = $managerInstance->listing(array(
+				$listing_parameters = array(
 					"select_columns" => $select_columns,
 					"order" => "$order_by_col",
 					"order_dir" => ($order_by_asc ? "ASC" : "DESC"),
 					"extra_conditions" => $allConditions,
 					"join_params" => $join_params
-				));
+				);
+				if ($limit > 0) {
+					$listing_parameters["start"] = $offset;
+					$listing_parameters["limit"] = $limit;
+				}
+				$result = $managerInstance->listing($listing_parameters);
 			}else{
 				// TODO Performance Killer
 				$result = ContentDataObjects::getContentObjects(active_context(), $ot, $order_by_col, ($order_by_asc ? "ASC" : "DESC"), $allConditions);

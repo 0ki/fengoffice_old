@@ -42,9 +42,12 @@ class MailUtilities {
 						continue;
 					} else {
 						try {
+							DB::beginWork();
 							$account->setLastChecked(DateTimeValueLib::now());
 							$account->save();
+							DB::commit();
 						} catch (Exception $ex) {
+							DB::rollback();
 							$errAccounts[$err]["accountName"] = $account->getEmail();
 							$errAccounts[$err]["message"] = $ex->getMessage();
 							$err++;
@@ -57,6 +60,8 @@ class MailUtilities {
 					} else {
 						$mailsReceived += self::getNewImapMails($account, $maxPerAccount);
 					}
+					$account->setLastChecked(EMPTY_DATETIME);
+					$account->save();
 //					self::cleanCheckingAccountError($account);
 					$succ++;
 				} catch(Exception $e) {
@@ -382,7 +387,7 @@ class MailUtilities {
 					}
 					break;
 			}
-				
+			
 			if (isset($parsedMail['Alternative'])) {
 				foreach ($parsedMail['Alternative'] as $alt) {
 					if ($alt['Type'] == 'html' || $alt['Type'] == 'text') {
@@ -390,8 +395,9 @@ class MailUtilities {
 						if ($enc_conv->hasError()) $body = utf8_encode(array_var($alt, 'Data', ''));
 						
 						// remove large white spaces
-						$exploded = preg_split("/[\s]+/", $body, -1, PREG_SPLIT_NO_EMPTY);
-						$body = implode(" ", $exploded);
+						//$exploded = preg_split("/[\s]+/", $body, -1, PREG_SPLIT_NO_EMPTY);
+						//$body = implode(" ", $exploded);
+						
 						// remove html comments
 						$body = preg_replace('/<!--.*-->/i', '', $body);
 					}
@@ -450,14 +456,16 @@ class MailUtilities {
 
 			
 			// CLASSIFY RECEIVED MAIL WITH THE CONVERSATION
+			$classified_with_conversation = false;
 			$member_ids = array();
 			if (user_config_option('classify_mail_with_conversation', null, $account->getContactId()) && isset($conv_mail) && $conv_mail instanceof MailContent) {
 				$member_ids = array_merge($member_ids, $conv_mail->getMemberIds());
+				$classified_with_conversation = true;
 			}
 			
-			// CLASSIFY MAILS IF THE ACCOUNT HAS A DIMENSION MEMBER
+			// CLASSIFY MAILS IF THE ACCOUNT HAS A DIMENSION MEMBER AND NOT CLASSIFIED WITH CONVERSATION
 			$account_owner = Contacts::findById($account->getContactId());
-			if ($account->getMemberId() != 0) {
+			if ($account->getMemberId() != 0 && !$classified_with_conversation) {
 				$member = $account->getMember() ;
 				if ($member && $member instanceof Member ) {
 					$member_ids[] = $member->getId();
@@ -470,7 +478,7 @@ class MailUtilities {
 			/*	$ctrl = new ObjectController();
 				$ctrl->add_to_members($mail, $member_ids, $account_owner);*/
 				$mail_controller = new MailController();
-				$mail_controller->do_classify_mail($mail, $member_ids);
+				$mail_controller->do_classify_mail($mail, $member_ids, null, false);
 			}
 		
 			$user = Contacts::findById($account->getContactId());
@@ -511,6 +519,17 @@ class MailUtilities {
 
 		if($mime->Decode($parameters, $decoded)) {
 			for($msg = 0; $msg < count($decoded); $msg++) {
+				if (isset($decoded[$msg]['Headers'])) {
+					$headers = $decoded[$msg]['Headers'];
+					$address_hdr = array('to:', 'cc:', 'bcc:');
+					foreach ($address_hdr as $hdr) {
+						if (isset($headers[$hdr]) && strpos($headers[$hdr], ';') !== false) {
+							$headers[$hdr] = str_replace(';', ',', $headers[$hdr]);
+							if (str_ends_with($headers[$hdr], ',')) $headers[$hdr] = substr($headers[$hdr], 0, -1);
+							$decoded[$msg]['Headers'] = $headers;
+						}
+					}
+				}
 				$mime->Analyze($decoded[$msg], $results);
 			}
 			for($warning = 0, Reset($mime->warnings); $warning < count($mime->warnings); Next($mime->warnings), $warning++) {

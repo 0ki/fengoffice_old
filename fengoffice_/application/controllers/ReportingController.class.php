@@ -162,17 +162,41 @@ class ReportingController extends ApplicationController {
 	// ---------------------------------------------------
 
 	function total_task_times_p(){
-		if (array_var($_GET, 'ws') !== null) {
-			$report_data = array_var($_SESSION, 'total_task_times_report_data', array());
-			if (array_var($_GET, 'type')) {
-				$report_data['timeslot_type'] = array_var($_GET, 'type');
-			}
-			$_SESSION['total_task_times_report_data'] = $report_data;
-			$this->redirectTo('reporting', 'total_task_times_p');
+		//set params from config options
+		$report_data['date_type'] = user_config_option('timeReportDate');
+			
+		$now_date = DateTimeValueLib::now();
+		if (strtotime(user_config_option('timeReportDateStart'))){//this return null if date is 0000-00-00 00:00:00
+			$report_data['start_value'] = user_config_option('timeReportDateStart');
+		}else{
+			$dateStart = $now_date->format(user_config_option('date_format'));//today
+			$report_data['start_value'] = $dateStart;
 		}
-
+		
+		if (strtotime(user_config_option('timeReportDateEnd'))){//this return null if date is 0000-00-00 00:00:00
+			$report_data['end_value'] = user_config_option('timeReportDateEnd');
+		}else{
+			$dateEnd = $now_date->format(user_config_option('date_format'));//today
+			$report_data['end_value'] = $dateEnd;
+		}
+					
+		$report_data['user'] = user_config_option('timeReportPerson');
+		$report_data['timeslot_type'] = user_config_option('timeReportTimeslotType');
+		
+		$group = explode( ',', user_config_option('timeReportGroupBy') );
+		$report_data['group_by_1'] = $group[0];
+		$report_data['group_by_2'] = $group[1];
+		$report_data['group_by_3'] = $group[2];
+		
+		$altGroup = explode( ',', user_config_option('timeReportAltGroupBy') );
+		$report_data['alt_group_by_1'] = $altGroup[0];
+		$report_data['alt_group_by_2'] = $altGroup[1];
+		$report_data['alt_group_by_3'] = $altGroup[2];
+		
+		$report_data['show_billing'] = user_config_option('timeReportShowBilling');
+		
 		$users = Contacts::getAllUsers();
-
+		tpl_assign('report_data', $report_data);
 		tpl_assign('users', $users);
 		tpl_assign('has_billing', BillingCategories::count() > 0);
 	}
@@ -191,9 +215,30 @@ class ReportingController extends ApplicationController {
 	function total_task_times($report_data = null, $task = null, $csv = null){
 		if (!$report_data) {
 			$report_data = array_var($_POST, 'report');
-			// save selections into session
-			$_SESSION['total_task_times_report_data'] = $report_data;
+			set_user_config_option('timeReportDate', $report_data['date_type'] , logged_user()->getId());
+				
+			$dateStart = getDateValue($report_data['start_value']);
+			if ($dateStart instanceof DateTimeValue) {
+				set_user_config_option('timeReportDateStart', $dateStart , logged_user()->getId());
+			}
+				
+			$dateEnd = getDateValue($report_data['end_value']);
+			if ($dateEnd instanceof DateTimeValue) {
+				set_user_config_option('timeReportDateEnd', $dateEnd , logged_user()->getId());
+			}
+				
+			set_user_config_option('timeReportPerson', $report_data['user'] , logged_user()->getId());
+			set_user_config_option('timeReportTimeslotType', $report_data['timeslot_type'] , logged_user()->getId());
+			set_user_config_option('timeReportShowBilling', isset($report_data['show_billing']) ? 1:0 , logged_user()->getId());
+				
+			$group = $report_data['group_by_1'].", ".$report_data['group_by_2'].", ".$report_data['group_by_3'];
+			$altGroup = $report_data['alt_group_by_1'].", ".$report_data['alt_group_by_2'].", ".$report_data['alt_group_by_3'];
+				
+			set_user_config_option('timeReportGroupBy', $group , logged_user()->getId());
+			set_user_config_option('timeReportAltGroupBy', $altGroup , logged_user()->getId());
+			
 		}
+		
 		
 		if (array_var($_GET, 'export') == 'csv' || (isset($csv) && $csv == true)){
 			$context = build_context_array(array_var($_REQUEST, 'context'));
@@ -708,7 +753,7 @@ class ReportingController extends ApplicationController {
 
 	function view_custom_report_print(){
 		$this->setLayout("html");
-
+		set_time_limit(0);
 		$params = json_decode(str_replace("'",'"', array_var($_POST, 'post')),true);
 
 		$report_id = array_var($_POST, 'id');
@@ -719,7 +764,8 @@ class ReportingController extends ApplicationController {
 		if(!isset($order_by_asc)) $order_by_asc = true;
 		tpl_assign('order_by_asc', $order_by_asc);
 		$report = Reports::getReport($report_id);
-		$results = Reports::executeReport($report_id, $params, $order_by, $order_by_asc, 0, 50, true);
+		$limit = array_var($_POST, 'exportCSV') || array_var($_POST, 'exportPDF') ? -1 : 50;
+		$results = Reports::executeReport($report_id, $params, $order_by, $order_by_asc, 0, $limit, true);
 		if(isset($results['columns'])) tpl_assign('columns', $results['columns']);
 		if(isset($results['rows'])) tpl_assign('rows', $results['rows']);
 		tpl_assign('db_columns', $results['db_columns']);

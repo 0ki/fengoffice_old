@@ -16,7 +16,7 @@ return array(
         'username' => 'Username',
 	'email or username' => 'Email or username',
         'password' => 'Password',
-        'password again' => 'Repeat password',
+        'password again' => 'Repeat new password',
         'old password' => 'Old password',
   	'new password' => 'New password',
         'remember me' => 'Remember me for 14 days',

@@ -330,6 +330,10 @@ class ProjectFile extends BaseProjectFile {
 			} // if
 		} // if
 
+		if (strtolower(substr($uploaded_file['name'], -4)) == '.pdf' && $uploaded_file['type'] != 'application/pdf') {
+			$uploaded_file['type'] = 'application/pdf';
+		}
+
 		$revision->deleteThumb(false); // remove thumb
 
 		// We have a file to handle!

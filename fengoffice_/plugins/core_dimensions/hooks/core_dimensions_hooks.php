@@ -223,7 +223,7 @@ function core_dimensions_after_save_member_permissions($member, &$ignored) {
 	// contacts
 	$contact_rows = DB::executeAll("SELECT DISTINCT om.object_id FROM ".TABLE_PREFIX."object_members om INNER JOIN ".TABLE_PREFIX."contacts c ON c.object_id=om.object_id 
 		WHERE om.member_id='".$member->getId()."' AND c.user_type=0");
-	$no_user_ids = array();
+	$no_user_ids = array(0);
 	if (is_array($contact_rows)) {
 		foreach ($contact_rows as $row) {
 			$no_user_ids[] = $row['object_id'];

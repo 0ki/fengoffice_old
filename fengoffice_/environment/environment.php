@@ -26,7 +26,7 @@ include_once ENVIRONMENT_PATH . '/functions/general.php';
 include_once ENVIRONMENT_PATH . '/functions/files.php';
 
 // Configure PHP
-if (php_config_value_to_bytes(ini_get('memory_limit')) < 64*1024*1024) {
+if (ini_get('memory_limit') > 0 && php_config_value_to_bytes(ini_get('memory_limit')) < 64*1024*1024) {
 	ini_set('memory_limit', '64M');
 }
 ini_set('short_open_tag', 'on');

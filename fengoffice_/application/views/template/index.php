@@ -31,7 +31,7 @@
 			?>
 			<tr class="<?php echo $isAlt? 'altRow' : ''?>">
 				<td><a class="internalLink ico-template bg-ico"
-					href="<?php echo $cotemplate->getViewUrl() ?>"><?php echo clean($cotemplate->getObjectName()) ?></a></td>
+					href="<?php echo $cotemplate->getEditUrl() ?>"><?php echo clean($cotemplate->getObjectName()) ?></a></td>
 				<td style="text-align: center">
 				<?php
 				$project_ids = array(); //FIXME

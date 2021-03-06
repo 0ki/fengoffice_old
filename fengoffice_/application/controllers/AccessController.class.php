@@ -631,10 +631,9 @@ class AccessController extends ApplicationController {
 	function get_javascript_translation() {
 		$content = "/* start */\n";
 		$fileDir = ROOT . "/language/" . Localization::instance()->getLocale();
-					
+		
 		//Get Feng Office translation files
 		$filenames = get_files($fileDir, "js");
-				
 		sort($filenames);
 		foreach ($filenames as $f) {
 			$content .= "\n/* $f */\n";
@@ -642,7 +641,7 @@ class AccessController extends ApplicationController {
 			$content .= file_get_contents($f);
 			$content .= "} catch (e) {}";
 		}
-						
+		
 		$plugins = Plugins::instance ()->getActive ();
 		
 		foreach ( $plugins as $plugin ) {

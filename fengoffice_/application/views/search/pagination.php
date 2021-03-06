@@ -81,4 +81,5 @@
 			return true;
 		}
 	}
+	$("#searchButton").prop("disabled",false);
 </script>

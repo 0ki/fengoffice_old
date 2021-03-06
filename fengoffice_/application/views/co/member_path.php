@@ -81,7 +81,7 @@
 		
 	?></div>
 	<div style="width:50%; float: left; "><?php 
-		if($object instanceof ProjectTask) {
+		if($object instanceof ProjectTask || $object instanceof TemplateTask) {
 			
 			$task_list = $object;
 			//milestone

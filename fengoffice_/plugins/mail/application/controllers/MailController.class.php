@@ -59,6 +59,7 @@ class MailController extends ApplicationController {
 		if(!$original_mail instanceof MailContent) {
 			flash_error(lang('email dnx'));
 			ajx_current("empty");
+			return;
 		}
 		$mail_data = array_var($_POST, 'mail', null);
 		if (!is_array($mail_data)) {
@@ -156,7 +157,7 @@ class MailController extends ApplicationController {
 				$re_body = str_replace('<!--', '<!-- ', $re_body);
 			}
 			$re_body = preg_replace("/<body*[^>]*>/i",'<body>', $re_body);
-
+			$re_body = '<div id="original_mail">'.$re_body.'</div>';
 			$mail_data = array(
 				'to' => $to,
 				'cc' => $cc,
@@ -487,7 +488,7 @@ class MailController extends ApplicationController {
 			try {
 				$linked_users = array();
 				
-				//create contacts from recipients of email 
+				//create contacts from recipients of email
 				if (user_config_option('create_contacts_from_email_recipients') && can_manage_contacts(logged_user())) {
 					foreach ($to as $to_user) {
 						$linked_user = Contacts::getByEmail($to_user[1]);
@@ -607,18 +608,20 @@ class MailController extends ApplicationController {
 				//$mail->setIsRead(logged_user()->getId(), true);
 				
 				
-				// autoclassify sent email
 				$member_ids = active_context_members(false);
-				if ($account->getMember() instanceof Member) {
-					$member_ids[] = $account->getMember()->getId();
-				}
 				
 				// if replying a classified email classify on same workspace
-				if (array_var($mail_data, 'original_id') && user_config_option('classify_mail_with_conversation')) {
+				$classified_with_conversation = false;
+				if (array_var($mail_data, 'original_id')) {
 					$in_reply_to = MailContents::findById(array_var($mail_data, 'original_id'));
 					if ($in_reply_to instanceof MailContent) {
 						$member_ids = array_merge($member_ids, $in_reply_to->getMemberIds());
+						$classified_with_conversation = true;
 					}
+				}
+				// autoclassify sent email if not classified
+				if ($account->getMember() instanceof Member && !$classified_with_conversation) {
+					$member_ids[] = $account->getMember()->getId();
 				}
 				
 				$object_controller = new ObjectController();
@@ -642,6 +645,12 @@ class MailController extends ApplicationController {
 						}
 					}
 				}*/ 
+				
+				//subscribe user
+				$user = Contacts::findById($account->getContactId());
+				if($user instanceof Contact){
+					$mail->subscribeUser($user);
+				}
 				
 				ApplicationLogs::createLog($mail,  ApplicationLogs::ACTION_ADD);
 				
@@ -1157,7 +1166,7 @@ class MailController extends ApplicationController {
 		if (array_var($_GET, 'replace')) {
 			ajx_replace(true);
 		}
-				
+		
 		if(!$email->getIsRead(logged_user()->getId())){
 			$email->setIsRead(logged_user()->getId(), true);
 		}
@@ -1460,7 +1469,7 @@ class MailController extends ApplicationController {
 		tpl_assign('parsedEmail', $parsedEmail);
 	}
 	
-	function do_classify_mail($email, $members, $classification_data = null) {
+	function do_classify_mail($email, $members, $classification_data = null, $process_conversation = true) {
 		try {
 			$ctrl = new ObjectController();
 			$create_task = false;//array_var($classification_data, 'create_task') == 'checked';
@@ -1480,16 +1489,18 @@ class MailController extends ApplicationController {
 					$account_owner = logged_user() instanceof contact ? logged_user() : Contacts::findById($email->getAccount()->getContactId());
 					$ctrl->add_to_members($email, $members, $account_owner);
 				}
-				$conversation = MailContents::getMailsFromConversation($email);
-				
-				if (count($members) > 0) {
-					$member_instances = Members::findAll(array('conditions' => 'id IN ('.implode(',',$members).')'));
-					foreach ($conversation as $conv_email) {
-						$account_owner = logged_user() instanceof contact ? logged_user() : Contacts::findById($conv_email->getAccount()->getContactId());
-						$ctrl->add_to_members($conv_email, $members, $account_owner);
-						MailUtilities::parseMail($conv_email->getContent(), $decoded, $parsedEmail, $warnings);
-						if ($conv_email->getHasAttachments()) {
-							$this->classifyFile($classification_data, $conv_email, $parsedEmail, $member_instances, true);
+				if ($process_conversation) {
+					$conversation = MailContents::getMailsFromConversation($email);
+					
+					if (count($members) > 0) {
+						$member_instances = Members::findAll(array('conditions' => 'id IN ('.implode(',',$members).')'));
+						foreach ($conversation as $conv_email) {
+							$account_owner = logged_user() instanceof contact ? logged_user() : Contacts::findById($conv_email->getAccount()->getContactId());
+							$ctrl->add_to_members($conv_email, $members, $account_owner);
+							MailUtilities::parseMail($conv_email->getContent(), $decoded, $parsedEmail, $warnings);
+							if ($conv_email->getHasAttachments()) {
+								$this->classifyFile($classification_data, $conv_email, $parsedEmail, $member_instances, true);
+							}
 						}
 					}
 				}
@@ -1547,6 +1558,7 @@ class MailController extends ApplicationController {
 							$file->setFilename($fName);
 							$file->setIsVisible(true);
 							$file->setMailId($email->getId());
+							$file->setCreatedById($account_owner->getId());
 							$file->save();
 
 							$object_controller = new ObjectController();
@@ -1590,6 +1602,8 @@ class MailController extends ApplicationController {
 
 						if ($fileIsNew) {
 							$revision = $file->handleUploadedFile($fileToSave, true, lang('attachment from email', $email->getSubject())); // handle uploaded file
+							$revision->setCreatedById($account_owner->getId());
+							$revision->save();
 							ApplicationLogs::createLog($file, ApplicationLogs::ACTION_ADD);
 						}else{
 							$revision = $file->getLastRevision();

@@ -146,7 +146,7 @@ $use_owner_company_logo = owner_company()->hasLogo();
 							</td>
 							<td>
 								<div class="btn-group">
-									<a class="btn" href="#" style="height: 11px;" id="searchButton"><span style="margin-top: -3px; display: block;"><?php echo lang('search')?></span></a>
+									<button class="btn" style="height: 21px;" type="button" id="searchButton"><span style="margin-top: -3px; display: block;"><?php echo lang('search')?></span></button>
 									<a class="btn dropdown-toggle" style="height: 11px;" data-toggle="dropdown" href="#"><span class="caret"></span></a>
 									<ul class="dropdown-menu">
 										<li><a href="<?php echo get_url('search', 'search', array('advanced' => true))?>"><?php echo lang('advanced search')?></a></li>
@@ -270,10 +270,11 @@ $use_owner_company_logo = owner_company()->hasLogo();
                        }
                     });
                     
-                    $("#searchButton").click(function() {
-                        if($("#search_for").val() != ""){
-                            $("#searchButtonReal").click();
-                        }                        
+                    $("#searchButton").click(function () {
+						if($("#search_for").val() != ""){
+                        	$("#searchButton").prop("disabled",true);
+                            $("#searchButtonReal").click();                            
+                        }                  
                     });
                     
                     $("#advancedSearch").click(function() {
@@ -388,7 +389,8 @@ og.preferences = {
 	'mail_drag_drop_prompt': <?php echo json_encode(user_config_option('mail_drag_drop_prompt')) ?>,
 	'access_member_after_add': <?php echo user_config_option('access_member_after_add') ? '1' : '0' ?>,
 	'access_member_after_add_remember': <?php echo user_config_option('access_member_after_add_remember') ? '1' : '0' ?>,
-	'listing_preferences': []
+	'listing_preferences': [],
+	'breadcrumb_member_count': <?php echo user_config_option('breadcrumb_member_count') ?>
 };
 <?php
 	$listing_preferences = ContactConfigOptions::getOptionsByCategoryName('listing preferences');
@@ -498,7 +500,7 @@ og.objPickerTypeFilters = [];
 <?php
 	$obj_picker_type_filters = ObjectTypes::findAll(array("conditions" => "`type` = 'content_object'
 		AND (plugin_id IS NULL OR plugin_id IN (SELECT distinct(id) FROM ".TABLE_PREFIX."plugins WHERE is_installed = 1 AND is_activated = 1 ))
-		AND `name` <> 'file revision' AND `id` NOT IN (
+		AND `name` <> 'file revision' AND name <> 'template_task' AND name <> 'template_milestone' AND `id` NOT IN (
 			SELECT `object_type_id` FROM ".TabPanels::instance()->getTableName(true)." WHERE `enabled` = 0
 		)  OR `type` = 'comment' OR `name` = 'milestone'"));
 	

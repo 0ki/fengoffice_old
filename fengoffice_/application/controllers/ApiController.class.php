@@ -54,6 +54,27 @@ class ApiController extends ApplicationController {
             throw $exception;
         }
     }
+    
+	/*
+     * Get an object's comments     
+     */
+	private function get_comments($request){
+		try {
+            $object = Objects::findObject($request['oid']);            
+            $comments = $object->getComments();    
+            $clean_comments = array();        
+            foreach($comments as $comment) {
+            	$user_name = $comment->getCreatedByDisplayName();
+            	$updated_on = format_datetime($comment->getUpdatedOn());
+            	$text = escape_html_whitespace(convert_to_links(clean($comment->getText())));             
+            	$clean_comment = array("author"=>$user_name, "date"=>$updated_on, "text"=>$text);
+            	$clean_comments[] = $clean_comment;            	
+            }            
+            return $this->response('json', $clean_comments);
+        } catch (Exception $exception) {
+            throw $exception;
+        }    
+    }
 
 //    private function list_members($request) {
 //            $service = $request ['srv'];

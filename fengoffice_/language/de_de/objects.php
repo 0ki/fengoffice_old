@@ -135,7 +135,7 @@
 	'the message activity' => 'die notiz {0}',
 	'the weblink' => 'der Weblink',
 	'the mail' => 'dei Nachricht',
-	'activity made several changes' => '{1} hat mehrere Änderungen an {0} {2} durchgeführt',
+	'activity made ​​several changes' => '{1} hat mehrere Änderungen an {0} {2} durchgeführt',
 	'log read task' => 'Der Benutzer hat die Aufgabe gelesen',
 	'log read message' => 'Der Benutzer hat die Notiz gelesen',
 	'log read file' => 'Der Benutzer hat das Dokument gelesen',

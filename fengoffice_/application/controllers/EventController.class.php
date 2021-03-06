@@ -268,8 +268,30 @@ class EventController extends ApplicationController {
 			$data['repeat_forever'] = $forever;
 			$data['repeat_end'] =  $oend;
 			$data['start'] = $timestamp;
-			$data['name'] =  array_var($event_data,'name');
-			$data['description'] =  array_var($event_data,'description');
+			$name = array_var($event_data,'name');
+			if( strlen($name) > 100){
+				$pieces = explode(" ", $name);
+				$name = $pieces[0];
+				if(strlen($name) > 100){
+					$desc = substr($name, 100, -1);
+					$name = substr($name, 0, 99);
+					$data['name'] =  $name;
+					$data['description'] =  $desc." ".array_var($event_data,'description');
+				}else{
+				$desc = "";
+				foreach ($pieces as $piece){
+					if(strlen($name.$piece) < 99)
+						$name .= " ".$piece;
+					else 
+						$desc .= " ".$piece;
+				}
+				$data['name'] =  $name;
+				$data['description'] =  $desc." ".array_var($event_data,'description');
+				}
+			}else{
+				$data['name'] =  array_var($event_data,'name');
+				$data['description'] =  array_var($event_data,'description');
+			}
 			$data['type_id'] = $typeofevent;
 			$data['duration'] = $durationstamp;
 			
@@ -353,7 +375,7 @@ class EventController extends ApplicationController {
 				'day' => isset($_GET['day']) ? $_GET['day'] : date('j', DateTimeValueLib::now()->getTimestamp() + logged_user()->getTimezone() * 3600),
 				'hour' => $hour,
 				'minute' => $minute,
-				'pm' => (isset($pm) ? $pm : 0),
+				'pm' => (isset($pm) ? $pm : ""),
 				'typeofevent' => isset($_GET['type_id']) ? $_GET['type_id'] : 1,
 				'name' => $event_name,
 				'durationhour' => isset($_GET['durationhour']) ? $_GET['durationhour'] : 1,
@@ -1878,7 +1900,7 @@ class EventController extends ApplicationController {
                                     $query->setStartMin($start_sel);
                                     $query->setStartMax($end_sel);
                                     $query->setMaxResults(50);
-                                    //$query->setParam('showdeleted', 'true');
+                                    $query->setParam('showdeleted', 'true');
                                     // execute and get results
                                     $event_list = $gdataCal->getCalendarEventFeed($query);
 
@@ -1908,7 +1930,22 @@ class EventController extends ApplicationController {
                                         		$new_event->save();
                                         	}
                                         }else{*/
+                                        //If event deleted in google, delete event from feng
+                                        if(array_pop(explode( '.', $event->getEventStatus() )) == "canceled"){
+                                        	if($new_event){
+                                        		$event_controller->delete_event_calendar_extern($new_event);
+                                        		EventInvitations::delete(array("conditions"=>"event_id = ".$new_event->getId()));
+                                        		$new_event->trash();
+                                        		 
+                                        		$new_event->setSpecialID("");
+                                        		$new_event->setExtCalId(0);
+                                        		$new_event->save();
+                                        	}elseif ($is_invitation){
+                                        		//$new_event = ProjectEvents::findById($is_invitation->getEventId());
+                                        		EventInvitations::delete(array("conditions"=>"special_id = '".$special_id."'"));
                                         
+                                        	}
+                                        }else{
                                         if($new_event|| $is_invitation){
                                             	if($is_invitation){
                                             		$new_event = ProjectEvents::findById($is_invitation->getEventId());
@@ -1934,9 +1971,27 @@ class EventController extends ApplicationController {
                                                     $new_event->setStart(ProjectEvents::date_google_to_sql($event->when[0]->startTime));
                                                     $new_event->setDuration(ProjectEvents::date_google_to_sql($event->when[0]->endTime));
                                                 }
-
-                                                $new_event->setObjectName($event_name);
-                                                $new_event->setDescription($event->content->text);
+                                                if( strlen($event_name) > 100){
+                                                	$pieces = explode(" ", $event_name);
+                                                	$name = $pieces[0];
+                                                	if(strlen($name) > 100){
+                                                		$name = substr($pieces[0], 0, 100);
+                                                		$desc = substr($pieces[0], 100, strlen($pieces[0]));
+                                                	}else{
+                                                		$desc = "";
+                                                		foreach ($pieces as $piece){
+                                                			if(strlen($name.$piece) < 90)
+                                                				$name .= " ".$piece;
+                                                			else
+                                                				$desc .= " ".$piece;
+                                                		}
+                                                	}
+                                                	$new_event->setObjectName($name);
+                                                	$new_event->setDescription($desc." ".$event->content->text);
+                                                }else{
+                                                	$new_event->setObjectName($event_name);
+                                                	$new_event->setDescription($event->content->text);
+                                                }
                                                 $new_event->setUpdateSync(ProjectEvents::date_google_to_sql($event->updated));
                                                 if(!$is_invitation) $new_event->setExtCalId($calendar->getId());
                                                 $new_event->save(); 
@@ -1967,9 +2022,27 @@ class EventController extends ApplicationController {
                                                 $new_event->setDuration(ProjectEvents::date_google_to_sql($event->when[0]->endTime));
                                                 $new_event->setTypeId(1);
                                             }
-                                            
-                                            $new_event->setObjectName($event_name);
-                                            $new_event->setDescription($event->content->text);
+                                              if( strlen($event_name) > 100){
+                                                	$pieces = explode(" ", $event_name);
+                                                	$name = $pieces[0];
+                                                	if(strlen($name) > 100){
+                                                		$name = substr($pieces[0], 0, 100);
+                                                		$desc = substr($pieces[0], 100, strlen($pieces[0]));
+                                                	}else{
+                                                		$desc = "";
+                                                		foreach ($pieces as $piece){
+                                                			if(strlen($name.$piece) < 90)
+                                                				$name .= " ".$piece;
+                                                			else
+                                                				$desc .= " ".$piece;
+                                                		}
+                                                	}
+                                                	$new_event->setObjectName($name);
+                                                	$new_event->setDescription($desc." ".$event->content->text);
+                                                }else{
+                                                	$new_event->setObjectName($event_name);
+                                                	$new_event->setDescription($event->content->text);
+                                                }
                                             $new_event->setSpecialID($special_id);
                                             $new_event->setUpdateSync(ProjectEvents::date_google_to_sql($event->updated));
                                             $new_event->setExtCalId($calendar->getId());                                            
@@ -2013,7 +2086,7 @@ class EventController extends ApplicationController {
                                         }                                           
                                         }    
                                         }       
-                               //     }
+                                    }
                                 }else{                
                                     $events = ProjectEvents::findByExtCalId($calendar->getId());
                                     if($calendar->delete()){

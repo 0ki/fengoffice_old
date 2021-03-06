@@ -937,19 +937,31 @@ function create_user($user_data, $permissionsString) {
 							$perm->w= 1;
 							$perm->d= 1;
 							$perm->o= $ot;
-							$permissions[] = $perm ;
+							$permissions[] = $perm;
 						}
 					}
 				}
 			}
 			
-			if(count($permissions)){
+			if(count($permissions) > 0){
 				$sharingTableController = new SharingTableController();
 				$sharingTableController->afterPermissionChanged($contact->getPermissionGroupId(), $permissions);
 			}
 			
 		}
 		
+		if (config_option('let_users_create_objects_in_root') && ($contact->isAdminGroup() || $contact->isExecutive() || $contact->isManager())) {
+			$default_permissions = RoleObjectTypePermissions::instance()->findAll(array('conditions' => 'role_id = '.$contact->getUserType()));
+			foreach ($default_permissions as $p) {
+				$cmp = new ContactMemberPermission();
+				$cmp->setPermissionGroupId($permission_group->getId());
+				$cmp->setMemberId(0);
+				$cmp->setObjectTypeId($p->getObjectTypeId());
+				$cmp->setCanDelete($p->getCanDelete());
+				$cmp->setCanWrite($p->getCanWrite());
+				$cmp->save();
+			}
+		}
 	}
 	if(!isset($_POST['sys_perm'])){
 		$rol_permissions=SystemPermissions::getRolePermissions(array_var($user_data, 'type'));

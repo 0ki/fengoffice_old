@@ -33,6 +33,7 @@ abstract class BaseProjectTasks extends ContentDataObjects {
         'time_estimate' => DATA_TYPE_INTEGER,
         'is_template' => DATA_TYPE_BOOLEAN,
         'from_template_id' => DATA_TYPE_INTEGER,
+		'from_template_object_id' => DATA_TYPE_INTEGER,
         'repeat_forever'=>DATA_TYPE_BOOLEAN,
     	'repeat_end' => DATA_TYPE_DATETIME,
     	'repeat_num' => DATA_TYPE_INTEGER,
@@ -115,7 +116,7 @@ abstract class BaseProjectTasks extends ContentDataObjects {
 	function getSystemColumns() {
 		return array_merge(parent::getSystemColumns(), array(
       		'object_subtype', 'parent_id', 'assigned_to_contact_id', 'completed_by_id', 'milestone_id', 'state', 'started_by_id', 
-                'assigned_by_id', 'from_template_id', 'use_due_time', 'use_start_time', 'original_task_id', 'multi_assignment')
+                'assigned_by_id', 'from_template_id', 'from_template_object_id', 'use_due_time', 'use_start_time', 'original_task_id', 'multi_assignment')
 		);
 	} // getSystemColumns
 	

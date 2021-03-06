@@ -66,8 +66,10 @@ foreach ($objects as $obj) {
 	$cobj = Objects::findObject($obj);
 	if ($cobj instanceof ContentDataObject) {
 		
-		$object_controller->add_to_members($cobj, $cobj->getMemberIds(), $user);
-		$cobj->addToSearchableObjects(true);
+		if (!$cobj instanceof Workspace) {
+			$object_controller->add_to_members($cobj, $cobj->getMemberIds(), $user);
+			$cobj->addToSearchableObjects(true);
+		}
 		
 		// add mails to sharing table for account owners
 		if ($cobj instanceof MailContent && $cobj->getAccount() instanceof MailAccount) {

@@ -130,4 +130,5 @@
 	'must choose at least one member of' => 'Você deve escolher pelo menos um membro de {0}.',
 	'timeslot dnx' => 'Não existe Espaço de tempo',
 	'you dont have permissions to classify object in member' => 'Você não tem permissão para classificar \'{0}\' em \'{1}\'',
+	'there are no changes' => 'Não foram feitas alterações. O documento não foi substituído.',
 ); ?>

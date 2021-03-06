@@ -35,7 +35,7 @@ class COTemplate extends BaseCOTemplate {
 	/**
 	 * 
 	 * 
-	 * @param ProjectTask $object
+	 * @param ContentDataObject $object
 	 */
 	function addObject($object, $additional_attributes = array()) {
 		if ($this->hasObject($object)) return;
@@ -94,13 +94,37 @@ class COTemplate extends BaseCOTemplate {
 				$object->setMilestoneId($additional_attributes['milestone']);
 				$object->save();
 			}
+			
+			//if object is a TemplateTask
+			if ($object instanceof TemplateTask) {
+				$object->setColumnValue('is_template', true);
+				$object->setColumnValue('template_id', $this->getId());
+				$object->setColumnValue('session_id', null);
+				if (isset($additional_attributes['milestone'])) {
+					$object->setMilestoneId($additional_attributes['milestone']);
+				}
+				$object->save();
+			}
+			
+			//if object is a TemplateMilestone
+			if ($object instanceof TemplateMilestone) {
+				$object->setColumnValue('is_template', true);
+				$object->setColumnValue('template_id', $this->getId());
+				$object->setColumnValue('session_id', null);
+				
+				$object->save();
+			}
+			
+			
 			// the object is already a template or can't be one, use it as it is
 			$template = $object;
 		}
+		//create a TemplateObject
 		$to = new TemplateObject();
 		$to->setObject($template);
 		$to->setTemplate($this);
 		$to->save();
+		
 		return $template->getObjectId();
 	}
 	

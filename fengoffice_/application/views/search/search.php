@@ -106,6 +106,9 @@ $disabled = $type_object ? false : true;
                 $('#buttonSubmit').attr("disabled",true)
             }
         });
+        $('#buttonSubmit').click(function() {
+        	$('#buttonSubmit').prop("disabled",true);
+        });
     });
     
 var modifiedSearch = false;

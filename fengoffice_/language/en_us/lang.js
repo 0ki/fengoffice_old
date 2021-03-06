@@ -293,6 +293,8 @@ addLangs({
 	'most active desc': 'Sort by most activity',
 	'sort desc': 'Sort the view',
 	
+	'confirm_mail_without_attach': 'Hello! I have noticed that you typed a word just like or similar to attach in this email, but no attachments have been found.\nWould you like to proceed sending the email anyway?',
+	
 	//'no objects message': 'There are no \'{0}\' in \'{1}\'',
 	'no objects message': 'There are no {0}',
 	'no more objects message': 'There are no more \'{0}\' to display',
@@ -868,6 +870,8 @@ addLangs({
   	'confirm delete user' : 'Are you sure that you want to delete this user account?',
 	'add sub task' : 'Add subtask',
 	'add first task' : 'Add the first task',
+	'edit variables' : 'Edit variables',
+	'new_task_template' : 'New task',
 	'do you want to mantain the current associations of this obj with members of' : 'Do you want to mantain the current associations of this object with {0}?',
 
 	'company not found': 'Company not found (id: {0})',

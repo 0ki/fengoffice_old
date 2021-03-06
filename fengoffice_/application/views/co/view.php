@@ -111,7 +111,8 @@
 			if ($object instanceof ApplicationDataObject)
 				echo render_custom_properties($object);
 			
-			if ($object instanceof ProjectTask) {
+			if ($object instanceof ProjectTask || $object instanceof TemplateTask) {
+				tpl_assign('genid', $genid);
 				$this->includeTemplate(get_template_path('subtasks_info', 'task'));
 				//$this->includeTemplate(get_template_path('work_performed', 'task'));
 			}

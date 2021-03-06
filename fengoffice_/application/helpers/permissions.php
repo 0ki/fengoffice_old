@@ -24,7 +24,18 @@
   	 * @return boolean
   	 */
   	function can_manage_contacts(Contact $user, $include_groups = true){
-  		return true; //FIXME remove this function
+  		$can_manage_contacts = false;
+		$pg_ids = $user->getPermissionGroupIds();
+		if (count($pg_ids) > 0) {
+			$pgs = SystemPermissions::findAll(array('conditions' => 'permission_group_id IN ('.implode(',',$pg_ids).')'));
+			foreach ($pgs as $pg) {
+				if ($pg->getColumnValue('can_manage_contacts')) {
+					$can_manage_contacts = true;
+					break;
+				}
+			}
+		}
+		return $can_manage_contacts;
   	}
   	
   	
@@ -601,7 +612,7 @@
 			}
 		}
 		
-		$all_object_types = ObjectTypes::findAll(array("conditions" => "`type` IN ('content_object', 'located') AND `name` <> 'file revision'"));
+		$all_object_types = ObjectTypes::findAll(array("conditions" => "`type` IN ('content_object', 'located') AND name <> 'template_task' AND name <> 'template_milestone'  AND `name` <> 'file revision'"));
 		return array(
 			'member_types' => $member_types,
 			'allowed_object_types_by_member_type' => $allowed_object_types_by_member_type,
@@ -1028,7 +1039,7 @@
 	 * @param $extra_conditions Extra conditions to add to the users query
 	 * @param $to_assign true if this function is called to fill the "assigned to" combobox when editing a task
 	 */
-	function allowed_users_in_context($object_type_id, $context = null, $access_level = ACCESS_LEVEL_READ, $extra_conditions = "") {
+	function allowed_users_in_context($object_type_id, $context = null, $access_level = ACCESS_LEVEL_READ, $extra_conditions = "", $for_tasks_filter = false) {
 		$result = array();
 		
 		$members = array();
@@ -1067,12 +1078,19 @@
 			$all_permission_groups[] = $row['permission_group_id'];
 		}
 		
-		if ($zero_members && config_option('let_users_create_objects_in_root')) {
-			$allowed_permission_groups = array_flat(DB::executeAll("SELECT permission_group_id FROM ".TABLE_PREFIX."contact_member_permissions WHERE member_id=0 AND object_type_id=$object_type_id"));
+		if ($zero_members && $for_tasks_filter) {
+			$allowed_permission_groups = get_user_pgs_with_permissions_in_my_members($object_type_id);
 		} else {
-			$allowed_permission_groups = can_access_pgids($all_permission_groups, $members, $object_type_id, $access_level);
+			if ($zero_members && config_option('let_users_create_objects_in_root') && (logged_user()->isAdminGroup() || logged_user()->isExecutive() || logged_user()->isManager())) {
+				$allowed_permission_groups = array_flat(DB::executeAll("SELECT permission_group_id FROM ".TABLE_PREFIX."contact_member_permissions WHERE member_id=0 AND object_type_id=$object_type_id"));
+			} else {
+				$allowed_permission_groups = can_access_pgids($all_permission_groups, $members, $object_type_id, $access_level);
+			}
 		}
 		
+		foreach ($allowed_permission_groups as $k => &$apg) {
+			if (trim($apg) == '') unset($allowed_permission_groups[$k]);
+		}
 		if (count($allowed_permission_groups) > 0) {
 			$result = Contacts::instance()->findAll(array(
 				'conditions' => "disabled=0 AND id IN (SELECT DISTINCT contact_id FROM ".TABLE_PREFIX."contact_permission_groups
@@ -1121,3 +1139,24 @@
 			exec("$command > /dev/null &");
 		}
 	}
+	
+	
+	
+	function get_user_pgs_with_permissions_in_my_members($object_type_id, $user = null) {
+		if ($object_type_id <= 0) {
+			return array();
+		}
+		if (is_null($user) || !$user instanceof Contact || !$user->isUser()) {
+			$user = logged_user();
+		}
+		
+		$sql = "select distinct(cmp.permission_group_id) from ".TABLE_PREFIX."contact_member_permissions cmp
+			inner join ".TABLE_PREFIX."permission_groups pg on pg.id=cmp.permission_group_id
+			where pg.type in ('permission_groups','user_groups') and cmp.object_type_id='$object_type_id' and member_id in (
+			  select distinct(cmp2.member_id) from ".TABLE_PREFIX."contact_member_permissions cmp2 where cmp2.permission_group_id in (
+			    select cpg2.permission_group_id from ".TABLE_PREFIX."contact_permission_groups cpg2 where cpg2.contact_id=".$user->getId()."
+			  )
+			)";
+		return array_flat(DB::executeAll($sql));
+	}
+	

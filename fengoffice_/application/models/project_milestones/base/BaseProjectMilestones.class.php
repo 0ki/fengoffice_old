@@ -22,7 +22,8 @@ abstract class BaseProjectMilestones extends ContentDataObjects {
     	'completed_on' => DATA_TYPE_DATETIME,
     	'completed_by_id' => DATA_TYPE_INTEGER,
     	'is_template' => DATA_TYPE_BOOLEAN,
-		'from_template_id' => DATA_TYPE_INTEGER
+		'from_template_id' => DATA_TYPE_INTEGER,
+		'from_template_object_id' => DATA_TYPE_INTEGER
 	);
 
 	/**
@@ -92,7 +93,7 @@ abstract class BaseProjectMilestones extends ContentDataObjects {
 	 */
 	function getSystemColumns() {
 		return array_merge(parent::getSystemColumns(), array(
-      		'assigned_to_contact_id', 'completed_by_id', 'from_template_id')
+      		'assigned_to_contact_id', 'completed_by_id', 'from_template_id', 'from_template_object_id')
 		);
 	} // getSystemColumns
 	

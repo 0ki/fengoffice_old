@@ -187,6 +187,28 @@
 		return $this->setColumnValue('from_template_id', $value);
 	} // setFromTemplateId()
     
+	/**
+	 * Return value of 'from_template_object_id' field
+	 *
+	 * @access public
+	 * @param void
+	 * @return integer
+	 */
+	function getFromTemplateObjectId() {
+		return $this->getColumnValue('from_template_object_id');
+	} // getFromTemplateObjectId()
+	
+	/**
+	 * Set value of 'from_template_object_id' field
+	 *
+	 * @access public
+	 * @param integer $value
+	 * @return boolean
+	 */
+	function setFromTemplateObjectId($value) {
+		return $this->setColumnValue('from_template_object_id', $value);
+	} // setFromTemplateObjectId()
+	
     /**
     * Return manager instance
     *

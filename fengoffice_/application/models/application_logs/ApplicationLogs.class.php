@@ -50,7 +50,9 @@ class ApplicationLogs extends BaseApplicationLogs {
 		if(!self::isValidAction($action)) {
 			throw new Error("'$action' is not valid log action");
 		} // if
-
+		if($object instanceof TemplateTask){
+			$is_silent = true;
+		}
 		if(is_null($is_silent)) {
 			$is_silent = $action == self::ACTION_DELETE;
 		} else {
@@ -223,6 +225,11 @@ class ApplicationLogs extends BaseApplicationLogs {
 				(SELECT t.assigned_to_contact_id FROM ".TABLE_PREFIX."project_tasks t WHERE t.object_id=rel_object_id) = ".logged_user()->getId().",
 				true)";
 		}
+		
+		//do not display template tasks logs 
+		$extra_conditions .= " AND IF((SELECT o.object_type_id FROM ".TABLE_PREFIX."objects o WHERE o.id=rel_object_id)=(SELECT ot.id FROM ".TABLE_PREFIX."object_types ot WHERE ot.name='template_task'),
+				false,
+				true)";
 
 		$members_sql = "";
 		if(count($members) > 0){

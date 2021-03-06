@@ -232,15 +232,15 @@
 				//check email
 				if(!og.checkValidEmailAddress(mail)){
 					container.closest(".widget-body").removeClass("loading");
-					og.err('<?php echo lang('invalid email address')?>');
+					og.err("<?php echo lang('invalid email address')?>");
 					return;
-				}	
+				}
 				
 				var user_type = container.find('select[name="contact[user][type]"] option:selected').val();
 				var company_id = container.find('select[name="contact[user][company_id]"] option:selected').val();
 				
 				var postVars = {
-					'member[object_type_id]': <?php echo ObjectTypes::findByName('person')->getId()?> ,
+					'member[object_type_id]': <?php echo ObjectTypes::findByName('person')->getId()?>,
 					'member[name]': value,
 					'member[parent_member_id]' : parent,
 					'member[dimension_id]': <?php echo Dimensions::findByCode('feng_persons')->getId()?>,
@@ -283,7 +283,7 @@
 
 				og.openLink(url, ajaxOptions);
 			}else{
-				og.err('<?php echo lang('error add name required', lang('person'))?>');
+				og.err("<?php echo lang('error add name required', lang('person'))?>");
 				$(container).find("input.add-person-field").focus();
 				container.removeClass("loading");
 			}	
@@ -343,7 +343,7 @@
 				});
 					
 		});
-				
+		
 		$(".add-person-field").keypress(function(e){
 			if(e.keyCode == 13){
 				$(".add-person-button").click();

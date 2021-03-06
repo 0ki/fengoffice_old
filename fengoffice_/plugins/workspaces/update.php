@@ -81,4 +81,13 @@
 			 object_type_id=(SELECT `id` FROM `".TABLE_PREFIX."object_types` WHERE `name`='tag') AND
 			 dimension_id=(SELECT `id` FROM `".TABLE_PREFIX."dimensions` WHERE `code`='tags')
 		");
+		
+		DB::executeAll("
+			INSERT INTO ".TABLE_PREFIX."dimension_object_type_contents (dimension_id,dimension_object_type_id,content_object_type_id,is_required,is_multiple) VALUES
+			((SELECT id FROM ".TABLE_PREFIX."dimensions WHERE code='workspaces'), (SELECT id FROM ".TABLE_PREFIX."object_types WHERE name='workspace'), (SELECT id FROM ".TABLE_PREFIX."object_types WHERE name='template_task' LIMIT 1),0,1),
+			((SELECT id FROM ".TABLE_PREFIX."dimensions WHERE code='tags'), (SELECT id FROM ".TABLE_PREFIX."object_types WHERE name='tag'), (SELECT id FROM ".TABLE_PREFIX."object_types WHERE name='template_task' LIMIT 1),0,1),
+			((SELECT id FROM ".TABLE_PREFIX."dimensions WHERE code='workspaces'), (SELECT id FROM ".TABLE_PREFIX."object_types WHERE name='workspace'), (SELECT id FROM ".TABLE_PREFIX."object_types WHERE name='template_milestone' LIMIT 1),0,1),
+			((SELECT id FROM ".TABLE_PREFIX."dimensions WHERE code='tags'), (SELECT id FROM ".TABLE_PREFIX."object_types WHERE name='tag'), (SELECT id FROM ".TABLE_PREFIX."object_types WHERE name='template_milestone' LIMIT 1),0,1)
+			ON DUPLICATE KEY UPDATE dimension_id=dimension_id;
+		");
 	}

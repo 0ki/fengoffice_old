@@ -1,5 +1,5 @@
 
-	About Feng Office 2.3.2.1
+	About Feng Office 2.4-beta
 	================================
 	
 	Feng Office is a Collaboration Platform and Project Management System.
@@ -102,6 +102,51 @@
 	Changelog
 	=========
 	
+	Since 2.3.2.1
+	----------------
+	
+	feature: templates have been greatly improved: they have changed completely for good!
+	feature: remember selection on total task execution time report
+	feature: when sending an email, if a word containing attach is found and no attachment if found, it triggers an alert.
+	feature: new user config option to set how many members are shown in breadcrumbs
+	feature: update plugins after running upgrade from console.
+	feature: add root permission when creating executive or superior users.
+	feature: contact edit form has been improved
+
+	bugfix: when uploading avatars, if it is .png and its size is smaller than 128x128 the image is not resized
+	bugfix: when sending an mail, the sender is now subscribed to it
+	bugfix: when adding a file from an email attachment, its now set to be created by the account owner
+	bugfix: reporting pagination fixed 
+	bugfix: custom reports, csv and pdf export only exports the active page..now it exports everything!
+	bugfix: don't collapse task group after performing an action to the task when group is expanded.
+	bugfix: email parsing removes enters and some emails were not shown correctly
+	bugfix: people widget in french used to cause a syntax error
+	bugfix: don't classify email in account's member if conversation is already classified.
+	bugfix: task filtering by user has been improved: it loads faster and more accurate
+	bugfix: the users selectbox for assignees has been improved: it loads faster and more accurate
+	bugfix: check for "can manage contacts" in system permissions if column exists
+	bugfix: email parsing does not fetch addresses when they are separated by semicolon
+	bugfix: tasks assigned to filter doesn't filter correctly when logged user is an internal collaborator and users 	can add objects without classifying them.
+	bugfix: search result pagination issue
+	bugfix: search results ordered by date again
+	bugfix: add to searchable objects failed for some emails
+	bugfix: custom properties migration fix
+	bugfix: feng 1 to feng 2 upgrade improved
+	bugfix: style fixes in administration tabs
+	bugfix: checkbox in contact tab now is working properly. initially it does not show the users
+	bugfix: google calendar sync issue for events with over 100 chars has been solved
+	bugfix: contact csv export fixed: when no contact is selected => export all contact csv export fixed
+	bugfix: some undefined variables have been defined
+	bugfix: some translations that were missing were added
+
+	security: remove xss from request parameters
+
+	performance: search engine has been greatly improved
+
+	other: the search button is disabled until returns the search result
+	other: when upgrading to 2.4 the completed tasks from feng 1 will change to 100% in completed percentage
+	
+	
 	Since 2.3.2
 	----------------
 	
@@ -139,6 +184,7 @@
 	feature: Only administrators can change system permissions.
 	feature: Users can change permissions of users of the same type (only dimension member permissions).
 	feature: Set permissions to executive, manager and admins when creating a new member.
+	
 	
 	Since 2.3.2-beta
 	----------------
@@ -192,8 +238,7 @@
 	feature: People widget improved.
 	feature: Improved member panels loading.
 	
-	language: Several language updates.
-	
+	language: Several language updates.	
 	
 	Since 2.3.1-beta
 	----------------

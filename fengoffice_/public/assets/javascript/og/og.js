@@ -2162,7 +2162,7 @@ og.flash2img = function() {
 og.getCrumbHtml = function(dims, draw_all_members, skipped_dimensions, show_archived) {
 	var html = '';
 	var dim_index = 0;
-	var max_members_per_dim = 2;
+	var max_members_per_dim = og.preferences['breadcrumb_member_count'];
 	for (x in dims) {
 		if (isNaN(x)) continue;
 		
@@ -2328,13 +2328,13 @@ og.checkValidEmailAddress = function(email) {
 	  
 }
 
-og.checkEmailAddress = function(element,id_contact) {    
+og.checkEmailAddress = function(element,id_contact) {
 	$(element).blur(function(){
 		var field = $(this);
 		// Ajax to ?c=contact&a=check_existing_email&email=admin@admin.com&ajax=true
 		var url = og.makeAjaxUrl(og.getUrl("contact", "check_existing_email", {email: field.val(),id_contact:id_contact}));
 		og.loading();
-		$.getJSON(url, function(data) {						
+		$.getJSON(url, function(data) {
 			$(".field-error-msg").remove();
 			var contact = data.contact;
 			if (contact.status) {
@@ -2343,16 +2343,16 @@ og.checkEmailAddress = function(element,id_contact) {
 				$(field).focus();
 			}else{
 				$(field).removeClass("field-error");
-                                if(contact.id){
-                                    og.openLink(og.getUrl('contact', 'edit',{id:contact.id,isEdit:1}));
-                                    $("#quick-form").hide();
-                                }                                
-			}		
+				if(contact.id){
+					og.openLink(og.getUrl('contact', 'edit',{id:contact.id,isEdit:1}));
+					$("#quick-form").hide();
+				}
+			}
 			og.hideLoading();
 		});
 
 		setTimeout(function(){og.hideLoading()}, 5000); //If ajax fails
-	});      
+	});
 }
 
 og.selectDimensionTreeMember = function(data) {

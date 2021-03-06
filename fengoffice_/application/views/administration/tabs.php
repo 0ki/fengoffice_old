@@ -1,5 +1,10 @@
+<?php $genid = gen_id();?>
+<div id="<?php echo $genid ?>adminContainer" class="adminGroups" style="height:100%;background-color:white">
+<div class="adminHeader">
+  	<div class="adminTitle"><?php echo lang('tabs') ?></div>
+</div>
+<div class="adminSeparator"></div>
 <div class="page tab-manager adminMainBlock">
-	<h1><?php echo lang("tabs")?></h1>
 	<form method = "POST" action="<?php echo get_url("administration" , "tabs_submit" )?>" >
 		<table style="border: 1px solid #D7E5F5;">
 			<tr>
@@ -9,11 +14,9 @@
 			</tr>
 			<?php $altRow = 'altRow'; 
 			foreach ( $tabs as $tab ) : /* @var $tab TabPanel */
-				$altRow = $altRow == '' ? 'altRow' : ''; 
+				$altRow = $altRow == '' ? 'altRow' : '';
 			?>
 			<tr class="<?php echo ($tab->getEnabled()?'enabled':'disabled')." $altRow"?>">
-				<!-- <td><input type="text" class="disabled" readonly="readonly" required name="tabs[<?php echo $tab->getId()?>][title]" value="<?php echo $tab->getTitle()?>"></td>
-				 -->
 				<td><?php echo lang($tab->getTitle())?>
 					<input type="hidden" class="disabled" readonly="readonly" required name="tabs[<?php echo $tab->getId()?>][title]" value="<?php echo $tab->getTitle()?>">
 				</td>

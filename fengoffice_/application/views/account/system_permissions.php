@@ -50,10 +50,7 @@
 		<a href="#" class="internalLink ogTasksGroupAction ico-complete" onclick="checks=this.parentNode.getElementsByTagName('input'); for(i=0;i<checks.length;i++) checks[i].checked = true;"><?php echo lang('check all')?></a>
 		<a href="#" class="internalLink ogTasksGroupAction ico-delete" onclick="checks=this.parentNode.getElementsByTagName('input'); for(i=0;i<checks.length;i++) checks[i].checked = false;"><?php echo lang('uncheck all')?></a>
 		<?php endif; ?>
-	
-
-
-</div>
+	</div>
 </fieldset>
 
 
@@ -103,7 +100,7 @@
 	$this->includeTemplate(get_template_path('user_permissions_control', 'account'));
 ?>
 
-<?php if (config_option('let_users_create_objects_in_root') && ($user instanceof Contact && ($user->isAdminGroup() || $user->isExecutive() || $user->isManager())) ){ ?>
+<?php if (config_option('let_users_create_objects_in_root') && (isset($user) && $user instanceof Contact && ($user->isAdminGroup() || $user->isExecutive() || $user->isManager())) ){ ?>
 
 <fieldset><legend><span class="og-task-expander toggle_expanded" style="padding-left:20px;" 
 	onclick="og.toggle('<?php echo $genid ?>root_permissions'); if ($(this).hasClass('toggle_expanded')){$(this).removeClass('toggle_expanded');$(this).addClass('toggle_collapsed');} else {$(this).removeClass('toggle_collapsed');$(this).addClass('toggle_expanded');}">
@@ -118,7 +115,7 @@
   	<td align=center style="padding-left:10px;padding-right:10px;width:120px;"><a href="#" class="internalLink radio-title-0" onclick="og.ogRootPermSetLevel('<?php echo $genid ?>', 0);return false;"><?php echo lang('none no bars') ?></a></td>
   </tr>
 <?php 
-	$all_object_types = ObjectTypes::instance()->findAll(array('conditions' => "type IN ('content_object', 'located') AND type NOT IN ('comment') AND name <> 'file revision' AND 
+	$all_object_types = ObjectTypes::instance()->findAll(array('conditions' => "type IN ('content_object', 'located') AND type NOT IN ('comment') AND name <> 'file revision' AND name <> 'template_task' AND name <> 'template_milestone' AND 
 		(plugin_id IS NULL OR plugin_id = 0 OR plugin_id IN (SELECT id FROM ".TABLE_PREFIX."plugins WHERE is_activated > 0 AND is_installed > 0))"));
 	$row_cls = "";
 	$root_object_types = array();

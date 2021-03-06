@@ -1,10 +1,7 @@
 <?php
 	require_javascript("og/ReportingFunctions.js");
 	$genid = gen_id();
-	$report_data = array_var($_SESSION, 'total_task_times_report_data', array());
-	//if (!array_var($report_data, 'timeslot_type')) {
-		$report_data['timeslot_type'] = 2;
-	//}
+	
 	if (count($report_data) == 0) {
 		$report_data['show_billing'] = $has_billing;
 	}
@@ -61,8 +58,8 @@
 		<?php
 			if (array_var($report_data, "date_type") == 6) {
 				$style = "";
-		       	$st = DateTimeValueLib::dateFromFormatAndString(user_config_option('date_format'), array_var($report_data, 'start_value'));
-		       	$et = DateTimeValueLib::dateFromFormatAndString(user_config_option('date_format'), array_var($report_data, 'end_value'));
+		       	$st = DateTimeValueLib::dateFromFormatAndString(DATE_MYSQL, array_var($report_data, 'start_value'));
+		       	$et = DateTimeValueLib::dateFromFormatAndString(DATE_MYSQL, array_var($report_data, 'end_value'));
 			} else {
 				$style = 'display:none;';
 				$st = DateTimeValueLib::now();

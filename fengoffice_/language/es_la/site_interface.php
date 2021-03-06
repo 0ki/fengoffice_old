@@ -533,6 +533,7 @@
 	'workspace description' => 'Descripción de área de trabajo para \'{0}\'',
 	'show all amount' => 'Mostrar todos ({0})',
 	'searching' => 'Buscando',
+	'many'	=> 'Muchos',
 	'weblink' => 'Enlace web',
 	'add value' => 'Agregar valor',
 	'remove value' => 'Quitar valor',

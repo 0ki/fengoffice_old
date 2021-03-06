@@ -124,31 +124,16 @@ class SearchController extends ApplicationController {
 		$search_for = array_var($_GET, 'search_for');
         $search_dimension = array_var($_GET, 'search_dimension');
         $advanced = array_var($_GET, 'advanced');
-		$minWordLength = $this->minWordLength($search_for);
-		$useLike = ( $minWordLength && ($this->ignoreMinWordLength) && ($minWordLength < self::$MYSQL_MIN_WORD_LENGHT) );
+		//$minWordLength = $this->minWordLength($search_for);
+		//$useLike = ( $minWordLength && ($this->ignoreMinWordLength) && ($minWordLength < self::$MYSQL_MIN_WORD_LENGHT) );
+        $useLike = false;
+		if(strlen($search_for) < 4){
+			$useLike = true;
+		}
 		$search_pieces= explode(" ", $search_for);
 		$search_string = "";
-		if (!$useLike){
-			// Prepare MATCH AGAINST string
-			foreach ($search_pieces as $word ) {
-				/*if (( strpos($word, "@") || strpos($word, ".") || strpos($word, ",")) === false ) {
-					// STRING Dont containt special characheters that mysql use as separator. Noramal  flow 
-					if ($this->wildCardSearch) {
-						$word.="*";
-					}
-				}else{
-					$word =  str_replace($this->mysqlWordSeparator, " +", $word) ;
-				}*/
-				if ( !str_starts_with($word, " ") ) {
-					$word = " +".'"'.$word.'"';
-				}
-				$search_string .= mysql_real_escape_string( $word ). " ";
-			}
-			$search_string = substr($search_string, 0 , -1);
-		}else{
-			// USE Like Query
-			$search_string = mysql_real_escape_string($search_for, DB::connection()->getLink());
-		}
+		
+		$search_string = mysql_real_escape_string($search_for, DB::connection()->getLink());
 		
 		$this->search_for = $search_for;
 		$limit = $this->limit;
@@ -313,9 +298,9 @@ class SearchController extends ApplicationController {
 			$type_object = '';
 			
 			$sql = "	
-			SELECT so.rel_object_id AS id
+			SELECT DISTINCT so.rel_object_id AS id   
 			FROM ".TABLE_PREFIX."searchable_objects so
-			WHERE " . (($useLike) ? " so.content LIKE '%$search_string%' " : " MATCH (so.content) AGAINST ('$search_string' IN BOOLEAN MODE) ") . "  
+			WHERE " . (($useLike) ? " so.content LIKE '%$search_string%' " : " MATCH (so.content) AGAINST ('\"$search_string\"' IN BOOLEAN MODE) ") . "  
 			AND (so.rel_object_id IN 
 				(SELECT o.id
 				 FROM  ".TABLE_PREFIX."objects o
@@ -337,6 +322,7 @@ class SearchController extends ApplicationController {
 				)
 			)			
 			
+			ORDER BY id DESC 
 			LIMIT $start, $limitTest";
 		}
 		
@@ -359,7 +345,7 @@ class SearchController extends ApplicationController {
 		if ( count ( $search_results_ids ) < $limitTest ) {
 			$total = count($search_results_ids) + $start ;
 		}else{
-			$total = "Many" ;
+			$total = lang("many") ;
 		}
 		//$total -= $filteredResults ;
 		$this->total = $total ;
@@ -392,7 +378,7 @@ class SearchController extends ApplicationController {
 //		tpl_assign('allowed_columns', $this->get_allowed_columns($selected_type));
 		
 		tpl_assign('object_types', $types);
-
+		
 		//Ajax
 		if (!$total && !$advanced){
 			if($_POST && count($search_results < 0)){

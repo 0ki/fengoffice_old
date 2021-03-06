@@ -21,12 +21,16 @@ class Contacts extends BaseContacts {
 	function getAllowedContacts($extra_conds = null) {
 		$result = array();
 		
-		$conditions = $extra_conds ? "$extra_conds AND " : "";
-		$conditions .= "e.object_id IN (
-			SELECT st.object_id FROM ".TABLE_PREFIX."sharing_table st WHERE st.group_id IN (
-				SELECT pg.id FROM ".TABLE_PREFIX."permission_groups pg WHERE pg.type='permission_groups' AND pg.contact_id = ".logged_user()->getId()."
-			)
-		)";
+		$can_manage_contacts = can_manage_contacts(logged_user());
+		
+		$conditions = $extra_conds ? $extra_conds : "";
+		if (!$can_manage_contacts) {
+			$conditions .= ($extra_conds ? " AND " : "") . "e.object_id IN (
+				SELECT st.object_id FROM ".TABLE_PREFIX."sharing_table st WHERE st.group_id IN (
+					SELECT pg.id FROM ".TABLE_PREFIX."permission_groups pg WHERE pg.type='permission_groups' AND pg.contact_id = ".logged_user()->getId()."
+				)
+			)";
+		}
 		
 		$contacts = Contacts::instance()->findAll(array('conditions' => $conditions));
 		

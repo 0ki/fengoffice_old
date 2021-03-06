@@ -3,8 +3,7 @@
 	$genid = gen_id();
 	$object = $message;
 	$visible_cps = CustomProperties::countVisibleCustomPropertiesByObjectType($message->getObjectTypeId());
-        
-        $loc = user_config_option('localization');
+	$loc = user_config_option('localization');
 	if (strlen($loc) > 2) $loc = substr($loc, 0, 2);
 ?>
 <form onsubmit="return og.setDescription();" class="add-message" id="<?php echo $genid ?>submit-edit-form" style='height:100%;background-color:white' action="<?php echo $message->isNew() ? get_url('message', 'add') : $message->getEditUrl() ?>" method="post" enctype="multipart/form-data" >

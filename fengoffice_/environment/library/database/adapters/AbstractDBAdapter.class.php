@@ -270,7 +270,7 @@
     */
     function execute($sql, $arguments = null) {
     	if (!$this->isConnected()) {
-    		$this->reconnect();
+			$this->reconnect();
     	}
     	return $this->prepareAndExecute($sql, $arguments);
     } // execute

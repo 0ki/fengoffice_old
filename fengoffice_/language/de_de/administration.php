@@ -467,4 +467,5 @@ Nach Änderung des Formates komplette Seite aktualisieren.',
 	'user ws config option name attach_to_notification' => 'anlagen zu Notizen hinzufügen',
 	'file extension prevention uploading' => 'dieser Dateityp darf nicht hochgeladen werden',
 	'success file extension' => 'erfolgreich abgespeichert',
+	'user config option name sendEmailNotification' => 'Bestätigung per Mail versenden',
 ); ?>

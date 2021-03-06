@@ -89,6 +89,10 @@ AND NOT EXISTS (
   )
 );
 
+CREATE TABLE `to_delete` (`id` INTEGER UNSIGNED, PRIMARY KEY (`id`)) ENGINE = InnoDB;
+insert into to_delete select o.id from <?php echo $table_prefix ?>object_types o inner join <?php echo $table_prefix ?>object_types o2 on o.id>o2.id and o.name=o2.name;
+delete from <?php echo $table_prefix ?>object_types where id in (select id from to_delete);
+DROP TABLE `to_delete`;
 ALTER TABLE `<?php echo $table_prefix ?>object_types` DROP INDEX `name`, ADD UNIQUE INDEX `name` USING BTREE(`name`);
 
 INSERT INTO `<?php echo $table_prefix ?>administration_tools` (`name`, `controller`, `action`, `order`, `visible`) VALUES

@@ -906,7 +906,7 @@ class TaskController extends ApplicationController {
 		$externalMilestones = ProjectMilestones::findAll(array('conditions' => $ext_milestone_conditions));
 		
 		// Get Users Info
-		$users = allowed_users_in_context(ProjectTasks::instance()->getObjectTypeId(), active_context(), ACCESS_LEVEL_READ);
+		$users = allowed_users_in_context(ProjectTasks::instance()->getObjectTypeId(), active_context(), ACCESS_LEVEL_READ, '', true);
 		$allUsers = Contacts::getAllUsers();
 		
 		$user_ids = array(-1);
@@ -1003,21 +1003,32 @@ class TaskController extends ApplicationController {
 	 * @return null
 	 */
 	function view() {
-		$task_list = ProjectTasks::findById(get_id());
-		$this->addHelper('textile');
-
-		if(!($task_list instanceof ProjectTask)) {
-			flash_error(lang('task list dnx'));
-			ajx_current("empty");
-			return;
-		} // if
-
-		if(!$task_list->canView(logged_user())) {
-			flash_error(lang('no access permissions'));
-			ajx_current("empty");
-			return;
-		} // if
-
+		if(array_var($_REQUEST, "template_task")){
+			$task_list = TemplateTasks::findById(get_id());
+			if(!($task_list instanceof TemplateTask)) {
+				flash_error(lang('task list dnx'));
+				ajx_current("empty");
+				return;
+			} // if
+			$this->setTemplate(get_template_path('view', 'template_task'));
+		}else{
+			$task_list = ProjectTasks::findById(get_id());
+			
+			$this->addHelper('textile');
+			
+			if(!($task_list instanceof ProjectTask)) {
+				flash_error(lang('task list dnx'));
+				ajx_current("empty");
+				return;
+			} // if
+			
+			if(!$task_list->canView(logged_user())) {
+				flash_error(lang('no access permissions'));
+				ajx_current("empty");
+				return;
+			} // if
+		}	
+	
 		//read object for this user
 		$task_list->setIsRead(logged_user()->getId(),true);
 		
@@ -1072,8 +1083,15 @@ class TaskController extends ApplicationController {
 			return;
 		} // if
 
-
-		$task = new ProjectTask();
+		//is template task?
+		if(array_var($_REQUEST, 'template_task') == true){
+			$task = new TemplateTask();
+			$this->setTemplate(get_template_path('add_template_task', 'template_task'));
+						
+		}else{
+			$task = new ProjectTask();
+		}
+		
 		$task_data = array_var($_POST, 'task');
 		if(!is_array($task_data)) {
 			$dd = getDateValue(array_var($_POST, 'task_due_date', ''));
@@ -1105,7 +1123,7 @@ class TaskController extends ApplicationController {
 				'project_id' => 1 ,
 				'name' => array_var($_POST, 'name', ''),
 				'assigned_to_contact_id' => array_var($_POST, 'assigned_to_contact_id', '0'),
-				'parent_id' => array_var($_POST, 'parent_id', 0),
+				'parent_id' => array_var($_REQUEST, 'parent_id', 0),
 				'priority' => array_var($_POST, 'priority', ProjectTasks::PRIORITY_NORMAL),
 				'text' => $text_post,
 				'start_date' => $sd,
@@ -1195,12 +1213,27 @@ class TaskController extends ApplicationController {
 				$task->setTimeEstimate($totalMinutes);
 
 				$id = array_var($_GET, 'id', 0);
-				$parent = ProjectTasks::findById($id);
-				if ($parent instanceof ProjectTask) {
-					$task->setParentId($id);
-					$member_ids = $parent->getMemberIds();
-					if ($parent->getIsTemplate()) {
-						$task->setIsTemplate(true);
+				if($task instanceof TemplateTask){
+					//evt_add("template task added", array("id_template_task" => $file->getId()));
+					
+					$task->setIsTemplate(true);
+					$parent = TemplateTasks::findById($id);
+					if ($parent instanceof TemplateTask) {
+						$task->setParentId($id);
+						$member_ids = $parent->getMemberIds();
+						if ($parent->getIsTemplate()) {
+							$task->setIsTemplate(true);
+						}
+					}
+					
+				}else{
+					$parent = ProjectTasks::findById($id);
+					if ($parent instanceof ProjectTask) {
+						$task->setParentId($id);
+						$member_ids = $parent->getMemberIds();
+						if ($parent->getIsTemplate()) {
+							$task->setIsTemplate(true);
+						}
 					}
 				}
 
@@ -1209,7 +1242,11 @@ class TaskController extends ApplicationController {
 					ajx_current("empty");
 					return;
 				}
-
+				
+				if($task instanceof TemplateTask){
+					$task->setSessionId(logged_user()->getId());
+				}
+				
 				DB::beginWork();
 				$task->save();
 				
@@ -1257,7 +1294,14 @@ class TaskController extends ApplicationController {
 				
 				//Link objects
 				$object_controller = new ObjectController();
-				$object_controller->add_to_members($task, $member_ids);
+				
+				if($task instanceof TemplateTask ){
+					if(!empty($member_ids)){
+						$object_controller->add_to_members($task, $member_ids);
+					}
+				}else{
+					$object_controller->add_to_members($task, $member_ids);
+				}				
 				$object_controller->add_subscribers($task);
 				$object_controller->link_to_new_object($task);
 				$object_controller->add_custom_properties($task);
@@ -1286,6 +1330,22 @@ class TaskController extends ApplicationController {
 				}
 				
 				DB::commit();
+				
+				//Send Template task to view
+				if($task instanceof TemplateTask){
+					$objectId = $task->getObjectId();
+					$id = $task->getId();
+					$objectTypeName = $task->getObjectTypeName();
+					$objectName = $task->getObjectName();
+					$manager = get_class($task->manager());
+					$milestoneId = $task instanceof TemplateTask ? $task->getMilestoneId() : '0';
+					$subTasks = array();
+					$parentId = $task->getParentId();
+					$ico = "ico-task";
+					$object = TemplateController::prepareObject($objectId, $id, $objectName, $objectTypeName, $manager, $milestoneId, $subTasks, $parentId, $ico);
+															
+					evt_add("template object added", $object);
+				}
 
 				// notify asignee
 				if(array_var($task_data, 'send_notification') == 'checked') {
@@ -1392,20 +1452,31 @@ class TaskController extends ApplicationController {
 			return;
 		}
 		$this->setTemplate('add_task');
-
-		$task = ProjectTasks::findById(get_id());
-		if(!($task instanceof ProjectTask)) {
-			flash_error(lang('task list dnx'));
-			ajx_current("empty");
-			return;
-		} // if
-
-		if(!$task->canEdit(logged_user())) {
-			flash_error(lang('no access permissions'));
-			ajx_current("empty");
-			return;
-		} // if
-
+		
+		if(array_var($_REQUEST, "template_task")){
+			$task = TemplateTasks::findById(array_var($_REQUEST, "template_task_id",get_id()));
+			$this->setTemplate(get_template_path('add_template_task', 'template_task'));
+			if(!($task instanceof TemplateTask)) {
+				flash_error(lang('task list dnx'));
+				ajx_current("empty");
+				return;
+			} // if
+		}else{				
+			$task = ProjectTasks::findById(get_id());
+			if(!($task instanceof ProjectTask)) {
+				flash_error(lang('task list dnx'));
+				ajx_current("empty");
+				return;
+			} // if
+	
+			if(!$task->canEdit(logged_user())) {
+				flash_error(lang('no access permissions'));
+				ajx_current("empty");
+				return;
+			} // if		
+		}
+		
+		
 		if (array_var($_GET, 'replace')) {
 			ajx_replace(true);
 		}
@@ -2180,9 +2251,23 @@ class TaskController extends ApplicationController {
 	
 
 	function allowed_users_to_assign() {
-		$context_plain = array_var($_GET, 'context');
-		$context = null;
-		if (!is_null($context_plain)) $context = build_context_array($context_plain);
+		
+		$members = array();
+		$member_ids = explode(',', array_var($_GET, 'member_ids'));
+		if (count($member_ids) > 0) {
+			$tmp_members = Members::findAll(array('conditions' => 'id IN ('.implode(',',$member_ids).')'));
+			foreach ($tmp_members as $m) {
+				if ($m->getDimension()->getIsManageable()) $members[] = $m;
+			}
+		}
+		
+		if (count($members) == 0) {
+			$context_plain = array_var($_GET, 'context');
+			$context = null;
+			if (!is_null($context_plain)) $context = build_context_array($context_plain);
+		} else {
+			$context = $members;
+		}
 		
 		$comp_array = allowed_users_to_assign($context);
 		$object = array(

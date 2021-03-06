@@ -36,7 +36,6 @@ function send_reminders() {
 	foreach ($ors as $or) {
 		$function = $or->getType();
 		try {
-			_log("Reminder for Object: ".$or->getObjectId(). " - reminder type: $function");
 			$ret = 0;
 			Hook::fire($function, $or, $ret);
 			$sent += $ret;

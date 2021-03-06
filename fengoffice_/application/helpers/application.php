@@ -345,6 +345,14 @@ function user_select_box($list_name, $selected = null, $attributes = null, $cont
  * @throws InvalidInstanceError
  */
 function select_milestone($name, $context = null, $selected = null, $attributes = null) {
+	if(!isset($attributes['template_milestone'])){
+		$milestones = ProjectMilestones::getActiveMilestonesByUser(logged_user(), $context);
+	}else{
+		//add conditions
+		$conditions = '`session_id` =  '.logged_user()->getId().' AND `template_id` = 0';
+		$milestones = TemplateMilestones::findAll(array('conditions' => $conditions));
+	}
+	
 	if(is_array($attributes)) {
 		if(!isset($attributes['class'])) $attributes['class'] = 'select_milestone';
 	} else {
@@ -352,8 +360,9 @@ function select_milestone($name, $context = null, $selected = null, $attributes 
 	}
 
 	$options = array(option_tag(lang('none'), 0));
-	$milestones = ProjectMilestones::getActiveMilestonesByUser(logged_user(), $context); 
-
+	
+	
+		
 	if(is_array($milestones)) {
 
 		foreach($milestones as $milestone) {

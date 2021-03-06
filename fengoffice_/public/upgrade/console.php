@@ -25,4 +25,10 @@ if(trim($to_version) == '') {
 $upgrader = new ScriptUpgrader(new Output_Console(), 'Upgrade Feng Office', 'Upgrade your Feng Office installation');
 $upgrader->upgrade($from_version, $to_version);
 
+echo date("Y-m-d H:i:s") . " - Updating plugins...\n";
+if (substr(php_uname(), 0, 5) == "Linux") {
+	$command = "php ".ROOT."/public/install/plugin-console.php update_all";
+	exec("$command");
+}
+echo date("Y-m-d H:i:s") . " - Finished plugins update.\n";
 ?>
