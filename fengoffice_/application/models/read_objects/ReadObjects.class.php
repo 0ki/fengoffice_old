@@ -39,23 +39,24 @@
     
     
     /**
-    * Return all read objects ( ReadObjects) for specific object and user
-    *
-    * @return array
-    */
+     * Return all read objects ( ReadObjects) for specific object and user
+     *
+     * @return array
+     */
     static function getReadByObjectList($object_id_list, $contact_id) {
     	$idsCSV = implode(',',$object_id_list);
-      $rol = self::findAll(array(
-        'conditions' => array("`rel_object_id` in ($idsCSV) and `contact_id` = ? and is_read = 1", $contact_id)
-      )); // findAll
-      if (is_array($rol) && count($rol) > 0){
-      	$result = array();
-      	foreach ($rol as $ro){
-      		$result[$ro->getRelObjectId()] = true;
-      	}
-      	return $result;
-      } else
-      	return array();
+    	$rol = self::findAll(array(
+       		'conditions' => array("`rel_object_id` in ($idsCSV) and `contact_id` = ? and is_read = 1", $contact_id)
+    	)); // findAll
+    	if (is_array($rol) && count($rol) > 0){
+    		$result = array();
+    		foreach ($rol as $ro){
+    			$result[$ro->getRelObjectId()] = true;
+    		}
+    		return $result;
+    	} else {
+    		return array();
+    	}
     } // getReadByObject
     
     

@@ -38,7 +38,7 @@ Ext.extend(og.DateField, Ext.form.DateField,{
             showToday : this.showToday,
             minText : String.format(this.minText, this.formatDate(this.minValue)),
             maxText : String.format(this.maxText, this.formatDate(this.maxValue)),
-            startDay: og.preferences['start_monday']
+            startDay: og.preferences['start_monday'] ? 1 : 0
         });
         this.menu.on(Ext.apply({}, this.menuListeners, {
             scope:this

@@ -191,6 +191,11 @@ class ProjectTasks extends BaseProjectTasks {
 	
 	static function getUpcomingWithoutDate($limit = null ) {
 		$conditions = " AND is_template = 0 AND `e`.`completed_by_id` = 0 AND `e`.`due_date` = '0000-00-00 00:00:00' " ;
+		
+		if (!SystemPermissions::userHasSystemPermission(logged_user(), 'can_see_assigned_to_other_tasks')) {
+			$conditions .= " AND assigned_to_contact_id = ".logged_user()->getId();
+		}
+		
 		$tasks_result = self::instance()->listing(array(
 			"start"=> 0,
 			"limit"=>$limit, 
@@ -203,20 +208,25 @@ class ProjectTasks extends BaseProjectTasks {
 
 
 	static function getOverdueAndUpcomingObjects($limit = null) {
+		$conditions_tasks = " AND is_template = 0 AND `e`.`completed_by_id` = 0 AND `e`.`due_date` > 0";
+		$conditions_milestones = " AND is_template = 0 AND `e`.`completed_by_id` = 0 AND `e`.`due_date` > 0";
 		
-		$conditions = " AND is_template = 0 AND `e`.`completed_by_id` = 0 AND `e`.`due_date` > 0";
+		if (!SystemPermissions::userHasSystemPermission(logged_user(), 'can_see_assigned_to_other_tasks')) {
+			$conditions_tasks .= " AND assigned_to_contact_id = ".logged_user()->getId();
+		}
+		
 		$tasks_result = self::instance()->listing(array(
-			"limit"=>$limit, 
-			"extra_conditions"=>$conditions, 
+			"limit" => $limit, 
+			"extra_conditions" => $conditions_tasks, 
 			"order"=>  array('due_date', 'priority'), 
 			"order_dir" => "ASC"
 		));
 		$tasks = $tasks_result->objects;
 		
 		$milestones_result = ProjectMilestones::instance()->listing(array(
-			"limit"=>$limit, 
-			"extra_conditions"=>$conditions, 
-			"order"=>  array('due_date'), 
+			"limit" => $limit, 
+			"extra_conditions" => $conditions_milestones, 
+			"order" => array('due_date'), 
 			"order_dir" => "ASC"
 		));
 		$milestones = $milestones_result->objects;
@@ -336,6 +346,39 @@ class ProjectTasks extends BaseProjectTasks {
 		// Remove keys	
 		$result->objects = array_values($result->objects);
 		return $result;
+	}
+	
+	
+	private $cached_related = array();
+	function findByRelatedCached($task_id, $all_task_ids = null) {
+		if (!isset($this->cached_related[$task_id])) {
+			if (is_array($all_task_ids) && count($all_task_ids) > 0) {
+				$obj_cond = "original_task_id IN (".implode(",", $all_task_ids).")";
+			} else {
+				$obj_cond = "original_task_id = $task_id";
+			}
+			
+			$db_res = DB::execute("SELECT object_id, original_task_id FROM ".TABLE_PREFIX."project_tasks WHERE $obj_cond");
+			$rows = $db_res->fetchAll();
+			if (is_array($rows)) {
+				foreach ($rows as $row) {
+					if (!isset($this->cached_related[$row['original_task_id']])) $this->cached_related[$row['original_task_id']] = array();
+					$this->cached_related[$row['original_task_id']][] = $row['object_id'];
+				}
+			}
+			
+			if (is_array($all_task_ids)) {
+				foreach ($all_task_ids as $tid) {
+					if (!isset($this->cached_related[$tid])) $this->cached_related[$tid] = array();
+				}
+			}
+		}
+		
+		$related = array_var($this->cached_related, $task_id, array());
+		if (count($related) > 0) {
+			return self::findAll(array('conditions' => 'object_id IN ('.implode(',', $related).')'));
+		}
+		return array();
 	}
         
         function findByRelated($task_id) {

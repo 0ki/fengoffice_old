@@ -542,7 +542,7 @@ ogTasks.drawGroup = function(displayCriteria, drawOptions, group){
 	
 	sb.append("<div id='ogTasksPanelTaskRowsContainer" + group.group_id + "'>");
 	//draw the group's tasks
-        var time_estimated = 0;
+	var time_estimated = 0;
 	for (var i = 0; i < group.group_tasks.length; i++){
 		if (i == og.noOfTasks){//Draw expander if group has more than og.noOfTasks tasks
 			sb.append("<div class='ogTasksTaskRow' style='display:" + (group.isExpanded? "none" : "inline") + "' id='ogTasksGroupExpandTasksTitle" + group.group_id + "'>");
@@ -550,41 +550,41 @@ ogTasks.drawGroup = function(displayCriteria, drawOptions, group){
 			sb.append("</div>");
 			sb.append("<div id='ogTasksGroupExpandTasks" + group.group_id + "'>");
 			if (group.isExpanded){
-                            for (var j = og.noOfTasks; j < group.group_tasks.length; j++){
-                                sb.append(this.drawTask(group.group_tasks[j], drawOptions, displayCriteria, group.group_id, 1));
-                            } 
-                        }                                                           
+				for (var j = og.noOfTasks; j < group.group_tasks.length; j++){
+					sb.append(this.drawTask(group.group_tasks[j], drawOptions, displayCriteria, group.group_id, 1));
+				}
+			}
 			sb.append("</div>");
 			break;
 		}
 		sb.append(this.drawTask(group.group_tasks[i], drawOptions, displayCriteria, group.group_id, 1));
 	}
-        
-        for (var c = 0; c < group.group_tasks.length; c++){
-            if (group.group_tasks[c].subtasks.length > 0){
-                    time_estimated += this.subtasksTimeEstimate(group.group_tasks[c].TimeEstimate,group.group_tasks[c], displayCriteria)
-            }else{
-                    time_estimated += group.group_tasks[c].TimeEstimate;
-            }
+
+	for (var c = 0; c < group.group_tasks.length; c++){
+		if (group.group_tasks[c].subtasks.length > 0){
+			time_estimated += this.subtasksTimeEstimate(group.group_tasks[c].TimeEstimate,group.group_tasks[c], displayCriteria)
+		}else{
+			time_estimated += group.group_tasks[c].TimeEstimate;
+		}
 	}
-        
-        if(drawOptions.show_time_estimates){
-            var total_estimate_split = Math.round(time_estimated * 100 / 60)/100 ;
-            var total_estimate = (total_estimate_split + '').split(".");
-            var hours_estimate = total_estimate[0] + " " + lang('hours');
-            var minutes_estimate = "";
-            if(total_estimate[1]){
-                if(total_estimate[1].length == 1)
-                    minutes_estimate = ", " + Math.round(((total_estimate[1] * 60) / 10)) + " " + lang('minutes');
-                else
-                    minutes_estimate = ", " + Math.round(((total_estimate[1] * 60) / 100)) + " " + lang('minutes');
-            }
-                
-            
-            var format_total_estimate = hours_estimate + minutes_estimate
-            sb.append("<div style='float:right;'><span style='font-weight:bold;color:#888'>" +  lang('estimated time') + ':&nbsp;' + format_total_estimate + "</span>");
-        }
-        
+
+	if (drawOptions.show_time_estimates) {
+		var total_estimate_split = Math.round(time_estimated * 100 / 60) / 100;
+		var total_estimate = (total_estimate_split + '').split(".");
+		var hours_estimate = total_estimate[0] + " " + lang('hours');
+		var minutes_estimate = "";
+		if (total_estimate[1]) {
+			if (total_estimate[1].length == 1) {
+				minutes_estimate = ", " + Math.round(((total_estimate[1] * 60) / 10)) + " " + lang('minutes');
+			} else {
+				minutes_estimate = ", " + Math.round(((total_estimate[1] * 60) / 100)) + " " + lang('minutes');
+			}
+			var format_total_estimate = hours_estimate + minutes_estimate;
+		} else {
+			var format_total_estimate = hours_estimate;
+		}
+		sb.append("<div style='float:right;'><span style='font-weight:bold;color:#888'>" + lang('estimated time') + ':&nbsp;' + format_total_estimate + "</span>");
+	}
 	sb.append("</div></div></div>");
 	return sb.toString();
 }
@@ -857,23 +857,24 @@ ogTasks.drawTaskRow = function(task, drawOptions, displayCriteria, group_id, lev
 				}
 			sb.append("<td class='" + (userIsWorking?(userPaused?"ogTasksPausedTimeTd": "ogTasksActiveTimeTd") : "ogTasksTimeTd") + "'><table><tr>");
 			if (userIsWorking){
-				if (userPaused)
+				if (userPaused) {
 					sb.append("<td><a href='#' onclick='ogTasks.executeAction(\"resume_work\",[" + task.id + "])'><div class='ogTasksTimeClock ico-time-play' title='" + lang('resume_work') + "'></div></a></td>");
-				else
+				} else {
 					sb.append("<td><a href='#' onclick='ogTasks.executeAction(\"pause_work\",[" + task.id + "])'><div class='ogTasksTimeClock ico-time-pause' title='" + lang('pause_work') + "'></div></a></td>");
-				
+				}
 				sb.append("<td><a href='#' onclick='ogTasks.closeTimeslot(\"" + tgId + "\")'><div class='ogTasksTimeClock ico-time-stop' title='" + lang('close_work') + "'></div></a></td>");
-			} else
+			} else {
 				sb.append("<td><a href='#' onclick='ogTasks.executeAction(\"start_work\",[" + task.id + "])'><div class='ogTasksTimeClock ico-time' title='" + lang('start_work') + "'></div></a></td>");
-			
+			}
 			sb.append("<td style='white-space:nowrap'><b>");
 			
 			for (var i = 0; i < ids.length; i++){
 				var user = this.getUser(ids[i]);
 				if (user){
 					sb.append("" + og.clean(user.name));
-					if (i < ids.length - 1)
+					if (i < ids.length - 1) {
 						sb.append(",");
+					}
 					sb.append("&nbsp;");
 				}
 			}

@@ -251,7 +251,7 @@ $visible_cps = CustomProperties::countVisibleCustomPropertiesByObjectType($objec
 		<fieldset>
 			<legend><?php echo lang('custom properties') ?></legend>
 			<?php echo render_object_custom_properties($object, false) ?>
-      		<?php //echo render_add_custom_properties($object); ?>
+      		<?php echo render_add_custom_properties($object); ?>
 		</fieldset>
 	</div>
 

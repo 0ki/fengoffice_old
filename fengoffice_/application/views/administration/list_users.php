@@ -1,8 +1,7 @@
-
 <?php
  
 $cantUsers = count($users);
-$cantPages = round($cantUsers/5);
+$cantPages = ceil($cantUsers / 10);
 $page = 1;
 $newPage = true;
 isset($isMemberList) && $isMemberList == true ? $isUsersList = true : $isUsersList = false;
@@ -57,7 +56,7 @@ if(isset($users) && is_array($users) && $cantUsers) { ?>
 		<div class="clear"></div>
 	</div>
   </div>
-<?php if (($counter % 5 == 0 || ($cantPages > 0 && $counter == $cantUsers)) && $isUsersList ){ ?> 
+<?php if (($counter % 10 == 0 || ($cantPages > 0 && $counter == $cantUsers)) && $isUsersList ){ ?> 
 </div>
 <?php 
 	  	$newPage = true;

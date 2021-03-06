@@ -17,14 +17,15 @@
 			}
 		});
 	});
-
 </script>
 
 
 <div id = "<?php echo $genid ?>" class="access-data">    
 	<div class="field role">
 		<label><?php echo lang("company")?></label>
-		<div><?php echo select_company('contact[user][company_id]',owner_company()->getId(), array('style' => 'max-width:300px;margin-left:0;'))?></div>
+		<div><?php echo select_box('contact[user][company_id]', array(), array('id' => $genid.'company-combo', 'style' => 'max-width:300px;margin-left:0;'))?></div>
+		<span class="widget-body loading" id="<?php echo $genid?>company-combo-loading" style="heigth:20px;background-color:transparent;border:0px none;display:none;"></span>
+		<div><?php //echo select_company('contact[user][company_id]',owner_company()->getId(), array('style' => 'max-width:300px;margin-left:0;'))?></div>
 	</div>
 	<div class="clear"></div>
 	<div class="field role" style="vertical-align:middle;">
@@ -40,3 +41,7 @@
 		</div>
 	</div>
 </div>
+
+<script>
+og.load_company_combo("<?php echo $genid?>company-combo", '<?php echo owner_company()->getId();?>');
+</script>

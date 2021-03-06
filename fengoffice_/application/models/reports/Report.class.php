@@ -64,7 +64,7 @@
 	 * @return boolean
 	 */
 	function canEdit(Contact $user) {
-		return can_add($user, $this->getMembers(), $this->manager()->getObjectTypeId());
+		return can_write($user, $this->getMembers(), $this->manager()->getObjectTypeId());
 	} // canEdit
 
 	/**

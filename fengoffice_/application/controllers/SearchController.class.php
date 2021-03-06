@@ -451,6 +451,7 @@ class SearchController extends ApplicationController {
 		$currentPage = $this->pagination->currentPage;
 		$links = array();
 		$totalPages = ceil( $this->total / $this->limit );
+		$links_count = 0;
 		if ( is_numeric($this->total) ){
 			$links_count =  ceil ( min ( $this->maxPageLinks, $totalPages ));
 		}

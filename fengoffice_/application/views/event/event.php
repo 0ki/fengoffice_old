@@ -407,7 +407,7 @@ $visible_cps = CustomProperties::countVisibleCustomPropertiesByObjectType($objec
 	<fieldset>
 	<legend><?php echo lang('custom properties')?></legend>
 		<?php echo render_object_custom_properties($object, false) ?>
-		<?php //echo render_add_custom_properties($object);?>
+		<?php echo render_add_custom_properties($object);?>
 	</fieldset>
 	</div>
 	<div id="trap6"><fieldset id="fs6" style="height:0px;border:0px;padding:0px;display:none"><span style="color:#FFFFFF;"></span></fieldset></div>

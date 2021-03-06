@@ -204,6 +204,7 @@ CREATE TABLE `<?php echo $table_prefix ?>system_permissions` (
   `can_task_assignee` tinyint(1) unsigned NOT NULL DEFAULT '0',
   `can_manage_billing` tinyint(1) unsigned NOT NULL DEFAULT '0',
   `can_view_billing` tinyint(1) unsigned NOT NULL DEFAULT '0',
+  `can_see_assigned_to_other_tasks` tinyint(1) unsigned NOT NULL DEFAULT '1',
   PRIMARY KEY  (`permission_group_id`)
 ) ENGINE=<?php echo $engine ?> <?php echo $default_charset ?>;
 

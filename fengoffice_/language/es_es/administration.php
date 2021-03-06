@@ -149,6 +149,7 @@
 	'config option desc days_on_trash' => 'Cuántos días un objeto es almacenado en la papelera antes de ser eliminado automáticamente. Si es 0, los objetos no serán eliminados de la papelera.',
 	'templates' => 'Plantillas',
 	'add template' => 'Agregar plantilla',
+	'parent member' => 'Hijo de',
 	'confirm delete template' => 'Está seguro de que desea borrar esta plantilla?',
 	'no templates' => 'No hay plantillas',
 	'template name required' => 'El nombre de la plantilla es requerido',
@@ -223,6 +224,11 @@
 	'config option desc use_minified_resources' => 'Utiliza Javascript y CSS comprimido para mejorar el rendimiento. Deberá recomprimir JS y CSS si los modifica, utilizando public/tools.',
 	'config option name checkout_for_editing_online' => 'Bloquear automáticamente cuando se edita en línea',
 	'config option desc checkout_for_editing_online' => 'Cuando un usuario edita el documento en línea se bloquea para que nadie pueda editarlo al mismo tiempo',
+	
+	'config option name automatic_crpm_status_calculation' => 'Estado automático para Clientes & Proyectos',
+  	'config option desc automatic_crpm_status_calculation' => 'Habilite esta opción para poder definir las fórmulas para calcular automáticamente los diferentes estados de los Clientes y Proyectos',
+
+
 	'can manage reports' => 'Permitir la modificación de la configuración de reportes',
 	'user ws config option name show getting started widget' => 'Mostrar el widget comenzando',
 	'user ws config option name show_tasks_context_help' => 'Mostrar ayuda contextual para tareas',

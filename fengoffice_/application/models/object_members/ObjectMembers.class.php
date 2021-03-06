@@ -100,6 +100,31 @@
   		}
   		
   		
+  		private $cached_object_members = array();
+  		function getCachedObjectMembers($object_id, $all_object_ids = null) {
+  			if (!isset($this->cached_object_members[$object_id])) {
+  				if (is_array($all_object_ids) && count($all_object_ids) > 0) {
+  					$obj_cond = "AND object_id IN (".implode(",", $all_object_ids).")";
+  				} else {
+  					$obj_cond = "AND object_id = $object_id";
+  				}
+  				$db_res = DB::execute("SELECT object_id, member_id FROM ".TABLE_PREFIX."object_members WHERE is_optimization = 0 $obj_cond");
+  				$rows = $db_res->fetchAll();
+  				foreach ($rows as $row) {
+  					if (!isset($this->cached_object_members[$row['object_id']])) $this->cached_object_members[$row['object_id']] = array();
+  					$this->cached_object_members[$row['object_id']][] = $row['member_id'];
+  				}
+  				
+  				if (is_array($all_object_ids)) {
+  					foreach ($all_object_ids as $oid) {
+  						if (!isset($this->cached_object_members[$oid])) $this->cached_object_members[$oid] = array();
+  					}
+  				}
+  			}
+  			return array_var($this->cached_object_members, $object_id, array());
+  		}
+  		
+  		
   		
     	static function getMembersByObject($object_id){
   			$ids = self::getMemberIdsByObject($object_id);

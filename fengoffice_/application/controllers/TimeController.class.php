@@ -35,6 +35,10 @@ class TimeController extends ApplicationController {
 		} else if (user_config_option('TM user filter') != $timeslotsUserId) {
 			set_user_config_option('TM user filter', $timeslotsUserId, logged_user()->getId());
 		}
+		
+		if (!SystemPermissions::userHasSystemPermission(logged_user(), 'can_see_assigned_to_other_tasks')) {
+			$timeslotsUserId = logged_user()->getId();
+		}
 				
 		$showTimeType = array_var($_GET, 'stt');
 		if (is_null($showTimeType)) {
@@ -140,7 +144,7 @@ class TimeController extends ApplicationController {
 		
 		try {
 			$hoursToAdd = array_var($timeslot_data, 'hours',0);
-                        $minutes = array_var($timeslot_data, 'minutes',0);
+			$minutes = array_var($timeslot_data, 'minutes',0);
                         
 			if (strpos($hoursToAdd,',') && !strpos($hoursToAdd,'.'))
 				$hoursToAdd = str_replace(',','.',$hoursToAdd);
@@ -178,7 +182,7 @@ class TimeController extends ApplicationController {
 			
 			
 			//Only admins can change timeslot user
-			if (!array_var($timeslot_data, 'contact_id', false) || !logged_user()->isAdministrator()) {
+			if (!array_var($timeslot_data, 'contact_id', false) || !SystemPermissions::userHasSystemPermission(logged_user(), 'can_manage_time')) {
 				$timeslot_data['contact_id'] = logged_user()->getId();
 			}
 			$timeslot->setFromAttributes($timeslot_data);

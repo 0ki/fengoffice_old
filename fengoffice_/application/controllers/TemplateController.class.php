@@ -421,41 +421,22 @@ class TemplateController extends ApplicationController {
 				$copy->setParentId(0);
 			}
 			$copy->save();
-	/*		if (!can_write(logged_user(), $selected_members_instances, $copy->getObjectTypeId()) ) {
-				flash_error(lang('no context permissions to add', $copy instanceof ProjectTask ? lang("tasks") : ($copy instanceof ProjectMilestone ? lang('milestones') : '')));
-				DB::rollback();
-				ajx_current("empty");
-				return;
-			}*/
-			
-			// Copy members from origial object, if it doesn't have then use active context members
-		/*	$template_object_members = $object->getMemberIds();
-			if (count($template_object_members) == 0) {
-				$object_member_ids = active_context_members(false);
-				if (count($object_member_ids) > 0) {
-					$template_object_members = Members::findAll(array("id" => true, "conditions" => "id IN (".implode(",", $object_member_ids).")"));
-				}
-			}*/
 			
 			/* Set instantiated object members:
-			 * foreach dimension:
-			 * 		if no member is active then the instantiated object is put in the same members as the original for current dimension
-			 * 		if a member is selected in current dimension then the instantiated object will be put in that member  
+			 * 		if no member is active then the instantiated object is put in the same members as the original
+			 * 		if any members are selected then the instantiated object will be put in those members  
 			 */
 			$template_object_members = $object->getMembers();
 			$object_members = array();
 			foreach( $active_context as $selection ) {
 				if ($selection instanceof Member) { // member selected
 					$object_members[] = $selection->getId();
-				} else if ($selection instanceof Dimension) { // no member selected
-					foreach ($template_object_members as $tom) {
-						if ($tom->getDimensionId() == $selection->getId()) {
-							$object_members[] = $tom->getId();
-						}
-					}
 				}
-			}			
+			}
 			
+			if (count($object_members) == 0) {
+				$object_members = $template_object_members;
+			}
 			
 			$controller->add_to_members($copy, $object_members);
 			// copy linked objects
@@ -519,6 +500,9 @@ class TemplateController extends ApplicationController {
 				if($value != '') {
 					if (!$copy->setColumnValue($propName, $value)){
 						$copy->object->setColumnValue($propName, $value);
+					}
+					if ($propName == 'text' && $copy->getTypeContent() == 'text') {
+						$copy->setText(html_to_text($copy->getText()));
 					}
 					$copy->save();
 				}

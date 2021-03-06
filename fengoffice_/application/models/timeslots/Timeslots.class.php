@@ -40,13 +40,20 @@ class Timeslots extends BaseTimeslots {
           'order' => '`e`.`start_time`'
           ));
 	}
-	
-	
-	static function getOpenTimeslotsByObject(ContentDataObject $object) {
-		return self::findAll(array(
-          'conditions' => array('`rel_object_id` = ? AND `end_time`= ? ', $object->getObjectId(), EMPTY_DATETIME), 
-          'order' => 'start_time'
-          ));
+
+
+	private $cached_timeslots = null;
+
+	function getOpenTimeslotsByObject($object_id) {
+		if ($this->cached_timeslots == null) {
+			$this->cached_timeslots = array();
+			$cached_ts = self::findAll(array('conditions' => array('`end_time`= ? ', EMPTY_DATETIME), 'order' => 'start_time'));
+			foreach ($cached_ts as $ct) {
+				if (!isset($this->cached_timeslots[$ct->getRelObjectId()])) $this->cached_timeslots[$ct->getRelObjectId()] = array();
+				$this->cached_timeslots[$ct->getRelObjectId()][] = $ct;
+			}
+		}
+		return array_var($this->cached_timeslots, $object_id, array());
 	}
 
 	/**
@@ -115,6 +122,10 @@ class Timeslots extends BaseTimeslots {
 				break;
 			default:
 				throw new Error("Timeslot type not recognised: " . $timeslot_type);
+		}
+		
+		if (!SystemPermissions::userHasSystemPermission(logged_user(), 'can_see_assigned_to_other_tasks')) {
+			$conditions .= " AND `e`.`contact_id` = " . logged_user()->getId();
 		}
 		
 		$conditions .= $commonConditions;		

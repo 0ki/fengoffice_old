@@ -1,5 +1,5 @@
 
-<?php if (logged_user()->isAdminGroup()) { ?>
+<?php if (can_manage_security(logged_user())) { ?>
 <table style="width:100%;"><tr><td style="padding-right:10px;width:50%;">
 <fieldset class=""><legend class="toggle_expanded" onclick="og.toggle('<?php echo $genid ?>userSystemPermissions',this)"><?php echo lang("system permissions") ?></legend>
 	<div id="<?php echo $genid ?>userSystemPermissions" style="display:block">

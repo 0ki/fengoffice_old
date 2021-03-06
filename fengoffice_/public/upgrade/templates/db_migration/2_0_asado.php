@@ -771,8 +771,8 @@ INSERT INTO `fo_object_subscriptions` (`object_id`, `contact_id`)
 -- LINKED OBJECTS
 INSERT INTO `fo_linked_objects` (`rel_object_id`, `object_id`, `created_on`, `created_by_id`)
  SELECT
-    (SELECT `id` FROM `fo_objects` WHERE `f1_id` = `c`.`rel_object_id` AND `object_type_id` = (SELECT `ot`.`id` FROM `fo_object_types` `ot` WHERE `ot`.`handler_class`=`c`.`rel_object_manager` limit 1) limit 1),
- 	(SELECT `id` FROM `fo_objects` WHERE `f1_id` = `c`.`object_id`     AND `object_type_id` = (SELECT `ot`.`id` FROM `fo_object_types` `ot` WHERE `ot`.`handler_class`=`c`.`object_manager` limit 1) limit 1),
+ 	(SELECT `id` FROM `fo_objects` WHERE `f1_id` = `c`.`rel_object_id` AND `object_type_id` = (SELECT `ot`.`id` FROM `fo_object_types` `ot` WHERE IF(`c`.`rel_object_manager` = 'Companies', ot.name='company', IF(`c`.`rel_object_manager` = 'Contacts', name='contact_tmp', `ot`.`handler_class`=`c`.`rel_object_manager`)) limit 1) limit 1),
+ 	(SELECT `id` FROM `fo_objects` WHERE `f1_id` = `c`.`object_id` AND `object_type_id` = (SELECT `ot`.`id` FROM `fo_object_types` `ot` WHERE IF(`c`.`object_manager` = 'Companies', ot.name='company', IF(`c`.`object_manager` = 'Contacts', name='contact_tmp', `ot`.`handler_class`=`c`.`object_manager`)) limit 1) limit 1),
   	`c`.`created_on`, (SELECT `id` FROM `fo_objects` WHERE `f1_id` = `c`.`created_by_id` AND `object_type_id` = (SELECT `ot`.`id` FROM `fo_object_types` `ot` WHERE `ot`.`name`='contact') limit 1)
  FROM `og_linked_objects` `c`
 ON DUPLICATE KEY UPDATE `fo_linked_objects`.`rel_object_id`=`fo_linked_objects`.`rel_object_id`;
@@ -1044,6 +1044,17 @@ FROM og_tags c
 ON DUPLICATE KEY UPDATE object_id=object_id;
 
 
+
+-- object properties
+INSERT INTO fo_object_properties (`rel_object_id`,`name`,`value`)
+ SELECT (SELECT `id` FROM `fo_objects` WHERE `f1_id` = `op`.`rel_object_id` AND `object_type_id` = (SELECT `ot`.`id` FROM `fo_object_types` `ot`
+ 	WHERE IF(`op`.`rel_object_manager` = 'Companies', ot.name='company', IF(`op`.`rel_object_manager` = 'Contacts', name='contact_tmp', `ot`.`handler_class`=`op`.`rel_object_manager`)))
+ ), op.name, op.value
+ FROM og_object_properties op
+ON DUPLICATE KEY UPDATE fo_object_properties.name=fo_object_properties.name;
+
+
+
 UPDATE fo_objects SET object_type_id = (SELECT `ot`.`id` FROM `fo_object_types` `ot` WHERE `ot`.`name`='contact')
 WHERE object_type_id IN (SELECT `ot2`.`id` FROM `fo_object_types` `ot2` WHERE `ot2`.`name` IN ('contact_tmp', 'company'));
 
@@ -1167,3 +1178,10 @@ update fo_objects set trashed_by_id=0 where trashed_by_id is null;
 update fo_objects set archived_by_id=0 where archived_by_id is null;
 update fo_objects set created_by_id=0 where created_by_id is null;
 update fo_objects set updated_by_id=0 where updated_by_id is null;
+
+
+
+-- companies comments
+update fo_comments set fo_comments.rel_object_id = (select o.id from fo_objects o inner join fo_contacts co on co.object_id=o.id where o.object_type_id=16 and co.is_company=1 and o.f1_id=(
+  select ogc.rel_object_id FROM og_comments ogc where ogc.rel_object_manager='Companies' AND ogc.`text`=fo_comments.`text` limit 1
+)) where fo_comments.rel_object_id=0;

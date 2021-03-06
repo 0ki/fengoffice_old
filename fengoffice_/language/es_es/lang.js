@@ -630,6 +630,7 @@ addLangs({
 	'edit selected event': 'Editar evento seleccionado',
 	'apply milestone to subtasks': 'Aplicar hito a las subtareas',
 	'apply workspace to subtasks': 'Applicar espacio a las subtareas',
+	'add first task' : 'Agregar la primera tarea',
 	'archive': 'Archivar',
 	'unarchive': 'Desarchivar',
 	'archived objects': 'Objetos Archivados',

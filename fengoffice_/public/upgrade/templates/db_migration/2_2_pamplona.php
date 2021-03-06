@@ -47,8 +47,14 @@ ALTER TABLE `<?php echo $table_prefix ?>dimensions` ADD COLUMN `permission_query
 
 UPDATE <?php echo $table_prefix ?>contact_config_options SET default_value='due_date' WHERE name='tasksGroupBy';
 INSERT INTO `<?php echo $table_prefix ?>config_options` (`category_name`,`name`,`value`,`config_handler_class`,`is_system`) VALUES
- ('general', 'use_milestones', 0, 'BoolConfigHandler', 0),
+ ('general', 'use_milestones', (SELECT count(*) FROM <?php echo $table_prefix ?>project_milestones)>0, 'BoolConfigHandler', 0),
  ('general', 'show_tab_icons', '1', 'BoolConfigHandler', '0')
 ON DUPLICATE KEY UPDATE name=name;
 
 ALTER TABLE `<?php echo $table_prefix ?>event_invitations` ADD INDEX `contact_id`(`contact_id`, `event_id`);
+
+ALTER TABLE `<?php echo $table_prefix ?>system_permissions` ADD COLUMN `can_see_assigned_to_other_tasks` TINYINT(1) UNSIGNED NOT NULL DEFAULT 1;
+
+INSERT INTO <?php echo $table_prefix ?>widgets (name, title, plugin_id, path, default_options, default_section, default_order) VALUES
+ ('completed_tasks_list', 'completed tasks list', 0, '', '', 'right', 150)
+ON DUPLICATE KEY UPDATE name=name;

@@ -117,6 +117,7 @@
     function getLogFile() {
       if(trim($this->log_file) && !is_file($this->log_file)) {
         file_put_contents($this->log_file, '<?php die(); ?>');
+        @chmod($this->log_file, 0766); // allow log write to other users (e.g. if crons are executed by other user)
       } // if
       return $this->log_file;
     } // getLogFile

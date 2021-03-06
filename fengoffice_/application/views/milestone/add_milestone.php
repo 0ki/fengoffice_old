@@ -112,7 +112,7 @@
 	<fieldset>
 		<legend><?php echo lang('custom properties') ?></legend>
 		<?php echo render_object_custom_properties($milestone, false) ?>
-		<?php //echo render_add_custom_properties($milestone); ?>
+		<?php echo render_add_custom_properties($milestone); ?>
 	</fieldset>
 	</div>
 	

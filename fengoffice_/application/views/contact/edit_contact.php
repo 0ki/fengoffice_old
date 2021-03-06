@@ -82,6 +82,7 @@
 	<input id="<?php echo $genid?>merge-changes-hidden" type="hidden" name="merge-changes" value="" >
 	<input id="<?php echo $genid?>genid" type="hidden" name="genid" value="<?php echo $genid ?>" >
 		<?php if ($contact->isNew() || $isEdit){
+			tpl_assign('contact_mail', $contact_mail);
 			$this->includeTemplate(get_template_path("add_contact/access_data_edit","contact")); 
 		}?>
 	
@@ -116,8 +117,11 @@
 		<div style="margin-left:12px;margin-right:12px;">
 			<div>
 				<?php echo label_tag(lang('company'), $genid.'profileFormCompany') ?> 
-				<div id="<?php echo $genid ?>existing_company"><?php echo select_company('contact[company_id]', array_var($contact_data, 'company_id'), array('id' => $genid.'profileFormCompany', "class" => "og-edit-contact-select-company", 'tabindex' => '5', 'onchange' => 'og.companySelectedIndexChanged(\''.$genid . '\')')); 
-				?><a href="#" class="coViewAction ico-add" title="<?php echo lang('add a new company')?>" onclick="og.addNewCompany('<?php echo $genid ?>')"><?php echo lang('add company') . '...' ?></a></div>
+				<div id="<?php echo $genid ?>existing_company">
+					<?php //echo select_company('contact[company_id]', array_var($contact_data, 'company_id'), array('id' => $genid.'profileFormCompany', "class" => "og-edit-contact-select-company", 'tabindex' => '5', 'onchange' => 'og.companySelectedIndexChanged(\''.$genid . '\')')); ?>
+					<?php echo select_box('contact[company_id]', array(), array('id' => $genid.'profileFormCompany', "class" => "og-edit-contact-select-company", 'tabindex' => '5', 'onchange' => 'og.companySelectedIndexChanged(\''.$genid . '\')'))?>
+					<span class="widget-body loading" id="<?php echo $genid?>profileFormCompany-loading" style="heigth:20px;background-color:transparent;border:0px none;display:none;"></span>
+				<a href="#" class="coViewAction ico-add" title="<?php echo lang('add a new company')?>" onclick="og.addNewCompany('<?php echo $genid ?>')"><?php echo lang('add company') . '...' ?></a></div>
 				<div id="<?php echo $genid?>new_company" style="display:none; padding:6px; margin-top:6px;margin-bottom:6px; background-color:#EEE">
 					<?php echo label_tag(lang('new company name'), $genid.'profileFormNewCompanyName') ?>
 					<table width=100%><tr><td><?php echo text_field('company[first_name]', '', array('id' => $genid.'profileFormNewCompanyName', 'tabindex' => '10', 'onchange' => 'og.checkNewCompanyName("'.$genid .'")')) ?></td>
@@ -378,7 +382,7 @@
 		<fieldset>
 			<legend><?php echo lang('custom properties') ?></legend>
 			<?php echo render_object_custom_properties($object, false) ?>
-			<?php //echo render_add_custom_properties($object); ?>
+			<?php echo render_add_custom_properties($object); ?>
 		</fieldset>
 	</div>
 	
@@ -421,6 +425,8 @@
 				}
 			});
 		});
+
+        og.load_company_combo("<?php echo $genid?>profileFormCompany", '<?php echo array_var($contact_data, 'company_id', '0') ?>');
 	</script>
 </div>
 </div>

@@ -402,38 +402,38 @@ class EventController extends ApplicationController {
 				$object_controller->add_custom_properties($event);
 				$object_controller->add_reminders($event);
 
-                                if (array_var($_POST, 'popup', false)) {
-                                        // create default reminder
-                                        $def = explode(",",user_config_option("reminders_events"));
-                                        $minutes = $def[2] * $def[1];
-                                        $reminder = new ObjectReminder();
-                                        $reminder->setMinutesBefore($minutes);
-                                        $reminder->setType($def[0]);
-                                        $reminder->setContext("start");
-                                        $reminder->setObject($event);
-                                        $reminder->setUserId(0);
-                                        $date = $event->getStart();
-                                        if ($date instanceof DateTimeValue) {
-                                                $rdate = new DateTimeValue($date->getTimestamp() - $minutes * 60);
-                                                $reminder->setDate($rdate);
-                                        }
-                                        $reminder->save();
-                                }
-                                
-                                $opt_rep_day = array();
-                                if(array_var($event_data, 'repeat_saturdays')){
-                                    $opt_rep_day['saturday'] = true;
-                                }else{
-                                    $opt_rep_day['saturday'] = false;
-                                }
-                                if(array_var($event_data, 'repeat_sundays')){
-                                    $opt_rep_day['sunday'] = true;
-                                }else{
-                                    $opt_rep_day['sunday'] = false;
-                                }
-                                
-                                //$this->repetitive_event($event, $opt_rep_day);
-                                
+				if (array_var($_POST, 'popup', false)) {
+					// create default reminder
+					$def = explode(",", user_config_option("reminders_events"));
+					$minutes = array_var($def, 2) * array_var($def, 1);
+					$reminder = new ObjectReminder();
+					$reminder->setMinutesBefore($minutes);
+					$reminder->setType(array_var($def, 0, 'reminder_email'));
+					$reminder->setContext("start");
+					$reminder->setObject($event);
+					$reminder->setUserId(0);
+					$date = $event->getStart();
+					if ($date instanceof DateTimeValue) {
+						$rdate = new DateTimeValue($date->getTimestamp() - $minutes * 60);
+						$reminder->setDate($rdate);
+					}
+					$reminder->save();
+				}
+
+				$opt_rep_day = array();
+				if(array_var($event_data, 'repeat_saturdays')){
+					$opt_rep_day['saturday'] = true;
+				}else{
+					$opt_rep_day['saturday'] = false;
+				}
+				if(array_var($event_data, 'repeat_sundays')){
+					$opt_rep_day['sunday'] = true;
+				}else{
+					$opt_rep_day['sunday'] = false;
+				}
+
+				//$this->repetitive_event($event, $opt_rep_day);
+				
 				if (array_var($_POST, 'popup', false)) {
 					$event->subscribeUser(logged_user());
 					ajx_current("reload");
@@ -1321,7 +1321,25 @@ class EventController extends ApplicationController {
 			}
 			ajx_current("reload");
 	}
-        
+	
+	private function update_sync_cron_events() {
+		$count = ExternalCalendarUsers::count();
+		$events = CronEvents::findAll(array('conditions' => "name IN ('import_google_calendar','export_google_calendar')"));
+		foreach ($events as $event) {
+			if ($count > 0) {
+				if (!$event->getEnabled()) {
+					$event->setEnabled(true);
+					$event->save();
+				}
+			} else {
+				if ($event->getEnabled()) {
+					$event->setEnabled(false);
+					$event->save();
+				}
+			}
+		}
+	}
+
         function calendar_sinchronization() {
                 
                 $user = ExternalCalendarUsers::findByContactId();
@@ -1468,7 +1486,9 @@ class EventController extends ApplicationController {
                         flash_success(lang('success add account gmail'));
                     }                   
                     ajx_current("reload");
-                }         
+                }
+                
+                $this->update_sync_cron_events();
 	}
         
         function add_calendar() {
@@ -1534,6 +1554,8 @@ class EventController extends ApplicationController {
                     }
                     
                     $cal_users->delete();  
+
+                    $this->update_sync_cron_events();
 
                     flash_success(lang('success delete calendar'));
                     ajx_current("reload");

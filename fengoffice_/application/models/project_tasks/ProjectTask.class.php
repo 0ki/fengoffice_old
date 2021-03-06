@@ -167,7 +167,7 @@ class ProjectTask extends BaseProjectTask {
 	 */
 	private $assigned_to_cache = null;
 	function getAssignedToContact() {
-		if (is_null($this->assigned_to_cache)) {
+		if (is_null($this->assigned_to_cache) && $this->getAssignedToContactId() > 0) {
 			$this->assigned_to_cache = Contacts::findById($this->getAssignedToContactId());
 		}
 		return $this->assigned_to_cache;
@@ -437,46 +437,48 @@ class ProjectTask extends BaseProjectTask {
 		$this->setCompletedOn(null);
 		$this->setCompletedById(0);
 		$this->save();
-                
-                if($this->getTimeEstimate() > 0){
-                    $timeslots = $this->getTimeslots();
-                    if ($timeslots){
-                            $total_percentComplete = 0;
-                            $this->setPercentCompleted(0);
-                            foreach ($timeslots as $timeslot){
-                                    $timeslot_time = ($timeslot->getEndTime()->getTimestamp() - $timeslot->getStartTime()->getTimestamp()) / 3600;
-                                    $timeslot_percent = round(($timeslot_time * 100) / ($this->getTimeEstimate() / 60));
-                                    $total_percentComplete += $timeslot_percent;                                
-                            }
-                            if ($total_percentComplete < 0) $total_percentComplete = 0;
-                            $this->setPercentCompleted($total_percentComplete);
-                            $this->save();
-                    }else{
-                        $this->setPercentCompleted(0);
-                        $this->save();
-                    }
-                }else{
-                    $this->setPercentCompleted(0);
-                    $this->save();
-                }               
+
+		if($this->getTimeEstimate() > 0){
+			$timeslots = $this->getTimeslots();
+			if ($timeslots){
+				$total_percentComplete = 0;
+				$this->setPercentCompleted(0);
+				foreach ($timeslots as $timeslot){
+					if (!$timeslot->getEndTime() instanceof DateTimeValue || $timeslot->getStartTime() instanceof DateTimeValue) continue;
+					$timeslot_time = ($timeslot->getEndTime()->getTimestamp() - $timeslot->getStartTime()->getTimestamp()) / 3600;
+					$timeslot_percent = round(($timeslot_time * 100) / ($this->getTimeEstimate() / 60));
+					$total_percentComplete += $timeslot_percent;
+				}
+				if ($total_percentComplete < 0) $total_percentComplete = 0;
+				$this->setPercentCompleted($total_percentComplete);
+				$this->save();
+			}else{
+				$this->setPercentCompleted(0);
+				$this->save();
+			}
+		}else{
+			$this->setPercentCompleted(0);
+			$this->save();
+		}
 
 		$log_info = "";
-		if (config_option('use tasks dependencies')) {                    
-                        //Seeking the subscribers of the open task not to repeat in the notifications
-                        $contact_notification = array();
-                        foreach ($this->getSubscribers() as $task_sub){
-                            $contact_notification[] = $task_sub->getId();
-                        }                        
+		if (config_option('use tasks dependencies')) {
+			//Seeking the subscribers of the open task not to repeat in the notifications
+			$contact_notification = array();
+			foreach ($this->getSubscribers() as $task_sub){
+				$contact_notification[] = $task_sub->getId();
+			}
 			$saved_stasks = ProjectTaskDependencies::findAll(array('conditions' => 'previous_task_id = '. $this->getId()));
 			foreach ($saved_stasks as $sdep) {
 				$stask = ProjectTasks::findById($sdep->getTaskId());
 				if ($stask instanceof ProjectTask && $stask->isCompleted()) {
 					$stask->openTask();
 				}
-                                foreach ($stask->getSubscribers() as $task_dep){
-                                    if(!in_array($task_dep->getId(), $contact_notification))
-                                        $log_info .= $task_dep->getId().",";
-                                }
+				foreach ($stask->getSubscribers() as $task_dep){
+					if(!in_array($task_dep->getId(), $contact_notification)) {
+						$log_info .= $task_dep->getId().",";
+					}
+				}
 			}
 		}
 		
@@ -1407,57 +1409,61 @@ class ProjectTask extends BaseProjectTask {
 	/**
 	 * End task templates
 	 */
-	
+
 	function getArrayInfo($full = false){
-                if(config_option("wysiwyg_tasks")){
-                    if($this->getTypeContent() == "text"){
-                        $desc = nl2br(htmlspecialchars($this->getText()));
-                    }else{
-                        $desc = purify_html(nl2br($this->getText()));
-                    }
-                }else{
-                    if($this->getTypeContent() == "text"){
-                        $desc = htmlspecialchars($this->getText());
-                    }else{
-                        $desc = html_to_text(html_entity_decode(nl2br($this->getText()), null, "UTF-8"));
-                    }   
-                }
-                
+		if(config_option("wysiwyg_tasks")){
+			if($this->getTypeContent() == "text"){
+				$desc = nl2br(htmlspecialchars($this->getText()));
+			}else{
+				$desc = purify_html(nl2br($this->getText()));
+			}
+		}else{
+			if($this->getTypeContent() == "text"){
+				$desc = htmlspecialchars($this->getText());
+			}else{
+				$desc = html_to_text(html_entity_decode(nl2br($this->getText()), null, "UTF-8"));
+			}
+		}
+
+		$member_ids = ObjectMembers::instance()->getCachedObjectMembers($this->getId());
 		$result = array(
 			'id' => $this->getId(),
 			't' => $this->getObjectName(),
-                        'desc' => $desc,
-			'members' => $this->getMemberIds(),
+			'desc' => $desc,
+			'members' => $member_ids,
 			'c' => $this->getCreatedOn() instanceof DateTimeValue ? $this->getCreatedOn()->getTimestamp() : 0,
 			'cid' => $this->getCreatedById(),
 			'otype' => $this->getObjectSubtype(),
 			'percentCompleted' => $this->getPercentCompleted(),
-			'memPath' => str_replace('"',"'", str_replace("'", "\'", json_encode($this->getMembersToDisplayPath())))
+			'memPath' => str_replace('"',"'", str_replace("'", "\'", json_encode($this->getMembersToDisplayPath($member_ids))))
 		);
-		
+
 		if ($full) {
 			$result['description'] = $this->getText();
-		}		
-		
-                $result['multiAssignment'] = $this->getColumnValue('multi_assignment',0);
+		}
+
+		$result['multiAssignment'] = $this->getColumnValue('multi_assignment',0);
 			
-		if ($this->isCompleted())
+		if ($this->isCompleted()) {
 			$result['s'] = 1;
+		}
 			
-		if ($this->getParentId() > 0)
+		if ($this->getParentId() > 0) {
 			$result['pid'] = $this->getParentId();
-		
+		}
 		//if ($this->getPriority() != 200)
 		$result['pr'] = $this->getPriority();
-		
-		if ($this->getMilestoneId() > 0)
+
+		if ($this->getMilestoneId() > 0) {
 			$result['mid'] = $this->getMilestoneId();
+		}
 			
-		if ($this->getAssignedToContactId() > 0)
+		if ($this->getAssignedToContactId() > 0) {
 			$result['atid'] = $this->getAssignedToContactId();
-			$result['atName'] = $this->getAssignedToName();
-		
-		if ($this->getCompletedById() > 0){
+		}
+		$result['atName'] = $this->getAssignedToName();
+
+		if ($this->getCompletedById() > 0) {
 			$result['cbid'] = $this->getCompletedById();
 			$result['con'] = $this->getCompletedOn()->getTimestamp();
 		}
@@ -1470,47 +1476,47 @@ class ProjectTask extends BaseProjectTask {
 			$result['sd'] = $this->getStartDate()->getTimestamp() + logged_user()->getTimezone() * 3600;
 			$result['ust'] = $this->getUseStartTime() ? 1 : 0;
 		}
-		
+
 		$time_estimate = $this->getTimeEstimate() ;
-		$result['TimeEstimate'] = $this->getTimeEstimate(); 
+		$result['TimeEstimate'] = $this->getTimeEstimate();
 		if ($time_estimate > 0) $result['estimatedTime'] = DateTimeValue::FormatTimeDiff(new DateTimeValue(0), new DateTimeValue($time_estimate * 60), 'hm', 60) ;
-		
-		
+
+
 		$result['tz'] = logged_user()->getTimezone() * 3600;
-		
+
 		$ot = $this->getOpenTimeslots();
-		
+
 		if ($ot){
 			$users = array();
 			$time = array();
 			$paused = array();
 			foreach ($ot as $t){
+				if (!$t instanceof Timeslot) continue;
 				$time[] = $t->getSeconds();
 				$users[] = $t->getContactId();
 				$paused[] = $t->isPaused()?1:0;
 				if ($t->isPaused() && $t->getContactId() == logged_user()->getId())
-					$result['wpt'] = $t->getPausedOn()->getTimestamp();
+				$result['wpt'] = $t->getPausedOn()->getTimestamp();
 			}
 			$result['wt'] = $time;
 			$result['wid'] = $users;
 			$result['wp'] = $paused;
 		}
-		
-		if ($this->isRepetitive())
+
+		if ($this->isRepetitive()) {
 			$result['rep'] = 1;
-                else{
-                    //I find all those related to the task to find out if the original
-                    $task_related = ProjectTasks::findByRelated($this->getObjectId());
-                    if(!$task_related){
-                        //is not the original as the original look plus other related
-                        if($this->getOriginalTaskId() != "0"){
-                            $task_related = ProjectTasks::findByTaskAndRelated($this->getObjectId(),$this->getOriginalTaskId());
-                        }
-                    }    
-                    if ($task_related)
-                            $result['rep'] = 1;
-                }
-                
+		} else {
+			//I find all those related to the task to find out if the original
+			$task_related = ProjectTasks::instance()->findByRelatedCached($this->getObjectId());
+			if(!$task_related){
+				//is not the original as the original look plus other related
+				if($this->getOriginalTaskId() != "0"){
+					$task_related = ProjectTasks::findByTaskAndRelated($this->getObjectId(),$this->getOriginalTaskId());
+				}
+			}
+			if ($task_related) $result['rep'] = 1;
+		}
+		
 		return $result;
 	}
 	
@@ -1520,7 +1526,7 @@ class ProjectTask extends BaseProjectTask {
 	}
 	
 	function getOpenTimeslots(){
-		return Timeslots::getOpenTimeslotsByObject($this);
+		return Timeslots::instance()->getOpenTimeslotsByObject($this->getId());
 	}
 	
 	/**
@@ -1546,9 +1552,9 @@ class ProjectTask extends BaseProjectTask {
 	
 	function apply_members_to_subtasks($member_ids, $recursive = false) {
 		$object_controller = new ObjectController();
-		$object_controller->add_to_members($this, $member_ids);
-		if ($recursive) {
-			foreach ($this->getSubTasks() as $subtask) {
+		foreach ($this->getSubTasks() as $subtask) {
+			$object_controller->add_to_members($subtask, $member_ids);
+			if ($recursive) {
 				$subtask->apply_members_to_subtasks($member_ids, $recursive);
 			}
 		}

@@ -64,15 +64,14 @@ foreach ($objects as $obj) {
 		$cobj->addToSearchableObjects(true);
 		
 		// add mails to sharing table for account owners
-		if ($cobj instanceof MailContent) {
-			$db_result = DB::execute("SELECT contact_id FROM ".TABLE_PREFIX."mail_accounts WHERE id = ".$cobj->getAccountId());
+		if ($cobj instanceof MailContent && $cobj->getAccount() instanceof MailAccount) {
+			$db_result = DB::execute("SELECT contact_id FROM ".TABLE_PREFIX."mail_account_contacts WHERE account_id = ".$cobj->getAccountId());
 			$macs = $db_result->fetchAll();
 			if ($macs && is_array($macs) && count($macs) > 0) {
 				$pgs = array();
 				foreach ($macs as $mac) {
 					$contact_id = $mac['contact_id'];
-					$db_result = DB::execute("SELECT permission_group_id FROM ".TABLE_PREFIX."contact_permission_groups WHERE contact_id = ".$contact_id);
-					$mac_pgs = $db_result->fetchAll();
+					$mac_pgs = DB::executeAll("SELECT permission_group_id FROM ".TABLE_PREFIX."contacts WHERE object_id=$contact_id");
 					foreach ($mac_pgs as $mac_pg) $pgs[$mac_pg['permission_group_id']] = $mac_pg['permission_group_id'];
 				}
 				if ($sql == "" && count($pgs) > 0) $sql = "INSERT INTO ".TABLE_PREFIX."sharing_table (group_id, object_id) VALUES ";

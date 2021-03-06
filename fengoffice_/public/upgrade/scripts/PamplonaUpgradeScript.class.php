@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Pamplona upgrade script will upgrade FengOffice 2.1 to FengOffice 2.2.1
+ * Pamplona upgrade script will upgrade FengOffice 2.1 to FengOffice 2.2.2
  *
  * @package ScriptUpgrader.scripts
  * @version 1.0
@@ -40,7 +40,7 @@ class PamplonaUpgradeScript extends ScriptUpgraderScript {
 	function __construct(Output $output) {
 		parent::__construct($output);
 		$this->setVersionFrom('2.1');
-		$this->setVersionTo('2.2.1');
+		$this->setVersionTo('2.2.2');
 	} // __construct
 
 	function getCheckIsWritable() {
@@ -188,8 +188,22 @@ class PamplonaUpgradeScript extends ScriptUpgraderScript {
 				$upgrade_script .= "
 					UPDATE ".$t_prefix."contact_config_options SET default_value='due_date' WHERE name='tasksGroupBy';
 					INSERT INTO `".$t_prefix."config_options` (`category_name`,`name`,`value`,`config_handler_class`,`is_system`) VALUES
-						('general', 'use_milestones', 0, 'BoolConfigHandler', 0),
+						('general', 'use_milestones', (SELECT count(*) FROM ".$t_prefix."project_milestones)>0, 'BoolConfigHandler', 0),
 						('general', 'show_tab_icons', '1', 'BoolConfigHandler', '0')
+					ON DUPLICATE KEY UPDATE name=name;
+				";
+			}
+			
+			if (version_compare($installed_version, '2.2.2-beta') < 0 ) {
+				if (!$this->checkColumnExists($t_prefix."system_permissions", "can_see_assigned_to_other_tasks", $this->database_connection)) {
+					$upgrade_script .= "
+						ALTER TABLE `".$t_prefix."system_permissions` ADD COLUMN `can_see_assigned_to_other_tasks` TINYINT(1) UNSIGNED NOT NULL DEFAULT 1;
+					";
+				}
+				$upgrade_script .= "
+					UPDATE `".$t_prefix."system_permissions` SET can_see_assigned_to_other_tasks = 1;
+					INSERT INTO ".$t_prefix."widgets (name, title, plugin_id, path, default_options, default_section, default_order) VALUES
+					 ('completed_tasks_list', 'completed tasks list', 0, '', '', 'right', 150)
 					ON DUPLICATE KEY UPDATE name=name;
 				";
 			}

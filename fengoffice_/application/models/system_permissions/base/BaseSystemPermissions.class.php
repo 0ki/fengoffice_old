@@ -27,6 +27,7 @@
 	    'can_task_assignee' => DATA_TYPE_BOOLEAN,
 	    'can_manage_billing' => DATA_TYPE_BOOLEAN,
 	    'can_view_billing' => DATA_TYPE_BOOLEAN,
+	    'can_see_assigned_to_other_tasks' => DATA_TYPE_BOOLEAN,
     );
   
     /**

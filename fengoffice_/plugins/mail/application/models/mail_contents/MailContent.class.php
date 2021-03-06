@@ -724,25 +724,6 @@ class MailContent extends BaseMailContent {
 	
 	
 
-	/**
-	 * Return tag names for this object
-	 *
-	 * @access public
-	 * @param void
-	 * @return array
-	 */
-	function getTagNames() {
-		//Seba ver si es lo mismo ya que siempre que un mail esta en un tag los otros tambien
-		//if (user_config_option('show_emails_as_conversations',true,logged_user()->getId())){
-		if (user_config_option('show_emails_as_conversations')){
-			return Tags::getTagNamesByObjectIds(implode(',',$this->getConversationMailIds(true)), 'MailContents');
-		}else{
-			return parent::getTagNames();
-		}
-	} // getTagNames
-	
-	
-	
 	function addToStatus($amount) {
 		try {
 			DB::beginWork();

@@ -223,7 +223,6 @@ class ReportingController extends ApplicationController {
 		tpl_assign('totalCount', $pagination->getTotalItems());
 		tpl_assign('charts', $charts);
 		tpl_assign('pagination', $pagination);
-		tpl_assign('tags', Tags::getTagNames());
 
 		$object = array(
 			"totalCount" => $pagination->getTotalItems(),
@@ -278,12 +277,14 @@ class ReportingController extends ApplicationController {
 	}
 
 	function total_task_times_print(){
-		$this->setLayout("html");
+		if (!isset($_REQUEST['exportCSV'])) {
+			$this->setLayout("html");
+			$this->setTemplate('report_printer');
+		}
 
 		$report_data = json_decode(str_replace("'",'"', array_var($_POST, 'post')),true);
 
 		$this->total_task_times($report_data, null, true);
-		$this->setTemplate('report_printer');
 	}
 	
 	function total_task_times($report_data = null, $task = null, $csv = null){

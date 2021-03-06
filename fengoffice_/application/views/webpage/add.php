@@ -71,6 +71,7 @@
             <fieldset>	
                 <legend><?php echo lang('custom properties') ?></legend>
                 <?php echo render_object_custom_properties($webpage, false) ?>
+                <?php echo render_add_custom_properties($webpage); ?>
             </fieldset>
         </div>
         

@@ -334,6 +334,26 @@ class ObjectController extends ApplicationController {
 				}
 			}
 		}
+		
+		//Save the key - value pair custom properties (object_properties table)
+		$object->clearObjectProperties();
+		$names = array_var($_POST, 'custom_prop_names');
+		$values = array_var($_POST, 'custom_prop_values');
+		if (!is_array($names)) return;
+		for ($i=0; $i < count($names); $i++) {
+			$name = trim($names[$i]);
+			$value = trim($values[$i]);
+			if ($name != '' && $value != '') {
+				$property = new ObjectProperty();
+				$property->setObject($object);
+				$property->setPropertyName($name);
+				$property->setPropertyValue($value);
+				$property->save();
+				if ($object->isSearchable()) {
+					$object->addPropertyToSearchableObject($property);
+				}
+			}
+		}
 
 	}
 
@@ -956,14 +976,19 @@ class ObjectController extends ApplicationController {
 		if ($name_filter) {
 			$extra_conditions[] = "name LIKE '%$name_filter%'" ;
 		}
-                if ($id_no_select != "undefined") {
+		if ($id_no_select != "undefined") {
 			$extra_conditions[] = "id <> $id_no_select" ;
 		}
-                if($object_ids_filter != ""){
-                        $extra_conditions[] = "id in ($object_ids_filter)";
-                }
+		if($object_ids_filter != ""){
+			$extra_conditions[] = "id in ($object_ids_filter)";
+		}
 		
-		//$pagination = Objects::getObjects($context,$start,$limit,$order,$orderdir,$trashed,$archived, $filters,$start, $limit, $obj_type_types);
+		if (!SystemPermissions::userHasSystemPermission(logged_user(), 'can_see_assigned_to_other_tasks')) {
+			$extra_conditions[] = "IF((SELECT ot.name FROM ".TABLE_PREFIX."object_types ot WHERE ot.id=o.object_type_id)='task',
+			 (SELECT t.assigned_to_contact_id FROM ".TABLE_PREFIX."project_tasks t WHERE t.object_id=o.id) = ".logged_user()->getId().",
+			 true)";
+		}
+		
 		if($object_ids_filter == "" && $show_all_linked_objects){
 			$pagination = array();
 		}else{
@@ -976,7 +1001,7 @@ class ObjectController extends ApplicationController {
 				"archived" => $archived,
 				"types" => $types,
 				"count_results" => false,
-				"extra_conditions" => " AND ".implode(" AND ", $extra_conditions ),
+				"extra_conditions" => " AND ".implode(" AND ", $extra_conditions),
 				"ignore_context" => $ignore_context,
 				"extra_member_ids" => $extra_member_ids
 			));
@@ -1172,7 +1197,6 @@ class ObjectController extends ApplicationController {
 								for ($j=0; $j < count(array_var($parsedEmail, "Attachments", array())); $j++) {
 									$classification_data["att_".$j] = true;		
 								}
-								$tags = implode(",", $conv_email->getTagNames());
 								MailController::classifyFile($classification_data, $conv_email, $parsedEmail, array($workspace), $keep, $tags);
 							}
 						}

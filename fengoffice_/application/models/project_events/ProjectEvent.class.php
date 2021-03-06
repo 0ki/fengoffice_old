@@ -432,7 +432,7 @@ class ProjectEvent extends BaseProjectEvent {
 						$new_due_date = $new_due_date->add('M', $event->getRepeatM());
 					$ref_date->add('M', $event->getRepeatM());
 				}
-				else if ($task->getRepeatY() > 0) {
+				else if ($event->getRepeatY() > 0) {
 					if ($new_st_date instanceof DateTimeValue)
 						$new_st_date = $new_st_date->add('y', $event->getRepeatY());
 					if ($new_due_date instanceof DateTimeValue)

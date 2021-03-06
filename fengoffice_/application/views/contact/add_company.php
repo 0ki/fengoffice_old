@@ -37,6 +37,7 @@
 		<?php endif; ?>
 			<a href="#" class="option" tabindex=0 onclick="og.toggleAndBolden('add_company_timezone',this)"><?php echo lang('timezone') ?></a> -
 			<a href="#" class="option <?php echo $visible_cps>0 ? 'bold' : ''?>" onclick="og.toggleAndBolden('<?php echo $genid ?>add_custom_properties_div',this)"><?php echo lang('custom properties') ?></a> -
+			<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_contact_notes', this)"><?php echo lang('notes') ?></a> -
 			<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_subscribers_div',this)"><?php echo lang('object subscribers') ?></a>
 		<?php if($object->isNew() || $object->canLinkObject(logged_user())) { ?> - 
 			<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_linked_objects_div',this)"><?php echo lang('linked objects') ?></a>
@@ -69,6 +70,15 @@
 			<legend><?php echo lang('custom properties') ?></legend>
 			<?php echo render_object_custom_properties($object, false) ?>
 			<?php //echo render_add_custom_properties($object); ?>
+		</fieldset>
+	</div>
+	
+	<div style="display:none" id="<?php echo $genid ?>add_contact_notes">
+		<fieldset><legend><?php echo lang('notes') ?></legend>
+		    <div>
+		      <?php echo label_tag(lang('notes'), $genid.'profileFormNotes') ?>
+		      <?php echo textarea_field('company[comments]', array_var($company_data, 'comments'), array('id' => $genid.'profileFormNotes', 'tabindex' => '275')) ?>
+		    </div>
 		</fieldset>
 	</div>
 	

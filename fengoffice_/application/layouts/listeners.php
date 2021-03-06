@@ -20,45 +20,45 @@ og.eventManager.addListener('reload member properties',
  	}
 );
 
-og.eventManager.addListener('reload dimension tree', 
-        function (data){
-                if (!og.reloadingDimensions){ 
-                        og.reloadingDimensions = {} ;
-                }
-                if (!og.reloadingDimensions[data.dim_id]){
-                        og.reloadingDimensions[data.dim_id] = true ;
+og.eventManager.addListener('reload dimension tree',
+	function (data){
+		if (!og.reloadingDimensions){
+			og.reloadingDimensions = {};
+		}
+		if (!og.reloadingDimensions[data.dim_id]){
+			og.reloadingDimensions[data.dim_id] = true;
 
-                        var tree = Ext.getCmp("dimension-panel-" + data.dim_id);
-                        if (tree) {
-                                var selection = tree.getSelectionModel().getSelectedNode();
+			var tree = Ext.getCmp("dimension-panel-" + data.dim_id);
+			if (tree) {
+				var selection = tree.getSelectionModel().getSelectedNode();
 
-                                tree.suspendEvents();
-                                var expanded = [];
-                                tree.root.cascade(function(){
-                                        if (this.isExpanded()) expanded.push(this.id);
-                                });
-                                tree.loader.load(tree.getRootNode(), function() {
-                                        tree.expanded_once = false;
-                                        og.expandCollapseDimensionTree(tree, expanded, selection ? selection.id : null);
-                                        og.reloadingDimensions[data.dim_id] = false;
-                                        if(selection){
-                                            og.Breadcrumbs.refresh(selection);
-                                            og.contextManager.addActiveMember(selection.id, data.dim_id, selection.id);
-                                        }
-                                        if (data.node) {
-                                                var treenode = tree.getNodeById(data.node);
-                                                if (treenode) {                            
-                                                        treenode.select();
-                                                        treenode.ensureVisible();
-                                                }
-                                                og.Breadcrumbs.refresh(treenode);
-                                        }
-                                });
-                                tree.resumeEvents();
-                                
-                        }                
-                }
-        }
+				tree.suspendEvents();
+				var expanded = [];
+				tree.root.cascade(function(){
+					if (this.isExpanded()) expanded.push(this.id);
+				});
+				tree.loader.load(tree.getRootNode(), function() {
+					tree.expanded_once = false;
+					og.expandCollapseDimensionTree(tree, expanded, selection ? selection.id : null);
+					og.reloadingDimensions[data.dim_id] = false;
+					if(selection){
+						og.Breadcrumbs.refresh(selection);
+						og.contextManager.addActiveMember(selection.id, data.dim_id, selection.id);
+					}
+					if (data.node) {
+						var treenode = tree.getNodeById(data.node);
+						if (treenode) {
+					//		treenode.select();
+					//		treenode.ensureVisible();
+							treenode.fireEvent('click', treenode);
+						}
+						og.Breadcrumbs.refresh(treenode);
+					}
+				});
+				tree.resumeEvents();
+			}
+		}
+	}
 );
 
 og.eventManager.addListener('reset dimension tree', 
@@ -87,8 +87,8 @@ og.eventManager.addListener('select dimension member',
 		if (og.reloadingDimensions[data.dim_id]) {
 		//	og.select_member_after_reload = data;
 		} else {
-                        og.selectDimensionTreeMember(data);
-                }
+			og.selectDimensionTreeMember(data);
+		}
 	}
 );
 

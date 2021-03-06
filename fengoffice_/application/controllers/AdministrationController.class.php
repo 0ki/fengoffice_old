@@ -305,7 +305,7 @@ class AdministrationController extends ApplicationController {
 	 * @return null
 	 */
 	function groups() {
-		if(!logged_user()->isAdminGroup()) {
+		if(!can_manage_security(logged_user())) {
 			flash_error(lang('no access permissions'));
 			ajx_current("empty");
 			return;

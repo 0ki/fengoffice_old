@@ -805,7 +805,7 @@ class ContactController extends ApplicationController {
 			$contact_data['new_contact_from_mail_div_id'] = array_var($_GET, 'div_id');
 			$contact_data['hf_contacts'] = array_var($_GET, 'hf_contacts');
 		}
-		if($contact_email){
+		if(!array_var($_GET, 'is_user')) {
 			tpl_assign('contact_mail', true);
 		}else{
 			tpl_assign('contact_mail', false);
@@ -2637,19 +2637,20 @@ class ContactController extends ApplicationController {
 				$zipcode = $address->getZipCode();
 				$country = $address->getCountry();
 			}
-			
+				
 			$company_data = array(
-                          'first_name' => $company->getFirstName(),
-                          'timezone' => $company->getTimezone(),
-                          'email' => $company->getEmailAddress(),
-			  'phone_number' => $company->getPhoneNumber('work',true),
-			  'fax_number' => $company->getPhoneNumber('fax',true),
-                          'homepage' => $company->getWebpageURL('work'),
-                          'address' => $street,
-                          'city' => $city,
-                          'state' => $state,
-                          'zipcode' => $zipcode,
-			  'country'=> $country,
+				'first_name' => $company->getFirstName(),
+				'timezone' => $company->getTimezone(),
+				'email' => $company->getEmailAddress(),
+				'phone_number' => $company->getPhoneNumber('work',true),
+				'fax_number' => $company->getPhoneNumber('fax',true),
+				'homepage' => $company->getWebpageURL('work'),
+				'address' => $street,
+				'city' => $city,
+				'state' => $state,
+				'zipcode' => $zipcode,
+				'country'=> $country,
+				'comments' => $company->getCommentsField(),
 			); // array
 		} // if
 
@@ -2694,7 +2695,7 @@ class ContactController extends ApplicationController {
 				$address = $company->getAddress('work');
 				if($address){
 						$address->edit($company_data['address'], $company_data['city'], $company_data['state'], $company_data['country'], $company_data['zipcode'],2,1);
-				}else{$a = 1;
+				}else{
 						if($company_data['address'] != "" || $company_data['city'] != "" || $company_data['state'] != "" || $company_data['country'] != "" || $company_data['zipcode'] != "")
 							$company->addAddress($company_data['address'], $company_data['city'], $company_data['state'], $company_data['country'], $company_data['zipcode'], 'work', true);
 				}	
@@ -3184,4 +3185,38 @@ class ContactController extends ApplicationController {
             }
             
         }
+        
+	function get_companies_json() {
+		$data = array();
+		
+		$check_permissions = array_var($_REQUEST, 'check_p');
+		$allow_none = array_var($_REQUEST, 'allow_none', true);
+		
+		if (!$check_permissions) {
+			$comp_rows = DB::executeAll("SELECT c.object_id, c.first_name FROM ".TABLE_PREFIX."contacts c INNER JOIN ".TABLE_PREFIX."objects o ON o.id=c.object_id
+			WHERE c.is_company = 1 AND o.trashed_by_id = 0 AND o.archived_by_id = 0 ORDER BY c.first_name ASC");
+		} else {
+			$companies = Contacts::getVisibleCompanies(logged_user(), "`id` <> " . owner_company()->getId());
+			if (logged_user()->isMemberOfOwnerCompany() || owner_company()->canAddUser(logged_user())) {
+				// add the owner company
+				$companies = array_merge(array(owner_company()), $companies);
+			}
+		}
+		if ($allow_none) {
+			$data[] = array('id' => 0, 'name' => lang('none'));
+		}
+		if (isset($comp_rows)) {
+			foreach ($comp_rows as $row) {
+				$data[] = array('id' => $row['object_id'], 'name' => $row['first_name']);
+			}
+		} else if (isset($companies)) {
+			foreach ($companies as $company) {
+				$data[] = array('id' => $company->getId(), 'name' => $company->getObjectName());
+			}
+		}
+		
+		$this->setAutoRender(false);
+		echo json_encode($data);
+		ajx_current("empty");
+	}
 } 

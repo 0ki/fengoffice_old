@@ -205,7 +205,7 @@ class MemberController extends ApplicationController {
 				if (array_var($_POST, 'rest_genid')) evt_add('reload member restrictions', array_var($_POST, 'rest_genid'));
 				if (array_var($_POST, 'prop_genid')) evt_add('reload member properties', array_var($_POST, 'prop_genid'));
 				if (array_var($_GET, 'current') == 'overview-panel' && array_var($_GET, 'quick') ) {
-					ajx_current("reload");
+					//ajx_current("reload");
 				}
 			}
 		}
@@ -1050,8 +1050,9 @@ class MemberController extends ApplicationController {
 	
 	function quick_add_form() {
 		$this->setLayout('empty');
-		if ($dimension_id = array_var($_GET, 'dimension_id')){
-			$dimension = Dimensions::instance()->findById($dimension_id);
+		$dimension_id = array_var($_GET, 'dimension_id');
+		$dimension = Dimensions::instance()->findById($dimension_id);
+		if ($dimension instanceof Dimension){
 			$dimensionOptions = $dimension->getOptions(true);
 
 			$object_Types = array();
@@ -1103,7 +1104,7 @@ class MemberController extends ApplicationController {
 				tpl_assign('form_action', get_url('member', 'add', array('quick'=>'1')));
 			}
 		}else{
-			die("SORRY. Invalid dimension");
+			die("Invalid dimension");
 		}
 		
 	}

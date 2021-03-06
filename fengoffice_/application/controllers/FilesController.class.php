@@ -1579,8 +1579,7 @@ class FilesController extends ApplicationController {
 				DB::commit();
 								
 				flash_success(lang('success edit file', $file->getFilename()));
-				//ajx_current("back");
-                                redirect_to('index.php?c=files&a=file_details&id=' . $file->getObjectId());
+				ajx_current("back");
 			} catch(Exception $e) {
 				
 				DB::rollback();

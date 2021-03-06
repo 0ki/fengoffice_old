@@ -213,35 +213,28 @@ class MailContents extends BaseMailContents {
 		
 		$accountConditions = "";
 		// Check for accounts
-                $accountConditions = '';
+		$accountConditions = '';
 		if (isset($account_id) && $account_id > 0) { //Single account
 			$accountConditions = " AND $mailTablePrefix.account_id = " . DB::escape($account_id);
-/*		} else {
+		} else {
 			// show emails from other accounts
 			$macs = MailAccountContacts::instance()->getByContact(logged_user());
-			$acc_ids = array();
+			$acc_ids = array(0);
 			foreach ($macs as $mac) $acc_ids[] = $mac->getAccountId();
-			if (count($acc_ids) == 0) $acc_ids[] = 0;
-			$accountConditions = " AND $mailTablePrefix.account_id IN (" . implode(",", $acc_ids) . ")";
-*/
+			
+			// permission conditions
+			$pgs = ContactPermissionGroups::getPermissionGroupIdsByContactCSV(logged_user()->getId());
+			$perm_sql = "(SELECT count(*) FROM ".TABLE_PREFIX."sharing_table st WHERE st.object_id = $mailTablePrefix.object_id AND st.group_id IN ($pgs)) > 0";
+			
+			// show mails for all visible accounts and classified mails where logged_user has permissions
+			$accountConditions = " AND ($mailTablePrefix.account_id IN (" . implode(",", $acc_ids) . ") OR $perm_sql)";
 		}
-					
+		
 		// Check for unclassified emails
-                $classified = '';
+		$classified = '';
 		if ($classif_filter != '' && $classif_filter != 'all') {
-			if ($classif_filter == 'unclassified') $classified = "AND NOT ";
-			else $classified = "AND ";
+			$classified = "AND " . ($classif_filter == 'unclassified' ? "NOT " : "");
 			$classified .= "o.id IN (SELECT object_id FROM ".TABLE_PREFIX."object_members)";
-		} else {
-			if (isset($account_id) && $account_id > 0) {
-				$acc_cond = "IN ($account_id)";
-			} else {
-				$macs = MailAccountContacts::instance()->getByContact(logged_user());
-				$acc_ids = array(0);
-				foreach ($macs as $mac) $acc_ids[] = $mac->getAccountId();
-				$acc_cond = "IN (".implode(",", $acc_ids).")";
-			}
-			$classified = "AND (e.account_id $acc_cond OR o.id IN (SELECT object_id FROM ".TABLE_PREFIX."object_members))";
 		}
 
 		// Check for draft, junk, etc. emails
@@ -301,7 +294,7 @@ class MailContents extends BaseMailContents {
 			'order_dir' => $dir,
 			'extra_conditions' => "$accountConditions $classified $read $conversation_cond $box_cond",
 			'count_results' => false,
-                        'join_params' => $join_params
+			'join_params' => $join_params
 		));
 		
 		

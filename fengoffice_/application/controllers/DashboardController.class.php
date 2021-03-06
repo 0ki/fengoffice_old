@@ -208,7 +208,6 @@ class DashboardController extends ApplicationController {
 									for ($j=0; $j < count(array_var($parsedEmail, "Attachments", array())); $j++) {
 										$classification_data["att_".$j] = true;		
 									}
-									$tags = implode(",", $conv_email->getTagNames());
 									MailController::classifyFile($classification_data, $conv_email, $parsedEmail, array($destination), $mantainWs, $tags);
 								}								
 							}

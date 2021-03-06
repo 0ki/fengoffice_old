@@ -72,17 +72,19 @@ if (isset($_REQUEST['logins']) && $_REQUEST['logins']) {
 if (isset($_REQUEST['activity']) && $_REQUEST['activity']) {
 	$activity = array();
 	
-	$db_res = mysql_query("select o.id, o.name, pg.name as `type`, c.last_activity as `date` from fo_contacts c 
+	$db_res = mysql_query("select o.id, o.name, pg.name as `type`, ce.email_address as email, c.last_activity as `date` from fo_contacts c 
 		inner join fo_objects o on o.id=c.object_id 
 		inner join fo_permission_groups pg on pg.id=c.user_type
-		where o.trashed_by_id=0 and c.user_type>0 and c.last_activity>0
-		order by c.last_activity desc;", $db_link);
+		inner join fo_contact_emails ce on ce.contact_id=o.id
+		where o.trashed_by_id=0 and c.user_type>0 and c.last_activity>0 and ce.is_main=1
+		group by o.id order by c.last_activity desc;", $db_link);
 	
 	while ($row = mysql_fetch_assoc($db_res)) {
 		$activity[] = array(
 			'id' => $row['id'],
 			'name' => htmlentities($row['name']),
 			'type' => $row['type'],
+			'email' => $row['email'],
 			'date' => $row['date'],
 		);
 	}

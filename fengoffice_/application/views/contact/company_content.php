@@ -34,10 +34,16 @@
 	  else {  
 	  	echo lang('n/a'); 
 	  }
-	   // if ?>
-    </div>
-<?php } // if ?> 
+?></div>
+<?php } // if ?>
   	</div>
+<?php 
+	if ($company->getCommentsField()) {
+		echo '<div style="background-color:#E0F0FA;padding:5px;border-radius:5px;margin-top:5px;"><div class="commentsTitle">'.lang('notes').'</div>';
+		echo escape_html_whitespace(convert_to_links(clean($company->getCommentsField())));
+		echo '</div>';
+	}
+?>
 </div>
 <?php } ?> 
     
@@ -51,7 +57,7 @@
 </div>
 </fieldset>
 
-<?php if (!$company->isOwnerCompany())/*FIXME FENG2*/{ ?>
+<?php if (!$company->isOwnerCompany()) { ?>
 <fieldset><legend class="toggle_collapsed" onclick="og.toggle('companyContacts',this)"><?php echo lang('persons') ?></legend>
 <div id='companyContacts' style="display:none">
 <?php

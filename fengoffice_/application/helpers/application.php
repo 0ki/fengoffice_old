@@ -163,12 +163,14 @@ function intersectCSVs($csv1, $csv2){
 	$arr2 = explode(',', $csv2);
 	$final = array();
 	
-	foreach ($arr1 as $a1)
-		foreach ($arr2 as $a2)
+	foreach ($arr1 as $a1) {
+		foreach ($arr2 as $a2) {
 			if ($a1 == $a2){
 				$final[] = $a1;
 				break;
 			}
+		}
+	}
 			
 	return implode(',', $final);
 }
@@ -179,15 +181,7 @@ function allowed_users_to_assign($context = null) {
 	}
 	
 	// only companies with users
-	$companies = Contacts::findAll(array(
-		"conditions" => "e.is_company = 1",
-		"join" => array(
-			"table" => Contacts::instance()->getTableName(),
-			"jt_field" => "object_id",
-			"j_sub_q" => "SELECT xx.object_id FROM ".Contacts::instance()->getTableName(true)." xx WHERE xx.is_company=0 AND xx.company_id = e.object_id LIMIT 1"
-		),
-		"order" => "name"
-	));
+	$companies = Contacts::findAll(array("conditions" => "is_company = 1 AND object_id IN (SELECT company_id FROM ".TABLE_PREFIX."contacts WHERE user_type>0 AND disabled=0)", "order" => "first_name ASC"));
 
 	$comp_ids = array("0");
 	$comp_array = array("0" => array('id' => "0", 'name' => lang('without company'), 'users' => array() ));
@@ -219,15 +213,7 @@ function allowed_users_to_assign_all($context = null) {
 	}
 	
 	// only companies with users
-	$companies = Contacts::findAll(array(
-		"conditions" => "e.is_company = 1 AND EXISTS (SELECT object_id FROM ".TABLE_PREFIX."contacts WHERE is_company = 0 AND user_type > 0 AND company_id = o.id  )",
-		"join" => array(
-			"table" => Contacts::instance()->getTableName(),
-			"jt_field" => "object_id",
-			"j_sub_q" => "SELECT xx.object_id FROM ".Contacts::instance()->getTableName(true)." xx WHERE xx.is_company=0 AND xx.company_id = e.object_id LIMIT 1"
-		),
-		"order" => "name"
-	));
+	$companies = Contacts::findAll(array("conditions" => "is_company = 1 AND object_id IN (SELECT company_id FROM ".TABLE_PREFIX."contacts WHERE user_type>0 AND disabled=0)", "order" => "first_name ASC"));
 
 	$comp_ids = array("0");
 	$comp_array = array("0" => array('id' => "0", 'name' => lang('without company'), 'users' => array() ));
@@ -247,7 +233,7 @@ function allowed_users_to_assign_all($context = null) {
 	
 	foreach ($contacts as $contact) { /* @var $contact Contact */
 		if ( TabPanelPermissions::instance()->count( array( "conditions" => "permission_group_id = ".$contact->getPermissionGroupId(). " AND tab_panel_id = 'tasks-panel' " ))){
-			$comp_array[]['users'][] = array('id' => $contact->getId(), 'name' => $contact->getObjectName(), 'isCurrent' => $contact->getId() == logged_user()->getId());
+			$comp_array[$contact->getCompanyId()]['users'][] = array('id' => $contact->getId(), 'name' => $contact->getObjectName(), 'isCurrent' => $contact->getId() == logged_user()->getId());
 		}
 	}
 	return array_values($comp_array);
@@ -257,22 +243,14 @@ function allowed_users_to_assign_all_mobile($member_id = null) {
 	if ($member_id == null) {
 		$context = active_context();
 	}else{
-                $member = Members::findById($member_id) ;													
-                if ($member instanceof Member){
-                        $context[] = $member ;
-                }
-        }
+		$member = Members::findById($member_id);
+		if ($member instanceof Member){
+			$context[] = $member;
+		}
+	}
 	
 	// only companies with users
-	$companies = Contacts::findAll(array(
-		"conditions" => "e.is_company = 1 AND EXISTS (SELECT object_id FROM ".TABLE_PREFIX."contacts WHERE is_company = 0 AND user_type > 0 AND company_id = o.id  )",
-		"join" => array(
-			"table" => Contacts::instance()->getTableName(),
-			"jt_field" => "object_id",
-			"j_sub_q" => "SELECT xx.object_id FROM ".Contacts::instance()->getTableName(true)." xx WHERE xx.is_company=0 AND xx.company_id = e.object_id LIMIT 1"
-		),
-		"order" => "name"
-	));
+	$companies = Contacts::findAll(array("conditions" => "is_company = 1 AND object_id IN (SELECT company_id FROM ".TABLE_PREFIX."contacts WHERE user_type>0 AND disabled=0)", "order" => "first_name ASC"));
 
 	$comp_ids = array("0");
 	$comp_array = array("0" => array('id' => "0", 'name' => lang('without company'), 'users' => array() ));
@@ -910,23 +888,23 @@ function autocomplete_textarea_field($name, $value, $options, $max_options, $att
 function render_add_reminders($object, $context, $defaults = null, $genid = null, $type_object = '') {
 	require_javascript('og/Reminders.js');
 	if(!is_array($defaults)) $defaults = array();
-        if($type_object == "event"){
-            $def = explode(",",user_config_option("reminders_events"));
-            $default_defaults = array(
-		'type' => $def[0],
-		'duration' => $def[1],
-		'duration_type' => $def[2],
-		'for_subscribers' => true,
-            );
-        }else{
-            $default_defaults = array(
-		'type' => 'reminder_popup',
-		'duration' => '15',
-		'duration_type' => '1',
-		'for_subscribers' => true,
-            );
-        }
-	 
+	if($type_object == "event"){
+		$def = explode(",", user_config_option("reminders_events"));
+		$default_defaults = array(
+			'type' => array_var($def, 0),
+			'duration' => array_var($def, 1),
+			'duration_type' => array_var($def, 2),
+			'for_subscribers' => true,
+		);
+	} else {
+		$default_defaults = array(
+			'type' => 'reminder_popup',
+			'duration' => '15',
+			'duration_type' => '1',
+			'for_subscribers' => true,
+		);
+	}
+	
 	foreach ($default_defaults as $k => $v) {
 		if (!isset($defaults[$k])) $defaults[$k] = $v;
 	}
@@ -944,7 +922,7 @@ function render_add_reminders($object, $context, $defaults = null, $genid = null
 	}
 	$output = '
 		<div id="'.$genid.'" class="og-add-reminders">
-			<a id="'.$genid.'-link" href="#" onclick="og.addReminder(this.parentNode, \''.$context.'\', \''.$defaults['type'].'\', \''.$defaults['duration'].'\', \''.$defaults['duration_type'].'\', \''.$defaults['for_subscribers'].'\', this);return false;">' . lang("add object reminder") . '</a>
+			<a id="'.$genid.'-link" href="#" onclick="og.addReminder(this.parentNode, \''.$context.'\', \''.array_var($defaults, 'type').'\', \''.array_var($defaults, 'duration').'\', \''.array_var($defaults, 'duration_type').'\', \''.array_var($defaults, 'for_subscribers').'\', this);return false;">' . lang("add object reminder") . '</a>
 		</div>
 		<script>
 		og.reminderTypes = ['.$typecsv.'];
@@ -952,7 +930,7 @@ function render_add_reminders($object, $context, $defaults = null, $genid = null
 	';
 	
 	if ($object->isNew()) {
-		$output .= '<script>og.addReminder(document.getElementById("'.$genid.'"), \''.$context.'\', \''.$defaults['type'].'\', \''.$defaults['duration'].'\', \''.$defaults['duration_type'].'\', \''.$defaults['for_subscribers'].'\', document.getElementById("'.$genid.'-link"));</script>';
+		$output .= '<script>og.addReminder(document.getElementById("'.$genid.'"), \''.$context.'\', \''.array_var($defaults, 'type').'\', \''.array_var($defaults, 'duration').'\', \''.array_var($defaults, 'duration_type').'\', \''.array_var($defaults, 'for_subscribers').'\', document.getElementById("'.$genid.'-link"));</script>';
 	} else {
 		$reminders = ObjectReminders::getAllRemindersByObjectAndUser($object, logged_user(), $context, true);
 		foreach($reminders as $reminder) {
@@ -979,14 +957,14 @@ function render_add_reminders($object, $context, $defaults = null, $genid = null
 }
 
 function render_add_reminders_config() {
-        $defaults = array();
-        $def = explode(",",user_config_option("reminders_events"));
-        $default_defaults = array(
-                'type' => $def[0],
-                'duration' => $def[1],
-                'duration_type' => $def[2]
-        );
-        
+	$defaults = array();
+	$def = explode(",", user_config_option("reminders_events"));
+	$default_defaults = array(
+		'type' => array_var($def, 0),
+		'duration' => array_var($def, 1),
+		'duration_type' => array_var($def, 2)
+	);
+
 	foreach ($default_defaults as $k => $v) {
 		if (!isset($defaults[$k])) $defaults[$k] = $v;
 	}
@@ -995,38 +973,39 @@ function render_add_reminders_config() {
 	foreach ($types as $type) {
 		$typecsv []= $type->getName();
 	}
-        $durations = array(0,1,2,5,10,15,30);
-        $duration_types = array("1" => "minutes","60" => "hours","1440" => "days","10080" => "weeks");
+	$durations = array(0,1,2,5,10,15,30);
+	$duration_types = array("1" => "minutes","60" => "hours","1440" => "days","10080" => "weeks");
 
-        $output = '<select name="options[reminders_events][reminder_type]">';        
+	$output = '<select name="options[reminders_events][reminder_type]">';
 	foreach ($typecsv as $type) {
-                $output .= '<option value="' . $type . '"';
-		if ($type == $defaults['type']) {
+		$output .= '<option value="' . $type . '"';
+		if ($type == array_var($defaults, 'type')) {
 			$output .= ' selected="selected"';
 		}
 		$output .= '>' . lang($type) . '</option>';
 	}
-        $output .= '</select>';
-        
-        $output .= '<select name="options[reminders_events][reminder_duration]">';        
+	$output .= '</select>';
+
+	$output .= '<select name="options[reminders_events][reminder_duration]">';
 	foreach ($durations as $duration) {
-                $output .= '<option value="' . $duration . '"';
-		if ($duration == $defaults['duration']) {
+		$output .= '<option value="' . $duration . '"';
+		if ($duration == array_var($defaults, 'duration')) {
 			$output .= ' selected="selected"';
 		}
 		$output .= '>' . $duration . '</option>';
 	}
-        $output .= '</select>';
-        
-        $output .= '<select name="options[reminders_events][reminder_duration_type]">';        
+	$output .= '</select>';
+
+	$output .= '<select name="options[reminders_events][reminder_duration_type]">';
 	foreach ($duration_types as $key => $value) {
-                $output .= '<option value="' . $key . '"';
-		if ($key == $defaults['duration_type']) {
+		$output .= '<option value="' . $key . '"';
+		if ($key == array_var($defaults, 'duration_type')) {
 			$output .= ' selected="selected"';
 		}
 		$output .= '>' . lang($value) . '</option>';
 	}
-        $output .= '</select>';
+	$output .= '</select>';
+	
 	return $output;
 }
 

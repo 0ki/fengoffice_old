@@ -48,19 +48,10 @@ class Reports extends BaseReports {
 	 *
 	 * @return array
 	 */
-	static function getAllReportsByObjectType($context = null) {
-		if (is_null($context)) {
-			$tmp_context = active_context();
-			$context = array();
-			foreach($tmp_context as $selection) {
-				if ($selection instanceof Member) $context[] = $selection->getDimension();
-				else if ($selection instanceof Dimension) $context[] = $selection;
-			}
-		}
-		
-		$ot = ObjectTypes::findById(self::instance()->getObjectTypeId());
-		$reports_result = ContentDataObjects::getContentObjects($context, $ot);
+	static function getAllReportsByObjectType() {
+		$reports_result = Reports::instance()->listing();
 		$reports = $reports_result->objects;
+		
 		$result = array();
 		foreach ($reports as $report){
 			if (array_key_exists($report->getReportObjectTypeId(), $result)) {
@@ -70,7 +61,7 @@ class Reports extends BaseReports {
 			}
 		}
 		return $result;
-	} //  getAllReports
+	}
 
 	/**
 	 * Execute a report and return results
@@ -188,6 +179,11 @@ class Reports extends BaseReports {
 						if($condCp->getCondition() != '%'){
 							if ($cp->getType() == 'numeric') {
 								$allConditions .= ' AND cpv.value '.$condCp->getCondition().' '.DB::escape($value);
+							}else if ($cp->getType() == 'boolean') {
+								$allConditions .= ' AND cpv.value '.$condCp->getCondition().' '.$value;
+								if (!$value) {
+									$allConditions .= ') OR o.id NOT IN (SELECT object_id as id FROM '.TABLE_PREFIX.'custom_property_values cpv2 WHERE cpv2.object_id=o.id AND cpv2.value=1 AND cpv2.custom_property_id = '.$condCp->getCustomPropertyId();
+								}
 							}else{
 								$allConditions .= ' AND cpv.value '.$condCp->getCondition().' "'.DB::escape($value).'"';
 							}
@@ -202,6 +198,10 @@ class Reports extends BaseReports {
 			if ($order_by_col == '') $order_by_col = $report->getOrderBy();
 			if ($order_by_asc == null) $order_by_asc = $report->getIsOrderByAsc();
 
+			if ($ot->getName() == 'task' && !SystemPermissions::userHasSystemPermission(logged_user(), 'can_see_assigned_to_other_tasks')) {
+				$allConditions .= " AND assigned_to_contact_id = ".logged_user()->getId();
+			}
+			
 			if ($managerInstance) {
 				$result = $managerInstance->listing(array(
 					"order" => $order_by_col,

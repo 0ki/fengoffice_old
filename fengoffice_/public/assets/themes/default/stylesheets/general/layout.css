@@ -613,3 +613,9 @@ div.layout-container.contact .right-column {
 .nobr {
 	white-space: nowrap;
 }
+
+.completed-tasks .widget-header {
+	color: white;
+	background-color: #2D592C;
+	border-color: #2D592C;
+}

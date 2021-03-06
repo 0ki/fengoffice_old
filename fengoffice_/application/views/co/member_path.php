@@ -15,7 +15,7 @@
 		$dimension = $member->getDimension();
 		if (in_array($dimension->getCode(), array('feng_users', 'feng_persons'))) continue;
 		
-		if (!can_read(logged_user(), array($member), $object->getObjectTypeId())) continue;
+		if ($dimension->getDefinesPermissions() && !can_read(logged_user(), array($member), $object->getObjectTypeId())) continue;
 		
 		if (!isset($dimensions_info[$dimension->getName()])) {
 			$dimensions_info[$dimension->getName()] = array('members' => array(), 'icon' => $member->getIconClass());

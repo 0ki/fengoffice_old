@@ -715,13 +715,18 @@ class TaskController extends ApplicationController {
 			default:
 				throw new Exception('Task status "' . $status . '" not recognised');
 		}
-                
-		$conditions = "AND $template_condition $task_filter_condition $task_status_condition";                
+
+		$task_assignment_conditions = "";
+		if (!SystemPermissions::userHasSystemPermission(logged_user(), 'can_see_assigned_to_other_tasks')) {
+			$task_assignment_conditions = " AND assigned_to_contact_id = ".logged_user()->getId();
+		}
+		
+		$conditions = "AND $template_condition $task_filter_condition $task_status_condition $task_assignment_conditions";                
 		//Now get the tasks
 		$tasks = ProjectTasks::instance()->listing(array(
 			"extra_conditions" => $conditions,
-			"start" => 0 ,
-			"limit" => 501,
+			"start" => 0,
+			"limit" => user_config_option('task_display_limit', 501),
 			"count_results" => false
 		))->objects;
 		
@@ -734,11 +739,17 @@ class TaskController extends ApplicationController {
 		//Find all external milestones for these tasks, external milestones are the ones that belong to a parent member and have tasks in the current member
 		$milestone_ids = array();
 		if($tasks){
+			$task_ids = array();
 			foreach ($tasks as $task){
+				$task_ids[] = $task->getId();
 				if ($task->getMilestoneId() != 0) {
 					$milestone_ids[$task->getMilestoneId()]	= $task->getMilestoneId();
 				}
 			}
+			
+			// generate request cache
+			ObjectMembers::instance()->getCachedObjectMembers(0, $task_ids);
+			ProjectTasks::instance()->findByRelatedCached(0, $task_ids);
 		}
 		
 		$int_milestone_ids = array();

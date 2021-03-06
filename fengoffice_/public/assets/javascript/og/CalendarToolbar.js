@@ -186,8 +186,8 @@ var topToolbarItems = {
 	}),
 	goto: new Ext.Action({
 		text: lang('pick a date'),
-                tooltip: lang('pick a date'),
-                menu: og.calToolbarDateMenu
+		tooltip: lang('pick a date'),
+		menu: og.calToolbarDateMenu
 	}),
 	imp_exp: new Ext.Action({
 		text: lang('import/export'),
@@ -209,24 +209,21 @@ var topToolbarItems = {
         iconCls: 'ico-trash',
 		disabled: true,
 		handler: function() {
-                        var ids = og.getSelectedEventsCsv()+'';
-                        var arr_ids = ids.split(',')
-                        for(var i = 0; i < arr_ids.length; i++){
-                            var related = og.checkRelated("event",arr_ids[i]);
-                            if(related){
-                                break;    
-                            }                                
-                        }
-
-                        if(related){
-                            this.dialog = new og.EventRelatedPopUp("delete");
-                            this.dialog.setTitle(lang('events related'));	                                
-                            this.dialog.show();
-                        }else{
-                            if (confirm(lang('confirm move to trash'))) {
-                                    og.openLink(og.getUrl('event', 'delete', {ids: og.getSelectedEventsCsv()}));
-                            } 
-                        }
+			var ids = og.getSelectedEventsCsv()+'';
+			var arr_ids = ids.split(',')
+			for(var i = 0; i < arr_ids.length; i++){
+				var related = og.checkRelated("event",arr_ids[i]);
+				if(related) break;
+			}
+			if(related){
+				this.dialog = new og.EventRelatedPopUp("delete");
+				this.dialog.setTitle(lang('events related'));
+				this.dialog.show();
+			}else{
+				if (confirm(lang('confirm move to trash'))) {
+					og.openLink(og.getUrl('event', 'delete', {ids: og.getSelectedEventsCsv()}));
+				}
+			}
 		},
 		scope: this
 	}),
@@ -259,13 +256,13 @@ var topToolbarItems = {
 	}),
 	archive: new Ext.Action({
 		text: lang('archive'),
-           tooltip: lang('archive selected object'),
-           iconCls: 'ico-archive-obj',
+		tooltip: lang('archive selected object'),
+		iconCls: 'ico-archive-obj',
 		disabled: true,
 		handler: function() {
-                        this.dialog = new og.EventRelatedPopUp("archive");
-                        this.dialog.setTitle(lang('events related'));	                                
-                        this.dialog.show();
+			this.dialog = new og.EventRelatedPopUp("archive");
+			this.dialog.setTitle(lang('events related'));
+			this.dialog.show();
 //			if (confirm(lang('confirm archive selected objects'))) {
 //				og.openLink(og.getUrl('event', 'archive', {ids: og.getSelectedEventsCsv()}));
 //			}
@@ -297,30 +294,29 @@ og.CalendarTopToolbar = function(config) {
 		this.addSeparator();                
 	}
 	this.add(topToolbarItems.markAs);
-        this.addSeparator();     
-        this.add(new Ext.Action({
-                                text: lang('print'),
-                                tooltip: lang('print calendar'),
-                                iconCls: 'ico-print',
-                                handler: function() {
-                                        og.PrintCalendar.printCalendar(og.config['genid']);
-                                },
-                                scope: this
-                            }));
+	this.addSeparator();
+	this.add(new Ext.Action({
+		text: lang('print'),
+		tooltip: lang('print calendar'),
+		iconCls: 'ico-print',
+		handler: function() {
+			og.PrintCalendar.printCalendar(og.config['genid']);
+		},
+		scope: this
+	}));
 	if (!og.loggedUser.isGuest) {
 		this.addSeparator();
 		this.add(topToolbarItems.imp_exp);
-	
-                this.add(new Ext.Action({
-                                        text: lang('sync'),
-                                        tooltip: lang('sync'),
-                                        handler: function() {
-                                                var url = og.getUrl('event', 'calendar_sinchronization');
-                                                og.openLink(url);
-                                        },
-                                        scope: this
-                                    }));
-        }
+		this.add(new Ext.Action({
+			text: lang('sync'),
+			tooltip: lang('sync'),
+			handler: function() {
+				var url = og.getUrl('event', 'calendar_sinchronization');
+				og.openLink(url);
+			},
+			scope: this
+		}));
+	}
 //        this.add(new Ext.Action({
 //                                text: lang('import'),
 //                                tooltip: lang('import'),
@@ -374,21 +370,17 @@ og.CalendarSecondTopToolbar = function(config) {
 	var currentUser = '';
     var usersArray = Ext.util.JSON.decode(document.getElementById(config.usersHfId).value);
     var companiesArray = Ext.util.JSON.decode(document.getElementById(config.companiesHfId).value);
-    for (i in usersArray){
-		if (usersArray[i].isCurrent)
-			currentUser = usersArray[i].cid + ':' + usersArray[i].id;
+    for (var k=0; k<usersArray.length; k++){
+		if (usersArray[k].isCurrent)
+			currentUser = usersArray[k].cid + ':' + usersArray[k].id;
 	}
 	var ucsData = [[currentUser, lang('my calendar')],['0:0',lang('everyone')],['0:0','--']];
-	/*
-	for (i in companiesArray)
-		if (companiesArray[i].id) ucsData[ucsData.length] = [(companiesArray[i].id + ':0'), companiesArray[i].name];
-	ucsData[ucsData.length] = ['0:0','--'];
-	*/
+
 	ucsOtherUsers = [];
-	for (i in usersArray){
+	for (var i=0; i<usersArray.length; i++){
+		str+=i+"\n";
 		var companyName = '';
-		var j;
-		for(j in companiesArray){
+		for(var j=0; j<companiesArray.length; j++){
 			if (companiesArray[j] && companiesArray[j].id == usersArray[i].cid) {
 				companyName = companiesArray[j].name;
 			}
@@ -444,8 +436,7 @@ og.CalendarSecondTopToolbar = function(config) {
         store: new Ext.data.SimpleStore({
         	fields: ['value', 'text'],
         	data :  [["no filter", '--' + lang('no filter') + '--'],["pending", lang('pending')],["complete", lang('complete')], ["hide", lang('none')]]
-
-    	}),
+		}),
         displayField:'text',
         typeAhead: true,
         mode: 'local',
@@ -547,11 +538,11 @@ og.CalendarSecondTopToolbar = function(config) {
 	this.add(' ');
 	this.add(filterNamesCompaniesCombo);
 	this.add(' ');
-	this.add(status_menu);	
-        this.add(' ');
-        this.add(lang('tasks'));
-        this.add(' ');
-        this.add(filterTaskCombo);
+	this.add(status_menu);
+	this.add(' ');
+	this.add(lang('tasks'));
+	this.add(' ');
+	this.add(filterTaskCombo);
 	this.add(' ');
 }
 

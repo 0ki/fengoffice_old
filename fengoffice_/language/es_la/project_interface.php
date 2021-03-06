@@ -277,6 +277,7 @@ Asunto:   {0}<br/>
 	'linked contact tab' => 'Personas',
 	'linked comment tab' => 'Comentarios',
 	'linked webpage tab' => 'Enlaces web',
+	'linked weblink tab' => 'Vínculos Web',
 	'linked company tab' => 'Organizaciones',
 	'linked milestone tab' => 'Hitos',
 	'linked task tab' => 'Tareas',

@@ -432,7 +432,7 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
 	      	<?php echo render_object_custom_properties($task, false, $co_type) ?>
 	      	</div>
 	    </div>
-      <?php //echo render_add_custom_properties($task); ?>
+      <?php echo render_add_custom_properties($task); ?>
   	</fieldset>
  	</div>
   
@@ -483,6 +483,10 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
                 </div>
                 <script>
                     var h = document.getElementById("<?php echo $genid ?>ckcontainer").offsetHeight;
+                    if (h > 300) {
+                        h = 280;
+                        $("#<?php echo $genid ?>ckcontainer").css('height', (h+20)+'px'); 
+                    }
                     var editor = CKEDITOR.replace('<?php echo $genid ?>ckeditor', {
                         height: h,
                         enterMode: CKEDITOR.ENTER_DIV,
@@ -603,8 +607,8 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
 	        cls: 'assigned-to-combo',
 	        triggerAction: 'all',
 	        selectOnFocus:true,
-	        listWidth: 'auto',
-	        width:160,
+	        //listWidth: 'auto',
+	        //width:160,
 	        tabIndex: '150',
 	        valueField: 'value',
 	        emptyText: (lang('select user or group') + '...'),
@@ -693,7 +697,6 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
 		document.getElementById("<?php echo $genid ?>word").innerHTML = word;
 		document.getElementById("<?php echo $genid ?>repeat_options").style.display = opt_display;		
 	}
-	og.changeTaskRepeat();
         <?php }?>
 
 
@@ -727,7 +730,7 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
 		});
 		og.redrawUserLists(dimension_members_json);
 	}
-	og.reload_task_form_selectors();
+	
 	
 	Ext.get('ogTasksPanelATTitle').focus();
         
@@ -755,6 +758,10 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
                 this.dialog.setTitle(lang('tasks related'));
                 this.dialog.show();      
             }
+
+            og.changeTaskRepeat();
+            
+            og.reload_task_form_selectors();
         });
         
         function selectRelated(val){

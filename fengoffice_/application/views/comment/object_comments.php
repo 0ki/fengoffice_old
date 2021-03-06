@@ -18,7 +18,7 @@
 				$counter++;
 				$options = array();
 				if ($comment->canEdit(logged_user()) && !$__comments_object->isTrashed()) {
-					if ($comment->getCreatedById() == logged_user()->getId()) {
+					if ($comment->getCreatedById() == logged_user()->getId() || can_write(logged_user(), $comment->getRelObject()->getMembers(), $comment->getObjectTypeId())) {
 						$options[] = '<a class="internalLink" href="' . $comment->getEditUrl() . '">' . lang('edit') . '</a>';
 					}
 					if ($comment->canLinkObject(logged_user())) {

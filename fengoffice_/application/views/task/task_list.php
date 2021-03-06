@@ -324,4 +324,8 @@ if (config_option('use tasks dependencies')) {
 	$this->includeTemplate(get_template_path('previous_task_list', 'task'));
 	echo '<div>';
 }
-
+?>
+<script>
+var parent_width = $(".wysiwyg-description").parent().parent().width() - 20;
+$(".wysiwyg-description").css("word-wrap", "break-word").css("width", parent_width);
+</script>

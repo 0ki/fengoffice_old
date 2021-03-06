@@ -395,14 +395,14 @@ og.integerPropertyTypeSel = function(count, obj_id, callback){
 					var integerPropTD = document.getElementById('integerPropTD[' + obj_id + '][' + count + ']');
 					var html = "";
 					html += '<select name="propValues[' + obj_id + '][' + prop + ']" id="propValues[' + obj_id + '][' + prop + ']">';
-					if (companies.length){
-						for (var  i = 0 ; i < companies.length ; i ++) {
+					if (companies.length > 0){
+						for (var i=0; i<companies.length; i++) {
+							if (!companies[i] || companies[i].id==0) continue;
 							html += '<option value="'+ companies[i].id+'" name="propValue[' + obj_id + '][' + prop + ']">'+ companies[i].name + '</option>';
-							if (!companies[i] || !companies[i].users.length) continue ;
-							var users  = companies[i].users ;
-							//if (users.length > 0){
-							for(i=0;i < users.length ;i++){
-								var usu = users[i];
+							var users = companies[i].users;
+							for(j=0; j<users.length; j++){
+								var usu = users[j];
+								if (usu.id == 'undefined') continue;
 								html += '<option value="'+ usu.id+'" name="propValue[' + obj_id + '][' + prop + ']">'+ usu.name + '</option>';
 							}
 						}

@@ -130,4 +130,14 @@
 		}
 		return $images;
 	}
+	
+	if (!function_exists('array_fill_keys')) {
+		function array_fill_keys($keys, $value) {
+			$result = array();
+			foreach ($keys as $k) {
+				$result[$k] = $value;
+			}
+			return $result;
+		}
+	}
 ?>

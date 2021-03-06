@@ -1121,6 +1121,7 @@ function build_context_array($context_plain) {
 		if ($dimensions) {
 			$context = array () ;
 			foreach ($dimensions as $dimensionId => $members) {
+				if (!$dimensionId || $dimensionId == 'undefined') continue;
 				if ($members && is_array($members)) {
 					//cambiar
 					foreach ($members as $member) {

@@ -229,7 +229,11 @@ function delete_dir($dir) {
  * @return null
  */
 function force_mkdir($path, $chmod = null) {
-	return mkdir($path, $chmod, true);
+	if (mkdir($path, $chmod, true)) {
+		chmod($path, $chmod);
+		return true;
+	}
+	return false;
 } // force_mkdir
 
 function force_mkdir_from_base($base, $path, $chmod = null) {

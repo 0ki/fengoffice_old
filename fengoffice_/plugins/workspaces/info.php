@@ -1,7 +1,9 @@
-<?php return  array(
+<?php 
+return array(
 	"order" => -999 ,
 	"name" => "workspaces",
-	"version" => 4,
+	"version" => 5,
+	"author" => "Feng Office",
+	"website" => "http://fengoffice.com",
 	"description" => "Workspaces and Tags dimensions installation"
-		
 );

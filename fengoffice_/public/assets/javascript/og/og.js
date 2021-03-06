@@ -2494,4 +2494,47 @@ function dump(arr,level) {
 	 dumped_text = "===>"+arr+"<===("+typeof(arr)+")";
 	}
 	return dumped_text;
-} 
+}
+
+og.load_company_combo = function(combo_id, selected_id) {
+	if (!og.json_companies) {
+		$("#"+combo_id).css('display', 'none');
+		$("#"+combo_id+"-loading").css('display', '');
+		$.ajax({
+			type: "GET",
+			url: og.getUrl('contact', 'get_companies_json'),
+			dataType: "json",
+			async: true,
+			success: function(data, textStatus) {
+				var html = "";
+				for (var i=0; i<data.length; i++) {
+					sel = selected_id && selected_id == data[i].id ? " selected=selected " : "";
+					html += "<option value=\"" + data[i].id + "\"" + sel + ">" + data[i].name + "</option>";
+				}
+				$("#"+combo_id).empty().append(html);
+	
+				// cache if there are many companies
+				if (data.length > 1000) {
+					og.json_companies = data;
+				}
+
+				$("#"+combo_id+"-loading").css('display', 'none');
+				$("#"+combo_id).css('display', '');
+			}
+		});
+	} else {
+		$("#"+combo_id).css('display', 'none');
+		$("#"+combo_id+"-loading").css('display', '');
+		
+		data = og.json_companies;
+		var html = "";
+		for (var i=0; i<data.length; i++) {
+			sel = selected_id && selected_id == data[i].id ? " selected=selected " : "";
+			html += "<option value=\"" + data[i].id + "\"" + sel + ">" + data[i].name + "</option>";
+		}
+		$("#"+combo_id).empty().append(html);
+	
+		$("#"+combo_id+"-loading").css('display', 'none');
+		$("#"+combo_id).css('display', '');
+	}
+}

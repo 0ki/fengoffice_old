@@ -34,40 +34,34 @@ if($current_member){
             }
 			?>
 				<tr class=" activity-row <?php echo $c % 2 == 1? '':'dashAltRow';?>  <?php echo $class?>" id="<?php echo "activity-".$c?>" <?php echo $style?>>
-                                    <td style="width:32px"><img src="<?php echo $user->getAvatarUrl() ?>" width="32px;"/></td>
-                                    <td style="padding-left:10px">
-                                            <table cellpadding="0" cellspacing="0" style="width:100%;">
-                                                <tr>
-                                                    <td style="height: 17px;">
-                                                        <div>
-                                                            <span class="breadcrumb"></span>
-                                                            <?php echo $acts['act_data'][$k] ?>
-                                                        </div>
-                                                    </td>
-                                                </tr>
-                                                <tr>
-                                                    <td style="padding-bottom:3px;">
-                                                        <div class="desc"><?php echo $acts['date'][$k] ?></div>
-                                                    </td>
-                                                </tr>
-                                                <script>
-                                                    var crumbHtml = <?php echo $crumbJs?> ;
-                                                    $("#activity-<?php echo $c?> .breadcrumb").html(crumbHtml);
-                                                </script>
-                                            </table>
-                                    </td>
-                                </tr>
-                        <?php endforeach; ?>
-                        
-                        <?php if (count($acts['data']) > $total) :?>
-                            <tr>
-                                <td colspan="2" align="right" style="padding:20px 0 5px; width: 20px; color: #003562;">
-                                        <span onclick="og.hideActivity('<?php echo $genid?>')" id="hidelnk<?php echo $genid?>" style="cursor:pointer; display:none;" title="<?php echo lang('hide') ?>"><?php echo lang('hide') ?></span>
-                                        <span onclick="og.showActivity('<?php echo $genid?>')" id="showlnk<?php echo $genid?>" style="cursor:pointer;" title="<?php echo lang('view more') ?>"><?php echo lang('view more') ?></span>
-                                </td>
-                            </tr>
-                        <?php endif;?>
-                    </table>
+					<td style="width:32px">
+					<?php if ($user instanceof Contact) : ?>
+						<img src="<?php echo $user->getAvatarUrl() ?>" width="32px;"/>
+					<?php endif; ?>
+					</td><td style="padding-left:10px">
+						<table cellpadding="0" cellspacing="0" style="width:100%;">
+						<tr><td style="height: 17px;">
+							<div><span class="breadcrumb"></span><?php echo $acts['act_data'][$k] ?></div>
+						</td></tr>
+						<tr><td style="padding-bottom:3px;"><div class="desc"><?php echo $acts['date'][$k] ?></div>
+						</td></tr>
+                        	<script>
+                        	var crumbHtml = <?php echo $crumbJs?>;
+                        	$("#activity-<?php echo $c?> .breadcrumb").html(crumbHtml);
+                        	</script>
+						</table>
+					</td>
+				</tr>
+			<?php endforeach; ?>
+			<?php if (count($acts['data']) > $total) :?>
+				<tr>
+					<td colspan="2" align="right" style="padding:20px 0 5px; width: 20px; color: #003562;">
+						<span onclick="og.hideActivity('<?php echo $genid?>')" id="hidelnk<?php echo $genid?>" style="cursor:pointer; display:none;" title="<?php echo lang('hide') ?>"><?php echo lang('hide') ?></span>
+						<span onclick="og.showActivity('<?php echo $genid?>')" id="showlnk<?php echo $genid?>" style="cursor:pointer;" title="<?php echo lang('view more') ?>"><?php echo lang('view more') ?></span>
+					</td>
+				</tr>
+			<?php endif;?>
+			</table>
 		</ul>
 		<div class="x-clear"></div>
 		<div class="progress-mask"></div>
@@ -95,5 +89,4 @@ if($current_member){
 		    }
 	    });
 	}
-		
 </script>

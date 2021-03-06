@@ -1,5 +1,7 @@
 <?php 
 
+$panel = TabPanels::instance()->findById('messages-panel');
+if ($panel instanceof TabPanel && $panel->getEnabled()) {
 	$limit = 5 ;
 	$result =  ProjectMessages::instance()->listing(array(
 		"order" => "name",
@@ -13,3 +15,4 @@
 	if ($total) {
 		include_once 'template.php';
 	}
+}

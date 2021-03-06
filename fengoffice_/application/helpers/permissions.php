@@ -666,8 +666,8 @@
 					$root_cmp->setMemberId($key);
 					$root_cmp->setObjectTypeId($mbm->getObjectTypeId());
 				}
-				$root_cmp->setCanWrite($mids['w']);
-				$root_cmp->setCanDelete($mids['d']);
+				$root_cmp->setCanWrite(array_var($mids,'w'));
+				$root_cmp->setCanDelete(array_var($mids,'d'));
 				$root_cmp->save();
 			}
 			
@@ -748,8 +748,13 @@
 			$dim = Dimensions::getDimensionById(array_var( $_REQUEST,'dim_id'));
 		}
 		
+		if (!$dim instanceof Dimension) {
+			Logger::log("Invalid dimension: " . ($member instanceof Member ? " for member ".$member->getId() : "request: ".print_r($_REQUEST, 1)));
+			throw new Exception("Invalid dimension");
+		}
+		
 		if (logged_user()->isMemberOfOwnerCompany()) {
-			$companies = Contacts::findAll(array("conditions" => "is_company = 1", 'order' => 'name'));
+			$companies = Contacts::findAll(array("conditions" => "is_company = 1 AND object_id IN (SELECT company_id FROM ".TABLE_PREFIX."contacts WHERE user_type>0 AND disabled=0)", 'order' => 'first_name'));
 		} else {
 			$companies = array(owner_company());
 			if (logged_user()->getCompany() instanceof Contact) $companies[] = logged_user()->getCompany();

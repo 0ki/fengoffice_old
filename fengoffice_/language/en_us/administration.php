@@ -159,6 +159,9 @@
 	'config option desc use_milestones' => 'Enabling this option will allow to create milestones and associate tasks to them.',
 	'config option name show_tab_icons' => 'Show tab icons',
 	'config option desc show_tab_icons' => 'Enabling this option will show each tab\'s icon.',
+  
+  	'config option name automatic_crpm_status_calculation' => 'Clients & Project automatic status',
+  	'config option desc automatic_crpm_status_calculation' => 'When enabled, you will be able to set up the formulas for the Clients & Project different status so that they are calculated automatically',
 
     'group users' => 'Group users',
     'timeslot' => 'Time',
@@ -686,6 +689,7 @@
     'dimensions' => 'Dimensions',
     'organization data' => 'Organization Data',
 
+  
 
     //User-box actions
     'brand colors' => 'Brand Colors',
@@ -709,6 +713,7 @@
     'can add mail accounts' => 'Can add mail accounts',
     'can_manage_dimensions'=>'Can manage dimensions',
     'can_manage_dimension_members'=>'Can manage dimension members',
+	'can_see_assigned_to_other_tasks'=>'Can see other user\'s tasks',
 
     'can_manage_security description' => 'If this permission is checked the user will be able to create, update and delete users and groups, and modify their permissions.',
     'can_manage_configuration description' => 'If this permission is checked the user will be able to edit application configuration, information on the owner company , cron events, application upgrades, the logo shown in the upper left corner of the application and the brand colours.',
@@ -718,6 +723,7 @@
     'can_manage_dimensions description'=>'If this permission is checked the user will have full permissions over dimensions. He will be able to create new dimensions and change their configuration. This is an advanced administrative feature.',
     'can_manage_dimension_members description' => 'If this permission is checked the user will have full permissions over dimension members. He will be able to create, edit and delete new members. In practice, a member could be a workspace, project, client, etc.',
     'can_manage_tasks description' => 'If this permission is checked the user will have full permissions over tasks. He will be able to assign tasks to other users and complete them.',
+	'can_see_assigned_to_other_tasks description'=>'If enabled then the user will be able to see tasks that are not assigned to him/her.',
 
   //HIDDEN 
     'can_task_assignee'=>'Can task asignee',

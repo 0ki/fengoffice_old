@@ -1428,7 +1428,7 @@ class MailController extends ApplicationController {
 			if ($canWriteFiles) {
 				DB::beginWork();
 				if ($members) {
-					$account_owner = Contacts::findById($email->getAccount()->getContactId());
+					$account_owner = logged_user() instanceof contact ? logged_user() : Contacts::findById($email->getAccount()->getContactId());
 					$ctrl->add_to_members($email, $members, $account_owner);
 				}
 				$conversation = MailContents::getMailsFromConversation($email);
@@ -1436,7 +1436,7 @@ class MailController extends ApplicationController {
 				if (count($members) > 0) {
 					$member_instances = Members::findAll(array('conditions' => 'id IN ('.implode(',',$members).')'));
 					foreach ($conversation as $conv_email) {
-						$account_owner = Contacts::findById($conv_email->getAccount()->getContactId());
+						$account_owner = logged_user() instanceof contact ? logged_user() : Contacts::findById($conv_email->getAccount()->getContactId());
 						$ctrl->add_to_members($conv_email, $members, $account_owner);
 						MailUtilities::parseMail($conv_email->getContent(), $decoded, $parsedEmail, $warnings);
 						if ($conv_email->getHasAttachments()) {
@@ -1468,9 +1468,12 @@ class MailController extends ApplicationController {
 	function classifyFile($classification_data, $email, $parsedEmail, $members, $remove_prev) {
 		if (!is_array($classification_data)) $classification_data = array();
 
-		if (!isset($parsedEmail["Attachments"])) throw new Exception(lang('no attachments found for email'));
+		if (!isset($parsedEmail["Attachments"])) {
+			return;
+			//throw new Exception(lang('no attachments found for email'));
+		}
 		
-		$account_owner = Contacts::findById($email->getAccount()->getContactId());
+		$account_owner = logged_user() instanceof contact ? logged_user() : Contacts::findById($email->getAccount()->getContactId());
 		
 		for ($c = 0; $c < count($classification_data); $c++) {
 			if (isset($classification_data["att_".$c]) && $classification_data["att_".$c]) {
@@ -1522,7 +1525,8 @@ class MailController extends ApplicationController {
 							$mime_type = Mime_Types::instance()->get_type($ext); //Attempt to infer mime type
 						}
 
-						$tempFileName = ROOT ."/tmp/". logged_user()->getId()."x".gen_id();
+						$userid = logged_user() ? logged_user()->getId() : "0";
+						$tempFileName = ROOT ."/tmp/". $userid ."x". gen_id();
 						$fh = fopen($tempFileName, 'w') or die("Can't open file");
 						fwrite($fh, $att["Data"]);
 						fclose($fh);
@@ -2006,8 +2010,7 @@ class MailController extends ApplicationController {
 					if ( count($member_ids) > 0  ){
 						$member = $member_ids[0];
 					}else{
-						if ($mail_account_user instanceof Contact) $member = $mail_account_user->getPersonalMemberId();
-						else $member = 0;
+						$member = 0;
 					}
 					$mailAccount->setMemberId($member);
 					
@@ -2418,7 +2421,6 @@ class MailController extends ApplicationController {
 		$attributes = array(
 			"ids" => explode(',', array_var($_GET,'ids')),
 			"types" => explode(',', array_var($_GET,'types')),
-			"tag" => array_var($_GET,'tagTag'),
 			"accountId" => array_var($_GET,'account_id'),
 			"viewType" => array_var($_GET,'view_type'),
 			"classifType" => array_var($_GET,'classif_type'),
@@ -2433,33 +2435,32 @@ class MailController extends ApplicationController {
 			$dir = 'ASC';
 		}
 		$order = array_var($_GET,'sort');
-                $join_params = array();
+		$join_params = array();
 		switch ($order){
 			case 'title':
 			case 'subject':
 				$order = '`name`';
-			break;
+				break;
 			case 'accountName':
 				$order = '`account_email`';
-			break;
+				break;
 			case 'from':
 				$order = "`from_name` $dir, `from`";
-			break;
-                        case 'to':
+				break;
+			case 'to':
 				$order = "`to`";
-                                $join_params = array(
+				$join_params = array(
 					'table' => TABLE_PREFIX.'mail_datas',
 					'jt_field' => 'id',
 					'e_field' => 'object_id',
 					'join_type' => 'inner'
 				);
-			break;
+				break;
 			case 'folder':
 				$order = '`imap_folder_name`';
-			break;
+				break;
 			default:
 				$order = "`received_date`";
-			break;
 		}
 		//Resolve actions to perform
 		$actionMessage = array();
@@ -2743,8 +2744,7 @@ class MailController extends ApplicationController {
 										for ($j=0; $j < count(array_var($parsedEmail, "Attachments", array())); $j++) {
 											$classification_data["att_".$j] = true;
 										}
-										$tags = implode(",", $conv_email->getTagNames());
-										$this->classifyFile($classification_data, $conv_email, $parsedEmail, array($destination), array_var($attributes, "mantainWs", true), $tags);
+										$this->classifyFile($classification_data, $conv_email, $parsedEmail, array($destination), array_var($attributes, "mantainWs", true));
 									}
 								}
 								$count++;

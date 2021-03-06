@@ -555,6 +555,7 @@ class Member extends BaseMember {
 		
 		$imploded_pgs = implode(",", $allowed_permission_groups);
 		if (str_ends_with($imploded_pgs, ",")) $imploded_pgs = substr($imploded_pgs, 0, -1);
+		if (is_null($imploded_pgs) || $imploded_pgs == "") $imploded_pgs = "0";
 		$contact_ids = DB::executeAll("SELECT contact_id FROM ".TABLE_PREFIX."contact_permission_groups WHERE permission_group_id IN (".$imploded_pgs.")");
 		return array_unique(array_flat($contact_ids));
 	}

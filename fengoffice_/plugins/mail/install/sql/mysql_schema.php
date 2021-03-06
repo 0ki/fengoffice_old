@@ -102,7 +102,6 @@ CREATE TABLE IF NOT EXISTS `<?php echo $table_prefix ?>mail_account_contacts` (
  `last_error_state` int(1) unsigned NOT NULL default '0' COMMENT '0:no error,1:err unread, 2:err read',
  PRIMARY KEY (`id`),
  UNIQUE KEY `uk_contactacc` (`account_id`, `contact_id`),
- KEY `ix_account` (`account_id`),
  KEY `ix_contact` (`contact_id`)
 ) ENGINE=<?php echo $engine ?> <?php echo $default_charset ?>;
 

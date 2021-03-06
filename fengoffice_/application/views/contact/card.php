@@ -132,6 +132,7 @@
                     <div class="clear"></div>
                     <div style="padding:10px;"><?php
                     
+                    $back_color = '';
                     $bc = 'background-color:#EEEEF3;';
                     if($contact->isLinkableObject() && !$contact->isTrashed() && !$contact->isUser()) {
                     	echo '<div style="margin:20px 0; padding: 2px 0 5px;">';

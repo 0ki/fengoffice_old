@@ -1408,6 +1408,14 @@ abstract class ContentDataObject extends ApplicationDataObject {
 			}
 			$res->free();
 			
+			// If object is a task, check the system permission 'can_see_assigned_to_other_tasks'
+/*			if ($this instanceof ProjectTask) {
+				$assigned_condition = " AND IF((SELECT sp.can_see_assigned_to_other_tasks FROM ".$table_prefix."system_permissions sp WHERE sp.permission_group_id=cdp.permission_group_id),
+				 true, (SELECT t.assigned_to_contact_id FROM ".$table_prefix."project_tasks t WHERE t.object_id=".$this->getId().") > 0)";
+			} else {
+				$assigned_condition = "";
+			}
+*/			
 			// allow all permission groups
 			$allow_all_rows = DB::executeAll("SELECT DISTINCT permission_group_id FROM ".$table_prefix."contact_dimension_permissions cdp 
 				INNER JOIN ".$table_prefix."members m on m.dimension_id=cdp.dimension_id
@@ -1776,29 +1784,29 @@ abstract class ContentDataObject extends ApplicationDataObject {
 	}
 	
 	
-	function getMembersToDisplayPath() {
+	function getMembersToDisplayPath($member_ids = null) {
 		$members_info = array();
 		
-		$member_ids = ObjectMembers::getMemberIdsByObject($this->getId());
-		if (count($member_ids) == 0) $member_ids[]=0;
-		$db_res = DB::execute("SELECT id, name, dimension_id, object_type_id FROM ".TABLE_PREFIX."members WHERE id IN (".implode(",",$member_ids).")");
-		$members = $db_res->fetchAll();
-		
+		if (is_null($member_ids)) {
+			$member_ids = ObjectMembers::getMemberIdsByObject($this->getId());
+		}
+		$members = $this->manager()->getCachedMembersInfo($member_ids);
+
 		$dimension_options = array();
-		
-                if(count($members) > 0){
-                    foreach ($members as $mem) {
-                            $options = Dimensions::getDimensionById($mem['dimension_id'])->getOptions(true);
-                            if (isset($options->showInPaths) && $options->showInPaths) {
-                                    if (!isset($members_info[$mem['dimension_id']])) $members_info[$mem['dimension_id']] = array();
-                                    $members_info[$mem['dimension_id']][$mem['id']] = array(
-                                            'ot' => $mem['object_type_id'],
-                                            'c' => Members::findById($mem['id'])->getMemberColor(),//$mem->getMemberColor(),
-                                            'name' => $mem['name'],
-                                    );
-                            }
-                    }
-                }
+
+		if(count($members) > 0){
+			foreach ($members as $mem) {
+				$options = Dimensions::getDimensionById($mem['dimension_id'])->getOptions(true);
+				if (isset($options->showInPaths) && $options->showInPaths) {
+					if (!isset($members_info[$mem['dimension_id']])) $members_info[$mem['dimension_id']] = array();
+					$members_info[$mem['dimension_id']][$mem['id']] = array(
+						'ot' => $mem['object_type_id'],
+						'c' => Members::findById($mem['id'])->getMemberColor(),//$mem->getMemberColor(),
+						'name' => $mem['name'],
+					);
+				}
+			}
+		}
 		
 		return $members_info;
 	}

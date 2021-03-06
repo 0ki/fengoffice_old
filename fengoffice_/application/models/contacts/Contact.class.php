@@ -616,7 +616,7 @@ class Contact extends BaseContact {
 	 */
 	function getContactsByCompany() {
 		return Contacts::findAll(array(
-                    'conditions' => '`company_id` = ' . $this->getId(). ' AND `user_type` <> 0 AND `disabled` = 0'
+			'conditions' => '`company_id` = ' . $this->getId(). ' AND `user_type` = 0 AND `disabled` = 0'
 		)); // findAll
 	} // getContactsByCompany
 	
@@ -1780,7 +1780,7 @@ class Contact extends BaseContact {
 	 * @return boolean
 	 */
 	function isCompanyAdmin(Contact $company) {
-		return ($this->getCompanyId() == $company->getId()) && $this->isAdministrator();
+		return ($this->getCompanyId() == $company->getId()) && $this->isAdminGroup();
 	} // isCompanyAdmin
 	
 	

@@ -45,11 +45,7 @@ class  CustomProperties extends  BaseCustomProperties {
 	 * 
 	 */
 	static function getAllCustomPropertiesByObjectType($object_type, $co_type = null) {
-		if ($co_type) {
-			$cond = array("`object_type_id` = ? AND `id` IN (?)", $object_type, CustomPropertiesByCoType::instance()->getCustomPropertyIdsByCoTypeCSV($co_type));
-		} else {
-			$cond = array("`object_type_id` = ?", $object_type);
-		}
+		$cond = array("`object_type_id` = ?", $object_type);
 		
 		return self::findAll(array(
 			'conditions' => $cond,

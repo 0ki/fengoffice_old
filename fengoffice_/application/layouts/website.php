@@ -208,7 +208,7 @@ $use_owner_company_logo = owner_company()->hasLogo();
 				head_back: '<?php echo config_option('brand_colors_head_back')?>',
 				head_font: '<?php echo config_option('brand_colors_head_font')?>',
 				tabs_back: '<?php echo config_option('brand_colors_tabs_back')?>',
-				tabs_font: '<?php echo config_option('brand_colors_tabs_font')?>',
+				tabs_font: '<?php echo config_option('brand_colors_tabs_font')?>'
             };
             
             /**

@@ -143,11 +143,12 @@
 	'user config option name show_week_numbers' => 'Mostrar los números de semana',
 	'user config option desc show_week_numbers' => 'Muestra los números de semana en la vista mensual y semanal.',
 	'user config option name reminders_events' =>'Recordatorios de eventos',
-        'user config option desc reminders_events' =>'',
-        'config option name days_on_trash' => 'Días en la papelera',
+    'user config option desc reminders_events' =>'',
+    'config option name days_on_trash' => 'Días en la papelera',
 	'config option desc days_on_trash' => 'Cuántos días se mantiene un objeto en la papelera antes de ser borrado automaticamente. Si es cero, los objetos no ser borrar automaticamente.',
 	'templates' => 'Plantillas',
 	'add template' => 'Agregar plantilla',
+	'parent member' => 'Hijo de',
 	'confirm delete template' => 'Está seguro de que desea borrar esta plantilla?',
 	'no templates' => 'No hay plantillas',
 	'template name required' => 'El nombre de la plantilla es requerido',
@@ -295,7 +296,8 @@
 	'user config option desc classify_mail_with_conversation' => 'Al recibir un email, si el mismo pertenece a una conversación se clasificará en los espacios que está clasificada la conversación.',
 	'user config option name mail_account_err_check_interval' => 'Intervalo de tiempo entre cada chequeo de errores en las cuentas de correo',
 	'user config option desc mail_account_err_check_interval' => 'Cantidad de segundos entre cada chequeo de errores en las cuentas de correo (0 para deshabilitar)',
-	
+	'config option name automatic_crpm_status_calculation' => 'Estado automático para Clientes & Proyectos',
+  	'config option desc automatic_crpm_status_calculation' => 'Habilite esta opción para poder definir las fórmulas para calcular automáticamente los diferentes estados de los Clientes y Proyectos',
 	'user config option name show_object_direct_url'=> 'Mostrar URL directa al objecto',
     'user config option desc show_object_direct_url'=> 'Si esta habilitada entonces se mostrara la URL directa al objecto en su vista',
 
@@ -365,6 +367,7 @@
 	'can add mail accounts' => 'Puede agregar cuentas de correo',
   	'can_manage_dimensions'=>'Puede administrar la configuración de dimensiones',
 	'can_manage_dimension_members'=>'Puede agregar o editar miembros de dimensiones',
+	'can_see_assigned_to_other_tasks'=>'Puede ver tareas asignadas a otros usuarios',
 
 	'can_manage_security description' => 'Si este permiso está marcado el usuario podrá crear, modificar y borrar usuarios y grupos y modificar sus permisos.',
 	'can_manage_configuration description' => 'Si este permiso está marcado el usuario podrá modificar la Configuración de la aplicación, Eventos de Cron, Actualizar la aplicación, cambiar el logo mostrado en la esquina superior izquierda y los colores.',
@@ -374,6 +377,7 @@
   	'can_manage_dimensions description'=>'Si este permiso está marcado el usuario tendrá permisos completos sobre dimensiones. Podrá crear nuevas dimensiones y cambiar su configuración. Esta es una opción para administradores avanzados.',
 	'can_manage_dimension_members description' => 'Si este permiso está marcado el usuario tendrá permisos completos sobre los miembros de dimensiones. Podrá crear, editar y eliminar miembros. En la práctica, los miembros pueden ser espacios de trabajo, clientes, proyectos, etc.',
 	'can_manage_tasks description' => 'Si este permiso está marcado el usuario tendrá permisos completos sobre tareas. Podrá asignar tareas a otros y completarlas.',
+	'can_see_assigned_to_other_tasks description' => 'Si este permiso está marcado el usuario podrá ver tareas asignadas a otros usuarios.',
 
 
 	//Hidden

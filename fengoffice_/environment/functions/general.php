@@ -128,9 +128,17 @@ function getTimeValue($value = ''){
 	if ($value == '' || $value == 'hh:mm') return null;
 	$values = explode(':', $value);
 	$h = array_var($values, 0);
+	
 	$is_pm = str_ends_with(trim(strtoupper(array_var($values, 1))), "PM");
-	if ($is_pm && $h < 12) $h = ($h + 12) % 24;
+	if ($is_pm && $h < 12) {
+		$h = ($h + 12) % 24;
+	}
+	if ($h == 12 && str_ends_with(trim(strtoupper(array_var($values, 1))), "AM")) {
+		$h = 0;
+	}
+	
 	$m = str_replace(array(' AM', ' PM', ' am', 'pm'), "", array_var($values, 1));
+	
 	return array('hours' => $h, 'mins' => $m);
 }
 

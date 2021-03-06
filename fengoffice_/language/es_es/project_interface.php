@@ -273,6 +273,7 @@ Asunto:   {0}<br/>
 	'linked message tab' => 'Notas',
 	'linked contact tab' => 'Contactos',
 	'linked comment tab' => 'Comentarios',
+	'linked weblink tab' => 'Vínculos Web',
 	'linked webpage tab' => 'Enlaces web',
 	'linked company tab' => 'Empresas',
 	'linked milestone tab' => 'Hitos',

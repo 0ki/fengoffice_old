@@ -359,7 +359,8 @@ abstract class ContentDataObjects extends DataManager {
 		$SQL_EXTRA_JOINS = '';
 		$SQL_TYPE_CONDITION = 'true';
 
-		$count_results = ! ( defined('INFINITE_PAGING') && INFINITE_PAGING ); 
+		$count_results = ! ( defined('INFINITE_PAGING') && INFINITE_PAGING );
+		$return_raw_data = array_var($args,'raw_data');
 		$start = array_var($args,'start');
 		$limit = array_var($args,'limit');
 		$member_ids = array_var($args, 'member_ids');
@@ -475,20 +476,23 @@ abstract class ContentDataObjects extends DataManager {
 	    	$SQL_LIMIT";
 
 
-		// Execute query and build the resultset
-	    $rows = DB::executeAll($sql);
-	    if($rows && is_array($rows)) {
-			foreach ($rows as $row) {
-				if ($handler_class) {
-		    		$phpCode = '$co = '.$handler_class.'::instance()->loadFromRow($row);';
-		    		eval($phpCode);
-				}
-	    		if ( $co ) {
-	  				$result->objects[] = $co ;
-	    		}
-	    		
-			}
-	    }
+    	// Execute query and build the resultset
+    	$rows = DB::executeAll($sql);
+    	if ($return_raw_data) {
+    		$result->objects = $rows;
+    	} else {
+    		if($rows && is_array($rows)) {
+    			foreach ($rows as $row) {
+    				if ($handler_class) {
+    					$phpCode = '$co = '.$handler_class.'::instance()->loadFromRow($row);';
+    					eval($phpCode);
+    				}
+    				if ( $co ) {
+    					$result->objects[] = $co ;
+    				}
+    			}
+    		}
+    	}
 		if ($count_results) {
 			$total = DB::executeOne("SELECT FOUND_ROWS() as total");
 			$result->total = $total['total'];	
@@ -885,5 +889,34 @@ abstract class ContentDataObjects extends DataManager {
 				}
 			}
 		}
+	}
+	
+	
+	private $member_info_cache = array();
+	function getCachedMembersInfo($member_ids) {
+		if ($member_ids == null) $member_ids = array();
+		
+		$res = array();
+		$not_found = array();
+		foreach ($member_ids as $mid) {
+			if (isset($this->member_info_cache[$mid])) {
+				$res[] = $this->member_info_cache[$mid];
+			} else {
+				$not_found[] = $mid;
+			}
+		}
+		
+		if (count($not_found) > 0) {
+			$db_res = DB::execute("SELECT id, name, dimension_id, object_type_id FROM ".TABLE_PREFIX."members WHERE id IN (".implode(",",$not_found).")");
+			$members = $db_res->fetchAll();
+			if (is_array($members)) {
+				foreach ($members as $m) {
+					$this->member_info_cache[$m['id']] = $m;
+					$res[] = $m;
+				}
+			}
+		}
+		
+		return $res;
 	}
 }

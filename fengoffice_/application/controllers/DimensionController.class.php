@@ -349,8 +349,8 @@ class DimensionController extends ApplicationController {
 			$tempParent = $m->getParentMemberId();
 			$x = $m;
 			while ($x instanceof Member && !isset($membersset[$tempParent])) {
-				if ($x->getParentMemberId() == 0) break;
 				$tempParent = $x->getParentMemberId();
+				if ($x->getParentMemberId() == 0) break;
 				$x = $x->getParentMember();
 			}
 			if (!$x instanceof Member) {

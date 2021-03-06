@@ -410,7 +410,7 @@ foreach($companies as $company)
 												<div id="m_ev_div_<?php echo $event->getId() . $id_suffix?>" class="<?php echo "og-wsname-color-$ws_color" ?>" style="border-radius:4px;margin: 1px;padding-left:1px;padding-bottom:0px;<?php echo $extra_style ?>">
 												<div style="border-radius:4px;border: 1px solid;border-color:<?php echo $border_color ?>;">
 													<table style="width:100%;" class="<?php echo "og-wsname-color-$ws_color" ?>"><tr><td>
-													<a href='<?php echo get_url('event', 'view', array('id' => $event->getId(), 'user_id' => $user_filter)); ?>' class='internalLink' onclick="og.disableEventPropagation(event); return true;" <?php echo "style='color:$txt_color;'" ?>>
+													<a href='<?php echo get_url('event', 'view', array('id' => $event->getId(), 'user_id' => $user_filter)); ?>' class='internalLink nobr' onclick="og.disableEventPropagation(event); return true;" <?php echo "style='color:$txt_color;'" ?>>
 														<img src="<?php echo image_url('/16x16/calendar.png')?>" style="vertical-align: middle;border-width: 0px;">
 														<span style="font-weight: <?php echo $bold ?>"><?php echo (strlen_utf($subject) < 15 ? $subject : substr_utf($subject, 0, 14).'...'); ?></span>															
 													</a>
@@ -459,7 +459,7 @@ foreach($companies as $company)
 										
 										if($event instanceof ProjectMilestone ){
 											$milestone = $event;
-											$due_date = new DateTimeValue($milestone->getDueDate()->getTimestamp() + logged_user()->getTimezone() * 3600);
+											$due_date = new DateTimeValue($milestone->getDueDate()->getTimestamp());
 											$now = mktime(0, 0, 0, $dtv->getMonth(), $dtv->getDay(), $dtv->getYear());
 											if ($now == mktime(0, 0, 0, $due_date->getMonth(), $due_date->getDay(), $due_date->getYear())) {	
 												$count++;
@@ -474,7 +474,7 @@ foreach($companies as $company)
 													
 								?>
 													<div id="m_ms_div_<?php echo $milestone->getId()?>" class="<?php echo "og-wsname-color-$ws_color" ?>" style="height:20px;margin: 1px;padding-left:1px;padding-bottom:0px;border-radius:4px;border: 1px solid;border-color:<?php echo $border_color ?>;<?php echo $extra_style ?>">
-														<a href='<?php echo $milestone->getViewUrl()?>' class="internalLink" onclick="og.disableEventPropagation(event);return true;" >
+														<a href='<?php echo $milestone->getViewUrl()?>' class="internalLink nobr" onclick="og.disableEventPropagation(event);return true;" >
 															<img src="<?php echo image_url('/16x16/milestone.png')?>" style="vertical-align: middle;border-width: 0px;">
 															<span><?php echo $cal_text ?></span>
 														</a>
@@ -523,12 +523,12 @@ foreach($companies as $company)
 													$subject = clean($task->getObjectName()).'- <span class="italic">'.lang('task').'</span>';
 													$cal_text = clean($task->getObjectName());
 													
-													$tip_text = str_replace("\r", '', lang('assigned to') .': '. clean($task->getAssignedToName()) . (trim(clean($task->getText())) == '' ? '' : '<br><br>'. clean($task->getText())));
-													$tip_text = str_replace("\n", '<br>', $tip_text);													
+													$tip_text = str_replace("\r", '', lang('assigned to') .': '. clean($task->getAssignedToName()) . (trim($task->getText()) == '' ? '' : '<br><br>'. $task->getText()));
+													$tip_text = purify_html(str_replace("\n", '<br>', $tip_text));													
 													if (strlen_utf($tip_text) > 200) $tip_text = substr_utf($tip_text, 0, strpos($tip_text, ' ', 200)) . ' ...';
 								?>
 													<div id="m_ta_div_<?php echo $tip_pre.$task->getId()?>" class="<?php echo "og-wsname-color-$ws_color" ?>" style="height:20px;margin: 1px;padding-left:1px;padding-bottom:0px;border-radius:4px;border: 1px solid;border-color:<?php echo $border_color ?>;<?php echo $extra_style ?>">
-														<a href='<?php echo $task->getViewUrl()?>' class='internalLink' onclick="og.disableEventPropagation(event);return true;"  style="border-width:0px">
+														<a href='<?php echo $task->getViewUrl()?>' class='internalLink nobr' onclick="og.disableEventPropagation(event);return true;"  style="border-width:0px">
 															<img src="<?php echo $img_url ?>" style="vertical-align: middle;">
 														 	<span><?php echo $cal_text ?></span>
 														</a>

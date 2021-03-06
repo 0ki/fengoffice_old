@@ -196,17 +196,17 @@ $genid = gen_id();
 									if ($event->getDueDate() instanceof DateTimeValue) {
 										$due_date = new DateTimeValue($event->getDueDate()->getTimestamp() + logged_user()->getTimezone() * 3600);
 										if ($dtv->getTimestamp() == mktime(0,0,0, $due_date->getMonth(), $due_date->getDay(), $due_date->getYear())){
-                                                                                    $end_of_task = true;
-                                                                                    $start_of_task = true;
-                                                                                }
+											$end_of_task = true;
+											$start_of_task = true;
+										}
 									}
 									if ($event->getStartDate() instanceof DateTimeValue) {
 										$start_date = new DateTimeValue($event->getStartDate()->getTimestamp() + logged_user()->getTimezone() * 3600);
 										if ($dtv->getTimestamp() == mktime(0,0,0, $start_date->getMonth(), $start_date->getDay(), $start_date->getYear())){
-                                                                                    $start_of_task = true;
-                                                                                    $end_of_task = true;                                                                                    
-                                                                                }
-									}									
+											$start_of_task = true;
+											$end_of_task = true;
+										}
+									}
 									if ($start_of_task && $end_of_task) {
 										$tip_title = lang('task');
 										$img_url = image_url('/16x16/tasks.png');
@@ -224,7 +224,7 @@ $genid = gen_id();
 									$div_prefix = 'd_ta_div_' . $tip_pre;
 									$subject = $event->getObjectName();									
 									$divtype = '<span class="italic">' . $tip_title . '</span> - ';
-									$tipBody = lang('assigned to') .': '. clean($event->getAssignedToName()) . (trim(clean($event->getText())) != '' ? '<br><br>' . clean($event->getText()) : '');
+									$tipBody = lang('assigned to') .': '. clean($event->getAssignedToName()) . (trim(clean($event->getText())) != '' ? '<br><br>' . purify_html($event->getText()) : '');
 								}elseif ($event instanceof ProjectEvent){
 									$div_prefix = 'd_ev_div_';
 									$subject = clean($event->getObjectName());
@@ -476,10 +476,12 @@ $genid = gen_id();
 												$assigned = "";
 												if ($event instanceof ProjectTask && $event->getAssignedToContactId() > 0) {
 													$assigned = "<br>" . lang('assigned to') .': '. $event->getAssignedToName();
-												}
+													$tipBody = purify_html($event->getText());
+												} else {
 											
-												$tipBody = $ev_hour_text . $assigned . (trim(clean($event->getDescription())) != '' ? '<br><br>' . clean($event->getDescription()) : '');
-												$tipBody = str_replace(array("\r", "\n"), array(' ', '<br>'), $tipBody);
+													$tipBody = $ev_hour_text . $assigned . (trim(clean($event->getDescription())) != '' ? '<br><br>' . clean($event->getDescription()) : '');
+													$tipBody = str_replace(array("\r", "\n"), array(' ', '<br>'), $tipBody);
+												}
 												if (strlen_utf($tipBody) > 200) $tipBody = substr_utf($tipBody, 0, strpos($tipBody, ' ', 200)) . ' ...';
 										?>
 												<script>

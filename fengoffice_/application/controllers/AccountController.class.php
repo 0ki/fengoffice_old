@@ -123,27 +123,7 @@ class AccountController extends ApplicationController {
 				} else {
 					$user->setCompanyId(array_var($user_data,'company_id'));
 				}
-				if(!isset($_POST['sys_perm']) && array_var($user_data, 'type')){
-					$rol_permissions=SystemPermissions::getRolePermissions(array_var($user_data, 'type'));
-					$_POST['sys_perm']=array();
-					$not_rol_permissions=SystemPermissions::getNotRolePermissions(array_var($user_data, 'type'));
-					
-					foreach ($not_rol_permissions as $npr){
-						$_POST['sys_perm'][$npr]=0;
-					}
-					foreach($rol_permissions as $pr){
-						$_POST['sys_perm'][$pr]=1;
-					}
-					
-					
-				}
-				if(!isset($_POST['mod_perm'])){
-					$tabs_permissions=TabPanelPermissions::getRoleModules(array_var($user_data, 'type'));
-					$_POST['mod_perm']=array();
-					foreach($tabs_permissions as $pr){
-						$_POST['mod_perm'][$pr]=1;
-					}
-				}
+				
 				$user->save();
 				
 				$autotimezone = array_var($user_data, 'autodetect_time_zone', null);
@@ -157,7 +137,6 @@ class AccountController extends ApplicationController {
 				$ret = null;
 				Hook::fire('after_edit_profile', $user, $ret);
 				$pg_id = $user->getPermissionGroupId();
-				save_permissions($pg_id, $user->isGuest());
 				DB::commit();
 
 				flash_success(lang('success update profile'));

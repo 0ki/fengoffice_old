@@ -125,11 +125,13 @@ og.checkFileName = function(genid) {
 	 		eid = Ext.get(genid + 'hfFileId').getValue();
 	  	}
 		
+		var members_el = Ext.fly(Ext.get(genid + 'members'));
+		
 	    og.openLink(og.getUrl('files', 'check_filename', {
 			id: eid
 		}), {
 			post: {
-				members: Ext.fly(Ext.get(genid + 'members')).getValue(),
+				members: (members_el ? members_el.getValue() : ""),
 				filename: name
 			},
 			caller: this,

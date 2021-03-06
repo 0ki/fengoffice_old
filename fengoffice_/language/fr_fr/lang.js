@@ -707,7 +707,7 @@ addLangs({
 	'person': 'Personne',
 	'information': 'Information',
 	'filters': 'Filtres',
-	'persons': 'Perosnnes',
+	'persons': 'Personnes',
 	'all customers': 'Tous les Clients',
 	'to vcard all': 'Tout vers Vcard',
 	'subscribed to': 'Abonné à',

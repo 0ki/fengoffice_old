@@ -213,15 +213,26 @@ class ApplicationLogs extends BaseApplicationLogs {
 		$options = explode(",",user_config_option("filters_dashboard",null,null,true));
 
 		$extra_conditions = "action <> 'login' AND action <> 'logout' AND action <> 'subscribe' ";
-		if($options[1] == 0){//no view timeslot
-			$extra_conditions .= "AND action <> 'open' AND action <> 'close' AND ((action <> 'add' OR action <> 'edit' OR action <> 'delete') AND object_name NOT LIKE 'Timeslot%')";
+		if($options[1] == 0){//do not show timeslots
+			$extra_conditions .= "AND action <> 'open' AND action <> 'close' AND ((action <> 'add' OR action <> 'edit' OR action <> 'delete') AND object_name NOT LIKE 'Time%')";
+		}
+		
+		// task assignment conditions
+		if (!SystemPermissions::userHasSystemPermission(logged_user(), 'can_see_assigned_to_other_tasks')) {
+			$extra_conditions .= " AND IF((SELECT o.object_type_id FROM ".TABLE_PREFIX."objects o WHERE o.id=rel_object_id)=(SELECT ot.id FROM ".TABLE_PREFIX."object_types ot WHERE ot.name='task'),
+				(SELECT t.assigned_to_contact_id FROM ".TABLE_PREFIX."project_tasks t WHERE t.object_id=rel_object_id) = ".logged_user()->getId().",
+				true)";
 		}
 
 		$members_sql = "";
 		if(count($members) > 0){
-			$members_sql = "rel_object_id IN (
-				SELECT object_id FROM " . TABLE_PREFIX . "object_members om WHERE member_id IN (" . implode ( ',', $members ) . ")
-				GROUP BY object_id HAVING count(member_id) = ".count($members).")";
+			$object_ids_rows = DB::executeAll("SELECT object_id FROM " . TABLE_PREFIX . "object_members om
+				WHERE member_id IN (" . implode ( ',', $members ) . ")
+				GROUP BY object_id HAVING count(member_id) = ".count($members)."");
+			
+			$object_ids = implode(',', array_flat($object_ids_rows));
+			if ($object_ids == "") $object_ids = "0";
+			$members_sql = "rel_object_id IN ($object_ids)";
 		}
 
 		$permissions_sql = "AND rel_object_id IN (

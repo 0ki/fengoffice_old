@@ -70,7 +70,7 @@
 	
 	
 	$skip_groups = array();
-	$context = active_context();
+	if (!isset($context)) $context = active_context();
 	foreach ($context as $selection) {
 		if ($selection instanceof Member) {
 			$sel_parents = $selection->getAllParentMembersInHierarchy();
