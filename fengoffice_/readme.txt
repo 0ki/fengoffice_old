@@ -1,5 +1,5 @@
 
-	About Feng Office 3.4.4
+	About Feng Office 3.4.4.1
 	================================
 	
 	Feng Office is a Collaboration Platform and Project Management System.
@@ -105,8 +105,11 @@
 	
 	Changelog
 	=========
+	Since 3.4.4
+	----------------
+	bugfix: upgrade script was setting version to beta.
 	
-	Since 3.4.3.34
+	Since 3.4.3.35
 	----------------
 	bugfix: member name length is limited to 160 chars.
 	bugfix: after searching in the member selector, the child nodes are not indented.
@@ -116,7 +119,11 @@
 	
     language: de_de, fr_ca updated
     
-
+    
+    Since 3.4.3.34
+    ----------------
+	feature: copy expense action in expense's view
+	
 	Since 3.4.3.33
     ----------------
     bugfix: limit repetitive tasks shown in calendar.
