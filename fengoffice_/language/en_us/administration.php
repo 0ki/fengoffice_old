@@ -916,6 +916,16 @@
 
   		'default value must be numeric' => 'Default value for {0} must be numeric.',
   		'default value must be date' => 'Default value for {0} must be a date.',
+
+  		
+  		'dimension association options' => 'Dimension association options',
+  		'dimension association options desc' => 'In this section you can change the options of each association between dimensions.',
+  		'associated to' => 'Associated to',
+  		'option' => 'Option',
+  		'dim assoc config name allow_remove_from_property_member' => 'Allow to remove related {1}',
+  		'dim assoc config desc allow_remove_from_property_member' => 'When auto-classification of {1} is enabled for {0} you can set if this classification can be removed or not.',
+  		'dim assoc config name autoclassify_in_property_member' => 'Autoclassify in {1} when classifying in {0}',
+  		'dim assoc config desc autoclassify_in_property_member' => 'Use this option if you want to pre-select the {1} of the selected {0} in the classification component.',
   		
   ); // array
 

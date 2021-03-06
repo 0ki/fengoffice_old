@@ -610,7 +610,48 @@ class MailUtilities {
 				$w = Key($mime->warnings);
 				$warnings[$warning] = 'Warning: '. $mime->warnings[$w]. ' at position '. $w. "\n";
 			}
+			
+			// check for uuencoded attachments
+			if (isset($results['Data'])) {
+				$more_attachments = self::removeUuencodedAttachments($results['Data']);
+				foreach ($more_attachments as $att) {
+					if (!isset($results['Attachments'])) $results['Attachments'] = array();
+					$results['Attachments'][] = array(
+						'FileDisposition' => 'attachment',
+						'FileName' => trim($att['name']),
+						'Data' => $att['data'],
+					);
+				}
+			}
 		}
+	}
+	
+	
+
+	static function removeUuencodedAttachments(&$body) {
+		$parsed_attachments = array();
+	
+		$matches = array();
+		$result = preg_match_all("/\nbegin [0-7]{3} ([^\n]+)\n(.*?)\nend/s", $body, $matches);
+		// $matches[0] has the whole match
+		// $matches[1] has the file name
+		// $matches[2] has the uuencoeded file content
+	
+		if ($result && is_array($matches) && count(array_var($matches, 2, array()))) {
+			$raw_str = $matches[2][0];
+	
+			$raw_str = str_replace(array("\r"), "", $raw_str);
+			$parsed_data = convert_uudecode($raw_str);
+	
+			$parsed_attachments[] = array(
+					'name' => $matches[1][0],
+					'data' => $parsed_data,
+			);
+	
+			$body = str_replace($matches[0][0], "", $body);
+		}
+	
+		return $parsed_attachments;
 	}
 	
 	

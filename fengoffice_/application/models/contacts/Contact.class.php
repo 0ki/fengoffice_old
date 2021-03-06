@@ -1157,8 +1157,8 @@ class Contact extends BaseContact {
 			$return_false = false;
 			Hook::fire('contact_can_edit', $this, $return_false);
 			if ($return_false) return false;
-			// a contact that has a user assigned to it can be modified by anybody that can manage security (this is: users and permissions) or the user himself.
-			return can_manage_security($user) && ($this->getUserType() > $user->getUserType() || $user->isAdministrator()) || $this->getObjectId() == $user->getObjectId();
+			// a contact that has a user assigned to it can be modified by anybody that can manage security (this is: users and permissions) or the user himself. admin can edit admin
+			return can_manage_security($user) && ($this->getUserType() > $user->getUserType() || $user->isAdministrator() || $this->isAdminGroup() && $user->isAdminGroup() && $this->getUserType() >= $user->getUserType() ) || $this->getObjectId() == $user->getObjectId();
 		} 
 		if ($this->isOwnerCompany()) return can_manage_configuration($user);
 		return can_manage_contacts($user) || can_write ($user, $this->getMembers(), $this->getObjectTypeId());
@@ -1799,8 +1799,9 @@ class Contact extends BaseContact {
 		$this_user_type = array_var(self::$pg_cache, $this->getUserType());
 		if (!$this_user_type)
 			$this_user_type = PermissionGroups::instance()->findOne(array("conditions" => "id = ".$this->getUserType()));
-		
-		$can_change_type = $actual_user_type->getId() < $this_user_type->getId() || $user->isAdminGroup() && $this->getId() == $user->getId() || $user->isAdministrator();
+
+		//if current user type < user type OR current user is admin and user is admin OR current user is superadmin
+		$can_change_type = $actual_user_type->getId() < $this_user_type->getId() || $user->isAdminGroup() && $this->isAdminGroup() && $actual_user_type->getId() <= $this_user_type->getId()  || $user->isAdministrator();
 		
 		return can_manage_security($user) && $can_change_type;
 	} // canUpdatePermissions

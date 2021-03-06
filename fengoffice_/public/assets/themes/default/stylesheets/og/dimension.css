@@ -46,6 +46,13 @@ div.single-dimension-selector div.selector-body {
 	text-overflow: ellipsis;
 }
 
+div.selected-members.with-checkbox .completePath {
+	width: calc(100% - 40px);
+}
+div.selected-members.with-checkbox div.selected-member-div div.selected-member-actions {
+	width: 38px;
+}
+	
 .single_current_selected{
 	min-height: 20px;
 	border: 1px solid #ccc;

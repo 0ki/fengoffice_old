@@ -1,5 +1,5 @@
 
-	About Feng Office 3.4.2.2
+	About Feng Office 3.4.3-beta
 	================================
 	
 	Feng Office is a Collaboration Platform and Project Management System.
@@ -105,6 +105,90 @@
 	
 	Changelog
 	=========
+	
+	Since 3.4.2.x
+	----------------
+	feature: allow to select for every dimension if its selector is shown when adding/editing an object
+	feature: allow associated dimension columns in member reports
+	feature: filter classification components with related dim-members when selecting the main dimension member
+	feature: preload classification components with related dim-members when selecting the main dimension member
+	feature: member listing group by
+	feature: member custom reports group by
+	feature: add relation between samples and countries
+	feature: tasks workflow - new action to change project status
+	
+	bugfix: export to excel: sheet title length must have less than 31 characters
+	bugfix: report totals row data alignment fixes
+	bugfix: remove spaces between parameter brackets in translation tool
+	bugfix: cannot delete object subtypes
+	bugfix: Reload dimensions when selecting a member of an associated dimension fixed.
+	bugfix: when ids are stored as string instead of int in the tree the associated dimensions does not filter other trees
+	bugfix: remove strtolower usage from custom property views
+
+	Since 3.4.2.16
+    ----------------
+    bugfix: js error when printing total worked time report
+    bugfix: actions button in tasks list does not work in firefox
+
+	Since 3.4.2.15
+    ----------------
+	language: fr_ca language puts the same month abbreviation for June and July. 
+
+	Since 3.4.2.14
+    ----------------
+	bugfix: Mail module not compatible with uuencoeded attachments.
+
+	Since 3.4.2.13
+    ----------------
+	bugfix: if user cannot manage permissions, update contact member cache after adding new member.
+
+	Since 3.4.2.12
+    ----------------
+    bugfix: Cannot select logged user in tasks widget configuration if user doesn't have permissions for tasks without classifying.
+    bugfix: Prevent multiple submit when downloading an email attachment.
+
+	Since 3.4.2.11
+    ----------------
+    bugfix: Language fixes for Nederlands (nl_nl).
+
+	Since 3.4.2.10
+    ----------------
+    bugfix: upgrade from 3.4.1 fixed.
+
+	Since 3.4.2.9
+    ----------------
+    bugfix: table prefix error when sending mails.
+
+	Since 3.4.2.8
+    ----------------
+    bugfix: Reload dimensions when selecting a member of an associated dimension fixed.
+    bugfix: check file extension before download file revision.
+	
+	Since 3.4.2.7
+    ----------------
+    bugfix: google calendar sync error when event doesn't have a name.
+
+	Since 3.4.2.6
+    ----------------
+    bugfix: deleted emails are shown in trash panel.
+
+	Since 3.4.2.5
+    ----------------
+    bugfix: check file extension before download file.
+
+	Since 3.4.2.4
+    ----------------
+    feature: Allow to define additional member permissions in user and group edition.
+
+	Since 3.4.2.3
+    ----------------
+    bugfix: User groups permissions not loaded when editing a member.
+    bugfix: Cannot add additional member permissions to user groups.
+    bugfix: Additional member permissions were not applied to children when "Apply to submembers" is checked.
+
+	Since 3.4.2.2
+    ----------------
+    bugfix: newsletter default account not working.
 
 	Since 3.4.2.1
     ----------------

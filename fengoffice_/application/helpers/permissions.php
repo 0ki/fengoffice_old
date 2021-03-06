@@ -1058,8 +1058,10 @@
 			$permission_groups[] = $noc_user->getPermissionGroupId();
 		}
 		
+		$user_group_ids = array();
 		$non_personal_groups = PermissionGroups::getNonRolePermissionGroups();
 		foreach ($non_personal_groups as $group) {
+			$user_group_ids[] = $group->getId();
 			$permission_groups[] = $group->getId();
 		}
 		
@@ -1097,7 +1099,9 @@
 						);
 					}
 				}
-			} else if (!$dim->deniesAllForContact($pg_id)) {
+				
+			} else if (!$dim->deniesAllForContact($pg_id) || in_array($pg_id, $user_group_ids)) {
+				// query the permissions for user groups and contacts that are not denied in all members of the dimension
 				$member_permissions[$pg_id] = array();
 				if ($member) {
 					$mpgs = ContactMemberPermissions::findAll(array("conditions" => array("`permission_group_id` = ? AND `member_id` = ? 
@@ -1113,6 +1117,7 @@
 						}
 					}
 				}
+				
 			}
 		}
 		
@@ -1471,6 +1476,9 @@
 			
 			$usrcheck_filename = ROOT ."/tmp/usrcheck_".gen_id();
 			file_put_contents($usrcheck_filename, json_encode($users_ids_to_check));
+			
+			$ret=null;
+			Hook::fire('before_save_user_permissions_background', array('pg_id'=>$pg_id, 'request'=>$_REQUEST), $ret);
 			
 			$only_mem_perm_str = $only_member_permissions ? "1" : "0";
 			$is_guest_str = $is_guest ? "1" : "0";

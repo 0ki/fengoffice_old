@@ -231,6 +231,7 @@ Ext.grid.GridPanel.override({
 		if(typeof params != 'undefined'){
 			delete params.action;
 			params.only_result = 1;
+			Ext.getCmp(manager).getBottomToolbar().disable();
 			og.openLink(og.getUrl(controller, func, params), {
 			  hideLoading: true,
 			  callback: function(success, data) {
@@ -246,6 +247,13 @@ Ext.grid.GridPanel.override({
 				var total_pag =  data.totalCount < bba.pageSize ? 1 : Math.ceil(data.totalCount/bba.pageSize)
 				bba.afterTextEl.el.textContent = String.format(bba.afterPageText, total_pag);
 				
+				// enable toolbar
+				bba.enable();
+				// disable prev,first buttons if first page
+				if(parseInt(data.start) == 0) {					
+					bba.first.disable();
+					bba.prev.disable();
+				}
 				if(parseInt(data.start) == 0 && total_pag > 1){
 					bba.last.enable();
 					bba.next.enable();
@@ -276,5 +284,12 @@ Ext.grid.GridPanel.override({
 		return has_associations;
 	}
 });
+
+Date.getShortMonthName = function(month) {
+	var short_lang = lang("month "+(month+1)+" short");
+	if (short_lang && short_lang.indexOf("Missing lang") == -1) return short_lang;
+    return Date.monthNames[month].substring(0, 3);
+}
+
 
 /**/

@@ -43,8 +43,14 @@ og.reports.closePrintWindow = function(printWindow) {
 }
 
 og.reports.printReport = function(genid, title, report_id) {
-	var params = $("#params_"+genid).val();
-	og.openLink(og.getUrl('reporting', 'print_custom_report', {id:report_id, params:params}), {
+	
+	var str = $("#post"+genid).val();
+	str = str.replace(/'/ig, '"');
+	var params = $.parseJSON(str);
+	delete params.c;
+	delete params.a;
+	
+	og.openLink(og.getUrl('reporting', 'print_custom_report', params), {
 		callback: function(success, data) {
 			var printWindow = og.reports.createPrintWindow(title);
 			printWindow.document.write(data.html);
@@ -59,4 +65,31 @@ og.reports.printNoPaginatedReport = function(genid, title) {
 	printWindow.document.write(document.getElementById(genid + 'report_container').innerHTML);
 	
 	og.reports.closePrintWindow(printWindow);
+}
+
+
+og.reports.go_to_custom_report_page = function(params) {
+	var offset = params.offset;
+	var limit = params.limit;
+	var link = params.link;
+	if (!offset) offset = 0;
+	if (!limit) limit = 50;
+	if (!link) return;
+
+	var report_config_el = $(params.link).closest("form").children("[name='post']");
+	if (!report_config_el || report_config_el.length == 0) return;
+
+	var str = $(report_config_el[0]).val();
+	str = str.replace(/'/ig, '"');
+
+	// initial parameters
+	var report_config = $.parseJSON(str);
+
+	// fixed parameters
+	report_config.offset = offset;
+	report_config.limit = limit;
+	report_config.replace = 1;
+
+	og.openLink(og.getUrl(report_config.c, report_config.a, report_config));
+	
 }

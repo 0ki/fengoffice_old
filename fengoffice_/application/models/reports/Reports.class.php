@@ -333,7 +333,7 @@ class Reports extends BaseReports {
 						}
 						if($condCp->getCondition() != '%'){
 							if ($cp->getType() == 'numeric') {
-								$current_condition .= ' AND cpv.value '.$condCp->getCondition().' '.DB::escape($value);
+								$current_condition .= ' AND CAST(cpv.value AS DECIMAL) '.$condCp->getCondition().' '.DB::escape($value);
 							}else if ($cp->getType() == 'boolean') {
 								$current_condition .= ' AND cpv.value '.$condCp->getCondition().' '.($value ? '1' : '0');
 								if (!$value) {
@@ -746,20 +746,24 @@ class Reports extends BaseReports {
 		
 		$nav = '';
 		if($page != 0){
-			$nav .= '<a class="internalLink" href="'.get_url('reporting', 'view_custom_report', array('id' => $report_id, 'offset' => '0', 'limit' => $limit, 'replace'=>1)).$parameters.'">'.sprintf($a_nav[0], $offset).'</a>';
+			$nav .= '<a class="internalLink" href="#" onclick="og.reports.go_to_custom_report_page({offset:0, limit:'.$limit.', link:this});">'.sprintf($a_nav[0], $offset).'</a>';
+			
 			$off = $offset - $limit;
-			$nav .= '<a class="internalLink" href="'.get_url('reporting', 'view_custom_report', array('id' => $report_id, 'offset' => $off, 'limit' => $limit, 'replace'=>1)).$parameters.'">'.$a_nav[1].'</a>&nbsp;';
+			$nav .= '<a class="internalLink" href="#" onclick="og.reports.go_to_custom_report_page({offset:'.$off.', limit:'.$limit.', link:this});">'.$a_nav[1].'</a>&nbsp;';
 		}
 		for($i = 1; $i < $totalPages + 1; $i++){
 			$off = $limit * ($i - 1);
-			if(($i != $page + 1) && abs($i - 1 - $page) <= 2 ) $nav .= '<a class="internalLink" href="'.get_url('reporting', 'view_custom_report', array('id' => $report_id, 'offset' => $off, 'limit' => $limit, 'replace'=>1)).$parameters.'">'.$i.'</a>&nbsp;&nbsp;';
+			if(($i != $page + 1) && abs($i - 1 - $page) <= 2 ) {
+				$nav .= '<a class="internalLink" href="#" onclick="og.reports.go_to_custom_report_page({offset:'.$off.', limit:'.$limit.', link:this});">'.$i.'</a>&nbsp;&nbsp;';
+			}
 			else if($i == $page + 1) $nav .= '<span class="bold">'.$i.'</span>&nbsp;&nbsp;';
 		}
 		if($page < $totalPages - 1){
 			$off = $offset + $limit;
-			$nav .= '<a class="internalLink" href="'.get_url('reporting', 'view_custom_report', array('id' => $report_id, 'offset' => $off, 'limit' => $limit, 'replace'=>1)).$parameters.'">'.$a_nav[2].'</a>';
+			$nav .= '<a class="internalLink" href="#" onclick="og.reports.go_to_custom_report_page({offset:'.$off.', limit:'.$limit.', link:this});">'.$a_nav[2].'</a>';
+			
 			$off = $limit * ($totalPages - 1);
-			$nav .= '<a class="internalLink" href="'.get_url('reporting', 'view_custom_report', array('id' => $report_id, 'offset' => $off, 'limit' => $limit, 'replace'=>1)).$parameters.'">'.$a_nav[3].'</a>';
+			$nav .= '<a class="internalLink" href="#" onclick="og.reports.go_to_custom_report_page({offset:'.$off.', limit:'.$limit.', link:this});">'.$a_nav[3].'</a>';
 		}
 		return $nav . "<br/><span class='desc'>&nbsp;".lang('total').": $totalPages ".lang('pages').'</span>';
 	}

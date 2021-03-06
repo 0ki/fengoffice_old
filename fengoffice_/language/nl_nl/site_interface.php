@@ -598,5 +598,5 @@
 	'click to expand' => 'Klik om uit te vouwen',
 	'select member to add timeslots' => 'To add general time records you have to select at least one item of: {0}',
 	'add contact here' => 'Contact Voeg hier toe',
-	'add contacts to' => 'Contacten toe voegen { 0 }',
+	'add contacts to' => 'Contacten toe voegen {0}',
 ); ?>

@@ -901,7 +901,11 @@ class ReportingController extends ApplicationController {
 		$_GET['limit'] = 0;
 		$results = $this->view_custom_report($report_id, null, $params);
 		
-		$html = report_table_html($results, $report, '', true);
+		ob_start();
+		custom_report_info_blocks(array('id' => $report_id, 'results' => $results, 'parameters' => $params));
+		$html = ob_get_clean();
+		
+		$html .= report_table_html($results, $report, '', true);
 		
 		ajx_extra_data(array('html' => $html));
 		
@@ -925,6 +929,7 @@ class ReportingController extends ApplicationController {
 		
 		$params_str = array_var($_REQUEST, 'report_params');
 		if ($params_str) $params = json_decode(str_replace("'", '"',$params_str), true);
+		else $params = array();
 		
 		$_GET['limit'] = 0;
 		$results = $this->view_custom_report($report_id, null, $params);
@@ -960,11 +965,22 @@ class ReportingController extends ApplicationController {
 		$_GET['limit'] = 0;
 		$results = $this->view_custom_report($report_id, null, $params);
 		
+		// include all css
+		$html = stylesheet_tag('website.css');
+		$css_html = "";
+		Hook::fire('additional_report_print_css', null, $css_html);
+		if ($css_html) $html .= $css_html;
+		
 		// title html
-		$html = '<div class="report-print-header"><div class="title-container"><h1>'.clean($report->getName()).'</h1></div></div>';
+		$html .= '<div class="report-print-header"><div class="title-container"><h1>'.clean($report->getName()).'</h1></div></div><div class="clear"></div>';
+		
+		ob_start();
+		custom_report_info_blocks(array('id' => $report_id, 'results' => $results, 'parameters' => $params));
+		$html .= ob_get_clean();
 		
 		// build html
 		$html .= report_table_html($results, $report, '', true);
+		
 		file_put_contents($html_filepath, $html);
 		
 		// convert html to pdf
@@ -1605,7 +1621,7 @@ class ReportingController extends ApplicationController {
 		return strnatcasecmp($field1['name'], $field2['name']);
 	}
 
-	private function get_report_column_types($report_id) {
+	function get_report_column_types($report_id) {
 		$col_types = array();
 		$report = Reports::getReport($report_id);
 		$ot = ObjectTypes::findById($report->getReportObjectTypeId());

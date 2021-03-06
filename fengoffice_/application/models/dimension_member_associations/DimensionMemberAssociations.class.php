@@ -166,6 +166,9 @@
 						'is_required' => $assoc->getIsRequired(),
 						'is_multiple' => $assoc->getIsMultiple(),
 						'keeps_record' => $assoc->getKeepsRecord(),
+						'allows_default_selection' => $assoc->getAllowsDefaultSelection(),
+						// load the configs only in one direction
+						'config' => $dim->getId() == $assoc->getDimensionId() ? $assoc->getConfig() : array(),
 					);
 					
 					if (!isset($this_dim_info[$object_type_id])) {
@@ -182,7 +185,10 @@
   	}
   	
   	
-  	
+  	function getAssociationObject($dimension_id, $object_type_id, $assoc_dimension_id, $assoc_object_type_id) {
+  		return self::findOne(array('conditions' => "dimension_id=$dimension_id AND object_type_id=$object_type_id
+  				AND associated_dimension_id=$assoc_dimension_id AND associated_object_type_id=$assoc_object_type_id"));
+  	}
   	
   	
   }

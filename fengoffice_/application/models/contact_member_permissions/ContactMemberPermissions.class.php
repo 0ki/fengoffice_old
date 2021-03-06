@@ -56,7 +56,7 @@ class ContactMemberPermissions extends BaseContactMemberPermissions {
 					}
 				}
 			}
-			return in_array($member_id, self::$readable_members["$permission_group_ids"]);						
+			return in_array($member_id, array_var(self::$readable_members, "$permission_group_ids", array()));
 		} else {
 			
 			if (!isset(self::$writable_members["$permission_group_ids"])) {
@@ -69,7 +69,7 @@ class ContactMemberPermissions extends BaseContactMemberPermissions {
 					}
 				}
 			}
-			return in_array($member_id, self::$writable_members["$permission_group_ids"]);
+			return in_array($member_id, array_var(self::$writable_members, "$permission_group_ids", array()));
 			
 		}
 	}

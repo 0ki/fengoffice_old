@@ -49,10 +49,12 @@ class ObjectController extends ApplicationController {
 			}
 		}
 		
+		$visibility = array_var($_REQUEST, 'visibility', 'all');
+
 		// get custom properties html to render
 		$html = "";
 		if ($object instanceof ContentDataObject) {
-			$html = render_object_custom_properties($object);
+			$html = render_object_custom_properties($object, null, null, $visibility);
 		}
 		ajx_extra_data(array('html' => $html));
 	}
@@ -306,7 +308,11 @@ class ObjectController extends ApplicationController {
 			}
 		}
 		
+		// add object to members selected in form
 		$object->addToMembers($validMembers, true);
+
+		// add object to related members
+		$object->addToRelatedMembers($validMembers, true);
 		
 		Hook::fire ('after_add_to_members', $object, $validMembers);
 		
@@ -2126,7 +2132,9 @@ class ObjectController extends ApplicationController {
 			$joins[] = "
 				LEFT JOIN ".TABLE_PREFIX."mail_contents mc on mc.object_id=o.id
 			";
-				
+
+			$extra_conditions[] = " (mc.is_deleted=0 OR mc.is_deleted IS NULL) ";
+			
 			$extra_conditions[] = "
 				IF( mc.account_id IS NULL, true, mc.account_id IN (".implode(',', $account_ids).") OR EXISTS (
 					SELECT om1.object_id FROM ".TABLE_PREFIX."object_members om1

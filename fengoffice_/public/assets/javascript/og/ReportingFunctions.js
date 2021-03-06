@@ -46,6 +46,15 @@ og.reportObjectTypeChanged = function(genid, order_by, order_by_asc, cols){
 			url: og.getUrl('reporting', 'get_object_column_list', {object_type: type, columns:cols, orderby:order_by, orderbyasc:order_by_asc, genid:genid}),
 			scripts: true
 		});
+		
+		if (og.after_report_object_type_change_functions) {
+			for (var i=0; i<og.after_report_object_type_change_functions.length; i++) {
+				var fn = og.after_report_object_type_change_functions[i];
+				if (typeof(fn) == "function") {
+					fn.call(null, type, genid);
+				}
+			}
+		}
 
 		document.getElementById(genid + 'MainDiv').style.display = '';
 	}

@@ -113,7 +113,8 @@ class DimensionController extends ApplicationController {
 		}else{
 			$extra_conditions = "";
 		}
-        return $this->initial_list_dimension_members($dimension_id,null, array($object_type_id), false, $extra_conditions);
+        $list_dim_members = $this->initial_list_dimension_members($dimension_id,null, array($object_type_id), false, $extra_conditions);
+        return $list_dim_members['members'];
 	}
 	
 	/**
@@ -128,6 +129,7 @@ class DimensionController extends ApplicationController {
 	 *
 	 */
 	function initial_list_dimension_members($dimension_id, $object_type_id, $allowed_member_type_ids = null, $return_all_members = false, $extra_conditions = "", $limit=null, $return_member_objects = false, $order=null, $return_only_members_name=false, $filter_by_members=array(), $access_level=ACCESS_LEVEL_READ, $use_member_cache=false){
+		$list_was_filtered_by = array();
 		$allowed_member_types = array();
 		$item_object = null ;
 		if(logged_user()->isAdministrator())$return_all_members=true;
@@ -170,9 +172,15 @@ class DimensionController extends ApplicationController {
 						$filters[] = $fm;
 					}
 				}
+				
 				if (count($filters) > 0) {
-					$filter_by_members_sql = $this->get_association_filter_conditions($dimension, $filters);
+					$real_applied_filters = null;
+					$filter_by_members_sql = $this->get_association_filter_conditions($dimension, $filters, $real_applied_filters);
 					$extra_conditions .= $filter_by_members_sql;
+					
+					if ($real_applied_filters) {
+						$list_was_filtered_by = $real_applied_filters;
+					}
 				}
 			}
 			
@@ -218,17 +226,25 @@ class DimensionController extends ApplicationController {
 			$filter_by_members = $tmp_array;
 			
 			if ($return_member_objects) {
-				return $all_members;
+				$result = array('members' => $all_members, 'list_was_filtered_by' => $list_was_filtered_by);
 			} else {
-				return $this->buildMemberList($all_members, $dimension, $allowed_member_type_ids,$allowed_member_types, $item_object, $object_type_id, $return_only_members_name);
+				$members_result = $this->buildMemberList($all_members, $dimension, $allowed_member_type_ids,$allowed_member_types, $item_object, $object_type_id, $return_only_members_name);
+				$result = array('members' => $members_result, 'list_was_filtered_by' => $list_was_filtered_by);
 			}
+			return $result;
 		}
 		return null;
 	}
 	
-	function get_association_filter_conditions($dimension, $selected_members) {
+	/**
+	 * @param Dimension $dimension The dimension to load its members
+	 * @param array $selected_members The member ids that will filter the member list
+	 * @param array $members_used_to_filter The subset of $selected_members that was actually used to filter
+	 */
+	function get_association_filter_conditions($dimension, $selected_members, &$members_used_to_filter) {
 		$sql_str = "";
 		$mem_ids = array();
+		$members_used_to_filter = array();
 		
 		foreach ($selected_members as $member) {
 			if (!$member instanceof Member) continue;
@@ -247,6 +263,10 @@ class DimensionController extends ApplicationController {
 						$tmp_ids_csv = MemberPropertyMembers::getAllPropertyMemberIds($assoc->getId(), $member->getId());
 					}
 					$mem_ids = array_merge($mem_ids, explode(',', $tmp_ids_csv));
+					
+					if ($tmp_ids_csv != "") {
+						$members_used_to_filter[] = $member->getId();
+					}
 				}
 			}
 		}
@@ -396,7 +416,8 @@ class DimensionController extends ApplicationController {
 			'limit' => $limit + 1,
 		);
 		
-		$memberList = $this->initial_list_dimension_members($dimension_id, $objectTypeId, $allowedMemberTypes, $return_all_members, $extra_cond, $limit_obj, false, null, $only_names, $selected_members);
+		$list_dim_members = $this->initial_list_dimension_members($dimension_id, $objectTypeId, $allowedMemberTypes, $return_all_members, $extra_cond, $limit_obj, false, null, $only_names, $selected_members);
+		$memberList = $list_dim_members['members'];
 		
 		// add view more and remove last element
 		$more_nodes_left = false;
@@ -448,7 +469,9 @@ class DimensionController extends ApplicationController {
 			'limit' => $limit + 1,
 		);
 		
-		$memberList = $this->initial_list_dimension_members($dimension_id, $objectTypeId, $allowedMemberTypes, $return_all_members, $extra_cond, $limit_obj, false, null, $only_names, $selected_members,null,true);
+		$list_dim_members = $this->initial_list_dimension_members($dimension_id, $objectTypeId, $allowedMemberTypes, $return_all_members, $extra_cond, $limit_obj, false, null, $only_names, $selected_members,null,$use_member_cache);
+		$memberList = $list_dim_members['members'];
+		$list_was_filtered_by = $list_dim_members['list_was_filtered_by'];
 		
 		// add view more and remove last element
 		$more_nodes_left = false;
@@ -463,7 +486,11 @@ class DimensionController extends ApplicationController {
 		
 		//$dids = explode ("," ,user_config_option('root_dimensions', null, logged_user()->getId() ));
 		//if(in_array($dimension_id, $dids)){
-		ajx_extra_data(array('dimension_members' => $tree, 'dimension_id' => $dimension_id, 'dimensions_root_members' => true, 'more_nodes_left' => $more_nodes_left));
+		ajx_extra_data(array(
+				'dimension_members' => $tree, 'dimension_id' => $dimension_id, 
+				'dimensions_root_members' => true, 'more_nodes_left' => $more_nodes_left,
+				'list_was_filtered_by' => $list_was_filtered_by,
+		));
 		//}
 	}
 	
@@ -662,7 +689,8 @@ class DimensionController extends ApplicationController {
 						}
 					}
 					if (count($selected_members) > 0) {
-						$dim_filter_conds = $this->get_association_filter_conditions($mem->getDimension(), $selected_members);
+						$applied_filters = null;
+						$dim_filter_conds = $this->get_association_filter_conditions($mem->getDimension(), $selected_members, $applied_filters);
 					}
 				}
 				
@@ -1072,7 +1100,8 @@ class DimensionController extends ApplicationController {
 		$selected_member_ids = json_decode(array_var($_REQUEST, 'selected_ids', "[0]"));
 		$selected_members = Members::findAll(array('conditions' => 'id IN ('.implode(',',$selected_member_ids).')'));
 	
-		$memberList = $this->initial_list_dimension_members($dimension_id, $objectTypeId, $allowedMemberTypes, $return_all_members, $extra_cond, null, false, null, $only_names, $selected_members);
+		$list_dim_members = $this->initial_list_dimension_members($dimension_id, $objectTypeId, $allowedMemberTypes, $return_all_members, $extra_cond, null, false, null, $only_names, $selected_members);
+		$memberList = $list_dim_members['members'];
 		
 		// add missing parents
 		$missing_parent_ids = array();
@@ -1167,5 +1196,28 @@ class DimensionController extends ApplicationController {
 		}else{
 			return $result;
 		}
+	}
+	
+	
+	
+	function get_default_associated_members() {
+		ajx_current("empty");
+		$member_id = array_var($_REQUEST, 'member_id');
+		$dimension_id = array_var($_REQUEST, 'dim_id');
+		$assoc_id = array_var($_REQUEST, 'assoc_id');
+		
+		if (!is_numeric($member_id) || !is_numeric($dimension_id) || !is_numeric($assoc_id)) {
+			return;
+		}
+		
+		$rows = DB::executeAll("SELECT selected_member_id FROM ".TABLE_PREFIX."dimension_member_association_default_selections
+				WHERE association_id='$assoc_id' AND member_id='$member_id'");
+		
+		$sel_member_ids = array();
+		if (is_array($rows)) {
+			$sel_member_ids = array_flat($rows);
+		}
+		
+		ajx_extra_data(array('dimension_id' => $dimension_id, 'member_ids' => $sel_member_ids));
 	}
 }

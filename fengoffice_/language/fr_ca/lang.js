@@ -402,6 +402,7 @@ addLangs({
 	'month 10': 'Octobre',
 	'month 11': 'Novembre',
 	'month 12': 'Décembre',
+	'month 7 short': 'Jul',
 	'monday': 'Lundi',
 	'tuesday': 'Mardi',
 	'wednesday': 'Mercredi',

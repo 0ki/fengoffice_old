@@ -61,7 +61,8 @@ og.TasksTopToolbar = function(config) {
 	
 	if (og.replace_list_new_action && og.replace_list_new_action.task) {
 		for (var k=0; k<og.replace_list_new_action.task.menu.items.items.length; k++) {
-			menuItems.push(og.replace_list_new_action.task.menu.items.items[k]);
+			var act = new Ext.Action(og.replace_list_new_action.task.menu.items.items[k].initialConfig);
+			menuItems.push(act);
 		}
 	}
 

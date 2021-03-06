@@ -272,7 +272,12 @@ class AdministrationController extends ApplicationController {
 			return;
 		}
 		
-		$custom_properties = json_decode(array_var($_POST, 'custom_properties'), true);
+		$custom_properties_parameter = array_var($_POST, 'custom_properties');
+		if (is_string($custom_properties_parameter)) {
+			$custom_properties = json_decode($custom_properties_parameter, true);
+		} else {
+			$custom_properties = $custom_properties_parameter;
+		}
 		
 		if (is_array($custom_properties)) {
 		  try {

@@ -13,7 +13,7 @@
 	'config option name use_mail_accounts_to_send_nots' => 'Meldingen verzenden met behulp van e-mailaccount van de afzender',
 	'config option desc use_mail_accounts_to_send_nots' => 'Als deze optie is ingeschakeld en de verzender heeft een e-mailaccount heeft bepaald meldingen van deze gebruiker zal worden verzonden met zijn / haar e-mailaccount.',
 	'by subject or address' => 'Zoeken op onderwerp of adres',
-	'are you sure you want to send the email using account x' => 'Weet u zeker dat u de e-mail met account { 0 } te sturen ?',
+	'are you sure you want to send the email using account x' => 'Weet u zeker dat u de e-mail met account {0} te sturen ?',
 	'field Objects to' => 'Naar',
 	'field Objects cc' => 'CC',
 	'field Objects bcc' => 'BCC',

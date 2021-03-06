@@ -39,6 +39,7 @@
 	}
 	
 	$cp_count = CustomProperties::countAllCustomPropertiesByObjectType($object->getObjectTypeId());
+	$cp_count_others = CustomProperties::countHiddenCustomPropertiesByObjectType($object->getObjectTypeId());
 	$has_custom_properties = $cp_count > 0;
 	
 	$categories = array(); Hook::fire('object_edit_categories', $task, $categories);
@@ -58,8 +59,9 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
 .task .left-section {
 	max-width:465px;
 }
-.task .custom-properties textarea {
-	width: 260px;
+.task .custom-properties label {
+	max-width: 190px;
+	min-width: 190px;
 }
 </style>
 <form id="<?php echo $genid ?>submit-edit-form" class="add-task" action="<?php echo $form_url ?>" method="post" onsubmit="<?php echo $on_submit?>">
@@ -124,7 +126,7 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
 			<li><a href="#<?php echo $genid?>add_task_desc_div"><?php echo lang('description') ?></a></li>
 			<li><a href="#<?php echo $genid?>add_task_more_details_div"><?php echo lang('more details') ?></a></li>
 			
-			<?php if (false && ($has_custom_properties || config_option('use_object_properties')) ) { ?>
+			<?php if ($cp_count_others > 0 || config_option('use_object_properties') ) { ?>
 			<li><a href="#<?php echo $genid?>add_custom_properties_div"><?php echo lang('custom properties') ?></a></li>
 			<?php } ?>
 			
@@ -231,29 +233,7 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
 		<?php }?>
 		
 		
-		<?php if ($has_custom_properties || config_option('use_object_properties')) { ?>
-		<div id="<?php echo $genid ?>add_custom_properties_div">
-			<div id="<?php echo $genid ?>not_required_custom_properties_container">
-		    	<div id="<?php echo $genid ?>not_required_custom_properties">
-		      	<?php 
-		      	if ($cp_count <= 10) {
-		      		echo render_object_custom_properties($task);
-				} ?>
-		      	</div>
-		    </div>
-	      <?php echo render_add_custom_properties($task); ?>
-	 	</div>
-	 	<?php } ?>
-	 	
-		
-		<?php $task_types = ProjectCoTypes::getObjectTypesByManager('ProjectTasks');
-			if (count($task_types) > 0) {?>
-		<div class="dataBlock"><?php
-				echo label_tag(lang('object type'));
-				echo select_object_type('task[object_subtype]', $task_types, array_var($task_data, 'object_subtype', config_option('default task co type')), array('onchange' => "og.onChangeObjectCoType('$genid', '".$task->getObjectTypeId()."', ".($task->isNew() ? "0" : $task->getId()).", this.value)"));
-		?></div><?php
-			}
-		?>
+
 		
   	</div>
   	</td><td>
@@ -365,6 +345,23 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
   	</td></tr></table>
   	<div class="clear"></div>
   	
+  	<div class="bottom-section">
+  		<?php if ($has_custom_properties || config_option('use_object_properties')) { ?>
+		<div>
+			<div id="<?php echo $genid ?>not_required_custom_properties_container">
+		    	<div id="<?php echo $genid ?>not_required_custom_properties">
+		      	<?php
+		      	if ($cp_count <= 10) {
+		      		echo render_object_custom_properties($task, false, null, 'visible_by_default');
+				} ?>
+		      	</div>
+		    </div>
+	      <?php echo render_add_custom_properties($task); ?>
+	 	</div>
+	 	<?php } ?>
+  	</div>
+
+
   	<?php Hook::fire('draw_additional_task_html', $genid, $task); ?>
   	
   	</div>
@@ -621,11 +618,11 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
   	
   	
   
-		<?php if (false && ($has_custom_properties || config_option('use_object_properties')) ) { ?>
+		<?php if ($cp_count_others > 0 || config_option('use_object_properties') ) { ?>
 		<div id="<?php echo $genid ?>add_custom_properties_div" class="form-tab">
 			<div id="<?php echo $genid ?>not_required_custom_properties_container">
 		    	<div id="<?php echo $genid ?>not_required_custom_properties">
-		      	<?php echo render_object_custom_properties($task, false, $co_type) ?>
+		      	<?php echo render_object_custom_properties($task, false, null, 'others') ?>
 		      	</div>
 		    </div>
 	      <?php echo render_add_custom_properties($task); ?>
@@ -1010,9 +1007,17 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
 
 		<?php if ($cp_count > 10) { ?>
 		$('#<?php echo $genid ?>not_required_custom_properties').html('<div class="widget-body loading">'+lang('loading')+'</div>');
-		og.openLink(og.getUrl('object','render_cps', {id:'<?php echo $task->getId()?>', ot_id: <?php echo $task->getObjectTypeId()?>}), {
+		var render_cps_params = {id:'<?php echo $task->getId()?>', ot_id: <?php echo $task->getObjectTypeId()?>, visibility:'visible_by_default'};
+		if (og.more_params_for_render_cps_params) {
+			for (var x=0; x<og.more_params_for_render_cps_params.length; x++) {
+				var moreparams = og.more_params_for_render_cps_params[x].call(null, '<?php echo $task->getObjectTypeName()?>');
+				for (k in moreparams) render_cps_params[k]=moreparams[k];
+			}
+		}
+		og.openLink(og.getUrl('object','render_cps', render_cps_params), {
 			callback: function(success, data) {
 				$('#<?php echo $genid ?>not_required_custom_properties').html(data.html);
+				$("#modal-forms-container").scrollTop(0);
 			}
 		});
 		<?php } ?>

@@ -77,6 +77,7 @@ og.setReadOnlyObjectTypeRow = function(genid, dim_id, obj_type, readonly) {
 }
 
 og.loadMemberPermissions = function(genid, dim_id, member_id) {
+	
 	var allowed_ot = og.permissionInfo[genid].allowedOt;
 	var member_perms = og.getPermissionsForMember(genid, member_id);
 	
@@ -104,6 +105,8 @@ og.loadMemberPermissions = function(genid, dim_id, member_id) {
 	var chk = document.getElementById(genid + dim_id + 'pAll');
 	if (chk)
 		chk.checked = og.hasAllPermissions(genid, member_id, member_perms);
+	
+	og.eventManager.fireEvent('on load member permissions for user', {genid:genid, dim_id:dim_id, member_id:member_id});
 }
 
 //Action to execute when the value of an element of the displayed permission changes
@@ -271,7 +274,7 @@ og.ogPermApplyToSubmembers = function(genid, dim_id, from_root_node){
 				og.markMemberPermissionModified(genid, dim_id, node.submember_ids[i]);
 			}
 			
-			og.eventManager.fireEvent('after apply permissions to submembers', {node:node, dim_id: dim_id, subids:node.submember_ids, member_id:member_id});
+			og.eventManager.fireEvent('after apply permissions to submembers', {node:node, dim_id: dim_id, subids:node.submember_ids, member_id:member_id, genid:genid});
 		});
 	}
 }
@@ -697,7 +700,7 @@ og.ogPermPrepareSendData = function(genid){
 	
 	var hfpg = document.getElementById(genid + 'hfPgId');
 	var pg_id = hfpg ? hfpg.value : 0;
-	og.eventManager.fireEvent('on send user permissions', {pg_id: pg_id, perms: result});
+	og.eventManager.fireEvent('on send user permissions', {pg_id: pg_id, perms: result, genid: genid});
 		
 	return true;
 }

@@ -2971,8 +2971,8 @@ class MailController extends ApplicationController {
 
 		$contacts_addresses = DB::executeAll("
 			SELECT c.object_id, c.first_name , c.surname , ce.email_address
-			FROM `fo_contacts` c
-			INNER JOIN `fo_contact_emails` ce ON c.object_id = ce.contact_id
+			FROM `".TABLE_PREFIX."contacts` c
+			INNER JOIN `".TABLE_PREFIX."contact_emails` ce ON c.object_id = ce.contact_id
 			WHERE  ((ce.email_address like '%$filter%') OR (c.first_name like '$filter%')  OR (c.surname like '$filter%'))
 			$conditions
 			GROUP BY object_id,email_address

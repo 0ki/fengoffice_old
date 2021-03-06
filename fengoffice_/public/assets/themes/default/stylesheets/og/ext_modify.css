@@ -591,14 +591,15 @@ div#menu-panel .x-panel-tbar-noheader .x-toolbar, div#menu-panel .x-panel-mc .x-
 }
 
 .x-grid-group-hd {
-    background-color: #eeeeee;
+    background-color: #e5e5e5;
     border-bottom: 1px solid #cccccc;
     border-top: 1px solid #cccccc;
     cursor: pointer;
-    padding: 5px 2px;
+    padding: 2px;
 }
 .x-grid-group-hd div {
     font: bold 13px "Open Sans",Arial,sans-serif;
+    color: #111;
 }
 .x-btn-pressed{
 	background-color: #e6e6e6;

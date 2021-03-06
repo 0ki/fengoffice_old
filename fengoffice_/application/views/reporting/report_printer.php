@@ -29,6 +29,10 @@ table {
 }
 </style>
 <?php echo stylesheet_tag('og/reporting.css');?>
+<?php $css_html = ""; 
+	Hook::fire('additional_report_print_css', null, $css_html);
+	if ($css_html) echo $css_html;
+?>
 <div class="print" style="padding:7px">
 
 <div class="printHeader report-print-header">

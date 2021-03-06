@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Bauru upgrade script will upgrade FengOffice 3.3.2-beta to FengOffice 3.4.2.2
+ * Bauru upgrade script will upgrade FengOffice 3.3.2-beta to FengOffice 3.4.3-beta
  *
  * @package ScriptUpgrader.scripts
  * @version 1.0
@@ -39,7 +39,7 @@ class BauruUpgradeScript extends ScriptUpgraderScript {
 	function __construct(Output $output) {
 		parent::__construct($output);
 		$this->setVersionFrom('3.3.2-beta');
-		$this->setVersionTo('3.4.2.2');
+		$this->setVersionTo('3.4.3-beta');
 	} // __construct
 
 	function getCheckIsWritable() {
@@ -189,7 +189,7 @@ class BauruUpgradeScript extends ScriptUpgraderScript {
 			";
 			$upgrade_script .= "
 				ALTER TABLE `".$t_prefix."custom_property_values`
-				ADD INDEX `object_id_custom_property_id` (`object_id`, `custom_property_id`);
+				ADD INDEX (`object_id`, `custom_property_id`);
 			";
 		}
 		
@@ -218,7 +218,7 @@ class BauruUpgradeScript extends ScriptUpgraderScript {
 				";
 				// add index by total worked time
 				$upgrade_script .= "
-					ALTER TABLE `".$t_prefix."project_tasks` ADD INDEX `total_worked_time` (`total_worked_time`);
+					ALTER TABLE `".$t_prefix."project_tasks` ADD INDEX (`total_worked_time`);
 				";
 			}
 			// calculate total worked time foreach task
@@ -295,6 +295,53 @@ class BauruUpgradeScript extends ScriptUpgraderScript {
 				";
 			}
 		}
+
+		if (version_compare($installed_version, '3.4.3-beta') < 0) {
+			
+			if (!$this->checkTableExists($t_prefix."dimension_associations_config", $this->database_connection)) {
+		
+				$upgrade_script .= "
+					CREATE TABLE IF NOT EXISTS `".$t_prefix."dimension_associations_config` (
+						`association_id` int(10) unsigned NOT NULL,
+						`config_name` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
+						`value` text COLLATE utf8_unicode_ci NOT NULL,
+						PRIMARY KEY (`association_id`,`config_name`)
+					) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+				";
+			}
+			
+			$upgrade_script .= "
+				CREATE TABLE IF NOT EXISTS `".$t_prefix."dimension_member_association_default_selections` (
+					`association_id` INTEGER UNSIGNED NOT NULL,
+					`member_id` INTEGER UNSIGNED NOT NULL,
+					`selected_member_id` INTEGER UNSIGNED NOT NULL,
+					PRIMARY KEY (`association_id`, `member_id`, `selected_member_id`)
+				) ENGINE = InnoDB;
+			";
+			
+			if (!$this->checkColumnExists("".$t_prefix."dimension_member_associations", "allows_default_selection", $this->database_connection)) {
+				$upgrade_script .= "
+					ALTER TABLE `".$t_prefix."dimension_member_associations` ADD `allows_default_selection` tinyint(1) unsigned NOT NULL;
+				";
+			}
+			
+			$upgrade_script .= "
+				INSERT INTO ".$t_prefix."dimension_associations_config (association_id, config_name, value)
+					SELECT id, 'autoclassify_in_property_member', '1'
+					FROM ".$t_prefix."dimension_member_associations WHERE associated_dimension_id NOT IN (SELECT id FROM ".$t_prefix."dimensions WHERE code='feng_persons')
+				ON DUPLICATE KEY UPDATE value=value;
+				
+				INSERT INTO ".$t_prefix."dimension_associations_config (association_id, config_name, value)
+					SELECT id, 'allow_remove_from_property_member', '1'
+					FROM ".$t_prefix."dimension_member_associations WHERE associated_dimension_id NOT IN (SELECT id FROM ".$t_prefix."dimensions WHERE code='feng_persons')
+				ON DUPLICATE KEY UPDATE value=value;
+			";
+			
+			$upgrade_script .= "
+				UPDATE ".$t_prefix."dimensions SET is_manageable=1 WHERE is_manageable=0 AND code!='feng_persons';
+			";
+		}
+		
 		
 		// Execute all queries
 		if(!$this->executeMultipleQueries($upgrade_script, $total_queries, $executed_queries, $this->database_connection)) {

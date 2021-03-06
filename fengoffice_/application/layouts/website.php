@@ -537,7 +537,7 @@ og.dimensionPanels = [
 		if (!$first) echo ",";
 		$first = false;
 		
-		if (defined(JSON_NUMERIC_CHECK)) {
+		if (defined('JSON_NUMERIC_CHECK')) {
 			$reloadDimensions = json_encode( DimensionMemberAssociations::instance()->getDimensionsToReloadByObjectType($dimension->getId()), JSON_NUMERIC_CHECK );
 		} else {
 			$reloadDimensions = json_encode( DimensionMemberAssociations::instance()->getDimensionsToReloadByObjectType($dimension->getId()) );

@@ -169,7 +169,19 @@ class FilesController extends ApplicationController {
 
 		ApplicationReadLogs::createLog($file, ApplicationReadLogs::ACTION_DOWNLOAD);
 
-		download_from_repository($file->getLastRevision()->getRepositoryId(), $file->getTypeString(), $file->getFilename(), !$inline);
+		//check file extension
+		$file_name = $file->getFilename();
+		$file_name_extension = get_file_extension($file->getFilename());
+		$file_type = $file->getFileType();
+		if($file_type instanceof FileType){
+			$file_type_extension = $file->getFileType()->getExtension();
+			if($file_name_extension != $file_type_extension){
+				$file_name_info = pathinfo($file_name);
+				$file_name = $file_name_info['filename']. '.' . $file_type_extension;
+			}
+		}
+
+		download_from_repository($file->getLastRevision()->getRepositoryId(), $file->getTypeString(), $file_name, !$inline);
 		die();
 	} // download_file
 	
@@ -298,7 +310,20 @@ class FilesController extends ApplicationController {
 			return;
 		} // if
 		session_commit();
-		download_from_repository($revision->getRepositoryId(),$revision->getTypeString(), $file->getFilename(), !$inline);
+
+		//check file extension
+		$file_name = $file->getFilename();
+		$file_name_extension = get_file_extension($file->getFilename());
+		$file_type = $revision->getFileType();
+		if($file_type instanceof FileType){
+			$file_type_extension = $file_type->getExtension();
+			if($file_name_extension != $file_type_extension){
+				$file_name_info = pathinfo($file_name);
+				$file_name = $file_name_info['filename']. '.' . $file_type_extension;
+			}
+		}
+
+		download_from_repository($revision->getRepositoryId(),$revision->getTypeString(), $file_name, !$inline);
 		die();
 	} // download_revision
 

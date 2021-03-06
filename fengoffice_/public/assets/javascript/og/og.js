@@ -3245,15 +3245,29 @@ og.highlight_link = function(config) {
 
 og.initPopoverBtns = function(btns){
 	for (var i = 0; i < btns.length; i++) {
-	    var btn = $("#"+btns[i].id);
-	    btn.popover({ content: "example", 
-	    	delay: { 
-	    	       show: "100", 
-	    	       hide: "200"
-	    	    },
-        	template : $("#"+btn.data("templateid")).html()
-        });		   
-	}		
+		var btn = $("#"+btns[i].id);
+		
+		// popover config
+		var popover_options = {
+			content: "example",
+			delay: {
+				show: "100",
+				hide: "200"
+			},
+			template : $("#"+btn.data("templateid")).html()
+		}
+		
+		// hack for firefox
+		if ($.browser.mozilla) {
+			popover_options.trigger = 'focus';
+			btn.on('click', function() {
+				$(this).focus();
+			});
+		}
+		
+		btn.popover(popover_options);
+		
+	}
 }
 
 og.setSettingsClosed = function() {
@@ -3723,11 +3737,17 @@ og.treeLoaderViewMoreCallback = function(tree, pnode) {
 	tree.loader.load(pnode);
 }
 
-og.initialMemberTreeAjaxLoad = function(tree, limit, offset) {
+og.initialMemberTreeAjaxLoad = function(tree, limit, offset, add_params) {
 	var tree_id = tree.id;
 	var parameters = {
 		dimension_id: tree.dimensionId
 	};
+	if (add_params) {
+		for (key in add_params) {
+			parameters[key] = add_params[key];
+		}
+	}
+	
 	if (limit && !isNaN(limit)) {
 		parameters.limit = limit;
 	} else {
@@ -3767,6 +3787,16 @@ og.initialMemberTreeAjaxLoad = function(tree, limit, offset) {
 			}
 			
 			dimension_tree.initialized = true;
+			
+			if (og.after_member_tree_initial_load_functions) {
+				fn_params = {add_params:add_params, data:data};
+				for (var x=0; x<og.after_member_tree_initial_load_functions.length; x++) {
+					var fn = og.after_member_tree_initial_load_functions[x];
+					if (typeof(fn) == 'function') {
+						fn.call(null, fn_params);
+					}
+				}
+			}
 		}
 	});
 }
@@ -3842,7 +3872,7 @@ og.addTableCustomPropertyRow = function(parent, focus, values, col_count, ti, cp
 	for (row = 0; row < col_count; row++) {
 		var td = document.createElement("td");						
 		var row_val = values && values[row] ? values[row] : "";
-		td.innerHTML = '<input class="value" style="width:'+cell_w+';min-width:120px;" type="text" name="'+field_name+'[' + cpid + '][' + count + '][' + row + ']" value="' + row_val + '" tabindex=' + ti + '>';
+		td.innerHTML = '<input class="value" style="width:'+cell_w+';min-width:105px;" type="text" name="'+field_name+'[' + cpid + '][' + count + '][' + row + ']" value="' + row_val + '" tabindex=' + ti + '>';
 		if (td.children && row == 0) var input = td.children[0];
 		tr.appendChild(td);
 		ti += 1;
@@ -3855,3 +3885,62 @@ og.addTableCustomPropertyRow = function(parent, focus, values, col_count, ti, cp
 	if (input && focus)
 		input.focus();
 }
+
+
+og.selectDefaultAssociatedMembers = function(genid, dimension_id, member_id) {
+	var d_associations = [];
+  	for (var ot in og.dimension_member_associations[dimension_id]) {
+	  	for (var j=0; j<og.dimension_member_associations[dimension_id][ot].length; j++) {
+  			d_associations.push(og.dimension_member_associations[dimension_id][ot][j]);
+	  	}
+  	}
+  	
+  	for (var i=0; i<d_associations.length; i++) {
+	  	var assoc = d_associations[i];
+	  	
+  		if (assoc.allows_default_selection) {
+	  		og.openLink(og.getUrl('dimension', 'get_default_associated_members', {member_id: member_id, assoc_id:assoc.id, dim_id:assoc.assoc_dimension_id}), {
+		  		hideLoading: true,
+		  		callback: function(success, data) {
+		
+			  		var hf = Ext.get(genid + member_selector[genid].hiddenFieldName);
+			  		var form_id = hf.dom.form.id;
+			  		
+			  		var dep_genid = "";
+					var selector_inputs = $("#" + form_id + ' .dimension-panel-textfilter');
+					for (var x=0; x<selector_inputs.length; x++) {
+						var sel_id = selector_inputs[x].id;
+						var key = "-member-chooser-panel-"+ data.dimension_id +"-tree-textfilter";
+						if (sel_id.indexOf(key) >= 0) {
+							dep_genid = selector_inputs[x].id.substring(0, selector_inputs[x].id.indexOf("-"));
+							break;
+						}
+					}
+
+					for (var z=0; z<data.member_ids.length; z++) {
+			  			member_selector.add_relation(data.dimension_id, dep_genid, data.member_ids[z], true);
+					}
+		  		}
+		  	});
+  		}
+  	}
+}
+
+
+og.get_dimension_member_association_by_id = function (dim_assoc_id) {
+	for (dim in og.dimension_member_associations) {
+		var assocs_by_ot = og.dimension_member_associations[dim];
+		for (ot in assocs_by_ot) {
+			if (isNaN(ot)) continue;
+			for (i=0; i<assocs_by_ot[ot].length; i++) {
+				var a = assocs_by_ot[ot][i];
+				if (a.id == dim_assoc_id) {
+					return a;
+				}
+			}
+		}
+	}
+	return null;
+}
+
+

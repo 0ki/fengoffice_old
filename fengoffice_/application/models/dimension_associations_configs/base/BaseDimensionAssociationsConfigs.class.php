@@ -1,11 +1,10 @@
 <?php 
+
   
   /**
-  *  BaseReports class
-  *
-  * 
+  * BaseDimensionAssociationsConfigs class
   */
-  abstract class BaseReports extends ContentDataObjects {
+  abstract class BaseDimensionAssociationsConfigs extends DataManager {
   
     /**
     * Column name => Column type map
@@ -14,23 +13,18 @@
     * @static
     */
     static private $columns = array(
-    	'object_id' => DATA_TYPE_INTEGER,
-    	'description' => DATA_TYPE_STRING,
-    	'report_object_type_id' => DATA_TYPE_INTEGER,
-    	'order_by' => DATA_TYPE_STRING,
-    	'is_order_by_asc' => DATA_TYPE_BOOLEAN,
-    	'ignore_context' => DATA_TYPE_BOOLEAN,
-    	'is_default' => DATA_TYPE_BOOLEAN,
+    	'association_id' => DATA_TYPE_INTEGER, 
+    	'config_name' => DATA_TYPE_STRING, 
+    	'value' => DATA_TYPE_STRING,
     );
   
     /**
     * Construct
     *
-    * @return Report 
+    * @return BaseDimensionAssociationsConfigs 
     */
     function __construct() {
-	  Hook::fire('object_definition', 'Report', self::$columns);
-      parent::__construct('Report', 'reports', true);
+      parent::__construct('DimensionAssociationsConfig', 'dimension_associations_config', true);
     } // __construct
     
     // -------------------------------------------------------
@@ -48,16 +42,20 @@
       return array_keys(self::$columns);
     } // getColumns
     
-  	/**
-	* Return column type
-	*
-	* @access public
-	* @param string $column_name
-	* @return string
-	*/
-	function getColumnType($column_name) {
-		return parent::getCOColumnType($column_name, self::$columns);
-	}
+    /**
+    * Return column type
+    *
+    * @access public
+    * @param string $column_name
+    * @return string
+    */
+    function getColumnType($column_name) {
+      if(isset(self::$columns[$column_name])) {
+        return self::$columns[$column_name];
+      } else {
+        return DATA_TYPE_STRING;
+      } // if
+    } // getColumnType
     
     /**
     * Return array of PK columns. If only one column is PK returns its name as string
@@ -67,7 +65,7 @@
     * @return array or string
     */
     function getPkColumns() {
-      return 'object_id';
+      return array('association_id', 'config_name');
     } // getPkColumns
     
     /**
@@ -78,7 +76,7 @@
     * @return string
     */
     function getAutoIncrementColumn() {
-      return 'id';
+      return null;
     } // getAutoIncrementColumn
     
     // -------------------------------------------------------
@@ -97,14 +95,14 @@
     *  - offset - limit offset, valid only if limit is present
     *  - limit
     * 
-    * @return one or  CustomPropertyValues objects
+    * @return one or DimensionAssociationsConfigs objects
     * @throws DBQueryError
     */
     function find($arguments = null) {
-      if(isset($this) && instance_of($this, 'Reports')) {
+      if(isset($this) && instance_of($this, 'DimensionAssociationsConfigs')) {
         return parent::find($arguments);
       } else {
-        return Reports::instance()->find($arguments);
+        return DimensionAssociationsConfigs::instance()->find($arguments);
       } // if
     } // find
     
@@ -113,13 +111,13 @@
     *
     * @access public
     * @param array $arguments
-    * @return one or  Reports objects
+    * @return one or DimensionAssociationsConfigs objects
     */
     function findAll($arguments = null) {
-      if(isset($this) && instance_of($this, 'Reports')) {
+      if(isset($this) && instance_of($this, 'DimensionAssociationsConfigs')) {
         return parent::findAll($arguments);
       } else {
-        return  Reports::instance()->findAll($arguments);
+        return DimensionAssociationsConfigs::instance()->findAll($arguments);
       } // if
     } // findAll
     
@@ -128,13 +126,13 @@
     *
     * @access public
     * @param array $arguments
-    * @return  Reports 
+    * @return DimensionAssociationsConfig 
     */
     function findOne($arguments = null) {
-      if(isset($this) && instance_of($this, 'Reports')) {
+      if(isset($this) && instance_of($this, 'DimensionAssociationsConfigs')) {
         return parent::findOne($arguments);
       } else {
-        return  Reports::instance()->findOne($arguments);
+        return DimensionAssociationsConfigs::instance()->findOne($arguments);
       } // if
     } // findOne
     
@@ -144,13 +142,13 @@
     * @access public
     * @param mixed $id
     * @param boolean $force_reload If true cache will be skipped and data will be loaded from database
-    * @return  Reports 
+    * @return DimensionAssociationsConfig 
     */
     function findById($id, $force_reload = false) {
-      if(isset($this) && instance_of($this, 'Reports')) {
+      if(isset($this) && instance_of($this, 'DimensionAssociationsConfigs')) {
         return parent::findById($id, $force_reload);
       } else {
-        return  Reports::instance()->findById($id, $force_reload);
+        return DimensionAssociationsConfigs::instance()->findById($id, $force_reload);
       } // if
     } // findById
     
@@ -162,10 +160,10 @@
     * @return integer
     */
     function count($condition = null) {
-      if(isset($this) && instance_of($this, 'Reports')) {
+      if(isset($this) && instance_of($this, 'DimensionAssociationsConfigs')) {
         return parent::count($condition);
       } else {
-        return  Reports::instance()->count($condition);
+        return DimensionAssociationsConfigs::instance()->count($condition);
       } // if
     } // count
     
@@ -177,10 +175,10 @@
     * @return boolean
     */
     function delete($condition = null) {
-      if(isset($this) && instance_of($this, 'Reports')) {
+      if(isset($this) && instance_of($this, 'DimensionAssociationsConfigs')) {
         return parent::delete($condition);
       } else {
-        return  Reports::instance()->delete($condition);
+        return DimensionAssociationsConfigs::instance()->delete($condition);
       } // if
     } // delete
     
@@ -199,26 +197,26 @@
     * @return array
     */
     function paginate($arguments = null, $items_per_page = 10, $current_page = 1) {
-      if(isset($this) && instance_of($this, 'Reports')) {
+      if(isset($this) && instance_of($this, 'DimensionAssociationsConfigs')) {
         return parent::paginate($arguments, $items_per_page, $current_page);
       } else {
-        return  Reports::instance()->paginate($arguments, $items_per_page, $current_page);
+        return DimensionAssociationsConfigs::instance()->paginate($arguments, $items_per_page, $current_page);
       } // if
     } // paginate
     
     /**
     * Return manager instance
     *
-    * @return  Reports 
+    * @return DimensionAssociationsConfigs 
     */
     function instance() {
       static $instance;
-      if(!instance_of($instance, 'Reports')) {
-        $instance = new  Reports();
+      if(!instance_of($instance, 'DimensionAssociationsConfigs')) {
+        $instance = new DimensionAssociationsConfigs();
       } // if
       return $instance;
     } // instance
   
-  } //  Reports 
+  } // BaseDimensionAssociationsConfigs 
 
 ?>

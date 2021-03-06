@@ -1851,4 +1851,58 @@ abstract class ContentDataObject extends ApplicationDataObject {
 		
 		return $otname;
 	}
+	
+
+
+	function addToRelatedMembers($members, $from_form = false){
+		$related_member_ids = array();
+		
+		foreach ($members as $member) {
+			$associations = DimensionMemberAssociations::getAssociatations($member->getDimensionId(), $member->getObjectTypeId());
+			foreach ($associations as $a) {/* @var $a DimensionMemberAssociation */
+				$aconfig = $a->getConfig();
+				$classify_it = false;
+				
+				// classify only if 'autoclassify_in_property_member' option is set for this association
+				if (array_var($aconfig, 'autoclassify_in_property_member')) {
+					
+					// if the request does not come from object form (e.g.: d&d, it hasn't member selectors)
+					if (!$from_form) {
+						$classify_it = true;
+						
+					} else {
+						// force the add to the related member in background if the member is not allowed to be removed  
+						if (!array_var($aconfig, 'allow_remove_from_property_member')) {
+							$classify_it = true;
+							
+						} else {
+							// to check if this dimension selector is hidden in forms or not
+							$hookparams = array('dim_id' => $a->getAssociatedDimensionMemberAssociationId(), 'ot_id' => $this->getObjectTypeId());
+							Hook::fire('more_autoclassify_in_related_checks', $hookparams, $classify_it);
+							
+						}
+						
+						// @TODO: ver que pasa cuando se hace el submit antes de que se terminen de pre-cargar las dim relacionadas
+					}
+					
+				}
+				
+				if ($classify_it) {
+					$rel_mem_ids = array_flat(DB::executeAll("SELECT property_member_id FROM ".TABLE_PREFIX."member_property_members 
+							WHERE association_id=".$a->getId()." AND member_id=".$member->getId()));
+					
+					$related_member_ids = array_merge($related_member_ids, $rel_mem_ids);
+				}
+			}
+		}
+
+		$related_member_ids = array_unique(array_filter($related_member_ids));
+		if (count($related_member_ids) > 0) {
+			$related_members = Members::findAll(array("conditions" => "id IN (".implode(',', $related_member_ids).")"));
+			if (count($related_members) > 0) {
+				ObjectMembers::addObjectToMembers($this->getId(), $related_members);
+			}
+		}
+		
+	}
 }

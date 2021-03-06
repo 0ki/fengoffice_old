@@ -169,25 +169,19 @@
 	'upload new revision' => 'Een nieuwe versie uploaden',
 	'save with a new name' => 'Opslaan onder een nieuwe naam',
 	'archived' => 'Gearchiveerd',
-	'confirm archive member' => 'Weet u zeker dat u wilt archiveren deze { 0 } ? Het zal alle objecten onder deze { 0 } archiveren.',
-	'confirm unarchive member' => 'Weet u zeker dat u wilt deactiveren deze { 0 } ? Het zal alle objecten onder deze { 0 } deactiveert .',
-	'success archive member' => '{ 0 } is met succes gearchiveerd . { 1 } objecten van { 0 } werden gearchiveerd .',
-	'success unarchive member' => '{ 0 } was succesvol uit het archief gehaald . { 1 } objecten van { 0 } waren uit het archief gehaald .',
-	'confirm delete permanently' => 'Weet u zeker dat u { 0 } wilt verwijderen',
-	'restore user' => 'Gebruiker herstellen
-',
-	'dont filter' => 'Niet filteren
-',
-	'config activity' => 'Filter activiteit
-',
+	'confirm archive member' => 'Weet u zeker dat u wilt archiveren deze {0} ? Het zal alle objecten onder deze {0} archiveren.',
+	'confirm unarchive member' => 'Weet u zeker dat u wilt deactiveren deze {0} ? Het zal alle objecten onder deze {0} deactiveert .',
+	'success archive member' => '{0} is met succes gearchiveerd . {1} objecten van {0} werden gearchiveerd .',
+	'success unarchive member' => '{0} was succesvol uit het archief gehaald . {1} objecten van {0} waren uit het archief gehaald .',
+	'confirm delete permanently' => 'Weet u zeker dat u {0} wilt verwijderen',
+	'restore user' => 'Gebruiker herstellen',
+	'dont filter' => 'Niet filteren',
+	'config activity' => 'Filter activiteit',
 	'entry to see the dimension' => 'Toegang tot dimensies ',
 	'recent activities to show' => 'Recente activiteiten om te laten zien',
-	'recent activities to show display' => 'Tonen
-',
-	'recent activities to show lines' => 'Lijnen
-',
+	'recent activities to show display' => 'Tonen',
+	'recent activities to show lines' => 'Lijnen',
 	'views and downloads' => 'Bekeken en gedownload',
 	'confirm delete permanently sync' => 'Weet u zeker dat u het synchroniseren van gegevens wilt verwijderen?',
-	'select all' => 'Selecteer alles
-',
+	'select all' => 'Selecteer alles',
 ); ?>

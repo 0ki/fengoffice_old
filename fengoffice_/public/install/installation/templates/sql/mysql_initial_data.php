@@ -631,3 +631,4 @@ INSERT INTO `<?php echo $table_prefix ?>currencies` (`symbol`, `name`, `short_na
 
 INSERT INTO <?php echo $table_prefix ?>custom_properties (`object_type_id`,`name`,`code`,`type`,`visible_by_default`,`is_special`) VALUES
 ((SELECT id FROM <?php echo $table_prefix ?>object_types WHERE name='contact'), 'Job title', 'job_title', 'text', 1, 1);
+

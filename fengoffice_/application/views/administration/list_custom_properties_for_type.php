@@ -1,14 +1,14 @@
-<?php   
+<?php
   if (!isset($genid)) {
   	$genid = gen_id();
   }
-  
+
   if (!isset($save_js_function)) {
   	$save_js_function = "og.saveObjectTypeCustomProperties('$genid');";
   }
-  
-  $type_name = strtolower(lang($object_type->getName().'s'));
-  
+
+  $type_name = (lang($object_type->getName().'s'));
+
 ?>
 
 <script>
@@ -18,7 +18,7 @@
 
 	og.custom_props_table_genids = [];
 	og.custom_props_table_genids = ['<?php echo $genid?>'];
-	
+
 </script>
 
 <div class="custom-properties-admin object-type <?php echo $object_type->getName() ?>">
@@ -48,22 +48,22 @@
 
 <div class="coInputMainBlock adminMainBlock">
 	<input type="hidden" id="<?php echo $genid?>_ot_id" value="<?php echo $object_type->getId() ?>"/>
-	
-	<?php 
+
+	<?php
 		tpl_assign('genid', $genid);
 		tpl_assign('type_name', $type_name);
 		tpl_assign('extra_params', $extra_params);
 		tpl_display(get_template_path('cp_table_template', 'administration'));
 	?>
-	
-	<?php 
+
+	<?php
 	$fire_sections_hook = !isset($dont_fire_hook) || !$dont_fire_hook;
 	if ($fire_sections_hook) {
 		$null = null;
 		Hook::fire('custom_property_form_sections', array('ot' => $object_type, 'genid' => $genid), $null);
 	}
 	?>
-	
+
 	<?php echo submit_button(lang('save changes'), null, array('onclick' => $save_js_function)) ?>
 </div>
 
@@ -71,18 +71,18 @@
 
 <script>
 
-	
+
 $(function() {
 
-<?php 
+<?php
 	if (count($custom_properties) == 0) { // add one empty row
 
 		?>og.addCustomPropertyRow('<?php echo $genid?>');<?php
-		
+
 	} else {
 		foreach ($custom_properties as $cp) { /* @var $cp CustomProperty */
 			$cp_name = escape_character($cp->getName());
-			
+
 			if ($cp->getIsSpecial() && trim($cp->getCode()) != "") {
 				$label_code = str_replace("_special", "", $cp->getCode());
 				if (trim($label_code) != "") {
@@ -90,7 +90,7 @@ $(function() {
 					if (!is_null($label_value)) $cp_name = $label_value;
 				}
 			}
-			
+
 			$prop = array(
 				'id' => $cp->getId(),
 				'name' => $cp_name,
@@ -108,10 +108,10 @@ $(function() {
 ?>
 		var prop = Ext.util.JSON.decode('<?php echo json_encode($prop)?>');
 		og.addCustomPropertyRow('<?php echo $genid?>', prop);
-	
+
 	<?php }
 	} ?>
-	
+
 	$( "#<?php echo $genid?>custom-properties-table" ).sortable({
 		stop: function(event, object) {
 			og.refreshTableRowsOrder(genid);

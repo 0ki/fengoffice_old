@@ -3807,7 +3807,7 @@ class TaskController extends ApplicationController {
 			}
 
 			$more_tasks = array();
-			if($new_task instanceof ProjectTask){
+			if(isset($new_task) && $new_task instanceof ProjectTask){
 				$more_tasks[] = $new_task->getArrayInfo();
 			}
 			

@@ -645,4 +645,17 @@
 
   		'default value must be numeric' => 'El valor por defecto para {0} debe ser numérico.',
   		'default value must be date' => 'El valor por defecto para {0} debe ser una fecha.',
+		
+
+
+		'dimension association options' => 'Opciones para asociaciones entre dimensiones',
+		'dimension association options desc' => 'En esta sección se pueden editar las configuraciones de cada asociación entre dimensiones.',
+		'associated to' => 'Asociado a',
+		'option' => 'Opción',
+		'dim assoc config name allow_remove_from_property_member' => 'Permitir quitar clasificación en {1}',
+		'dim assoc config desc allow_remove_from_property_member' => 'Cuando está activa la autoclasificación en {1} al seleccionar {0} se puede definir si esta relación se puede quitar o no.',
+		'dim assoc config name autoclassify_in_property_member' => 'Autoclasificar en {1} al clasificar en {0}',
+		'dim assoc config desc autoclassify_in_property_member' => 'Utilice esta opción si desea pre-seleccionar el {1} del {0} seleccionado en los formularios de clasificación.',
+		
+		
 ); ?>

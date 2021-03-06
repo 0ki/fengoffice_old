@@ -64,6 +64,14 @@
 	if (!member_selector['<?php echo $genid; ?>'].properties) member_selector['<?php echo $genid; ?>'].properties = {};
 	member_selector['<?php echo $genid; ?>'].hiddenFieldName = '<?php echo $hidden_field_name; ?>';
 	member_selector['<?php echo $genid; ?>'].otid = '<?php echo $content_object_type_id; ?>';
+	
+	<?php if (isset($dont_filter_this_selector)) { ?>
+	member_selector['<?php echo $genid; ?>'].dontFilterThisSelector = <?php echo $dont_filter_this_selector ? '1' : '0'?>,
+	<?php } ?>
+
+	<?php if (isset($default_selection_checkboxes)) { ?>
+	member_selector['<?php echo $genid; ?>'].defaultSelectionCheckboxes = <?php echo $default_selection_checkboxes ? '1' : '0'?>,
+	<?php } ?>
 	<?php
 	
 	$listeners_str = "{";
@@ -73,7 +81,7 @@
 	if (str_ends_with($listeners_str, ",")) $listeners_str = substr($listeners_str, 0, -1);
 	$listeners_str .= "}";
 	
-	if (defined(JSON_NUMERIC_CHECK)) {
+	if (defined('JSON_NUMERIC_CHECK')) {
 		$reloadDimensions = json_encode( DimensionMemberAssociations::instance()->getDimensionsToReloadByObjectType($dimension_id), JSON_NUMERIC_CHECK );
 	} else {
 		$reloadDimensions = json_encode( DimensionMemberAssociations::instance()->getDimensionsToReloadByObjectType($dimension_id) );
@@ -111,7 +119,7 @@
 	}
 ?>
 </div>
-
+<div class="clear"></div>
 <script>
 <?php if ($dim_count > 0) { ?>
 member_selector['<?php echo $genid; ?>'].members_dimension = Ext.util.JSON.decode('<?php echo json_encode($members_dimension)?>');

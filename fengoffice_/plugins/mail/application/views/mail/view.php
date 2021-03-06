@@ -145,8 +145,11 @@ if (isset($email)){
 					if (Browser::instance()->getBrowser() == Browser::BROWSER_IE) {
 						$download_url = "javascript:location.href = '$download_url';";
 					}
-		      		$description .=	'<img src="' . get_image_url("filetypes/" . $icon) .'"></td>
-					<td><a target="_self" href="' . $download_url . '">' . clean($fName) . " ($size)" . '</a></td></tr>';
+					
+					$description .=	'<img src="' . get_image_url("filetypes/" . $icon) .'"></td>
+					<td><div id="att-link-container-'.$c.'">
+						<a target="_self" href="' . $download_url . '" class="download-attachment-link">' . clean($fName) . " ($size)" . '</a>
+					</div></td></tr>';
 				}
 	      		$c++;
 			}
@@ -413,4 +416,39 @@ if (isset($email)){
 	
 	// remove from list the emails that are marked to be removed
 	og.mail.removePendingMailsFromList();
+
+	$(function() {
+
+		og.original_download_attachment_link_href_values = {};
+		
+		$(".download-attachment-link").click(function(e) {
+			if ($(this).attr("disabled") == "disabled") {
+				e.preventDefault();
+				return;
+			}
+			
+			$(this).attr("disabled", "disabled");
+
+			var href_value = $(this).attr('href');
+			var container_id = $(this).parent().attr('id');
+
+			og.original_download_attachment_link_href_values[container_id] = href_value;
+			setTimeout(function() {
+				$(this).attr('href', 'javascript:return false;');
+			}, 10);
+			
+			og.reenable_download_attachment_link(container_id);
+
+			return true;
+		});
+	});
+
+	
+	
+	og.reenable_download_attachment_link = function(elem_id) {
+		setTimeout(function() {
+			$("#"+elem_id+" a").removeAttr("disabled");
+			$("#"+elem_id+" a").attr("href", og.original_download_attachment_link_href_values[elem_id]);			
+		}, 2000);
+	}
 </script>

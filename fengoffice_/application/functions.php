@@ -2070,8 +2070,8 @@ function associate_member_to_status_member($project_member, $old_project_status,
 
 	if ($status_dimension instanceof Dimension && in_array($status_dimension->getId(), config_option('enabled_dimensions'))) {
 		
-		// asociate project objects to the new project_status member
-		if ($old_project_status != $status_member_id) {
+		// asociate project objects to the new project_status member, only for non manageable dimensions
+		if (!$status_dimension->getIsManageable() && $old_project_status != $status_member_id) {
 			
 			$object_type_cond = " AND (SELECT o.object_type_id FROM ".TABLE_PREFIX."objects o WHERE o.id=".TABLE_PREFIX."object_members.object_id) 
 				NOT IN (SELECT ot.id FROM ".TABLE_PREFIX."object_types ot WHERE ot.name LIKE 'template_%')";
@@ -2190,7 +2190,6 @@ function get_all_associated_status_member_ids($member, $dimension, $ot=null, $re
 				$member_dimension->getId(), $member->getObjectTypeId(), $dimension->getId())));
 		}
 		
-		// create relation between members and remove old relations
 		if ($a instanceof DimensionMemberAssociation) {
 			$field_sql = $reverse ? 'AND property_member_id' : 'AND member_id';
 			
@@ -2214,7 +2213,6 @@ function get_associated_status_member_id($member, $dimension, $ot=null) {
 				($ot instanceof ObjectType ? ' AND associated_object_type_id='.$ot->getId() : ''),
 				$member_dimension->getId(), $member->getObjectTypeId(), $dimension->getId())));
 		
-		// create relation between members and remove old relations
 		if ($a instanceof DimensionMemberAssociation) {
 			$mpm = MemberPropertyMembers::findOne(array('conditions' => array('association_id = ? AND member_id = ?', $a->getId(), $member->getId())));
 			if ($mpm instanceof MemberPropertyMember) {
@@ -2223,6 +2221,21 @@ function get_associated_status_member_id($member, $dimension, $ot=null) {
 		}
 	}
 	return 0;
+}
+
+
+function save_default_associated_member_selections($association_id, $member_id, $selections) {
+	
+	if (!is_numeric($association_id) || !is_numeric($member_id) || !is_array($selections)) return;
+	
+	DB::execute("DELETE FROM ".TABLE_PREFIX."dimension_member_association_default_selections WHERE association_id='$association_id' AND member_id='$member_id';");
+	
+	foreach ($selections as $sel_mem_id => $checked) {
+		$sql = "INSERT INTO ".TABLE_PREFIX."dimension_member_association_default_selections (association_id, member_id, selected_member_id) 
+			VALUES ('$association_id', '$member_id', ".DB::escape($sel_mem_id).")
+			ON DUPLICATE KEY UPDATE selected_member_id=selected_member_id";
+		DB::execute($sql);
+	}
 }
 
 

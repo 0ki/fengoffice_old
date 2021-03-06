@@ -627,6 +627,13 @@ class ExternalCalendarController extends ApplicationController {
 							$event_start_date = ExternalCalendarController::date_google_to_sql($event->getStart());
 							$event_end_date = ExternalCalendarController::date_google_to_sql($event->getEnd());
 							$event_type = 1;
+
+							//check if event_name is empty
+							if(trim($event_name) == ""){
+								$event_name = lang('without title');
+							}
+
+
 							if($event->getStart()->getDate()){
 								$event_type = 2;
 								//set this times because we have a bug with all day events times
@@ -714,6 +721,11 @@ class ExternalCalendarController extends ApplicationController {
 								DB::rollback();
 								Logger::log("Fail to save event for external calendar user: ". $contact->getId());
 								Logger::log($e->getMessage());
+								Logger::log($event_id);
+								Logger::log($event_name);
+								Logger::log($event_desc);
+								Logger::log($event_start_date);
+								Logger::log($event_end_date);
 							}
 						}
 						 

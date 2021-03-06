@@ -58,7 +58,11 @@ class  CustomProperties extends  BaseCustomProperties {
 		}
 		
 		if ($visibility != 'all') {
-			$extra_cond .= " AND visible_by_default = ". ($visibility == 'visible_by_default' ? '1' : '0');
+			if ($visibility == 'visible_by_default') {
+				$extra_cond .= " AND (visible_by_default = 1 OR is_required = 1)";
+			} else {
+				$extra_cond .= " AND (visible_by_default = 0 AND is_required = 0)";
+			}
 		}
 		
 		$disabled_cond = "";

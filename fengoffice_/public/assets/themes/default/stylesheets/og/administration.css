@@ -403,7 +403,12 @@ div.checkbox-config-option {
 	
 }
 
-
+.listing-admin ul li {
+	padding: 8px;
+}
+.listing-admin ul li a {
+	text-decoration: underline;
+}
 
 .listing-admin table {
 	min-width: 600px;

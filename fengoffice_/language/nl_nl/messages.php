@@ -637,7 +637,7 @@
 	'success delete member' => '{0} werd verwijderd',
 	'disable' => 'Uitschakelen',
 	'no search result' => 'Er zijn geen objecten',
-	'success disable user' => 'Account voor de gebruiker { 0 } is met succes uitgeschakeld',
-	'success restore user' => 'Account voor de gebruiker { 0 } is succesvol geactiveerd',
+	'success disable user' => 'Account voor de gebruiker {0} is met succes uitgeschakeld',
+	'success restore user' => 'Account voor de gebruiker {0} is succesvol geactiveerd',
 	'confirm restore user' => 'De gebruiker wordt geactiveerd . Doorgaan ?',
 ); ?>

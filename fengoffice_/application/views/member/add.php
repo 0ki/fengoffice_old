@@ -119,7 +119,7 @@
 			<?php } ?>
 			
 			<?php if ($has_custom_properties) { ?>
-			<li><a href="#<?php echo $genid?>add_custom_properties_div"><?php echo lang('custom properties') ?></a></li>
+			<li id="<?php echo $genid?>add_custom_properties_li"><a href="#<?php echo $genid?>add_custom_properties_div"><?php echo lang('custom properties') ?></a></li>
 			<?php } ?>
 			
 		</ul>
@@ -146,10 +146,9 @@
 				if ($parent_sel) {
 					$selected_members[] = $parent_sel;
 				}
-				//echo label_tag(lang('located under'), "", false);
-				//render_single_dimension_tree($current_dimension, $genid, $selected_members, array('checkBoxes'=>false,'all_members' => true));
 				
-				render_single_member_selector($current_dimension, $genid, $selected_members, array('is_multiple' => false, 'label' => lang('located under'), 'width'=>400, 'allow_non_manageable' => true,
+				render_single_member_selector($current_dimension, $genid, $selected_members, array('is_multiple' => false, 'label' => lang('located under'),
+					'width'=>400, 'allow_non_manageable' => true, 'dont_filter_this_selector' => true,
 					'select_function' => 'og.onParentMemberSelect', 'listeners' => array('on_remove_relation' => "og.onParentMemberRemove('".$genid."');")), false);
 				
 				

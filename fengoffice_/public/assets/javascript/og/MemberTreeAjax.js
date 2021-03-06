@@ -394,6 +394,25 @@ Ext.extend(og.MemberTreeAjax, Ext.tree.TreePanel, {
 		}
 	},
 	
+	filterByMember: function(memberIds, nodeClicked, callback, options) {
+
+		// remove all nodes
+		while (n = this.getRootNode().childNodes[0]) {
+			this.getRootNode().removeChild(n);
+		}
+		
+		if (!options) options = {};
+		
+		options.dimension_id = this.dimensionId;
+		options.selected_ids = Ext.util.JSON.encode(memberIds);
+		options.avoid_session = 1;
+		options.node_clicked = nodeClicked ? (isNaN(nodeClicked) ? nodeClicked.id : nodeClicked) : null;
+		
+		// load filtered tree
+		og.initialMemberTreeAjaxLoad(this, 500, 0, options);
+		
+	},
+	
 	filterNode: function(n, re) {
 		
 		var f = false;

@@ -797,7 +797,7 @@ addLangs({
 	'previous tasks': 'Voorgaand\n',
 	'error delete people': 'Je kunt niet naar de prullenbak gebruikers . U kunt dit doen vanuit het Administration Panel',
 	'error delete company': 'Je kunt niet naar de prullenbak Ondernemingen die gebruikers of Contactlenzen bevatten',
-	'confirm delete permanently this member': 'Weet u zeker dat u wilt verwijderen deze { 0 } ?',
+	'confirm delete permanently this member': 'Weet u zeker dat u wilt verwijderen deze {0} ?',
 	'confirm delete with keyword': 'Voer \\ "Verwijderen \\ " om te bevestigen\n',
 	'start with': 'Begint met',
 	'date of task creation': 'Datum van de taak van de schepping',

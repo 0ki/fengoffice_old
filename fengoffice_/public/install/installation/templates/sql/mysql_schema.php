@@ -99,6 +99,7 @@ CREATE TABLE `<?php echo $table_prefix ?>dimension_member_associations` (
   `is_required` tinyint(1) unsigned NOT NULL default '0',
   `is_multiple` tinyint(1) unsigned NOT NULL default '0',
   `keeps_record` tinyint(1) unsigned NOT NULL default '0',
+  `allows_default_selection` tinyint(1) unsigned NOT NULL default '0',
   PRIMARY KEY  (`id`),
   KEY `by_associated` USING HASH (`associated_dimension_id`,`associated_object_type_id`),
   KEY `by_dimension_objtype` USING HASH (`dimension_id`, `object_type_id`)
@@ -1256,4 +1257,18 @@ CREATE TABLE IF NOT EXISTS `<?php echo $table_prefix ?>object_selector_temp_valu
   `updated_on` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
   `value` text <?php echo $default_collation ?> NOT NULL,
   PRIMARY KEY (`user_id`,`identifier`)
+) ENGINE=<?php echo $engine ?> <?php echo $default_charset ?>;
+
+CREATE TABLE IF NOT EXISTS `<?php echo $table_prefix ?>dimension_associations_config` (
+  `association_id` int(10) unsigned NOT NULL,
+  `config_name` varchar(255) <?php echo $default_collation ?> NOT NULL,
+  `value` text <?php echo $default_collation ?> NOT NULL,
+  PRIMARY KEY (`association_id`,`config_name`)
+) ENGINE=<?php echo $engine ?> <?php echo $default_charset ?>;
+
+CREATE TABLE IF NOT EXISTS `<?php echo $table_prefix ?>dimension_member_association_default_selections` (
+  `association_id` INTEGER UNSIGNED NOT NULL,
+  `member_id` INTEGER UNSIGNED NOT NULL,
+  `selected_member_id` INTEGER UNSIGNED NOT NULL,
+  PRIMARY KEY (`association_id`, `member_id`, `selected_member_id`)
 ) ENGINE=<?php echo $engine ?> <?php echo $default_charset ?>;

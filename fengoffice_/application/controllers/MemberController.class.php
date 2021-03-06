@@ -57,7 +57,7 @@ class MemberController extends ApplicationController {
 	
 	
 	
-	private function build_listing_order_parameters($order, $order_dir, $member_type) {
+	function build_listing_order_parameters($order, $order_dir, $member_type) {
 		$order_join_sql = "";
 		
 		switch ($order){
@@ -181,7 +181,7 @@ class MemberController extends ApplicationController {
 		$group_by = "";
 		$da = 0;
 		foreach ($dimension_associations as $dassoc) {
-			$da++;
+			$da = $dassoc->getId();
 			/* @var $da DimensionMemberAssociation */
 			if ($dassoc->getDimensionId() == $dimension->getId()) {
 				$join_str = "LEFT JOIN ".TABLE_PREFIX."member_property_members mem_pm".$da." ON mem_pm".$da.".member_id=$mem_table_prefix.id";
@@ -206,7 +206,7 @@ class MemberController extends ApplicationController {
 		);
 	}
 	
-	private function build_listing_parent_condition($dimension, $parent_id) {
+	function build_listing_parent_condition($dimension, $parent_id) {
 		$parent = null;
 		if ($parent_id > 0) {
 			$parent = Members::findById($parent_id);
@@ -236,7 +236,7 @@ class MemberController extends ApplicationController {
 			$parameters = $_REQUEST;
 			$return_the_list = false;
 		}
-	
+		
 		// get all variables from parameters array
 		$start = array_var($parameters,'start', '0');
 		$limit = array_var($parameters,'limit', config_option('files_per_page'));
@@ -246,6 +246,9 @@ class MemberController extends ApplicationController {
 		$member_type_id = array_var($parameters, 'type_id');
 		$parent_id = array_var($parameters, 'parent_id');
 		$extra_conditions = array_var($parameters, 'extra_conditions');
+		
+		if (!is_numeric($start)) $start = 0;
+		if (!is_numeric($limit)) $limit = config_option('files_per_page');
 		
 		// find current dimension
 		$dimension = Dimensions::findById($dimension_id);
@@ -290,7 +293,7 @@ class MemberController extends ApplicationController {
 	
 		// build member permissions permission conditions
 		$pg_array = logged_user()->getPermissionGroupIds();
-		if (logged_user()->isAdministrator()) {
+		if (logged_user()->isAdministrator() || !$dimension->getDefinesPermissions()) {
 			$permission_conditions = "";
 		} else {
 			$permission_conditions = "AND EXISTS (SELECT cmp.member_id FROM ".TABLE_PREFIX."contact_member_permissions cmp 
@@ -373,7 +376,14 @@ class MemberController extends ApplicationController {
 	
 	
 	
-	private function prepareObject($rows, $start, $limit, $dimension, $member_type_id, $total) {
+	
+	
+	
+	
+	
+	
+	
+	function prepareObject($rows, $start, $limit, $dimension, $member_type_id, $total, $groups_info=null) {
 		
 		$ot = ObjectTypes::findById($member_type_id);
 		
@@ -385,12 +395,17 @@ class MemberController extends ApplicationController {
 			"object_type_name" => $ot instanceof ObjectType ? $ot->getName() : $dimension->getName(),
 			"members" => array(),
 		);
+		if (is_array($groups_info)) {
+			$object['groups_info'] = $groups_info;
+		}
 		$member_ids = array();
 		$ids = array();
 		for ($i = 0; $i < $limit; $i++){
 			if (isset($rows[$i])){
 				$info = $rows[$i];
-				$info['icon_cls'] = $ot instanceof ObjectType ? $ot->getIconClass() : "";
+				if (!isset($info['icon_cls'])) {
+					$info['icon_cls'] = $ot instanceof ObjectType ? $ot->getIconClass() : "";
+				}
 				
 				$path_ids = array();
 				$m = Members::findById(array_var($info, 'member_id'));
@@ -508,7 +523,7 @@ class MemberController extends ApplicationController {
 			tpl_assign('member_data', $member_data);
 			
 			$ret = array();
-			Hook::fire('check_additional_member_permissions', array('action' => 'add', 'parent_member_id' => $parent, 'pg_id' => logged_user()->getPermissionGroupId()), $ret);
+			Hook::fire('check_additional_member_permissions', array('action' => 'add', 'parent_member_id' => $parent, 'pg_ids' => logged_user()->getPermissionGroupIds()), $ret);
 			if (count($ret) > 0 && !array_var($ret, 'ok')) {
 				flash_error(array_var($ret, 'message'));
 				ajx_current("empty");
@@ -736,7 +751,7 @@ class MemberController extends ApplicationController {
 		}
 		
 		$ret = array();
-		Hook::fire('check_additional_member_permissions', array('action' => 'edit', 'member' => $member, 'pg_id' => logged_user()->getPermissionGroupId()), $ret);
+		Hook::fire('check_additional_member_permissions', array('action' => 'edit', 'member' => $member, 'pg_ids' => logged_user()->getPermissionGroupIds()), $ret);
 		if (count($ret) > 0 && !array_var($ret, 'ok')) {
 			flash_error(array_var($ret, 'message'));
 			ajx_current("empty");
@@ -876,9 +891,9 @@ class MemberController extends ApplicationController {
 				
 			$ret = array();
 			if ($is_new) {
-				Hook::fire('check_additional_member_permissions', array('action' => 'add', 'member' => $member, 'parent_member_id' => $member->getParentMemberId(), 'pg_id' => logged_user()->getPermissionGroupId()), $ret);
+				Hook::fire('check_additional_member_permissions', array('action' => 'add', 'member' => $member, 'parent_member_id' => $member->getParentMemberId(), 'pg_ids' => logged_user()->getPermissionGroupIds()), $ret);
 			} else {
-				Hook::fire('check_additional_member_permissions', array('action' => 'edit', 'member' => $member, 'pg_id' => logged_user()->getPermissionGroupId()), $ret);
+				Hook::fire('check_additional_member_permissions', array('action' => 'edit', 'member' => $member, 'pg_ids' => logged_user()->getPermissionGroupIds()), $ret);
 			}
 			if (count($ret) > 0 && !array_var($ret, 'ok')) {
 				throw new Exception(array_var($ret, 'message'));
@@ -1026,7 +1041,9 @@ class MemberController extends ApplicationController {
 			if ($is_new) {
 				// set all permissions for the creator
 				$dimension = $member->getDimension();
-				
+
+				$changed_pgs = array();
+
 				$allowed_object_types = array();
 				$dim_obj_types = $dimension->getAllowedObjectTypeContents();
 				foreach ($dim_obj_types as $dim_obj_type) {
@@ -1047,6 +1064,8 @@ class MemberController extends ApplicationController {
 					$cmp->setCanWrite(1);
 					$cmp->setCanDelete(1);
 					$cmp->save();
+
+					$changed_pgs[$cmp->getPermissionGroupId()] = $cmp->getPermissionGroupId();
 				}
 				
 				// set all permissions for permission groups that has allow all in the dimension
@@ -1065,6 +1084,8 @@ class MemberController extends ApplicationController {
 							$cmp->setCanDelete(1);
 							$cmp->save();
 						}
+
+						$changed_pgs[$pg->getPermissionGroupId()] = $pg->getPermissionGroupId();
 					}
 				}
 				
@@ -1087,10 +1108,16 @@ class MemberController extends ApplicationController {
 							$newPermission->setCanDelete($d);
 							$newPermission->setMemberId($member->getId());
 							$newPermission->save();
+
+							$changed_pgs[$parentPermission->getPermissionGroupId()] = $parentPermission->getPermissionGroupId();
 						}
 					}
 				}
-				
+
+				//Update Contact Member cache
+				$contactMemberCacheController = new ContactMemberCacheController();
+				$contactMemberCacheController->afterMemberPermissionChanged(array('changed_pgs' => $changed_pgs, 'member' => $member));
+
 				// Fill sharing table if is a dimension object (after permission creation);
 				if (isset($dimension_object) && $dimension_object instanceof ContentDataObject) {
 					$dimension_object->addToSharingTable();
@@ -1147,7 +1174,7 @@ class MemberController extends ApplicationController {
 		}
 		
 		$ret = array();
-		Hook::fire('check_additional_member_permissions', array('action' => 'delete', 'member' => $member, 'pg_id' => logged_user()->getPermissionGroupId()), $ret);
+		Hook::fire('check_additional_member_permissions', array('action' => 'delete', 'member' => $member, 'pg_ids' => logged_user()->getPermissionGroupIds()), $ret);
 		if (count($ret) > 0 && !array_var($ret, 'ok')) {
 			flash_error(array_var($ret, 'message'));
 			ajx_current("empty");
@@ -1800,6 +1827,8 @@ class MemberController extends ApplicationController {
 					}
 					
 					$obj->addToMembers(array($member));
+					$obj->addToRelatedMembers(array($member));
+					
 					$obj->addToSharingTable();
 					$objects[] = $obj;					
 									

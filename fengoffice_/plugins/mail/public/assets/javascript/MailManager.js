@@ -1308,6 +1308,10 @@ Ext.extend(og.MailManager, Ext.grid.GridPanel, {
 		this.last_check_id = Ext.id();
 		params.check_id = this.last_check_id;
 
+		// disable toolbar actions while reloading
+		var bt = this.getBottomToolbar();
+		if (bt) bt.disable();
+		
 		var old_scroll_top = $("#mails-panel .x-grid3-scroller").scrollTop();
 		this.store.load({
 			params: Ext.apply(params, {
@@ -1317,6 +1321,10 @@ Ext.extend(og.MailManager, Ext.grid.GridPanel, {
 			callback: function() {
 				Ext.getCmp('mails-manager').actionRep.checkMails.enable();
 				$("#mails-panel .x-grid3-scroller").scrollTop(old_scroll_top);
+				
+				// disable toolbar actions while reloading
+				var bt = Ext.getCmp('mails-manager').getBottomToolbar();
+				if (bt) bt.disable();
 			}
 		});
 		this.store.baseParams.action = "";

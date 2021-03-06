@@ -1322,7 +1322,7 @@ function render_dimension_trees($content_object_type_id, $genid = null, $selecte
 						
 						if (!isset($id)) $id = gen_id();
 						
-						if (defined(JSON_NUMERIC_CHECK)) {
+						if (defined('JSON_NUMERIC_CHECK')) {
 							$reloadDimensions = json_encode( DimensionMemberAssociations::instance()->getDimensionsToReloadByObjectType($dimension_id), JSON_NUMERIC_CHECK );
 						} else {
 							$reloadDimensions = json_encode( DimensionMemberAssociations::instance()->getDimensionsToReloadByObjectType($dimension_id) );
@@ -1633,7 +1633,14 @@ function render_widget_option_input($widget_option, $genid=null) {
 		case 'UserCompanyConfigHandler' :
 			if ($widget_option['widget'] == 'overdue_upcoming') $ot = ObjectTypes::findByName('task');
 			else break;
+			
 			$users = allowed_users_in_context($ot->getId(), array(), ACCESS_LEVEL_READ, '', true);
+			$has_myself = false;
+			foreach ($users as $u) {
+				if ($u->getId() == logged_user()->getId()) $has_myself = true;
+			}
+			if (!$has_myself) array_unshift($users, logged_user());
+			
 			$output .= "<select name='$name' id='".$genid.$name."' onchange='og.on_widget_select_option_change(this);'>";
 			$sel = $widget_option['value'] == 0 ? 'selected="selected"' : '';
 			$output .= "<option value='0' $sel>".lang('everyone')."</option>";

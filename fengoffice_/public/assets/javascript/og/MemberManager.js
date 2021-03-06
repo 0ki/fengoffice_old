@@ -11,6 +11,7 @@ og.MemberManager = function() {
 	this.dimension_code = og.member_list_params.dimension_code;
 	this.object_type_id = og.member_list_params.object_type_id;
 	this.object_type_name = og.member_list_params.object_type_name;
+	this.groups_info = null;
 	
 	// prepare reader fields for any member type
 	var cp_names = [];
@@ -50,11 +51,35 @@ og.MemberManager = function() {
   	}
   	this.fields = this.fields.concat(mem_type_cols);
   	
+  	// data store and grid view configuration
+  	if (og.member_list_grouping) {
+  		
+	  	this.lastGroupField = 'mem_path';
+	  	if (og.member_list_groups_info && og.member_list_groups_info[this.dimension_id+"-"+this.object_type_id]) {
+	  		this.lastGroupField = og.member_list_groups_info[this.dimension_id+"-"+this.object_type_id].last_group_by;
+	  	}
+	  	
+	  	var view_object = new Ext.grid.GroupingView({ forceFit: true, enableNoGroups: false, groupByText: lang('group by this field') });
+  		var store_class = Ext.data.GroupingStore;
+  		var controller = og.member_list_grouping.controller;
+  		var action = og.member_list_grouping.action;
+  		
+  	} else {
+  		
+  		var view_object = new Ext.grid.GridView({ forceFit: true });
+  		var store_class = Ext.data.Store;
+  		var controller = 'member';
+  	  	var action = 'listing';
+  	}
+  	
+  	// create the data store
 	if (!this.store) {
-		//this.store = new Ext.data.GroupingStore({
-		this.store = new Ext.data.Store({
+		this.store = new store_class({
+			remoteGroup: true,
+			groupField: this.lastGroupField,
+			
 			proxy: new og.GooProxy({
-				url: og.getUrl('member', 'listing')
+				url: og.getUrl(controller, action)
 			}),
 			reader: new Ext.data.JsonReader({
 				root: 'members',
@@ -62,6 +87,7 @@ og.MemberManager = function() {
 				id: 'id',
 				dimension_id: 'dimension_id',
 				dimension_name: 'dimension_name',
+				groups_info: 'groups_info',
 				fields: this.fields
 			}),
 			remoteSort: true,
@@ -78,11 +104,14 @@ og.MemberManager = function() {
 						this.fireEvent('messageToShow', "");
 					}
 					
+					this.groups_info = d.groups_info;
+					this.dimension_id = d.dimension_id;
+					
 					var man = Ext.getCmp('member-manager-' + d.dimension_id);
 					og.eventManager.fireEvent('after grid panel load', {man:man, data:d});
 					
-					this.dimension_id = d.dimension_id;
 					og.eventManager.fireEvent('replace all empty breadcrumb', null);
+					
 				},
 				'datachanged': function() {
 					if (this.dimension_id > 0) {
@@ -106,6 +135,41 @@ og.MemberManager = function() {
 	
 	this.store.addListener({messageToShow: {fn: this.showMessage, scope: this}});
 
+	// bottom toolbar definition
+	if (og.member_list_grouping) {
+  		var bottom_toolbar = new Ext.Toolbar({
+			store: this.store,
+			items: [
+			    {	text: '', xtype: 'label', style: 'margin-left:55px;'	},
+			    {
+					text: '',
+					xtype: 'label',
+					style: 'font:normal 13px tahoma,arial,helvetica,sans-serif',
+					id: 'showing_x_groups'
+				},
+				{	text: '', xtype: 'label', style: 'margin-left:30px;'	},
+				{
+					text: lang('load more groups'),
+					xtype: 'button',
+					id: 'load_more_groups_btn',
+		            iconCls: 'ico-refresh',
+					handler: function() {
+						og.load_more_member_list_groups(this);
+					},
+					scope: this
+				}
+			]
+		});
+  	} else {
+  		var bottom_toolbar = new og.CurrentPagingToolbar({
+			pageSize: og.config['files_per_page'],
+			store: this.store,
+			displayInfo: true,
+			displayMsg: lang('displaying objects of'),
+			emptyMsg: lang("no objects to display")
+		});
+  	}
+	
 	
 	var readClass = 'read-unread-' + Ext.id();
 	
@@ -158,6 +222,45 @@ og.MemberManager = function() {
 		if (mins < 10) mins = '0'+ mins;
 		
 		return hours +":"+ mins;
+	}
+	
+	function renderMemberPathGroupName(value, p, r) {
+		if (r.data.id=="__total_row__" || !r.data.dimension_id) return "";
+
+		var mem_id = null;
+		if (r.data.mem_path) {
+			var mpath = Ext.util.JSON.decode(r.data.mem_path);
+			if (mpath){
+				var obj = mpath[r.data.dimension_id];
+				for (var k in obj) {
+					mem_id = k;
+					break;
+				}
+			}
+		}
+		if (mem_id) {
+			var man = Ext.getCmp('member-manager-'+r.data.dimension_id);
+			if (man.store.groups_info && man.store.groups_info.groups && man.store.groups_info.groups[mem_id]) {
+				return man.store.groups_info.groups[mem_id].name;
+			}			
+		}
+		
+		return "";
+	}
+	
+	function renderMemberGroupName(value, p, r) {
+		if (r.data.id=="__total_row__" || !r.data.dimension_id) return "";
+		
+		if (isNaN(value)) {
+			var splitted = value.split(',');
+			value = splitted[0];
+		}
+		
+		var man = Ext.getCmp('member-manager-'+r.data.dimension_id);
+		if (man.store.groups_info && man.store.groups_info.groups && man.store.groups_info.groups[value]) {
+			return man.store.groups_info.groups[value].name;
+		}
+		return "";
 	}
 	
 	function renderDimAssociation(value, p, r) {
@@ -275,6 +378,7 @@ og.MemberManager = function() {
 			dataIndex: 'mem_path',
 			width: 100,
 			renderer: renderMemberPath,
+			groupRenderer: renderMemberPathGroupName,
 			sortable:true
 		/*},{
 			id: 'task_completion_p',
@@ -361,7 +465,8 @@ og.MemberManager = function() {
 			header: assoc.name,
 			dataIndex: 'dimassoc_' + assoc.id,
 			sortable: false,
-			renderer: renderDimAssociation
+			renderer: renderDimAssociation,
+			groupRenderer: renderMemberGroupName
 		});
   	}
   	
@@ -440,11 +545,22 @@ og.MemberManager = function() {
 		tbar.push(actions.del);
 	}
 	
-	if (og.additional_member_list_actions && og.additional_member_list_actions[this.object_type_id]) {
-		var add_actions = og.additional_member_list_actions[this.object_type_id];
-		for (var k=0; k<add_actions.length; k++) {
-			add_actions[k].initialConfig.dim_id = this.dimension_id;
-			tbar.push(add_actions[k]);
+	if (og.additional_member_list_actions) {
+		// specific object type actions
+		if (og.additional_member_list_actions[this.object_type_id]) {
+			var add_actions = og.additional_member_list_actions[this.object_type_id];
+			for (var k=0; k<add_actions.length; k++) {
+				add_actions[k].initialConfig.dim_id = this.dimension_id;
+				tbar.push(add_actions[k]);
+			}
+		}
+		// general actions
+		if (og.additional_member_list_actions["general"]) {
+			var add_actions = og.additional_member_list_actions["general"];
+			for (var k=0; k<add_actions.length; k++) {
+				add_actions[k].initialConfig.dim_id = this.dimension_id;
+				tbar.push(add_actions[k]);
+			}
 		}
 	}
 	
@@ -457,22 +573,8 @@ og.MemberManager = function() {
 		stripeRows: true,
 		closable: true,
 		loadMask: true,
-		bbar: new og.CurrentPagingToolbar({
-			pageSize: og.config['files_per_page'],
-			store: this.store,
-			displayInfo: true,
-			displayMsg: lang('displaying objects of'),
-			emptyMsg: lang("no objects to display")
-		}),/*
-		view: new Ext.grid.GroupingView({
-	        forceFit: true,
-			//enableGroupingMenu: false,
-	        //hideGroupedColumn: true,
-	        //groupTextTpl: '{text} ({[values.rs.length]} {[values.rs.length > 1 ? "'+lang('customers')+'" : "'+lang('customer')+'"]})'
-	    }),*/
-		viewConfig: {
-			forceFit: true
-		},
+		bbar: bottom_toolbar,
+		view: view_object,
 		sm: sm,
 		tbar:tbar,
 		listeners: {
@@ -492,6 +594,22 @@ og.MemberManager = function() {
 			'columnmove': {
 				fn: function(old_index, new_index) {
 					og.eventManager.fireEvent('replace all empty breadcrumb', null);
+					
+					if (og.member_list_listeners && og.member_list_listeners.columnmoved) {
+						for (var i=0; i<og.member_list_listeners.columnmoved.length; i++) {
+							og.member_list_listeners.columnmoved[i].call(null, this, old_index, new_index);
+						}
+					}
+				},
+				scope: this
+			},
+			'columnresize': {
+				fn: function(col_index, newwidth) {
+					if (og.member_list_listeners && og.member_list_listeners.widthchange) {
+						for (var i=0; i<og.member_list_listeners.widthchange.length; i++) {
+							og.member_list_listeners.widthchange[i].call(null, this, col_index, newwidth);
+						}
+					}
 				},
 				scope: this
 			}
@@ -504,19 +622,28 @@ Ext.extend(og.MemberManager, Ext.grid.GridPanel, {
 	load: function(params) {
 		
 		if (!params) params = {};
-		var start;
-		if (typeof params.start == 'undefined') {
-			start = (this.getBottomToolbar().getPageData().activePage - 1) * og.config['files_per_page'];
-		} else {
-			start = 0;
-		}
-		
+		var start = 0;
 		
 		this.store.baseParams = {
 			context: og.contextManager.plainContext(),
 			dim_id: this.dimension_id,
 			type_id: this.object_type_id
 	    };
+		
+		if (og.member_list_grouping) {
+			
+			if (og.member_list_groups_info && og.member_list_groups_info[this.dimension_id+"-"+this.object_type_id]) {
+				this.lastGroupField = og.member_list_groups_info[this.dimension_id+"-"+this.object_type_id].last_group_by;
+			}
+			if (this.lastGroupField) {
+				this.store.baseParams.groupBy = this.lastGroupField;
+			}
+			
+		} else {
+			if (typeof params.start == 'undefined') {
+				start = (this.getBottomToolbar().getPageData().activePage - 1) * og.config['files_per_page'];
+			}
+		}
 		
 		this.store.removeAll();
 		this.store.load({

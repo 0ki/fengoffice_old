@@ -583,6 +583,16 @@ og.eventManager.addListener('refresh member list parameters',
 	}
 );
 
+og.eventManager.addListener('update last member list groups info', 
+	function (data){
+		if (!og.member_list_groups_info) og.member_list_groups_info = {};
+		for (k in data) {
+			if (typeof(k)=='function') continue;
+			og.member_list_groups_info[k] = data[k];
+		}
+	}
+);
+
 og.eventManager.addListener('add tasks info to tasks list', 
 	function (data) {
 		if (data && data.tasks && data.tasks.length > 0) {

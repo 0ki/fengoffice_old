@@ -298,10 +298,6 @@ og.MemberTree = function(config) {
 				return;
 			}
 			
-			//clear search filter
-			//this.clearFilter();
-			//$("#" + this.id + '-textfilter').val("");
-						
 			og.contextManager.currentDimension = self.dimensionId ;
 			og.eventManager.fireEvent("member tree node click", node);
 			var treeConf = node.attributes.loader.ownerTree.initialConfig ;
@@ -457,7 +453,13 @@ og.MemberTree = function(config) {
 							trees.each(function (item, index, length){
 								var must_reload = false;
 								if (self.reloadDimensions && self.reloadDimensions[node.object_type_id]) {
-									if (self.reloadDimensions[node.object_type_id].indexOf(item.dimensionId) != -1) must_reload = true;
+									for (var k=0; k<self.reloadDimensions[node.object_type_id].length; k++) {
+										var reload_dim_id = parseInt(self.reloadDimensions[node.object_type_id][k]);
+										if (reload_dim_id == parseInt(item.dimensionId)) {
+											must_reload = true;
+											break;
+										}
+									}
 								}
 								
 								if ( self.id != item.id  && (!item.hidden ||item.reloadHidden) && (must_reload || item.is_filtered_by)) {
@@ -481,7 +483,7 @@ og.MemberTree = function(config) {
 									
 									// register that this tree has been filtered, so if any other node is selected this has to be reloaded despite of having no associations with selected member.  
 									item.is_filtered_by = must_reload;
-								}								
+								}
 							});
 							
 							if (this.totalFilterTrees == 0 ) {
@@ -729,8 +731,13 @@ Ext.extend(og.MemberTree, Ext.tree.TreePanel, {
 						trees.each(function (item, index, length){
 							for (ot in dimensions_to_reload) {
 								var dims_array = dimensions_to_reload[ot];
-								if (dims_array.indexOf(item.dimensionId) != -1) {
-									item.disableReloadOtherDimensions = true;
+								
+								for (var k=0; k<dims_array.length; k++) {
+									var reload_dim_id = parseInt(dims_array[k]);
+									if (reload_dim_id == parseInt(item.dimensionId)) {
+										item.disableReloadOtherDimensions = true;
+										break;
+									}
 								}
 							}
 						});

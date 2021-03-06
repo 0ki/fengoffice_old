@@ -9,7 +9,7 @@ Hook::fire('object_form_custom_prop_extra_conditions', array('ot_id' => $object_
 
 $cps = CustomProperties::getAllCustomPropertiesByObjectType($object_type_id, $visibility, $extra_conditions);
 if ($visibility == 'others' && count($cps) == 0) {
-	echo lang('there are no custom properties defined message', strtolower(lang("the ".$ot->getName()."s")));
+	echo lang('there are no custom properties defined message', (lang("the ".$ot->getName()."s")));
 	echo '<br />'. lang('there are no custom properties defined link');
 }
 
@@ -41,7 +41,7 @@ if(count($cps) > 0){
 				if (!is_null($label_value)) $label = $label_value;
 			}
 			
-			$add_style = $customProp->getType() == 'table' ? "min-width:50px;" : "";
+			$add_style = "";
 			echo label_tag($label, $genid . 'cp' . $customProp->getId(), $customProp->getIsRequired(), array('style' => 'display:inline;'.$add_style), $customProp->getType() == 'boolean'?'':':');
 			
 			echo '</div>';
@@ -134,6 +134,8 @@ if(count($cps) > 0){
 									$value = '';
 								}
 							}
+						} else {
+							$value = null;
 						}
 						echo pick_date_widget2($name, $value, null, null, null, $genid . 'cp' . $customProp->getId());
 					}
@@ -202,7 +204,7 @@ if(count($cps) > 0){
 					$cell_width = (600 / count($columnNames)) . "px";
 					$html = '<div class="og-add-custom-properties"><table><tr>';
 					foreach ($columnNames as $colName) {
-						$html .= '<th style="width:'.$cell_width.';min-width:120px;">'.$colName.'</th>';
+						$html .= '<th style="width:'.$cell_width.';min-width:105px;">'.$colName.'</th>';
 					}
 					
 					$html .= '<th style="width:20px;"></th></tr>';
@@ -221,7 +223,7 @@ if(count($cps) > 0){
 							$exploded = explode("|", $values);
 							foreach ($exploded as $v) {
 								$v = str_replace("%%_PIPE_%%", "|", $v);
-								$html .= '<td><input class="value" style="width:'.$cell_width.';min-width:120px;" name="'.$name."[$rows][$col]". '" value="'. clean($v) .'" /></td>';
+								$html .= '<td><input class="value" style="width:'.$cell_width.';min-width:105px;" name="'.$name."[$rows][$col]". '" value="'. clean($v) .'" /></td>';
 								$col++;
 							}
 							$html .= '<td><div class="ico ico-delete" style="width: 20px;height: 20px;cursor: pointer;margin-left: 2px;margin-top: 1px;" 
@@ -344,8 +346,12 @@ if(count($cps) > 0){
 				// the label is set to pad the description
 				echo '<div><label>&nbsp;</label><span class="desc">' . clean($customProp->getDescription()) . '</span></div>';
 			}
+			
+			echo '<div class="clear"></div>';
 		}
 	}
+	
+	Hook::fire('after_render_custom_properties', array('object' => $_custom_properties_object, 'genid' => $genid), $ret);
 }
 
 ?></div>

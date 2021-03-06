@@ -43,7 +43,7 @@ if (!isset($allow_export)) $allow_export = true;
 		  } else { // predefined report 
 			
 			render_report_header_button(array(
-				'name' => 'print', 'text' => lang("print view"), 'onclick' => "og.reports.printNoPaginatedReport(('$genid','".escape_character($title)."', '$id');return false;", 'iconcls' => "ico-print"
+				'name' => 'print', 'text' => lang("print view"), 'onclick' => "og.reports.printNoPaginatedReport('$genid','".escape_character($title)."', '$id');return false;", 'iconcls' => "ico-print"
 			));
 			render_report_header_button(array(
 				'name' => 'exportCSV', 'text' => lang("export csv"), 'onclick' => "og.submit_fixed_report_csv_form('$genid');return false;", 'iconcls' => "ico-text"

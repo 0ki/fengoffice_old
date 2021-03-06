@@ -111,7 +111,7 @@
 				echo render_custom_properties($object, 'visible_by_default');
 
 			//Extra templates to include
-			if ($extra_templates_to_include) {
+			if (isset($extra_templates_to_include) && is_array($extra_templates_to_include)) {
 				tpl_assign('genid', $genid);
 				foreach ($extra_templates_to_include as $extra_template){
 					$this->includeTemplate($extra_template['path']);		
