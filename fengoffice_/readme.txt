@@ -1,5 +1,5 @@
 
-	About Feng Office 2.3.2
+	About Feng Office 2.3.2.1
 	================================
 	
 	Feng Office is a Collaboration Platform and Project Management System.
@@ -101,6 +101,12 @@
 	
 	Changelog
 	=========
+	
+	Since 2.3.2
+	----------------
+	
+	bugfix: When creating members, do not assign permissions for all executives (or superior users) if member has a parent.
+	
 	
 	Since 2.3.2-rc2
 	----------------

@@ -284,6 +284,7 @@ og.ObjectPicker = function(config,object_id,object_id_no_select) {
 						text: lang('upload'),
 			            tooltip: lang('quick upload desc'),
 			            iconCls: 'ico-upload',
+			            hidden: (og.preferences.link_objects_hide_upload_button ? og.preferences.link_objects_hide_upload_button : false),
 			            handler: function() {
 							var quickId = Ext.id();
 							var picker = this;

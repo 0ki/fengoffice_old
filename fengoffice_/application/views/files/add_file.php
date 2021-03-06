@@ -97,7 +97,7 @@ $visible_cps = CustomProperties::countVisibleCustomPropertiesByObjectType($objec
 	<?php $categories = array(); Hook::fire('object_edit_categories', $object, $categories); ?>
 
 	<div style="padding-top: 5px">
-	<a href="#" class="option"   onclick="og.toggleAndBolden('<?php echo $genid ?>add_file_select_context_div',this)"><?php echo lang('context') ?></a> 
+	<a href="#" class="option <?php echo ($file->isNew() ? 'bold':'');?>" onclick="og.toggleAndBolden('<?php echo $genid ?>add_file_select_context_div',this)"><?php echo lang('context') ?></a> 
 	- <a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_file_description_div',this)"><?php echo lang('description') ?></a>
 	- <a href="#" class="option <?php echo $visible_cps>0 ? 'bold' : ''?>" onclick="og.toggleAndBolden('<?php echo $genid ?>add_custom_properties_div',this)"><?php echo lang('custom properties') ?></a>
 	- <a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_subscribers_div',this)"><?php echo lang('object subscribers') ?></a>
@@ -213,7 +213,7 @@ $visible_cps = CustomProperties::countVisibleCustomPropertiesByObjectType($objec
 
 
 
-	<div id="<?php echo $genid ?>add_file_select_context_div" style="display:none">
+	<div id="<?php echo $genid ?>add_file_select_context_div" <?php echo ($file->isNew() ? '' : 'style="display:none"');?>>
 		<fieldset>
 			<legend><?php echo lang('context') ?></legend>
 			<?php
