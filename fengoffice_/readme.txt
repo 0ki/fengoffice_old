@@ -1,5 +1,5 @@
 
-    About OpenGoo beta 0.5.1
+    About OpenGoo beta 0.5.2
     =========================
 
     OpenGoo is a free, web based WebOffice, project management and collaboration
@@ -68,8 +68,8 @@
 
     You should be finished in a matter of minutes.
     
-    Upgrade from 0.5
-    ================
+    Upgrade from 0.5 or 0.5.1
+    =========================
     
     Extract the following files and folders of this zip file to the root of your installation:
 		* opengoo/application
@@ -83,12 +83,13 @@
 		* opengoo/version.php
 		* opengoo/readme.txt
 
-	Changelog
-	=========
-	
-	* More AJAX features
-		- Now each section of the site is opened on an internal tab, requiring less time
-		to load and making navigation more agile
-	* Several bugfixes
-		- a bug that prevented documents from being saved under certain server configurations
-		- a bug on the listing of files
+	Changelog 0.5.2
+	===============
+
+	* Fixes some bugs introduced by the new features in 0.5.1:
+		* Tasks interface now works correctly
+		* Uploading an avatar now works correctly
+		* A bug that kept firefox showing the 'loading' cursor after uploading a file
+		* The confirmation dialog before exiting or reloading OpenGoo was removed.
+		It turned out to be too annoying. Will be replaced in the future with more 
+		intelligent checks.

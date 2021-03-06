@@ -70,8 +70,7 @@ Slimey.prototype.submitFile = function(newRevision) {
 	} else {
 		nr.value = "";
 	}
-	og.beginSubmit(form);
-	form.submit();
+	og.submit(form);
 }
 
 Slimey.imagesDir = 'images/';

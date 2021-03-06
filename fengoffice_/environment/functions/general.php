@@ -315,7 +315,7 @@
   	  $to = str_replace('&amp;', '&', $to);
   	} // if
   	if (is_ajax_request()) {
-      	$to .= "&ajax=true";
+      	$to = make_ajax_url($to);
     }
     header('Location: ' . $to);
     if($die) die();
@@ -332,12 +332,12 @@
     $referer = get_referer();
     if(true || !is_valid_url($referer)) {
     	if (is_ajax_request()) {
-      		$alternative .= "&ajax=true";
+      		$alternative = make_ajax_url($alternative);
     	}
       	redirect_to($alternative);
     } else {
 	    if (is_ajax_request()) {
-	      	$referer .= "&ajax=true";
+	      	$referer = make_ajax_url($referer);
 	    }
       	redirect_to($referer);
     } // if
@@ -440,5 +440,19 @@ function escapeSLIM($rawSLIM) {
  */
 function unescapeSLIM($encodedSLIM) {
     return rawurldecode($encodedSLIM);
+}
+
+function make_ajax_url($url) {
+	$q = strpos($url, '?');
+	$n = strpos($url, '#');
+	if ($q === false) {
+		if ($n === false) {
+			return $url . "?ajax=true";
+		} else {
+			return substr($url, 0, $n) . "?ajax=true" . substr($url, $n);
+		}
+	} else {
+		return substr($url, 0, $q + 1) . "ajax=true&" . substr($url, $q + 1);
+	}
 }
 ?>

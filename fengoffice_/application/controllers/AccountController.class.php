@@ -307,6 +307,9 @@
       tpl_assign('user', $user);
       
       if(is_array($avatar)) {
+      	$this->setLayout("html");
+		$this->setTemplate("save_file");
+		tpl_assign('success', "false");
         try {
           if(!isset($avatar['name']) || !isset($avatar['type']) || !isset($avatar['size']) || !isset($avatar['tmp_name']) || !is_readable($avatar['tmp_name'])) {
             throw new InvalidUploadError($avatar, lang('error upload file'));
@@ -320,14 +323,11 @@
             throw new InvalidUploadError($avatar, lang('invalid upload type', 'JPG, GIF, PNG'));
           } // if
           
-          try {
             $old_file = $user->getAvatarPath();
             DB::beginWork();
             
             if(!$user->setAvatar($avatar['tmp_name'], $max_width, $max_height)) {
-              DB::rollback();
-              flash_error(lang('error edit avatar'));
-              $this->redirectToUrl($user->getUpdateAvatarUrl());
+              throw new InvalidUploadError($avatar, lang('error edit avatar'));
             } // if
             
             ApplicationLogs::createLog($user, null, ApplicationLogs::ACTION_EDIT);
@@ -337,15 +337,13 @@
               @unlink($old_file);
             } // if
             
-            flash_success(lang('success edit avatar'));
-          } catch(Exception $e) {
-            flash_error(lang('error edit avatar'));
-          } // try
-          
-          $this->redirectToUrl($redirect_to);
+            //flash_success(lang('success edit avatar'));
+          tpl_assign('forward', $redirect_to);
+		  tpl_assign('error', lang('success edit avatar'));
+		  tpl_assign('success', "true");
         } catch(Exception $e) {
           DB::rollback();
-          tpl_assign('error', $e);
+          tpl_assign('error', $e->getMessage());
         } // try
       } // if
     } // edit_avatar

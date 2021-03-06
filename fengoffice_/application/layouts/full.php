@@ -57,7 +57,7 @@
 	<?php echo render_page_meta() ?>
 	<?php echo render_page_inline_css() ?>
 </head>
-<body id="body" <?php echo render_body_events() ?> onbeforeunload="return '<?php echo lang('confirm leave page') ?>'">
+<body id="body" <?php echo render_body_events() ?>>
 
 <div id="loading">
 	<img src="<?php echo get_image_url("layout/loading.gif") ?>" width="32" height="32" style="margin-right:8px;" align="absmiddle"/>Loading...

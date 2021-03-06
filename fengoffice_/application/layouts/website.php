@@ -29,11 +29,14 @@
 	add_javascript_to_page('modules/addFileForm.js');
 	add_javascript_to_page('modules/addProjectForm.js');
 	add_javascript_to_page('modules/addUserForm.js');
+	add_javascript_to_page('modules/addTaskForm.js');
 	add_javascript_to_page('modules/attachFiles.js');
 	add_javascript_to_page('modules/attachToObjectForm.js');
 	add_javascript_to_page('modules/massmailerForm.js');
 	add_javascript_to_page('modules/updatePermissionsForm.js');
 	add_javascript_to_page('modules/updateUserPermissions.js');
+	add_javascript_to_page('modules/linkObjects.js');
+	add_javascript_to_page('modules/linkToObjectForm.js');
 	define('SLIMEY_PATH', with_slash(ROOT_URL) . 'library/slimey/');
 	add_stylesheet_to_page(get_theme_url('slimey/slimey.css'));
 	add_javascript_to_page(SLIMEY_PATH . 'slimey.js');
@@ -57,7 +60,7 @@
 	<?php echo render_page_meta() ?>
 	<?php echo render_page_inline_css() ?>
 </head>
-<body id="body" <?php echo render_body_events() ?> onbeforeunload="return '<?php echo lang('confirm leave page') ?>'">
+<body id="body" <?php echo render_body_events() ?>>
 
 <div id="loading">
 	<img src="<?php echo get_image_url("layout/loading.gif") ?>" width="32" height="32" style="margin-right:8px;" align="absmiddle"/>Loading...
@@ -128,38 +131,6 @@
 </div>
 <!-- /menu -->
 
-<!-- content -->
-<div id="content">
-	<?php if(!is_null(flash_get('success'))) { ?>
-	<div id="success" onclick="this.style.display = 'none'"><?php echo clean(flash_get('success')) ?></div>
-	<?php } ?>
-	<?php if(!is_null(flash_get('error'))) { ?>
-	<div id="error" onclick="this.style.display = 'none'"><?php echo clean(flash_get('error')) ?></div>
-	<?php } ?>
-	<h1 id="pageTitle" class="pageTitle"><?php echo get_page_title() ?></h1>
-	<div id="pageContent">
-		<div id="mainContent">
-			<?php if(is_array(page_actions())) { ?>
-			<div id="page_actions">
-				<ul>
-					<?php foreach(page_actions() as $page_action) { ?>
-					<li><a class="internalLink" href="<?php echo $page_action->getURL() ?>"><?php echo clean($page_action->getTitle()) ?></a></li>
-					<?php } // foreach ?>
-				</ul>
-			</div>
-			<?php } // if ?>
-			<!-- content -->
-			<?php echo $content_for_layout ?>
-			<!-- /content -->
-		</div>
-		<?php if (isset($content_for_sidebar)) { ?>
-		<div id="sidebar"><?php echo $content_for_sidebar ?></div>
-		<?php } // if ?>
-		<div class="clear"></div>
-	</div>
-</div>
-<!-- /content -->
-
 <!-- footer -->
 <div id="footer">
 	<div id="copy">
@@ -179,6 +150,7 @@
 og.pageSize = <?php echo config_option('files_per_page')?config_option('files_per_page'):10 ?>;
 og.hostName = '<?php echo ROOT_URL ?>';
 og.maxUploadSize = <?php echo get_max_upload_size() ?>;
+og.initialURL = '<?php echo ROOT_URL . "?" . $_SERVER['QUERY_STRING'] ?>';
 </script>
 
 </body>

@@ -3,17 +3,11 @@
   add_stylesheet_to_page('project/files.css');
 ?>
 
-<?php $iname = "upl" . time() % 1000000; ?>
-
-
-<iframe src="" id="<?php echo $iname ?>" name="<?php echo $iname ?>" style="width:300px;height:200px;display:none" onload="try {og.endSubmit(this)}catch(e){}">
-</iframe>
-
 <script type="text/javascript" src="<?php echo get_javascript_url('modules/addFileForm.js') ?>"></script>
 <?php if($file->isNew()) { ?>
-<form action="<?php echo get_url('files', 'add_file') ?>" method="post" enctype="multipart/form-data" target="<?php echo $iname ?>" onsubmit="og.beginSubmit(this)">
+<form action="<?php echo get_url('files', 'add_file') ?>" method="post" enctype="multipart/form-data" onsubmit="og.submit(this)">
 <?php } else { ?>
-<form action="<?php echo $file->getEditUrl() ?>" method="post" enctype="multipart/form-data" target="<?php echo $iname ?>" onsubmit="og.beginSubmit(this)">
+<form action="<?php echo $file->getEditUrl() ?>" method="post" enctype="multipart/form-data" onsubmit="og.submit(this)">
 <?php } // if ?>
 
 <?php tpl_display(get_template_path('form_errors')) ?>

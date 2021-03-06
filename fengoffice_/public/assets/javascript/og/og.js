@@ -147,8 +147,47 @@ og.autoComplete = {
 	}
 }
 
-og.beginSubmit = function(form) {
-	var frame = $(form.target);
+og.submit = function(form) {
+	// create an iframe
+	var id = Ext.id();
+	var frame = document.createElement('iframe');
+	frame.id = id;
+	frame.name = id;
+	frame.className = 'x-hidden';
+	if(Ext.isIE){
+	    frame.src = Ext.SSL_SECURE_URL;
+	}
+	document.body.appendChild(frame);
+	if(Ext.isIE){
+	   document.frames[id].name = id;
+	}
+	function endSubmit() {
+		this.loadingIndicator.style.visibility = 'hidden';
+		var doc;
+		if (Ext.isIE) {
+			doc = this.contentWindow.document;
+		} else {
+			doc = (this.contentDocument || window.frames[id].document);
+		}
+		var json = doc.body.innerHTML.trim();
+		if (json) {
+			var o = Ext.util.JSON.decode(json);
+			if (o.success) {
+				og.msg(lang('success'), o.error);
+				if (o.forward) {
+					og.openLink(o.forward.replace(/&amp;/g, "&"));
+				}
+			} else {
+				og.msg(lang('error'), o.error);
+			}
+		} else {
+			og.msg(lang('error'), lang('unexpected server response'));
+		}
+		setTimeout(function(){Ext.removeNode(frame);}, 100);
+	}
+	Ext.EventManager.on(frame, 'load', endSubmit, frame);;
+	
+	form.target = frame.name;
 	var div;
 	if (!div) {
 		div = document.createElement('div');
@@ -161,31 +200,20 @@ og.beginSubmit = function(form) {
 	}
 	div.style.visibility = 'visible';
 	frame.loadingIndicator = div;
+	form.submit();
+	return false;
 }
 
-og.endSubmit = function(frame) {
-	if (!frame.loadingIndicator) {
-		return;
-	}
-	frame.loadingIndicator.style.visibility = 'hidden';
-	var doc;
-	if (Ext.isIE) {
-		doc = frame.contentWindow.document;
-	} else {
-		doc = (frame.contentDocument || window.frames[id].document);
-	}
-	var json = doc.body.innerHTML.trim();
-	if (json) {
-		var o = Ext.util.JSON.decode(json);
-		if (o.success) {
-			og.msg(lang('success'), o.error);
-			if (o.forward) {
-				og.openLink(o.forward.replace(/&amp;/g, "&"));
-			}
+og.makeAjaxUrl = function(url) {
+	var q = url.indexOf('?');
+	var n = url.indexOf('#');
+	if (q < 0) {
+		if (n < 0) {
+			return url + "?ajax=true";
 		} else {
-			og.msg(lang('error'), o.error);
+			return url.substring(0, n) + "?ajax=true" + url.substring(n);
 		}
 	} else {
-		og.msg(lang('error'), lang('unexpected server response'));
+		return url.substring(0, q + 1) + "ajax=true&" + url.substring(q + 1);
 	}
 }

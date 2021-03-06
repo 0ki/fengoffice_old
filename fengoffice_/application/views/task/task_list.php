@@ -31,11 +31,7 @@
       
 <!-- Checkbox -->
 <?php if($task->canChangeStatus(logged_user())) { ?>
-<?php if($on_list_page) { ?>
-        <td class="taskCheckbox"><?php echo checkbox_link($task->getCompleteUrl(), false, lang('mark task as completed')) ?></td>
-<?php } else { ?>
-        <td class="taskCheckbox"><?php echo checkbox_link($task->getCompleteUrl(undo_htmlspecialchars($task_list->getOverviewUrl())), false, lang('mark task as completed')) ?></td>
-<?php } // if ?>
+    <td class="taskCheckbox"><?php echo checkbox_link($task->getCompleteUrl(undo_htmlspecialchars($task_list->getOverviewUrl())), false, lang('mark task as completed')) ?></td>
 <?php } else { ?>
         <td class="taskCheckbox"><img src="<?php echo icon_url('not-checked.jpg') ?>" alt="<?php echo lang('open task') ?>" /></td>
 <?php } // if?>
@@ -45,7 +41,7 @@
 <?php if($task->getAssignedTo()) { ?>
           <span class="assignedTo"><?php echo clean($task->getAssignedTo()->getObjectName()) ?>:</span> 
 <?php } // if{ ?>
-          <?php echo clean($task->getText()) ?> <?php if($task->canEdit(logged_user())) { ?><a class="internalLink" href="<?php echo $task->getEditUrl() ?>" class="blank" title="<?php echo lang('edit task') ?>"><img src="<?php echo icon_url('edit.gif') ?>" alt="" /></a><?php } // if ?> <?php if($task->canDelete(logged_user())) { ?><a class="internalLink" href="<?php echo $task->getDeleteUrl() ?>" class="blank" onclick="return confirm('<?php echo lang('confirm delete task') ?>')" title="<?php echo lang('delete task') ?>"><img src="<?php echo icon_url('cancel_gray.gif') ?>" alt="" /></a><?php } // if ?>
+          <?php echo clean($task->getText()) ?> <?php if($task->canEdit(logged_user())) { ?><a class="internalLink blank" href="<?php echo $task->getEditUrl() ?>" title="<?php echo lang('edit task') ?>"><img src="<?php echo icon_url('edit.gif') ?>" alt="" /></a><?php } // if ?> <?php if($task->canDelete(logged_user())) { ?><a class="internalLink blank" href="<?php echo $task->getDeleteUrl() ?>" onclick="return confirm('<?php echo lang('confirm delete task') ?>')" title="<?php echo lang('delete task') ?>"><img src="<?php echo icon_url('cancel_gray.gif') ?>" alt="" /></a><?php } // if ?>
         </td>
       </tr>
 <?php } // foreach ?>
@@ -92,7 +88,7 @@
 <?php if($on_list_page || ($counter <= 5)) { ?>
       <tr>
 <?php if($task->canChangeStatus(logged_user())) { ?>
-        <td class="taskCheckbox"><?php echo checkbox_link($task->getOpenUrl(), true, lang('mark task as open')) ?></td>
+    <td class="taskCheckbox"><?php echo checkbox_link($task->getOpenUrl(undo_htmlspecialchars($task_list->getOverviewUrl())), true, lang('mark task as open')) ?></td>
 <?php } else { ?>
         <td class="taskCheckbox"><img src="<?php echo icon_url('checked.jpg') ?>" alt="<?php echo lang('completed task') ?>" /></td>
 <?php } // if ?>

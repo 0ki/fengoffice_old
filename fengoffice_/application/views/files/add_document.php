@@ -26,11 +26,6 @@ function checkFilename() {
 				if (btn == 'ok') {
 					Ext.getDom('filename').value = text;
 					Ext.getDom('fckform').onsubmit();
-					try {
-						Ext.getDom('fckform').submit();
-					} catch (e) {
-						// apparently, form.submit() doesn't invoke the onsumbit event
-					}
 				}
 			}
 		);
@@ -39,17 +34,12 @@ function checkFilename() {
 }
 </script>
 
-<?php $iname = "upl" . time() % 1000000; ?>
-
-<iframe src="" id="<?php echo $iname ?>" name="<?php echo $iname ?>" style="width:300px;height:200px;position:absolute;display:none" onload="try {og.endSubmit(this)}catch(e){}">
-</iframe>
-
 <?php if($file->isNew()) { ?>
-<form target="<?php echo $iname ?>" id="fckform" action="<?php echo get_url('files', 'save_document') ?>" method="post" enctype="multipart/form-data" onsubmit="if (!checkFilename()) { return false; } else { og.beginSubmit(this);return true; }">
+<form id="fckform" action="<?php echo get_url('files', 'save_document') ?>" method="post" enctype="multipart/form-data" onsubmit="if (checkFilename()) { og.submit(this); }return false;">
 <?php } else { ?>
-<form target="<?php echo $iname ?>" id="fckform" action="<?php echo get_url('files', 'save_document',array(
+<form id="fckform" action="<?php echo get_url('files', 'save_document',array(
 	        'id' => $file->getId(), 
-	        'active_project' =>  $file->getProjectId())) ?>" method="post" enctype="multipart/form-data"  onsubmit="og.beginSubmit(this)">
+	        'active_project' =>  $file->getProjectId())) ?>" method="post" enctype="multipart/form-data"  onsubmit="og.submit(this)">
 <?php } // if ?>
 
 <?php tpl_display(get_template_path('form_errors')) ?>

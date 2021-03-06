@@ -38,7 +38,9 @@
   } // if
 
 ?>
-<form class="internalForm" action="<?php echo $user->getUpdateAvatarUrl($redirect_to) ?>" method="post" enctype="multipart/form-data">
+
+
+<form action="<?php echo $user->getUpdateAvatarUrl($redirect_to) ?>" method="post" enctype="multipart/form-data" onsubmit="og.submit(this)">
 
 <?php tpl_display(get_template_path('form_errors')) ?>
   

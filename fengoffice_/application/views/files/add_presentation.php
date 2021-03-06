@@ -37,9 +37,6 @@
 	$id = time() % 1000000;
 ?>
 
-<iframe src="" id="frm<?php echo $id ?>" name="frm<?php echo $id ?>" style="width:300px;height:200px;position:absolute;display:none" onload="try {og.endSubmit(this)}catch(e){}">
-</iframe>
-
 <div id="slimey<?php echo $id ?>">
 </div>
 

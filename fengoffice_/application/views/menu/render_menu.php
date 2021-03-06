@@ -121,7 +121,7 @@ if (CompanyWebsite::instance()->getLoggedUser()->isAdministrator()) {
 <!-- <administration> -->
 <div id="menuAdministration" class="menuCont">
 	<ul class="menu_places">
-		<li><img class="menu_place_ico" src="<?php echo get_image_url('menu/administration.png')?>" /><a class="internalLink" href="<?php echo get_url('administration', 'index') ?>"><?php echo lang('index') ?></a></li>
+		<!-- li><img class="menu_place_ico" src="<?php echo get_image_url('menu/administration.png')?>" /><a class="internalLink" href="<?php echo get_url('administration', 'index') ?>"><?php echo lang('index') ?></a></li -->
 		<li><img class="menu_place_ico" src="<?php echo get_image_url('menu/company.png')?>" /><a class="internalLink" href="<?php echo get_url('administration', 'company') ?>"><?php echo lang('company') ?></a></li>
 		<li><img class="menu_place_ico" src="<?php echo get_image_url('menu/members.png')?>" /><a class="internalLink" href="<?php echo get_url('administration', 'members') ?>"><?php echo lang('members') ?></a></li>
 		<li><img class="menu_place_ico" src="<?php echo get_image_url('menu/clients.png')?>" /><a class="internalLink" href="<?php echo get_url('administration', 'clients') ?>"><?php echo lang('clients') ?></a></li>

@@ -71,6 +71,19 @@ Ext.onReady(function(){
 		};
 	}
 
+	contentPanel = new Ext.TabPanel({
+		id: 'contentPanel',
+		region:'center',
+		plugins: new og.TabCloseMenu(),
+		listeners: {
+			resize: function() {
+				if (window.onresize) {
+					window.onresize();
+				}
+			}
+		}
+	});
+
 	var viewport = new Ext.Viewport({
 		layout: 'border',
 		items: [
@@ -114,36 +127,8 @@ Ext.onReady(function(){
 				items: menuItems
 					
 			},
-			contentPanel = new Ext.TabPanel({
-				activeTab:0,
-				items:[{
-					layout: 'fit',
-					title: Ext.getDom('pageTitle').innerHTML,
-					closable:true,
-					autoScroll:true,
-					listeners: {
-						'activate': function() {
-							if (window.onresize) {
-								window.onresize();
-							}
-						}
-					},
-					items:[{
-						contentEl:'content',
-						autoScroll: true
-					}]
-				}],
-				id: 'contentPanel',
-				region:'center',
-				plugins: new og.TabCloseMenu()
-			})
+			contentPanel
 		 ]
-	});
-	
-	contentPanel.on('resize', function() {
-		if (window.onresize) {
-			window.onresize();
-		}
 	});
 	
 	// link context menu
@@ -152,25 +137,23 @@ Ext.onReady(function(){
 		items: [{
 			text: lang('open link'),
 			handler: function() {
-				linkContextMenu.contextItem.onclick();
-				if (linkContextMenu.contextItem.confirmed) {
-					og.openLink(linkContextMenu.contextItem.href);
-				}
+				og.openLink(linkContextMenu.contextItem.href);
 			},
 			iconCls: 'admnstrtn'
 		},{
 			text: lang('open in new tab'),
 			handler: function() {
-				linkContextMenu.contextItem.onclick();
-				if (linkContextMenu.contextItem.confirmed) {
-					og.openLink(linkContextMenu.contextItem.href, null, true);
-				}
+				og.openLink(linkContextMenu.contextItem.href, null, true);
 			},
 			iconCls: 'fls'
 		}]
 	});
     
     og.captureLinks();
+    
+    if (og.initialURL) {
+    	og.openLink(og.initialURL);
+    }
 });
 
 
@@ -182,27 +165,32 @@ og.captureLinks = function(div) {
 	var links = Ext.select((div?"#" + div + " ":"") + "a.internalLink");
 	links.each(function() {
 		var onclick = this.dom.onclick;
-		this.dom.onclick = function() {
-			if (onclick && !onclick()) {
-				this.confirmed = false;
-			} else {
-				this.confirmed = true;
-			}
-		};
-		this.on('click', function(e) {
-				if (!e.target.confirmed) {
-					return;
+		this.dom.onclick = function(e) {
+			if (!e) e = window.event;
+			if (!onclick || onclick()) {
+				if (typeof e.ctrlKey == 'undefined') {
+					if (e.modifiers & Event.CONTROL_MASK) {
+						e.ctrlKey = true;
+					} else {
+						e.ctrlKey = false;
+					}
 				}
 				if (e.ctrlKey) {
-					og.openLink(e.target.href, null, true);
+					og.openLink(this.href, null, true);
 				} else {
-					og.openLink(e.target.href);
+					og.openLink(this.href);
 				}
-			}, this, {stopEvent: true});
-		this.on('contextmenu', function(e) {
-				linkContextMenu.contextItem = e.target;
-				linkContextMenu.show(e.target)
-			}, this, {stopEvent: true});
+			}
+			return false;
+		};
+		this.dom.oncontextmenu = function(e) {
+			if (!e) e = window.event;
+			if (!onclick || onclick()) {
+				linkContextMenu.contextItem = this;
+				linkContextMenu.show(this);
+			}
+			return false;
+		}
 	});
 	links = Ext.select((div?"#" + div + " ":"") + "form.internalForm");
 	links.each(function() {
@@ -239,7 +227,7 @@ og.openLink = function(url, params, newTab) {
 	}
 	//contentPanel.add(new Ext.Panel({closable: true, autoScroll: true, html: params, title: "Params"}));
 	if (contentPanel.items.length <= 0) {
-		og.openLink(url, null, true);
+		og.openLink(url, params, true);
 		return;
 	}
 	
@@ -248,14 +236,15 @@ og.openLink = function(url, params, newTab) {
 		panel.remove(panel.getComponent(0));
 	}
 	
-	if (url.indexOf('?c=files&a=index') >= 0) {
+	// this chekcs will be formalized later
+	if (url.indexOf('c=files') >= 0 && url.indexOf('a=index') >= 0 || url.indexOf('c=files') >= 0 && url.indexOf('a=') < 0) {
 		og.browse(url.substring(url.indexOf('?c=files&a=index')));
 	} else {
 		og.loadHTML(url, params);
 	}
 }
 
-og.browse = function(filter, newTab) {
+og.browse = function(filter) {
 	var fm = new og.FileManager(filter);
 	var panel = contentPanel.getActiveTab();
 
@@ -279,7 +268,7 @@ og.loadHTML = function(url, params) {
 	panel.add(p);
 	panel.doLayout();
 	p.load({
-		url: url + "&ajax=true",
+		url: og.makeAjaxUrl(url),
 		callback: function(elem, success) {
 			if (!success) {
 				og.msg(lang("error loading content"));
@@ -305,10 +294,11 @@ og.loadHTML = function(url, params) {
 
 og.debug = function(obj) {
 	var win;
-	var s = "";
+	var s = "hola";
 	for (var k in obj) {
-		s += ", " + k;
+		s += k + " = " + obj[k] + "\n";
 	}
+	var ta = new Ext.form.TextArea();
 	if (!win) {
 		win = new Ext.Window({
 			title: 'Debug',
@@ -318,9 +308,7 @@ og.debug = function(obj) {
 	        closeAction:'hide',
 	        plain: true,
 	        
-	        items: new Ext.form.TextArea({
-	            value: s
-	        }),
+	        items: [ta],
 	
 	        buttons: [{
 	            text: 'Close',
@@ -330,6 +318,7 @@ og.debug = function(obj) {
 	        }]
 	    });
 	}
+	ta.setValue(s);
 	win.show();
 }
 
