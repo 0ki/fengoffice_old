@@ -181,10 +181,15 @@ abstract class ApplicationDataObject extends DataObject {
 					} else {
 						$content = DB::escape(utf8_safe($content));
 					}
+					$count = SearchableObjects::instance()->count(array("rel_object_id = ? AND column_name = ?", $searchable_object->getRelObjectId(), $searchable_object->getColumnName()));
+					if ($count > 0) {
+						$sql = "UPDATE ".TABLE_PREFIX."searchable_objects SET content = $content 
+						WHERE rel_object_id='".$searchable_object->getRelObjectId()."' AND column_name='".$searchable_object->getColumnName()."'";
+					} else {
+						$sql = "INSERT INTO ".TABLE_PREFIX."searchable_objects (rel_object_id, column_name, content)
+						VALUES ('".$searchable_object->getRelObjectId()."', '".$searchable_object->getColumnName()."', ".$content.")";
+					}
 					
-					$sql = "INSERT INTO ".TABLE_PREFIX."searchable_objects (rel_object_id, column_name, content)
-						VALUES ('".$searchable_object->getRelObjectId()."', '".$searchable_object->getColumnName()."', ".$content.")
-						ON DUPLICATE KEY UPDATE content=$content";
 					DB::execute($sql);
 					$searchable_object = null;
 				}

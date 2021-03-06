@@ -355,7 +355,8 @@ Ext.extend(og.LinkedObjectManager, Ext.grid.GridPanel, {
 		this.store.load({
 			params: Ext.applyIf(params, {
 				start: start,
-				limit: og.config['files_per_page']
+				limit: og.config['files_per_page'],
+				ignore_context : true
 			})
 		});
 		this.needRefresh = false;

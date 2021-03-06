@@ -1,5 +1,5 @@
 
-	About Feng Office 2.3-rc
+	About Feng Office 2.3
 	================================
 	
 	Feng Office is a Collaboration Platform and Project Management System.
@@ -101,6 +101,29 @@
 	
 	Changelog
 	=========
+	
+	Since 2.3-rc
+	----------------
+	
+	bugfix: Tasks don't show custom properties when printing one.
+	bugfix: Rearranged task name and remove button in template edition to avoid overlapping.
+	bugfix: Edit task sometimes opens new tab when saving.
+	bugfix: Several report grouping bugfixes.
+	bugfix: Advanced search by custom property doesn't find the object.
+	bugfix: Classify weblinks by drag & drop does nothing.
+	bugfix: Event notifications broken with large user names.
+	bugfix: IE crashes when loading member trees.
+	bugfix: Bugfix when timeslot has no user.
+	bugfix: Export to csv, escaped commas and semicolons, improved time management.
+	bugfix: Workspace and tags added for new event and task notifications.
+	bugfix: Company logo is not displayed well on IE.
+	bugfix: Breadcrumbs for the search results.
+	bugfix: Improved task list grouping when grouping by date fields.
+	bugfix: Overview calendar widget "view more" link broken.
+	bugfix: Show main dashboard when clicking on "View all" of People dimension.
+	bugfix: Show "save with new name" button after saving a new document.
+	bugfix: Object picker pagination shows wrong total.
+	bugfix: Several missing langs fixed (en_us, es_la).
 	
 	Since 2.3-beta
 	----------------

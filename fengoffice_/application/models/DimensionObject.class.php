@@ -53,15 +53,15 @@ abstract class DimensionObject extends ContentDataObject {
 			";
 			$rows = DB::executeAll($sql);
 			if (is_array($rows)) {
+				$values = array();
 				foreach ($rows as $row ) {
-					$values = array();
-					if ($gid = array_var($row, 'gid')) {					
+					if ($gid = array_var($row, 'gid')) {
 						$values[] = "($oid, $gid)";
 					}
-					if (count($values) > 0) {
-						$values_str = implode(",", $values);
-						DB::execute("INSERT INTO ".TABLE_PREFIX."sharing_table (object_id, group_id) VALUES $values_str ON DUPLICATE KEY UPDATE object_id=object_id");
-					}
+				}
+				if (count($values) > 0) {
+					$values_str = implode(",", $values);
+					DB::execute("INSERT INTO ".TABLE_PREFIX."sharing_table (object_id, group_id) VALUES $values_str");
 				}
 			}
 		}

@@ -420,7 +420,7 @@ class TemplateController extends ApplicationController {
 		foreach ($objects as $object) {
 			if (!$object instanceof ContentDataObject) continue;
 			// copy object
-			$copy = $object->copy();
+			$copy = $object->copy(false);
 			if ($copy->columnExists('is_template')) {
 				$copy->setColumnValue('is_template', false);
 			}

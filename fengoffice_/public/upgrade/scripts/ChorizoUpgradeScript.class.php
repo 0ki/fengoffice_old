@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Chorizo upgrade script will upgrade FengOffice 2.2.4.1 to FengOffice 2.3-rc2
+ * Chorizo upgrade script will upgrade FengOffice 2.2.4.1 to FengOffice 2.3
  *
  * @package ScriptUpgrader.scripts
  * @version 1.0
@@ -40,7 +40,7 @@ class ChorizoUpgradeScript extends ScriptUpgraderScript {
 	function __construct(Output $output) {
 		parent::__construct($output);
 		$this->setVersionFrom('2.2.4.1');
-		$this->setVersionTo('2.3-rc2');
+		$this->setVersionTo('2.3');
 	} // __construct
 
 	function getCheckIsWritable() {

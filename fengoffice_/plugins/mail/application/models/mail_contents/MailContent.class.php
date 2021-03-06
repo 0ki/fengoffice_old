@@ -766,7 +766,7 @@ class MailContent extends BaseMailContent {
 			
 			$group_id = $contact->getPermissionGroupId();
 			if ($group_id) {
-				$sql = "INSERT INTO ".TABLE_PREFIX."sharing_table ( object_id, group_id ) VALUES ('$id','$group_id') ON DUPLICATE KEY UPDATE group_id = group_id ";
+				$sql = "INSERT INTO ".TABLE_PREFIX."sharing_table ( object_id, group_id ) VALUES ('$id','$group_id')";
 				DB::execute($sql);
 			}
 			

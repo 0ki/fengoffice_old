@@ -1450,7 +1450,7 @@ class ObjectController extends ApplicationController {
 		}
 		$object_id = get_id('object_id');
 		$object = Objects::findObject($object_id);
-		if ($object instanceof ContentDataObject && $object->canDelete(logged_user()) && !$object->isUser()) {
+		if ($object instanceof ContentDataObject && $object->canDelete(logged_user()) && (!$object instanceof Contact || !$object->isUser())) {
 			try {
 				$errorMessage = null;
 				DB::beginWork();

@@ -55,13 +55,9 @@ class MailController extends ApplicationController {
 	function reply_mail() {
 		$this->setTemplate('add_mail');
 		$mail = new MailContent();
-		if (array_var($_GET,'id','') == '') {
-			flash_error('Invalid parameter.');
-			ajx_current("empty");
-		}
-		$original_mail = MailContents::findById(get_id('id',$_GET));
-		if(!$original_mail) {
-			flash_error('Invalid parameter.');
+		$original_mail = MailContents::findById(get_id());
+		if(!$original_mail instanceof MailContent) {
+			flash_error(lang('email dnx'));
 			ajx_current("empty");
 		}
 		$mail_data = array_var($_POST, 'mail', null);

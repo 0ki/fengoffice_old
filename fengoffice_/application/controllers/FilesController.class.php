@@ -1987,7 +1987,7 @@ class FilesController extends ApplicationController {
 		try {
 			
 			DB::beginWork();
-			$copy = $file->copy();
+			$copy = $file->copy(false);
 			$copy->setFilename(lang('copy of file', $file->getFilename()));
 			$copy->save();
 			$copy->addToMembers($members);

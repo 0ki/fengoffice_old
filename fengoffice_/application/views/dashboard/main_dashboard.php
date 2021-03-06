@@ -12,7 +12,7 @@
 		
 		<div class="left-column-wrapper">
 			<div class="left-column section-left">
-				<?php DashboardTools::renderSection('left'); ?>		
+				<?php DashboardTools::renderSection('left'); ?>&nbsp;		
             </div>
 		</div>
 		

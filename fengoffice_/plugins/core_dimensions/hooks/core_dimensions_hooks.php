@@ -502,11 +502,13 @@ function core_dim_add_new_contact_to_person_dimension($object) {
 		
 		// add permission to creator
 		if ($object->getCreatedBy() instanceof Contact) {
-			DB::execute("INSERT INTO `".TABLE_PREFIX."contact_member_permissions` (`permission_group_id`, `member_id`, `object_type_id`, `can_write`, `can_delete`)
+			$record_count = ContactMemberPermissions::count(array("`permission_group_id` = ? AND `member_id` = ?", $object->getCreatedBy()->getPermissionGroupId(), $member->getId()));
+			if ($record_count == 0) {
+				DB::execute("INSERT INTO `".TABLE_PREFIX."contact_member_permissions` (`permission_group_id`, `member_id`, `object_type_id`, `can_write`, `can_delete`)
 				 SELECT ".$object->getCreatedBy()->getPermissionGroupId().", ".$member->getId().", `ot`.`id`, 1, 1
 				 FROM `".TABLE_PREFIX."object_types` `ot` 
-				 WHERE `ot`.`type` IN ('content_object', 'comment', 'located')
-				 ON DUPLICATE KEY UPDATE `member_id`=`member_id`;");
+				 WHERE `ot`.`type` IN ('content_object', 'comment', 'located');");
+			}
 		}
 		
 		if ($reload_dimension) {

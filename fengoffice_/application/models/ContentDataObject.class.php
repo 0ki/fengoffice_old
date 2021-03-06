@@ -550,15 +550,18 @@ abstract class ContentDataObject extends ApplicationDataObject {
 	} 
 	
 	
-	function copy() {
+	function copy($copy_members = true) {
 		/* @var $copy ContentDataObject */
 		$copy  = parent::copy() ;
 		$copy->setObject($this->object->copy());
 		
 		$copy->save();
 		
-		$members = $this->getMembers();
-		$copy->addToMembers($members);
+		if ($copy_members) {
+			$members = $this->getMembers();
+			$copy->addToMembers($members);
+			$copy->addToSharingTable();
+		}
 		
 		$copy->copy_custom_properties($this);
 		
@@ -1090,7 +1093,7 @@ abstract class ContentDataObject extends ApplicationDataObject {
 			if ($this->getIsRead($contact_id)) {
 				return; // object is already marked as read
 			}
-			DB::execute("INSERT INTO ".TABLE_PREFIX."read_objects (rel_object_id, contact_id, is_read, created_on) VALUES (?, ?, 1, NOW()) ON DUPLICATE KEY UPDATE contact_id=contact_id", $this->getId(), $contact_id);
+			DB::execute("INSERT INTO ".TABLE_PREFIX."read_objects (rel_object_id, contact_id, is_read, created_on) VALUES (?, ?, 1, NOW())", $this->getId(), $contact_id);
 			$this->is_read[$contact_id] = true;
 		} else {
 			ReadObjects::delete('rel_object_id = ' . $this->getId() . ' AND contact_id = ' . $contact_id);
@@ -1503,7 +1506,7 @@ abstract class ContentDataObject extends ApplicationDataObject {
 				}
 			}
 			
-		}else { 
+		} else {
 			if ( count($this->getMemberIds()) > 0 ) {
 				// 3.2 No memeber dimensions defines permissions. 
 				// No esta en ninguna dimension que defina permisos, El objecto esta en algun lado
@@ -1516,7 +1519,7 @@ abstract class ContentDataObject extends ApplicationDataObject {
 			$stManager = SharingTables::instance();
 			$stManager->populateGroups($gids, $oid);
 			$gids = null;
-		} 
+		}
 		
 	}
 	
